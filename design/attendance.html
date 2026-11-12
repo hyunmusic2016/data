@@ -138,7 +138,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.25.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -424,7 +424,30 @@ class Component extends DCLogic {
       spare.forEach(x => { if (Object.keys(ev[x.id] || {}).length) list.push(Object.assign({}, x)); });
       list.forEach(x => { x.sid = list.length > 1 ? 'K' + key : undefined; if (list.length === 1 && first.sid) x.sid = first.sid; out.push(x); });
     });
+    return this.applyTransfers(out, shared, MON, mEnd);
+  }
+  applyTransfers(rows, shared, MON, mEnd) {
+    // 담당 강사가 바뀐 원생: 바뀐 달에는 예전 강사 출석부 맨 아래 '퇴&휴'로 옮기고(수강권·출결 그대로),
+    // 새 강사 출석부에는 같은 수강권으로 이어서 나온다. 다음 달부터 예전 강사 출석부에는 나오지 않는다.
+    const me = this.teacherList()[this.state.teacher || 0][0].replace(' 원장님', '');
+    const nm = r => r.name.replace('$', '');
+    const last = {};
+    shared.filter(e => e.teacher && e.prev && e.prev.teacher && e.teacher !== e.prev.teacher && e.from <= mEnd)
+      .sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : (a.at || 0) - (b.at || 0))
+      .forEach(e => { last[e.name] = e; });
+    if (!Object.keys(last).length) return rows;
+    const out = [];
+    rows.forEach(r => {
+      const t = last[nm(r)];
+      if (!t || r.g === '퇴휴') { out.push(r); return; }
+      const sameMon = +t.from.slice(5, 7) === MON, day = +t.from.slice(8, 10);
+      if (me === t.teacher) out.push(Object.assign({}, r, { dimBefore: sameMon ? day : 0 }));
+      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', status: '강사 변경', moveTo: t.teacher, dimFrom: day }));
+    });
     return out;
+  }
+  teacherList() {
+    return [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
   }
   readShared() {
     try { const v = JSON.parse(localStorage.getItem('academy.lessonChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
@@ -1047,7 +1070,7 @@ class Component extends DCLogic {
           cash: s.name.indexOf('$') >= 0,
           hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
-          check: s.status || '', checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
+          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
           dotGroups: dotGroups,
           subText: r.needPay ? '입금 대기' : (r.since || '—'),
@@ -1066,7 +1089,7 @@ class Component extends DCLogic {
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const bg = x.pay ? '#FAEFD2' : s.rowBg ? rowBg : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
+              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)) + (((s.dimBefore && x.d < s.dimBefore) || (s.dimFrom && x.d >= s.dimFrom)) ? '; opacity: 0.35' : ''),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
@@ -1248,7 +1271,7 @@ class Component extends DCLogic {
     };
 
     const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
-    const TEACHERS = [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
+    const TEACHERS = this.teacherList();
     const teacherTabs = TEACHERS.map((t, i) => {
       const on = i === st.teacher, c = PART[t[1]];
       return {
