@@ -60,6 +60,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
                 <span style="font-size: 12px; color: #8A949E">{{flt.summary}}</span>
                 <span style="flex: 1"></span>
                 <button type="button" onClick="{{flt.reset}}" style="height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; cursor: pointer">초기화</button>
+                <button type="button" onClick="{{flt.close}}" aria-label="필터 닫기" style="width: 32px; height: 32px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 16px; line-height: 1; cursor: pointer">×</button>
               </div>
               <sc-for list="{{flt.groups}}" as="g" hint-placeholder-count="8">
                 <div role="group" aria-label="{{g.label}}" style="display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 10px">
@@ -126,7 +127,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.13.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.13.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
