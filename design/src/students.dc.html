@@ -35,9 +35,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
           <span style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #BFEAEB 62%, #BFEAEB 92%, transparent 92%)">현실용음악학원 수강생대장</span>
         </span>
         <span style="flex: 1"></span>
-        <div style="display: flex; gap: 8px">
+        <div role="tablist" aria-label="원생 구분" style="display: flex; gap: 8px">
           <sc-for list="{{stats}}" as="s" hint-placeholder-count="3">
-            <a href="{{s.href}}" style="{{s.style}}"><span style="font-size: 12px; color: #5E6873">{{s.label}}</span><span style="{{s.numStyle}}">{{s.n}}<span style="font-size: 12px; font-weight: 600; margin-left: 2px">명</span></span></a>
+            <button type="button" role="tab" aria-selected="{{s.on}}" onClick="{{s.pick}}" style="{{s.style}}">{{s.label}}</button>
           </sc-for>
         </div>
       </div>
@@ -48,10 +48,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
           <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
         </span>
-        <span style="width: 1px; height: 22px; background: #DDE2DF"></span>
-        <sc-for list="{{partFilters}}" as="p" hint-placeholder-count="6">
-          <button type="button" onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="{{p.style}}">{{p.label}}<span style="font-size: 11px; opacity: 0.7">{{p.n}}</span></button>
-        </sc-for>
         <span style="flex: 1"></span>
         <button type="button" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
       </div>
@@ -115,14 +111,14 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.1.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.1.1</div>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1400}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { q: '', part: '전체' };
+    this.state = { q: '', tab: 'act' };
   }
   students() {
     const T = { '드럼': '박서준', '보컬': '이하늘', '기타': '김도윤', '베이스': '최민재', '피아노': '정우진', '우쿨렐레': '김도윤' };
@@ -167,7 +163,7 @@ class Component extends DCLogic {
     const cell = 'height: 46px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
     const all = this.students();
     const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
-    const match = s => (st.part === '전체' || s.part === st.part) && (!q || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
+    const match = s => (!q || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
     const PORDER = ['드럼', '보컬', '기타', '베이스', '피아노', '우쿨렐레'];
     const DORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'];
     const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf(a.day) - DORDER.indexOf(b.day) || a.name.localeCompare(b.name, 'ko'));
@@ -193,7 +189,7 @@ class Component extends DCLogic {
       ['rest', '휴원생', 'sec-rest', '#E0A23B', '#FFF4E0', '#9A5B00', '휴원정보에 휴원 날짜와 남은 수업을 적습니다'],
       ['out', '퇴원생', 'sec-out', '#D9746C', '#FCEBEA', '#B4332B', '']
     ];
-    const sections = SECS.map(x => {
+    const sections = SECS.filter(x => x[0] === (st.tab || 'act')).map(x => {
       const list = sorted.filter(s => s.status === x[0]);
       const rows = list.filter(match).map(row);
       return {
@@ -204,18 +200,13 @@ class Component extends DCLogic {
       };
     });
     const cnt = k => all.filter(s => s.status === k).length;
-    const stats = [['재원', cnt('act'), '#007E82', '#sec-act'], ['휴원', cnt('rest'), '#9A5B00', '#sec-rest'], ['퇴원', cnt('out'), '#B4332B', '#sec-out']].map(s => ({
-      label: s[0], n: s[1], href: s[3],
-      style: 'display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 76px; padding: 8px 14px; border-radius: 12px; border: 1px solid #E8ECEA; background: #FAFBFA; text-decoration: none',
-      numStyle: 'font-size: 22px; font-weight: 800; color: ' + s[2]
-    }));
-    const partFilters = ['전체'].concat(PORDER).map(p => {
-      const on = st.part === p, c = PART[p];
+    const stats = [['act', '재원', '#00A6AB', '#E6F6F6', '#007E82'], ['rest', '휴원', '#E0A23B', '#FFF4E0', '#9A5B00'], ['out', '퇴원', '#D9746C', '#FCEBEA', '#B4332B']].map(x => {
+      const on = (st.tab || 'act') === x[0];
       return {
-        label: p, n: p === '전체' ? cnt('act') : all.filter(s => s.status === 'act' && s.part === p).length, on: on ? 'true' : 'false',
-        pick: () => this.setState({ part: p }),
-        style: 'display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; cursor: pointer; ' +
-          (on ? (c ? 'background: ' + c[0] + '; color: ' + c[1] + '; border: 1px solid ' + c[1] + '55; font-weight: 700' : 'background: #17201C; color: #FFFFFF; border: 1px solid #17201C; font-weight: 700') : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500')
+        label: x[1], on: on ? 'true' : 'false',
+        pick: () => this.setState({ tab: x[0] }),
+        style: 'display: inline-flex; align-items: center; justify-content: center; min-width: 92px; height: 48px; padding: 0 18px; border-radius: 14px; font-family: inherit; font-size: 20px; cursor: pointer; ' +
+          (on ? 'background: ' + x[3] + '; color: ' + x[4] + '; border: 2px solid ' + x[2] + '; font-weight: 800' : 'background: #FFFFFF; color: #5E6873; border: 1px solid #E1E6E3; font-weight: 600')
       };
     });
     const tabs = [['수강생대장', cnt('act') + '명', 'Students.dc.html'], ['출석부', '', 'Main.dc.html'], ['수입·지출', '', '#'], ['통계', '', '#'], ['직원명부', '', '#']].map(t => ({
@@ -224,7 +215,7 @@ class Component extends DCLogic {
         (t[0] === '수강생대장' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));
     return {
-      q: st.q, tabs: tabs, stats: stats, partFilters: partFilters, sections: sections,
+      q: st.q, tabs: tabs, stats: stats, sections: sections,
       onSearch: e => this.setState({ q: e.target.value }),
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
       gridRow: COLS,
