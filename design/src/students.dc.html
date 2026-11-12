@@ -54,7 +54,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
           <button type="button" onClick="{{flt.toggle}}" aria-expanded="{{flt.openTxt}}" aria-haspopup="dialog" style="{{flt.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{flt.hasActive}}" hint-placeholder-val="{{ false }}"><span style="{{flt.badge}}">{{flt.count}}</span></sc-if></button>
           <sc-if value="{{flt.open}}" hint-placeholder-val="{{ false }}">
             <div onMouseDown="{{flt.close}}" style="position: fixed; inset: 0; z-index: 30"></div>
-            <div role="dialog" aria-label="필터" style="position: absolute; right: 0; top: calc(100% + 8px); z-index: 31; width: 600px; box-sizing: border-box; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 18px 48px rgba(23, 32, 28, 0.18)">
+            <div role="dialog" aria-label="필터" style="position: absolute; right: 0; top: calc(100% + 8px); z-index: 31; width: 600px; max-width: calc(100vw - 48px); box-sizing: border-box; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 18px 48px rgba(23, 32, 28, 0.18)">
               <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid #EEF1F0">
                 <span style="font-size: 16px; font-weight: 800">필터</span>
                 <span style="font-size: 12px; color: #8A949E">{{flt.summary}}</span>
@@ -71,6 +71,12 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
                   </div>
                 </div>
               </sc-for>
+              <sc-if value="{{flt.none}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 18px 0 8px; font-size: 14px; color: #5E6873">
+                  <span>아직 고른 필터 항목이 없습니다.</span>
+                  <button type="button" onClick="{{flt.openCfg}}" style="height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid #A9DCDE; background: #F2FBFB; color: #007E82; font-size: 14px; font-weight: 700; cursor: pointer">필터 항목 고르기</button>
+                </div>
+              </sc-if>
             </div>
           </sc-if>
         </div>
@@ -120,13 +126,17 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.12.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.13.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
-    <div role="dialog" aria-label="표시할 항목" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
+    <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
       <div style="display: flex; align-items: center; gap: 14px; padding: 18px 26px; background: #FFFFFF; border-bottom: 1px solid #E8ECEA">
         <span style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #EEF1F0; color: #3A4450; display: inline-flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></span>
-        <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em">표시할 항목</span>
+        <div role="tablist" aria-label="설정 종류" style="display: inline-flex; padding: 4px; border-radius: 14px; background: #EEF1F0; gap: 4px">
+          <sc-for list="{{colsCfg.tabs}}" as="t" hint-placeholder-count="2">
+            <button type="button" role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button>
+          </sc-for>
+        </div>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{colsCfg.reset}}" style="height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; cursor: pointer">기본값으로</button>
         <button type="button" onClick="{{colsCfg.close}}" aria-label="닫기" style="width: 38px; height: 38px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 18px; line-height: 1">×</button>
@@ -145,7 +155,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
           </sc-for>
         </div>
         <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
-          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 800">보이는 순서</span><span style="font-size: 12px; color: #8A949E">{{colsCfg.count}}개 · 끌어서 옮기기</span></span>
+          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 800">{{colsCfg.orderTitle}}</span><span style="font-size: 12px; color: #8A949E">{{colsCfg.count}}개 · 끌어서 옮기기</span></span>
           <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
             <sc-for list="{{colsCfg.order}}" as="o" hint-placeholder-count="12">
               <li draggable="true" onDragStart="{{o.dragStart}}" onDragOver="{{o.dragOver}}" onDrop="{{o.drop}}" style="{{o.style}}">
@@ -157,6 +167,9 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
               </li>
             </sc-for>
           </ol>
+          <sc-if value="{{colsCfg.emptyOrder}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 20px 0; text-align: center; font-size: 13px; color: #8A949E">왼쪽에서 항목을 체크하세요.</div>
+          </sc-if>
         </div>
       </div>
     </div>
@@ -262,7 +275,9 @@ class Component extends DCLogic {
     try { const v = JSON.parse(localStorage.getItem('students.cols') || 'null'); if (Array.isArray(v)) cols = v; } catch (e) {}
     let widths = {};
     try { const w = JSON.parse(localStorage.getItem('students.widths') || 'null'); if (w && typeof w === 'object') widths = w; } catch (e) {}
-    this.state = { widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+    let fltList = [];
+    try { const v = JSON.parse(localStorage.getItem('students.filters') || 'null'); if (Array.isArray(v)) fltList = v; } catch (e) {}
+    this.state = { fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
   colCatalog() {
     return [
@@ -409,16 +424,22 @@ class Component extends DCLogic {
     const TEACHERS = ['김도윤', '이하늘', '박서준', '최민재', '정우진'];
     // 필터: 같은 항목 안에서는 하나라도 맞으면, 항목끼리는 모두 맞아야 보인다
     const F = st.filt || {};
-    const FG = [
-      ['cls', '취미 / 전문', [['hobby', '취미반'], ['pro', '전문반']], s => s.cls],
-      ['part', '파트', PORDER.map(p => [p, p]), s => s.part],
-      ['teacher', '강사', TEACHERS.map(t => [t, t]), s => s.teacher],
-      ['day', '요일', DORDER.map(d => [d, d === '변동' ? 'R' : d[0]]), s => s.days],
-      ['gender', '성별', [['남', '남'], ['여', '여']], s => s.gender],
-      ['age', '연령', [['학생', '학생'], ['성인', '성인']], s => s.age],
-      ['stick', '드럼스틱 보관함', [['y', '사용'], ['n', '사용 안 함']], s => s.stick ? 'y' : 'n'],
-      ['cash', '현금영수증', [['y', '발급'], ['n', '발급 안 함']], s => s.cashOn ? 'y' : 'n']
-    ];
+    // 필터 항목은 설정에서 고른 것만 (기본은 없음)
+    const uniq = f0 => all.map(f0).filter((v, i, a) => a.indexOf(v) === i).sort((x, y) => x - y);
+    const FCAT = {
+      cls: ['반 구분', [['hobby', '취미반'], ['pro', '전문반']], s => s.cls],
+      age: ['연령', [['학생', '학생'], ['성인', '성인']], s => s.age],
+      gender: ['성별', [['남', '남'], ['여', '여']], s => s.gender],
+      part: ['파트', PORDER.map(p => [p, p]), s => s.part],
+      teacher: ['강사', TEACHERS.map(t => [t, t]), s => s.teacher],
+      day: ['레슨요일', DORDER.map(d => [d, d === '변동' ? 'R' : d[0]]), s => s.days],
+      stick: ['드럼스틱 보관함', [['y', '사용'], ['n', '사용 안 함']], s => s.stick ? 'y' : 'n'],
+      count: ['수강 횟수', uniq(s => s.count).map(v => [v, v + '회']), s => s.count],
+      dur: ['수강 시간', uniq(s => s.dur).map(v => [v, v + '분']), s => s.dur],
+      cash: ['현금영수증', [['y', '발급'], ['n', '발급 안 함']], s => s.cashOn ? 'y' : 'n']
+    };
+    const fltKeys = (st.fltList || []).filter(k => FCAT[k]);
+    const FG = fltKeys.map(k => [k].concat(FCAT[k]));
     const pass = s => FG.every(g => {
       const sel = F[g[0]] || [];
       if (!sel.length) return true;
@@ -437,6 +458,8 @@ class Component extends DCLogic {
       summary: fCount ? fCount + '개 항목 적용 중' : '',
       btnStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (fCount || st.fltOpen ? 'background: #E6F6F6; color: #007E82; border: 1.5px solid #00A6AB' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF'),
       badge: 'display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 800',
+      none: FG.length === 0,
+      openCfg: () => this.setState({ fltOpen: false, colsOpen: true, cfgTab: 'flt' }),
       groups: FG.map(g => ({ label: g[1], opts: g[2].map(o => { const on = (F[g[0]] || []).indexOf(o[0]) >= 0; return { label: o[1], on: on ? 'true' : 'false', pick: () => setF(g[0], o[0]), style: pillS(on) }; }) }))
     };
     const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf(a.days[0]) - DORDER.indexOf(b.days[0]) || a.name.localeCompare(b.name, 'ko'));
@@ -515,32 +538,49 @@ class Component extends DCLogic {
       countStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 800; color: ' + curSec[5]
     };
     // 표시할 항목 설정 창
-    const GROUPS = [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']]];
-    const saveCols = list => { try { localStorage.setItem('students.cols', JSON.stringify(list)); } catch (e) {} this.setState({ cols: list }); };
-    const move = (k, to) => { const l = visible.filter(x => x !== k); l.splice(Math.max(0, Math.min(to, l.length)), 0, k); saveCols(l); };
+    // 설정 창: 표시할 항목 / 필터 항목 두 탭. 둘 다 체크해서 고르고 순서를 바꾼다
+    const isFlt = st.cfgTab === 'flt';
+    const GROUPS = isFlt
+      ? [['기본 정보', ['cls', 'age', 'gender']], ['수업 정보', ['part', 'teacher', 'day', 'stick']], ['수강료', ['count', 'dur']], ['현금영수증', ['cash']]]
+      : [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']]];
+    const list = isFlt ? fltKeys : visible;
+    const labelOf = k => isFlt ? FCAT[k][0] : colDef(k).label;
+    const saveList = l => {
+      const key = isFlt ? 'students.filters' : 'students.cols';
+      try { localStorage.setItem(key, JSON.stringify(l)); } catch (e) {}
+      if (isFlt) { const nf = {}; l.forEach(k => { if (F[k]) nf[k] = F[k]; }); this.setState({ fltList: l, filt: nf }); } else this.setState({ cols: l });
+    };
+    const move = (k, to) => { const l = list.filter(x => x !== k); l.splice(Math.max(0, Math.min(to, l.length)), 0, k); saveList(l); };
     const boxS = on => 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD');
+    const tabS = on => 'height: 40px; padding: 0 18px; border: none; border-radius: 10px; font-family: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #007E82; font-weight: 800; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)' : 'background: transparent; color: #5E6873; font-weight: 500');
     const colsCfg = {
       isOpen: !!st.colsOpen,
-      open: () => this.setState({ colsOpen: true }),
+      open: () => this.setState({ colsOpen: true, cfgTab: 'cols' }),
       close: () => this.setState({ colsOpen: false }),
       key: e => { if (e.key === 'Escape') this.setState({ colsOpen: false }); },
-      reset: () => { try { localStorage.removeItem('students.cols'); localStorage.removeItem('students.widths'); } catch (e) {} this.setState({ cols: null, widths: {} }); },
-      count: visible.length,
+      tabs: [['cols', '표시할 항목'], ['flt', '필터 항목']].map(t => ({ label: t[1], on: (st.cfgTab || 'cols') === t[0] ? 'true' : 'false', pick: () => this.setState({ cfgTab: t[0] }), style: tabS((st.cfgTab || 'cols') === t[0]) })),
+      reset: () => {
+        try { if (isFlt) localStorage.removeItem('students.filters'); else { localStorage.removeItem('students.cols'); localStorage.removeItem('students.widths'); } } catch (e) {}
+        this.setState(isFlt ? { fltList: [], filt: {} } : { cols: null, widths: {} });
+      },
+      count: list.length,
+      orderTitle: isFlt ? '필터에 보이는 순서' : '보이는 순서',
+      emptyOrder: list.length === 0,
       cats: GROUPS.map(g => ({ label: g[0], items: g[1].map(k => {
-        const on = visible.indexOf(k) >= 0, lock = k === 'name';
-        return { label: colDef(k).label + (lock ? ' (항상)' : ''), on: on ? 'true' : 'false',
-          toggle: () => { if (lock) return; saveCols(on ? visible.filter(x => x !== k) : visible.concat([k])); },
+        const on = list.indexOf(k) >= 0, lock = !isFlt && k === 'name';
+        return { label: labelOf(k) + (lock ? ' (항상)' : ''), on: on ? 'true' : 'false',
+          toggle: () => { if (lock) return; saveList(on ? list.filter(x => x !== k) : list.concat([k])); },
           box: boxS(on),
           style: 'display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 12px; border-radius: 11px; font-family: inherit; font-size: 14px; text-align: left; white-space: nowrap; cursor: ' + (lock ? 'default' : 'pointer') + '; ' + (on ? 'background: #F2FBFB; color: #17201C; border: 1px solid #A9DCDE; font-weight: 700' : 'background: #FAFBFA; color: #5E6873; border: 1px solid #E1E6E3; font-weight: 500') };
       }) })),
-      order: visible.map((k, i) => ({
-        n: i + 1, label: colDef(k).label,
-        first: i === 0 ? 'true' : 'false', last: i === visible.length - 1 ? 'true' : 'false',
-        upLabel: colDef(k).label + ' 위로', downLabel: colDef(k).label + ' 아래로',
+      order: list.map((k, i) => ({
+        n: i + 1, label: labelOf(k),
+        first: i === 0 ? 'true' : 'false', last: i === list.length - 1 ? 'true' : 'false',
+        upLabel: labelOf(k) + ' 위로', downLabel: labelOf(k) + ' 아래로',
         up: () => move(k, i - 1), down: () => move(k, i + 1),
         dragStart: e => { this._dragCol = k; try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k); } catch (er) {} },
         dragOver: e => { e.preventDefault(); },
-        drop: e => { e.preventDefault(); const from = this._dragCol; this._dragCol = null; if (!from || from === k) return; const l = visible.filter(x => x !== from); l.splice(l.indexOf(k) + (visible.indexOf(from) < i ? 1 : 0), 0, from); saveCols(l); },
+        drop: e => { e.preventDefault(); const from = this._dragCol; this._dragCol = null; if (!from || from === k || list.indexOf(from) < 0) return; const l = list.filter(x => x !== from); l.splice(l.indexOf(k) + (list.indexOf(from) < i ? 1 : 0), 0, from); saveList(l); },
         style: 'display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 8px 0 10px; box-sizing: border-box; border-radius: 11px; background: #FAFBFA; border: 1px solid #E1E6E3; cursor: grab',
         arrow: 'width: 30px; height: 30px; flex: none; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 10px; cursor: pointer'
       }))
