@@ -127,7 +127,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.15.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.15.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -431,6 +431,7 @@ class Component extends DCLogic {
     const tMin = t => { const p = t.split(':'); const h = +p[0]; return (h < 9 ? h + 12 : h) * 60 + +p[1]; };
     const tSlots = all.reduce((a, s) => a.concat(tOf(s)), []).filter((v, i, a) => a.indexOf(v) === i).sort((x, y) => tMin(x) - tMin(y));
     const joinY = s => { const m = /^(\d{2})\./.exec(s.join || ''); return m ? 2000 + +m[1] : 0; };
+    const birthY = s => { const m = /^(\d{4})/.exec(s.birth || ''); return m ? +m[1] : 0; };
     const uniq = f0 => all.map(f0).filter((v, i, a) => a.indexOf(v) === i).sort((x, y) => x - y);
     const FCAT = {
       cls: ['반 구분', [['hobby', '취미반'], ['pro', '전문반']], s => s.cls],
@@ -444,6 +445,7 @@ class Component extends DCLogic {
       dur: ['수강 시간', uniq(s => s.dur).map(v => [v, v + '분']), s => s.dur],
       cash: ['현금영수증', [['y', '발급'], ['n', '발급 안 함']], s => s.cashOn ? 'y' : 'n'],
       joinY: ['입원 연도', uniq(s => joinY(s)).reverse().map(v => [v, v + '년']), s => joinY(s)],
+      birthY: ['태어난 해', uniq(s => birthY(s)).filter(Boolean).reverse().map(v => [v, v + '년']).concat(all.some(s => !birthY(s)) ? [[0, '모름']] : []), s => birthY(s)],
       cashType: ['현금영수증 용도', [['person', '개인 (소득공제)'], ['biz', '사업자 (지출증빙)'], ['none', '발급 안 함']], s => !s.cashOn ? 'none' : ((s.extra || {}).cashType || 'person')],
       unit: ['회당 수업료', uniq(s => s.unit).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.unit],
       total: ['수강료 합계', uniq(s => s.total).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.total],
@@ -553,7 +555,7 @@ class Component extends DCLogic {
     // 설정 창: 표시할 항목 / 필터 항목 두 탭. 둘 다 체크해서 고르고 순서를 바꾼다
     const isFlt = st.cfgTab === 'flt';
     const GROUPS = isFlt
-      ? [['기본 정보', ['cls', 'age', 'gender', 'joinY']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash', 'cashType']]]
+      ? [['기본 정보', ['cls', 'age', 'gender', 'birthY', 'joinY']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash', 'cashType']]]
       : [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']]];
     const list = isFlt ? fltKeys : visible;
     const labelOf = k => isFlt ? FCAT[k][0] : colDef(k).label;
