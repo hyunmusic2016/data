@@ -9,6 +9,7 @@ body{margin:0;background:#F3F5F4}
 a{color:#1F7A5A}a:hover{color:#165C43}
 button{font-family:inherit}
 button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+.pbtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 var(--sh),0 8px 16px rgba(23,32,28,.08);transition:transform .07s ease,box-shadow .07s ease;-webkit-tap-highlight-color:transparent}.pbtn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 1px 0 var(--sh),0 2px 4px rgba(23,32,28,.08)}
 </style>
 </head>
 <body>
@@ -119,7 +120,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.6</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -138,17 +139,15 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <sc-if value="{{pop.isMain}}" hint-placeholder-val="{{ true }}">
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
           <sc-for list="{{pop.btns}}" as="b" hint-placeholder-count="4">
-            <button type="button" onClick="{{b.pick}}" style="{{b.style}}">
-              <span style="{{b.tile}}"><span style="{{b.chip}}">{{b.mark}}</span></span>
-              <span style="font-size: 15px; font-weight: 700">{{b.label}}</span>
+            <button type="button" class="pbtn" onClick="{{b.pick}}" style="{{b.style}}">
+              <span style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em">{{b.label}}</span>
               <span style="{{b.keyStyle}}">{{b.key}}</span>
               <span style="{{b.curStyle}}">현재</span>
             </button>
           </sc-for>
         </div>
-        <button type="button" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
-          <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-weight: 800; box-shadow: 0 1px 2px rgba(0, 126, 130, 0.15)">₩</span>
-          <span style="font-size: 15px; font-weight: 700">결제</span>
+        <button type="button" class="pbtn" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
+          <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">결제</span>
           <span style="{{pop.payKey}}">0</span>
         </button>
         <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
@@ -431,7 +430,7 @@ class Component extends DCLogic {
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
     const s = this.state.sel;
     if (!s) return;
-    const SHORT = { ' ': '수', '1': '수', '2': '결', '4': '연', '0': 'V' };
+    const SHORT = { '1': '수', '2': '결', '4': '연', '0': 'V' };
     if (e.key in SHORT) { e.preventDefault(); this.applyMark(SHORT[e.key]); return; }
     if (e.key === '3') { e.preventDefault(); this.openPop('mk'); return; }
     if (e.key === 'Enter') { e.preventDefault(); this.openPop('main'); return; }
@@ -624,15 +623,15 @@ class Component extends DCLogic {
     const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
     const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center';
     const popBtns = [
-      ['수', '출석', '1', circ(1, false), '1', '#EEF7F2', '#1F7A5A', '#D2EADB'],
-      ['결', '결석', '결', MARK['결'], '2', '#FEF1EC', '#C2410C', '#F8D7C9'],
-      ['보', '보강', '보', MARK['보'], '3', '#EEF3FD', '#1E4FA8', '#D3DFF7'],
-      ['연', '연기', '연', MARK['연'], '4', '#F4F6F5', '#3A4450', '#DDE2DF']
+      ['수', '출석', '1', circ(1, false), '1', '#EEF7F2', '#1F7A5A', '#D2EADB', '#B9DDC7'],
+      ['결', '결석', '결', MARK['결'], '2', '#FEF1EC', '#C2410C', '#F8D7C9', '#F0C2AE'],
+      ['보', '보강', '보', MARK['보'], '3', '#EEF3FD', '#1E4FA8', '#D3DFF7', '#BCCDF0'],
+      ['연', '연기', '연', MARK['연'], '4', '#F4F6F5', '#3A4450', '#DDE2DF', '#CDD3D0']
     ].map(b => {
       const on = curV === b[0];
       return {
         label: b[1], mark: b[2], chip: big(b[3]), key: b[4],
-        style: 'position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 118px; border-radius: 18px; border: ' + (on ? '2px solid ' + b[6] : '1px solid ' + b[7]) + '; background: ' + b[5] + '; color: ' + b[6] + '; cursor: pointer; font-family: inherit; padding: 0',
+        style: '--sh: ' + b[8] + '; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 110px; border-radius: 18px; border: ' + (on ? '2px solid ' + b[6] : '1px solid ' + b[7]) + '; background: linear-gradient(180deg, #FFFFFF 0%, ' + b[5] + ' 55%); color: ' + b[6] + '; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 4px',
         tile: 'width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.08)',
         keyStyle: keycap(b[6], b[7]),
         curStyle: on ? 'position: absolute; top: 9px; left: 10px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: ' + b[6] + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
@@ -649,7 +648,7 @@ class Component extends DCLogic {
       sub: !first ? '' : popCells.length === 1 ? MON + '월 ' + first.d + '일 ' + WD[(first.d - 1 + FIRST) % 7] + '요일' + (firstStu ? ' · ' + (firstStu.rowBg ? '전문반' : '취미반') : '') : '같은 표시가 한 번에 들어갑니다',
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
-      payStyle: 'position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; height: 60px; border-radius: 18px; border: ' + (curV === 'V' ? '2px solid #007E82' : '1px solid #C7EBEC') + '; background: #E6F6F6; color: #007E82; font-family: inherit; cursor: pointer',
+      payStyle: '--sh: #A9DCDE; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curV === 'V' ? '2px solid #007E82' : '1px solid #C7EBEC') + '; background: linear-gradient(180deg, #FFFFFF 0%, #E6F6F6 55%); color: #007E82; font-family: inherit; cursor: pointer; margin-bottom: 4px',
       payKey: keycap('#007E82', '#C7EBEC').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
       pay: () => this.applyMark('V'),
@@ -658,7 +657,7 @@ class Component extends DCLogic {
       key: e => {
         if (e.key === 'Escape') { e.preventDefault(); this.closePop(); return; }
         if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Enter') { e.preventDefault(); this.saveMakeup(); } return; }
-        const SH = { '1': '수', ' ': '수', '2': '결', '4': '연', '0': 'V' };
+        const SH = { '1': '수', '2': '결', '4': '연', '0': 'V' };
         if (e.key in SH) { e.preventDefault(); this.applyMark(SH[e.key]); }
         else if (e.key === '3') { e.preventDefault(); this.openPop('mk'); }
       },
