@@ -120,7 +120,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.12.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.12.2</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="표시할 항목" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -445,7 +445,7 @@ class Component extends DCLogic {
     const visible = this.visibleCols();
     const colDef = k => CAT.find(c => c.k === k);
     const tabNow = st.tab || 'act';
-    const tabExtra = tabNow === 'rest' ? ['rest', 'memo'] : tabNow === 'out' ? ['leave', 'memo'] : [];
+    const tabExtra = [];
     const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
     const Wd = c => (st.widths || {})[c.k] || parseInt(c.w, 10);
     const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr); align-items: center';
