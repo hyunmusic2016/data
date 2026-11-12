@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.2</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -622,36 +622,36 @@ class Component extends DCLogic {
   baseRows() {
     const P = '#DCD3EE';
     return [
-      { id: 1, g: '월', name: '김재윤', start: 1, since: '10/27', tickets: 12 },
-      { id: 2, g: '월', name: '손하율', start: 3, since: '10/28', rowBg: '#F9DADC' },
-      { id: 3, g: '월', name: '정다온$', start: 7, since: '11/23', nameBg: P },
-      { id: 4, g: '월', name: '변예준', start: 3, since: '11/2' },
-      { id: 5, g: '화', name: '마서윤', start: 2, unpaid: true },
-      { id: 6, g: '화', name: '이예린', start: 3, since: '11/10' },
-      { id: 7, g: '화', name: '김소윤', start: 3, since: '11/11' },
-      { id: 29, sid: 'S29', g: '화', name: '한지우', start: 1, since: '10/20', time: '16:00' },
-      { id: 8, g: '수', name: '윤가람', start: 3, since: '11/11' },
-      { id: 9, g: '수', name: '김경민', start: 4, since: '11/4' },
-      { id: 10, g: '수', name: '강도윤', start: 3, since: '10/28' },
-      { id: 11, g: '수', name: '허준서', start: 1, since: '' },
-      { id: 12, g: '목', name: '오태현', start: 3, since: '' },
-      { id: 13, g: '목', name: '이은서', start: 1, unpaid: true },
-      { id: 14, g: '목', name: '천가윤', start: 3, since: '10/29' },
-      { id: 15, g: '목', name: '박상민', start: 3, since: '' },
-      { id: 16, g: '금', name: 'D)강연서', start: 3, unpaid: true },
-      { id: 17, g: '금', name: '서홍빈', start: 0, unpaid: true },
-      { id: 18, g: '금', name: '이소민', start: 1, since: '', nameBg: P },
-      { id: 19, g: '금', name: '이서준', start: 4, since: '10/30' },
-      { id: 30, sid: 'S29', g: '금', name: '한지우', start: 1, since: '10/20', time: '18:30' },
-      { id: 20, g: '토', name: '전태윤', start: 3, since: '' },
-      { id: 21, g: '토', name: '김재희', start: 1, since: '' },
-      { id: 22, g: 'R', name: '장현우', start: 1, since: '' },
-      { id: 23, g: 'R', name: '이시윤', start: 2, unpaid: true },
-      { id: 24, g: 'R', name: '방예준$', start: 3, since: '11/10' },
-      { id: 25, g: 'R', name: '조민아', start: 1, since: '' },
-      { id: 26, g: 'R', name: '강준호', start: 3, since: '' },
-      { id: 27, g: '퇴휴', name: '임서윤', start: 0, sumOverride: '결3', status: '퇴원', since: '입금완료' },
-      { id: 28, g: '퇴휴', name: 'U)권은서', start: 1, status: '휴원', unpaid: true },
+      { id: 1, g: '월', name: '김재윤', start: 0 },
+      { id: 2, g: '월', name: '손하율', start: 0, rowBg: '#F9DADC' },
+      { id: 3, g: '월', name: '정다온$', start: 0, nameBg: P },
+      { id: 4, g: '월', name: '변예준', start: 0 },
+      { id: 5, g: '화', name: '마서윤', start: 0 },
+      { id: 6, g: '화', name: '이예린', start: 0 },
+      { id: 7, g: '화', name: '김소윤', start: 0 },
+      { id: 29, sid: 'S29', g: '화', name: '한지우', start: 0, time: '16:00' },
+      { id: 8, g: '수', name: '윤가람', start: 0 },
+      { id: 9, g: '수', name: '김경민', start: 0 },
+      { id: 10, g: '수', name: '강도윤', start: 0 },
+      { id: 11, g: '수', name: '허준서', start: 0 },
+      { id: 12, g: '목', name: '오태현', start: 0 },
+      { id: 13, g: '목', name: '이은서', start: 0 },
+      { id: 14, g: '목', name: '천가윤', start: 0 },
+      { id: 15, g: '목', name: '박상민', start: 0 },
+      { id: 16, g: '금', name: 'D)강연서', start: 0 },
+      { id: 17, g: '금', name: '서홍빈', start: 0 },
+      { id: 18, g: '금', name: '이소민', start: 0, nameBg: P },
+      { id: 19, g: '금', name: '이서준', start: 0 },
+      { id: 30, sid: 'S29', g: '금', name: '한지우', start: 0, time: '18:30' },
+      { id: 20, g: '토', name: '전태윤', start: 0 },
+      { id: 21, g: '토', name: '김재희', start: 0 },
+      { id: 22, g: 'R', name: '장현우', start: 0 },
+      { id: 23, g: 'R', name: '이시윤', start: 0 },
+      { id: 24, g: 'R', name: '방예준$', start: 0 },
+      { id: 25, g: 'R', name: '조민아', start: 0 },
+      { id: 26, g: 'R', name: '강준호', start: 0 },
+      { id: 27, g: '퇴휴', name: '임서윤', start: 0, status: '퇴원' },
+      { id: 28, g: '퇴휴', name: 'U)권은서', start: 0, status: '휴원' },
       { id: 31, g: '목', name: '박하늘', start: 0, newReg: true, time: '16:30' }
     ].map(s => (s.time !== undefined || s.g === 'R' || s.g === '퇴휴' || s.id % 5 === 0) ? s : Object.assign({}, s, { time: ['14:00', '15:30', '16:00', '17:00', '18:30', '19:00'][s.id % 6] }));
   }
