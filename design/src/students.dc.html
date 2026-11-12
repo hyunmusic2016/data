@@ -105,6 +105,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
               <span style="{{h.style}}">{{h.label}}<span class="colgrip" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></span>
             </sc-for>
             <span></span>
+            <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}"><span style="{{actHead}}">관리</span></sc-if>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
             <div class="srow" style="{{gridRow}}">
@@ -112,6 +113,13 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
                 <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
               <span style="{{r.fill}}"></span>
+              <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}">
+                <span style="{{r.actCell}}">
+                  <button type="button" onClick="{{r.edit}}" aria-label="{{r.editLabel}}" style="{{actBtn.edit}}">수정</button>
+                  <button type="button" onClick="{{r.rest}}" aria-label="{{r.restLabel}}" style="{{actBtn.rest}}">휴원</button>
+                  <button type="button" onClick="{{r.out}}" aria-label="{{r.outLabel}}" style="{{actBtn.out}}">퇴원</button>
+                </span>
+              </sc-if>
             </div>
           </sc-for>
           <sc-if value="{{cur.empty}}" hint-placeholder-val="{{ false }}">
@@ -133,10 +141,10 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.16.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.17.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
-    <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
+    <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
       <div style="display: flex; align-items: center; gap: 14px; padding: 18px 26px; background: #FFFFFF; border-bottom: 1px solid #E8ECEA">
         <span style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #EEF1F0; color: #3A4450; display: inline-flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></span>
         <div role="tablist" aria-label="설정 종류" style="display: inline-flex; padding: 4px; border-radius: 14px; background: #EEF1F0; gap: 4px">
@@ -184,11 +192,11 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
 
   <sc-if value="{{reg.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{reg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
-    <div role="dialog" aria-label="원생 등록" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 1120px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
+    <div role="dialog" aria-label="{{reg.title}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 1120px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
       <div style="display: flex; align-items: center; gap: 16px; padding: 20px 28px; background: #FFFFFF; border-bottom: 1px solid #E8ECEA">
         <span style="width: 44px; height: 44px; flex: none; border-radius: 14px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 6px 16px rgba(0, 166, 171, 0.3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 19v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M8.5 10a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7M19 8v6M22 11h-6"></path></svg></span>
-        <span style="font-size: 22px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">원생 등록</span>
-        <label style="display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: 52px; padding: 0 10px; margin-left: 10px; border-radius: 12px; background: #F3F5F4; border: 1px dashed #CDD4D0; font-size: 11px; color: #8A949E; cursor: text">등록번호<input id="r_id" class="idInp" type="text" inputmode="numeric" maxlength="6" defaultValue="{{reg.idTxt}}" onInput="{{reg.set.id}}" style="width: 72px; height: 26px; box-sizing: border-box; border: 1px solid transparent; border-radius: 7px; background: transparent; text-align: center; font-family: inherit; font-size: 18px; font-weight: 800; color: #17201C; letter-spacing: 0.02em; outline: none; cursor: text"></label>
+        <span style="font-size: 22px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">{{reg.title}}</span>
+        <label style="display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; height: 52px; padding: 0 10px; margin-left: 10px; border-radius: 12px; background: #F3F5F4; border: 1px dashed #CDD4D0; font-size: 11px; color: #8A949E; cursor: text">등록번호<input id="r_id" class="idInp" type="text" inputmode="numeric" maxlength="6" defaultValue="{{reg.idTxt}}" disabled="{{reg.idLock}}" onInput="{{reg.set.id}}" style="width: 72px; height: 26px; box-sizing: border-box; border: 1px solid transparent; border-radius: 7px; background: transparent; text-align: center; font-family: inherit; font-size: 18px; font-weight: 800; color: #17201C; letter-spacing: 0.02em; outline: none; cursor: text"></label>
         <span style="flex: 1"></span>
         <div role="radiogroup" aria-label="반 구분" style="display: inline-flex; padding: 4px; border-radius: 14px; background: #EEF1F0; gap: 4px">
           <sc-for list="{{reg.classes}}" as="o" hint-placeholder-count="2">
@@ -265,7 +273,27 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <span style="font-size: 14px; font-weight: 600; color: #C2410C">{{reg.err}}</span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{reg.close}}" style="height: 48px; padding: 0 26px; border-radius: 14px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{reg.save}}" style="height: 48px; padding: 0 34px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 166, 171, 0.28)">등록하기</button>
+        <button type="button" onClick="{{reg.save}}" style="height: 48px; padding: 0 34px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 166, 171, 0.28)">{{reg.saveLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{sd.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{sd.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.28)"></div>
+    <div role="dialog" aria-label="{{sd.title}}" onKeyDown="{{sd.key}}" tabIndex="-1" id="statusDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 420px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="{{sd.chip}}">{{sd.kindLabel}}</span>
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{sd.title}}</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{sd.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="color: #17201C">{{sd.name}}</b> 원생 (등록번호 {{sd.id}})을 {{sd.kindLabel}} 처리합니다.</span>
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{sd.dateLabel}}<input id="sd_date" type="date" defaultValue="{{sd.date}}" onChange="{{sd.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <sc-if value="{{sd.isRest}}" hint-placeholder-val="{{ true }}">
+        <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">남은 수업<input id="sd_memo" type="text" defaultValue="{{sd.memo}}" onInput="{{sd.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      </sc-if>
+      <div style="display: flex; gap: 10px; margin-top: 2px">
+        <button type="button" onClick="{{sd.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{sd.go}}" style="{{sd.goStyle}}">{{sd.kindLabel}} 처리</button>
       </div>
     </div>
   </sc-if>
@@ -328,7 +356,7 @@ class Component extends DCLogic {
     try { const w = JSON.parse(localStorage.getItem('students.widths') || 'null'); if (w && typeof w === 'object') widths = w; } catch (e) {}
     let fltList = [];
     try { const v = JSON.parse(localStorage.getItem('students.filters') || 'null'); if (Array.isArray(v)) fltList = v; } catch (e) {}
-    this.state = { fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+    this.state = { changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
   // 원생 항목 목록 (한 곳에서만 정의). 새 항목을 여기에 넣으면 설정의 '표시할 항목'과 '필터 항목'에 자동으로 들어간다.
   //   g: 설정 창 묶음 (null이면 설정에 안 나옴), w: 열 폭, left: 왼쪽 정렬
@@ -391,7 +419,51 @@ class Component extends DCLogic {
     });
   }
   students() {
-    return this.baseStudents().concat(this.state.added || []);
+    // changes: 수정·휴원·퇴원으로 바뀐 내용 (등록번호별)
+    const ch = this.state.changes || {};
+    return this.baseStudents().concat(this.state.added || []).map(s => ch[s.id] ? Object.assign({}, s, ch[s.id]) : s);
+  }
+  patchStudent(id, patch) {
+    const ch = Object.assign({}, this.state.changes);
+    ch[id] = Object.assign({}, ch[id], patch);
+    return ch;
+  }
+  openEdit(s) {
+    // 표에 쓰는 값(enrich된 원생)으로 등록 창을 채운다
+    const ex = s.extra || {};
+    const days = (s.days || [s.day]).slice();
+    const times = {};
+    const segs = (s.timeTxt || '').split(' · ').filter(Boolean);
+    segs.forEach((seg, i) => {
+      const m = /(\d{1,2}):(\d{2})/.exec(seg); if (!m) return;
+      let d = days[i];
+      if (days.length > 1) { const lt = seg.trim().split(' ')[0]; d = days.find(x => (x === '변동' ? 'R' : x[0]) === lt) || d; }
+      if (d) times[d] = { h: m[1], m: m[2] };
+    });
+    const ymd = v => { const m = /^(\d{2,4})\.(\d{2})\.(\d{2})$/.exec(v || ''); return m ? (m[1].length === 2 ? '20' + m[1] : m[1]) + '-' + m[2] + '-' + m[3] : ''; };
+    const digits = v => String(v || '').replace(/[^0-9]/g, '');
+    this.setState({ reg: {
+      editId: s.id, cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
+      gender: s.gender || '', age: s.age, teacher: s.teacher, part: s.part, days: days[0] === '변동' && !s.extra ? ['변동'] : days, times: times, idVal: null,
+      stick: !!s.stick, join: ymd(s.join), cash: !!s.cashOn, cashType: ex.cashType || 'person', cashNo: ex.cashNo || '', err: '',
+      count: s.count, dur: s.dur, unit: s.unit, pay: s.pay, total: s.total
+    } });
+  }
+  openStatus(kind, s) {
+    const t = new Date();
+    this.setState({ stat: { kind: kind, id: s.id, name: s.name, date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    setTimeout(() => { const d = document.getElementById('statusDlg'); if (d) d.focus(); }, 30);
+  }
+  applyStatus() {
+    const S = this.state.stat;
+    if (!S) return;
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(S.date || '');
+    const patch = S.kind === 'rest'
+      ? { status: 'rest', rest: (m ? (+m[2]) + '.' + (+m[3]) : '') + (S.memo.trim() ? ' (' + S.memo.trim() + ')' : '') }
+      : { status: 'out', leave: m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : '' };
+    this.setState({ changes: this.patchStudent(S.id, patch), stat: null, toast: S.name + ' 원생을 ' + (S.kind === 'rest' ? '휴원' : '퇴원') + ' 처리했습니다' });
+    clearTimeout(this._tt);
+    this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
   baseStudents() {
     const T = { '드럼': '박서준', '보컬': '이하늘', '기타': '김도윤', '베이스': '최민재', '피아노': '정우진', '우쿨렐레': '김도윤' };
@@ -505,6 +577,13 @@ class Component extends DCLogic {
     const jm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(r.join || '');
     const d = new Date();
     const join = jm ? jm[1].slice(2) + '.' + jm[2] + '.' + jm[3] : String(d.getFullYear()).slice(2) + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+    if (r.editId != null) {
+      const editPatch = { part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, flags: Object.assign({}, (this.students().find(x => x.id === r.editId) || {}).flags, { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }), extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
+      this.setState({ changes: this.patchStudent(r.editId, editPatch), reg: null, toast: editPatch.name + ' 원생 정보를 수정했습니다' });
+      clearTimeout(this._tt);
+      this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
+      return;
+    }
     const rec = { id: manual || this.nextId(), manualId: !!manual, part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, leave: '', memo: r.stick ? '스틱 보관함' : '', rest: '', status: 'act', flags: { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }, extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
     this.setState({ added: (this.state.added || []).concat([rec]), reg: null, tab: 'act', toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
     clearTimeout(this._tt);
@@ -587,7 +666,7 @@ class Component extends DCLogic {
       btnStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (fCount || st.fltOpen ? 'background: #E6F6F6; color: #007E82; border: 1.5px solid #00A6AB' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF'),
       badge: 'display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 800',
       none: FG.length === 0,
-      openCfg: () => this.setState({ fltOpen: false, colsOpen: true, cfgTab: 'flt' }),
+      openCfg: () => { this.setState({ fltOpen: false, colsOpen: true, cfgTab: 'flt' }); setTimeout(() => { const d = document.getElementById('cfgDlg'); if (d) d.focus(); }, 30); },
       groups: FG.map(g => ({ label: g[1], opts: g[2].map(o => { const on = (F[g[0]] || []).indexOf(o[0]) >= 0; return { label: o[1], on: on ? 'true' : 'false', pick: () => setF(g[0], o[0]), style: pillS(on) }; }) }))
     };
     const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf(a.days[0]) - DORDER.indexOf(b.days[0]) || a.name.localeCompare(b.name, 'ko'));
@@ -599,8 +678,9 @@ class Component extends DCLogic {
     const tabExtra = [];
     const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
     const Wd = c => (st.widths || {})[c.k] || parseInt(c.w, 10);
-    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr); align-items: center';
-    const minW = vis.reduce((n, c) => n + Wd(c), 0);
+    const showAct = (st.tab || 'act') === 'act';
+    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr)' + (showAct ? ' 186px' : '') + '; align-items: center';
+    const minW = vis.reduce((n, c) => n + Wd(c), 0) + (showAct ? 186 : 0);
     const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
     const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
     const headCols = vis.map(c => ({ label: c.label, style: hBase + 'position: relative; ' + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center'),
@@ -652,7 +732,10 @@ class Component extends DCLogic {
       const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
       // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
-      return { fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big };
+      return { fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big,
+        actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; right: 0',
+        edit: () => this.openEdit(s), rest: () => this.openStatus('rest', s), out: () => this.openStatus('out', s),
+        editLabel: s.name + ' 정보 수정', restLabel: s.name + ' 휴원 처리', outLabel: s.name + ' 퇴원 처리' };
     };
     const SECS = [
       ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
@@ -692,7 +775,7 @@ class Component extends DCLogic {
     const tabS = on => 'height: 40px; padding: 0 18px; border: none; border-radius: 10px; font-family: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #FFFFFF; color: #007E82; font-weight: 800; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)' : 'background: transparent; color: #5E6873; font-weight: 500');
     const colsCfg = {
       isOpen: !!st.colsOpen,
-      open: () => this.setState({ colsOpen: true, cfgTab: 'cols' }),
+      open: () => { this.setState({ colsOpen: true, cfgTab: 'cols' }); setTimeout(() => { const d = document.getElementById('cfgDlg'); if (d) d.focus(); }, 30); },
       close: () => this.setState({ colsOpen: false }),
       key: e => { if (e.key === 'Escape') this.setState({ colsOpen: false }); },
       tabs: [['cols', '표시할 항목'], ['flt', '필터 항목']].map(t => ({ label: t[1], on: (st.cfgTab || 'cols') === t[0] ? 'true' : 'false', pick: () => this.setState({ cfgTab: t[0] }), style: tabS((st.cfgTab || 'cols') === t[0]) })),
@@ -764,7 +847,7 @@ class Component extends DCLogic {
     if (R) {
       const parts = TEACH[R.teacher] || [];
       reg = {
-        open: true, idTxt: R.idVal != null ? R.idVal : String(this.nextId()), err: R.err || '',
+        open: true, idTxt: R.editId != null ? String(R.editId) : R.idVal != null ? R.idVal : String(this.nextId()), idLock: R.editId != null ? 'true' : 'false', title: R.editId != null ? '원생 정보 수정' : '원생 등록', saveLabel: R.editId != null ? '저장하기' : '등록하기', err: R.err || '',
         f: { name: R.name, guardian: R.guardian, phone: R.phone, gphone: R.gphone, birth: R.birth, addr: R.addr, countTxt: fmtN(R.count), durTxt: fmtN(R.dur), unitTxt: fmtN(R.unit), payTxt: fmtN(R.pay), totalTxt: fmtN(R.total), cashNo: R.cashNo, join: R.join },
         close: () => this.setState({ reg: null }),
         save: () => this.saveReg(),
@@ -828,7 +911,7 @@ class Component extends DCLogic {
       return {
         label: x[1], on: on ? 'true' : 'false',
         pick: () => this.setState({ tab: x[0] }),
-        style: 'display: inline-flex; align-items: center; justify-content: center; min-width: 92px; height: 48px; padding: 0 18px; border-radius: 14px; font-family: inherit; font-size: 20px; cursor: pointer; ' +
+        style: 'display: inline-flex; align-items: center; justify-content: center; min-width: 68px; height: 38px; padding: 0 14px; border-radius: 11px; font-family: inherit; font-size: 16px; cursor: pointer; ' +
           (on ? 'background: ' + x[3] + '; color: ' + x[4] + '; border: 2px solid ' + x[2] + '; font-weight: 800' : 'background: #FFFFFF; color: #5E6873; border: 1px solid #E1E6E3; font-weight: 600')
       };
     });
@@ -841,6 +924,28 @@ class Component extends DCLogic {
       q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols,
       tableMin: 'min-width: ' + minW + 'px',
       pt: pt, pr: pr,
+      actHead: hBase + 'justify-content: center; position: sticky; right: 0; background: #F7F9F8',
+      actBtn: {
+        edit: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+        rest: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+        out: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
+      },
+      sd: (() => {
+        const S = st.stat;
+        if (!S) return { open: false };
+        const rest = S.kind === 'rest';
+        return {
+          open: true, isRest: rest, kindLabel: rest ? '휴원' : '퇴원', title: rest ? '휴원 처리' : '퇴원 처리', name: S.name, id: S.id,
+          dateLabel: rest ? '휴원 날짜' : '퇴원 날짜', date: S.date, memo: S.memo,
+          chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; ' + (rest ? 'background: #FFF4E0; color: #9A5B00' : 'background: #FCEBEA; color: #B4332B'),
+          goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (rest ? 'border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00' : 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B'),
+          close: () => this.setState({ stat: null }),
+          go: () => this.applyStatus(),
+          key: e => { if (e.key === 'Escape') this.setState({ stat: null }); else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyStatus(); } },
+          setDate: e => this.setState({ stat: Object.assign({}, S, { date: e.target.value }) }),
+          setMemo: e => this.setState({ stat: Object.assign({}, S, { memo: e.target.value }) })
+        };
+      })(),
       printX: () => { this.setState({ printOpen: true }); setTimeout(() => { const d = document.getElementById('printDlg'); if (d) d.focus(); }, 30); },
       exportX: () => this.exportExcel(),
       reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
