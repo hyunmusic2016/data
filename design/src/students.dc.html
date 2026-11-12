@@ -21,6 +21,11 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
 html.bwp .printonly *{color:#000!important;background-color:transparent!important}
 html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!important}
 @media print{.noprint{display:none!important}.printonly{display:block!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.flashrow>span{animation:rowflash 3.6s ease-out}
+.flash-rest>span{--fl:rgba(224,162,59,.22)}.flash-out>span{--fl:rgba(217,116,108,.2)}.flash-back>span,.flash-new>span{--fl:rgba(0,166,171,.18)}.flash-edit>span{--fl:rgba(138,180,232,.25)}
+@keyframes rowflash{0%,55%{background-image:linear-gradient(var(--fl),var(--fl))}100%{background-image:linear-gradient(transparent,transparent)}}
+.flashtag{animation:tagfade 4s ease-out forwards}
+@keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
 .srow:hover>span{background-color:#F7FAFA}
 </style>
 </helmet>
@@ -108,9 +113,9 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
             <span style="{{actHead}}">관리</span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
-            <div class="srow" style="{{gridRow}}">
+            <div class="{{r.rowCls}}" style="{{gridRow}}">
               <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
-                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
+                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
               <span style="{{r.fill}}"></span>
               <span style="{{r.actCell}}">
@@ -139,7 +144,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.18.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.19.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -468,6 +473,13 @@ class Component extends DCLogic {
     this.setState({ stat: { kind: kind, id: s.id, name: s.name, ticket: s.ticketNow || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
     setTimeout(() => { const d = document.getElementById('statusDlg'); if (d) d.focus(); }, 30);
   }
+  flashRow(id, kind) {
+    // 처리한 원생이 옮겨 간 탭에서 줄을 잠깐 색으로 표시하고 화면 가운데로 보여준다
+    this._flash = { id: id, kind: kind };
+    clearTimeout(this._ft);
+    this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
+    setTimeout(() => { const el = document.querySelector('.flashrow'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
+  }
   applyStatus() {
     const S = this.state.stat;
     if (!S) return;
@@ -478,7 +490,8 @@ class Component extends DCLogic {
       : S.kind === 'out' ? { status: 'out', leave: ymd, leaveReason: why }
       : { status: 'act', backDate: ymd, rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' };
     const word = { rest: '휴원', out: '퇴원', back: '재원으로 복귀' }[S.kind];
-    this.setState({ changes: this.patchStudent(S.id, patch), stat: null, tab: S.kind === 'back' ? 'act' : this.state.tab, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
+    this.flashRow(S.id, S.kind);
+    this.setState({ changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
@@ -596,13 +609,15 @@ class Component extends DCLogic {
     const join = jm ? jm[1].slice(2) + '.' + jm[2] + '.' + jm[3] : String(d.getFullYear()).slice(2) + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
     if (r.editId != null) {
       const editPatch = { part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, flags: Object.assign({}, (this.students().find(x => x.id === r.editId) || {}).flags, { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }), extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
+      this.flashRow(r.editId, 'edit');
       this.setState({ changes: this.patchStudent(r.editId, editPatch), reg: null, toast: editPatch.name + ' 원생 정보를 수정했습니다' });
       clearTimeout(this._tt);
       this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
       return;
     }
     const rec = { id: manual || this.nextId(), manualId: !!manual, part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, leave: '', memo: r.stick ? '스틱 보관함' : '', rest: '', status: 'act', flags: { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }, extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
-    this.setState({ added: (this.state.added || []).concat([rec]), reg: null, tab: 'act', toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
+    this.flashRow(rec.id, 'new');
+    this.setState({ added: (this.state.added || []).concat([rec]), reg: null, tab: 'act', q: '', filt: {}, toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
@@ -720,7 +735,9 @@ class Component extends DCLogic {
       out: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
       back: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
     };
+    const FLT = { rest: ['휴원됨', '#FFF4E0', '#9A5B00'], out: ['퇴원됨', '#FCEBEA', '#B4332B'], back: ['복귀됨', '#E6F6F6', '#007E82'], edit: ['수정됨', '#E3ECFD', '#2952A3'], new: ['새로 등록', '#E6F6F6', '#007E82'] };
     const row = s => {
+      const fl = this._flash && this._flash.id === s.id ? this._flash.kind : '';
       const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
       const bg = pro ? '#FDF0F2' : '#FFFFFF';
       const C = cell + '; background: ' + bg;
@@ -733,7 +750,7 @@ class Component extends DCLogic {
         id: () => T(s.id, 'color: #5E6873; font-size: 12px'),
         cls: () => CH(pro ? '전문반' : '취미반', pro ? ['#FBE3E6', '#C8323C'] : ['#E6F6F6', '#007E82'], 56),
         part: () => CH(s.part, PART[s.part] || PART['원장'], 60),
-        name: () => ({ isName: true, text: s.name, cash: s.cashOn, sub: s.guardian ? '/ ' + s.guardian : '', cell: CL, nameStyle: 'font-size: 14px; font-weight: 700; color: #17201C' + (big ? '; background: #EFEAF8; padding: 2px 6px; border-radius: 6px; color: #4C2E83' : '') }),
+        name: () => ({ isName: true, flashTag: fl ? FLT[fl][0] : '', flashStyle: fl ? 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; margin-left: 4px; border-radius: 6px; font-size: 11px; font-weight: 800; background: ' + FLT[fl][1] + '; color: ' + FLT[fl][2] : '', text: s.name, cash: s.cashOn, sub: s.guardian ? '/ ' + s.guardian : '', cell: CL, nameStyle: 'font-size: 14px; font-weight: 700; color: #17201C' + (big ? '; background: #EFEAF8; padding: 2px 6px; border-radius: 6px; color: #4C2E83' : '') }),
         teacher: () => CH(s.teacher, tp, 64),
         day: () => CH(s.day, DAY[s.days[0]] || DAY['변동'], 60),
         time: () => T(s.timeTxt, 'font-size: 13px'),
@@ -762,7 +779,7 @@ class Component extends DCLogic {
       const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
       // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
-      return { fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big,
+      return { rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big,
         actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; right: 0; box-shadow: -6px 0 8px -6px rgba(23, 32, 28, 0.18)',
         acts: ({ act: ['edit', 'rest', 'out'], rest: ['edit', 'back', 'out'], out: ['edit', 'back'] }[s.status] || []).map(k => ({
           label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀' }[k],
