@@ -163,7 +163,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.2</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -525,7 +525,7 @@ class Component extends DCLogic {
           restTicket: s.restTicket || (rm && rm[3] ? tk(+rm[3], +rm[4]) : s.status === 'rest' ? tk(Math.min(usedNow, count), count) : '')
         };
       })(),
-      cashOn: !!fl.cash, stick: s.extra ? !!ex.stickBox : (s.part === '드럼' && (s.id % 3 === 0 || (s.memo || '').indexOf('스틱') >= 0))
+      cashOn: !!fl.cash, stick: s.extra && ex.stickBox !== undefined ? !!ex.stickBox : (s.part === '드럼' && (s.id % 3 === 0 || (s.memo || '').indexOf('스틱') >= 0))
     });
   }
   students() {
@@ -571,7 +571,7 @@ class Component extends DCLogic {
     const days = (e.days || []).map(d => L[d]).filter(Boolean);
     const times = {};
     Object.keys(e.times || {}).forEach(d => { const m = /^(\d{1,2}):(\d{2})$/.exec(e.times[d]); if (m && L[d]) times[L[d]] = ((+m[1] % 12) || 12) + ':' + m[2]; });
-    const p = { day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], extra: { times: times, stickBox: !!e.stick } };
+    const p = { day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], extra: Object.assign({ times: times }, e.stick === undefined ? {} : { stickBox: !!e.stick }) };
     if (e.teacher) p.teacher = e.teacher;
     if (e.part) p.part = e.part;
     return p;

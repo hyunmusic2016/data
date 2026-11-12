@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.38.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.38.2</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -180,7 +180,6 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </sc-for>
         </div>
       </sc-if>
-      <button type="button" role="checkbox" aria-checked="{{qe.stickOn}}" disabled="{{qe.lock}}" onClick="{{qe.stickToggle}}" style="{{qe.stickStyle}}"><span style="{{qe.stickBox}}">✓</span>드럼스틱 보관함 사용</button>
       <div style="display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed #E1E6E3">
         <span style="font-size: 13px; font-weight: 600; color: #5E6873">원생 상태</span>
         <span style="flex: 1"></span>
@@ -616,7 +615,7 @@ class Component extends DCLogic {
     days.forEach(d => { const t = Q.times[d] || {}; const h = parseInt(t.h, 10); if (h) times[d] = String(h < 9 ? h + 12 : h).padStart(2, '0') + ':' + String(t.m || '0').padStart(2, '0'); });
     const cur = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === Q.key && x.g !== '퇴휴');
     const prev = { days: cur.map(x => x.g), times: cur.reduce((o, x) => { if (x.time) o[x.g] = x.time; return o; }, {}), stick: !!(cur[0] || {}).stick };
-    const list = this.readShared().concat([{ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, stick: !!Q.stick, prev: prev }]);
+    const list = this.readShared().concat([{ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, prev: prev }]);
     try { localStorage.setItem('academy.lessonChanges', JSON.stringify(list)); } catch (e) {}
     // 옮겨 간 줄을 보여 주고 잠깐 표시
     const before = cur.map(x => x.g).join('·'), after = days.join('·');
