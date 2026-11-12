@@ -61,7 +61,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span style="{{c.headName}}">이름</span>
           <span style="{{c.headStart}}">수강권</span>
           <sc-for list="{{days}}" as="h" hint-placeholder-count="30">
-            <span style="{{c.headDay}}"><span style="{{h.style}}">{{h.d}}</span></span>
+            <span style="{{h.cell}}"><span style="{{h.style}}">{{h.d}}</span></span>
           </sc-for>
           <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{c.headLast}}"></span></sc-for>
         </div>
@@ -120,7 +120,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.5</span>
   </nav>
 </div>
 </x-dc>
@@ -319,7 +319,7 @@ class Component extends DCLogic {
     for (let d = 1; d <= ND; d++) {
       const w = (d - 1 + FIRST) % 7;
       const s = 'width: 24px; height: 24px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; ';
-      days.push({ d: d, style: s + (d === TODAY ? 'background: ' + INK + '; color: #FFFFFF' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
+      days.push({ d: d, cell: c.headDay + (d === TODAY ? '; background: #FFFBEB' : ''), style: s + (d === TODAY ? 'color: ' + INK + '; font-weight: 800' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0;
