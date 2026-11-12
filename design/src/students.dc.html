@@ -151,7 +151,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.24.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.24.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -239,7 +239,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #E3ECFD; color: #2952A3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg></span>수업 정보</span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.lesson}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{reg.schedOpen.lesson}}" title="눌러서 예정 변경 보기·고치기·취소" style="{{reg.schedStyle}}">{{reg.sched.lesson}}<span aria-hidden="true" style="font-size: 10px">›</span></button></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_lesson" type="date" defaultValue="{{reg.dates.lesson}}" onChange="{{reg.set.d_lesson}}" style="{{reg.applyInp}}"></label></sc-if></div>
           <label style="{{reg.lbl}}">담당 강사<select disabled="{{reg.lock.lesson}}" id="r_teacher" onChange="{{reg.set.teacher}}" style="{{reg.inp}}"><sc-for list="{{reg.teacherOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}" selected="{{o.sel}}">{{o.label}}</option></sc-for></select></label>
           <div style="{{reg.lbl}}">수강 과목<div style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 46px; align-items: center"><sc-for list="{{reg.partOpts}}" as="o" hint-placeholder-count="2"><button type="button" disabled="{{reg.lock.lesson}}" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for><span style="font-size: 12px; color: #8A949E">{{reg.partHint}}</span></div></div>
-          <div style="{{reg.lbl}}">수업 요일<div role="group" aria-label="수업 요일" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px"><sc-for list="{{reg.days}}" as="o" hint-placeholder-count="7"><button type="button" disabled="{{reg.lock.lesson}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; padding: 0">{{o.label}}</button></sc-for></div></div>
+          <div style="{{reg.lbl}}">수업 요일<div role="group" aria-label="수업 요일" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px"><sc-for list="{{reg.days}}" as="o" hint-placeholder-count="7"><button type="button" disabled="{{reg.lock.lesson}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; padding: 0">{{o.label}}</button></sc-for></div><button type="button" role="checkbox" aria-checked="{{reg.multiOn}}" disabled="{{reg.lock.lesson}}" onClick="{{reg.multiToggle}}" style="display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; height: 30px; padding: 0 4px; border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; cursor: pointer"><span style="{{reg.multiBox}}">✓</span>중복 선택 가능</button></div>
           <sc-if value="{{reg.hasTimes}}" hint-placeholder-val="{{ true }}">
             <div style="{{reg.lbl}}">수업 시간<div style="display: flex; flex-direction: column; gap: 10px">
               <sc-for list="{{reg.times}}" as="t" hint-placeholder-count="2">
@@ -604,7 +604,7 @@ class Component extends DCLogic {
     const ymd = v => { const m = /^(\d{2,4})\.(\d{2})\.(\d{2})$/.exec(v || ''); return m ? (m[1].length === 2 ? '20' + m[1] : m[1]) + '-' + m[2] + '-' + m[3] : ''; };
     const digits = v => String(v || '').replace(/[^0-9]/g, '');
     const regObj = {
-      editId: s.id, note: s.note || '', cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
+      editId: s.id, multiDay: (s.days || []).length > 1, note: s.note || '', cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
       gender: s.gender || '', age: s.age, teacher: s.teacher, part: s.part, days: days[0] === '변동' && !s.extra ? ['변동'] : days, times: times, idVal: null,
       stick: !!s.stick, join: ymd(s.join), cash: !!s.cashOn, cashType: ex.cashType || 'person', cashNo: ex.cashNo || '', err: '',
       count: s.count, dur: s.dur, unit: s.unit, pay: s.pay, total: s.total
@@ -809,7 +809,7 @@ class Component extends DCLogic {
   }
   openReg() {
     const fee = this.regDefaults('hobby');
-    this.setState({ reg: Object.assign({ cls: 'hobby', name: '', guardian: '', phone: '', gphone: '', birth: '', addr: '', gender: '', age: '학생', teacher: '', part: '', days: [], times: {}, idVal: null, stick: false, join: (() => { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); })(), cash: false, cashType: 'person', cashNo: '', note: '', err: '' }, fee) });
+    this.setState({ reg: Object.assign({ cls: 'hobby', name: '', guardian: '', phone: '', gphone: '', birth: '', addr: '', gender: '', age: '학생', teacher: '', part: '', days: [], multiDay: false, times: {}, idVal: null, stick: false, join: (() => { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); })(), cash: false, cashType: 'person', cashNo: '', note: '', err: '' }, fee) });
   }
   setReg(patch) {
     this.setState({ reg: Object.assign({}, this.state.reg, patch) });
@@ -1179,12 +1179,16 @@ class Component extends DCLogic {
         partHint: !R.teacher ? '강사를 먼저 선택하세요' : parts.length === 1 ? '자동 선택됨' : '가르치는 과목 중 선택',
         days: [['월요일', '월'], ['화요일', '화'], ['수요일', '수'], ['목요일', '목'], ['금요일', '금'], ['토요일', '토'], ['변동', 'R']].map(d => ropt(d[1], R.days.indexOf(d[0]) >= 0, () => {
           const on = R.days.indexOf(d[0]) >= 0;
-          this.setReg({ days: on ? R.days.filter(x => x !== d[0]) : R.days.concat([d[0]]) });
+          // 중복 선택이 꺼져 있으면 한 요일만
+          this.setReg({ days: on ? R.days.filter(x => x !== d[0]) : (R.multiDay ? R.days.concat([d[0]]) : [d[0]]) });
         }, DAY[d[0]])),
         stickOn: R.stick ? 'true' : 'false',
         stickToggle: () => this.setReg({ stick: !R.stick }),
         stickStyle: 'display: flex; align-items: center; gap: 12px; height: 50px; margin-top: auto; flex: none; padding: 0 16px; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; text-align: left; ' + (R.stick ? 'background: #D7EFDD; color: #2F6B43; border: 2px solid #2F6B43' : 'background: #FAFBFA; color: #3A4450; border: 1px solid #D5DBD8'),
         stickBox: 'width: 22px; height: 22px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; ' + (R.stick ? 'background: #2F6B43; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD'),
+        multiOn: R.multiDay ? 'true' : 'false',
+        multiToggle: () => this.setReg({ multiDay: !R.multiDay, days: R.multiDay ? R.days.slice(0, 1) : R.days }),
+        multiBox: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ' + (R.multiDay ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD'),
         hasTimes: R.days.length > 0,
         times: ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'].filter(x => R.days.indexOf(x) >= 0).map((x, i) => {
           const t = R.times[x] || { h: '', m: '00' };

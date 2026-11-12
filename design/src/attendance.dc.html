@@ -131,7 +131,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -147,6 +147,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <div role="group" aria-label="수업 요일" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
           <sc-for list="{{qe.dayOpts}}" as="o" hint-placeholder-count="7"><button type="button" aria-pressed="{{o.on}}" disabled="{{qe.lock}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
         </div>
+        <button type="button" role="checkbox" aria-checked="{{qe.multiOn}}" disabled="{{qe.lock}}" onClick="{{qe.multiToggle}}" style="display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; height: 30px; padding: 0 4px; border: none; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; cursor: pointer"><span style="{{qe.multiBox}}">✓</span>중복 선택 가능</button>
       </div>
       <sc-if value="{{qe.hasTimes}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수업 시간
@@ -428,7 +429,7 @@ class Component extends DCLogic {
     const rows = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === key && x.g !== '퇴휴');
     const times = {};
     rows.forEach(x => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.time || ''); if (m) times[x.g] = { h: String((+m[1] % 12) || 12), m: m[2] }; });
-    this.setState({ qe: { key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), times: times, stick: !!s.stick, date: '', err: '' } });
+    this.setState({ qe: { key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: '', err: '' } });
     setTimeout(() => { const d = document.getElementById('qeDlg'); if (d) d.focus(); }, 30);
   }
   saveQuick() {
@@ -1277,8 +1278,11 @@ class Component extends DCLogic {
           save: () => this.saveQuick(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
           setDate: e => upd({ date: e.target.value }),
-          dayOpts: ORD.map(d => { const on = Q.days.indexOf(d) >= 0; return { label: d, on: on ? 'true' : 'false', pick: () => upd({ days: on ? Q.days.filter(x => x !== d) : Q.days.concat([d]) }),
+          dayOpts: ORD.map(d => { const on = Q.days.indexOf(d) >= 0; return { label: d, on: on ? 'true' : 'false', pick: () => upd({ days: on ? Q.days.filter(x => x !== d) : (Q.multi ? Q.days.concat([d]) : [d]) }),
             style: 'height: 42px; padding: 0; border-radius: 11px; font-family: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'background: ' + DC[d][0] + '; color: ' + DC[d][1] + '; border: 2px solid ' + DC[d][1] + '; font-weight: 800' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500') }; }),
+          multiOn: Q.multi ? 'true' : 'false',
+          multiToggle: () => upd({ multi: !Q.multi, days: Q.multi ? Q.days.slice(0, 1) : Q.days }),
+          multiBox: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ' + (Q.multi ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD'),
           hasTimes: Q.days.length > 0,
           timeRows: ORD.filter(d => Q.days.indexOf(d) >= 0).map((d, i) => {
             const t = Q.times[d] || { h: '', m: '00' };
