@@ -136,7 +136,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.5</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -434,7 +434,7 @@ class Component extends DCLogic {
     const rows = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === key && x.g !== '퇴휴');
     const times = {};
     rows.forEach(x => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.time || ''); if (m) times[x.g] = { h: String((+m[1] % 12) || 12), m: m[2] }; });
-    this.setState({ qe: { rowId: s.id, key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: '', err: '' } });
+    this.setState({ qe: { rowId: s.id, key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: this.todayYmd(), err: '' } });
     setTimeout(() => { const d = document.getElementById('qeDlg'); if (d) d.focus(); }, 30);
   }
   saveQuick() {
