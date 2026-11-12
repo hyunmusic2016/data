@@ -145,7 +145,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.20.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.21.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -281,6 +281,39 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
       </div>
     </div>
   </sc-if>
+  <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.28)"></div>
+    <div role="dialog" aria-label="변경 기록" onKeyDown="{{hv.key}}" tabIndex="-1" id="histDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 560px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 20px 22px 14px; border-bottom: 1px solid #EEF1F0">
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">변경 기록</span>
+        <span style="font-size: 14px; color: #5E6873"><b style="color: #17201C">{{hv.name}}</b> · 등록번호 {{hv.id}}</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{hv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <ol id="histBody" style="margin: 0; padding: 16px 22px 20px; list-style: none; overflow: auto; display: flex; flex-direction: column; gap: 0">
+        <sc-for list="{{hv.items}}" as="e" hint-placeholder-count="4">
+          <li style="display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px dashed #EEF1F0">
+            <span style="{{e.dot}}"></span>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <span style="font-size: 13px; font-weight: 700; color: #5E6873; font-variant-numeric: tabular-nums">{{e.date}}</span>
+                <span style="{{e.chip}}">{{e.kind}}</span>
+                <span style="font-size: 14px; font-weight: 700; color: #17201C">{{e.title}}</span>
+                <sc-if value="{{e.future}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FFF4E0; color: #9A5B00; font-size: 12px; font-weight: 800">예정</span></sc-if>
+              </div>
+              <sc-for list="{{e.lines}}" as="l" hint-placeholder-count="1"><span style="font-size: 13px; color: #3A4450">{{l.t}}</span></sc-for>
+              <sc-for list="{{e.diffs}}" as="d" hint-placeholder-count="1">
+                <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 13px">
+                  <span style="color: #5E6873; font-weight: 600">{{d.label}}</span>
+                  <span style="color: #17201C"><span style="color: #8A949E; text-decoration: line-through">{{d.before}}</span> → <b>{{d.after}}</b></span>
+                </div>
+              </sc-for>
+            </div>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+  </sc-if>
   <sc-if value="{{sv.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{sv.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.2)"></div>
     <div role="dialog" aria-label="{{sv.title}}" onKeyDown="{{sv.key}}" tabIndex="-1" id="svDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 500px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
@@ -388,7 +421,7 @@ class Component extends DCLogic {
     try { const w = JSON.parse(localStorage.getItem('students.widths') || 'null'); if (w && typeof w === 'object') widths = w; } catch (e) {}
     let fltList = [];
     try { const v = JSON.parse(localStorage.getItem('students.filters') || 'null'); if (Array.isArray(v)) fltList = v; } catch (e) {}
-    this.state = { hist: {}, changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+    this.state = { log: {}, histView: null, hist: {}, changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
   // 원생 항목 목록 (한 곳에서만 정의). 새 항목을 여기에 넣으면 설정의 '표시할 항목'과 '필터 항목'에 자동으로 들어간다.
   //   g: 설정 창 묶음 (null이면 설정에 안 나옴), w: 열 폭, left: 왼쪽 정렬
@@ -538,6 +571,45 @@ class Component extends DCLogic {
     this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
     setTimeout(() => { const el = document.querySelector('.flashrow'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
   }
+  diffFields(prev, next) {
+    // 바뀐 칸만 '이전 → 이후'로 (수업 정보·수강료·현금영수증·기본 정보 공통)
+    const won = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') + '원' : '';
+    const tTxt = t => Object.keys(t || {}).map(d => (d === '변동' ? 'R' : d[0]) + ' ' + t[d]).join(', ') || '없음';
+    const X = p => p.extra || {}, FL = p => p.flags || {};
+    const F = [
+      ['이름', p => p.name], ['보호자 이름', p => p.guardian], ['연령', p => p.age], ['성별', p => X(p).gender], ['원생 연락처', p => p.phone], ['보호자 연락처', p => p.gphone],
+      ['생년월일', p => X(p).birth], ['주소', p => X(p).addr], ['입원 연월일', p => p.join],
+      ['담당 강사', p => p.teacher], ['수강 과목', p => p.part], ['수업 요일', p => p.day],
+      ['수업 시간', p => X(p).times && tTxt(X(p).times)], ['드럼스틱 보관함', p => X(p).stickBox == null ? undefined : X(p).stickBox ? '사용' : '사용 안 함'],
+      ['반 구분', p => FL(p).pro == null ? undefined : FL(p).pro ? '전문반' : '취미반'], ['수강 횟수', p => X(p).count == null ? undefined : X(p).count + '회'], ['수강 시간', p => X(p).dur == null ? undefined : X(p).dur + '분'],
+      ['회당 수업료', p => X(p).unit == null ? undefined : won(X(p).unit)], ['수강료 합계', p => X(p).total == null ? undefined : won(X(p).total)], ['강사 수당', p => X(p).pay == null ? undefined : won(X(p).pay)],
+      ['현금영수증', p => FL(p).cash == null ? undefined : FL(p).cash ? '발급' : '발급 안 함'], ['용도', p => FL(p).cash == null ? undefined : FL(p).cash ? (X(p).cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') : '—'], ['발급 번호', p => X(p).cashNo == null ? undefined : (X(p).cashNo || '—')]
+    ];
+    return F.map(f => ({ label: f[0], b: f[1](prev || {}), a: f[1](next || {}) }))
+      .filter(d => d.a !== undefined && String(d.b == null ? '' : d.b) !== String(d.a == null ? '' : d.a))
+      .map(d => ({ label: d.label, before: d.b == null || d.b === '' ? '없음' : String(d.b), after: d.a === '' ? '없음' : String(d.a) }));
+  }
+  addLog(id, item) {
+    const L = Object.assign({}, this.state.log);
+    L[id] = (L[id] || []).concat([Object.assign({ at: Date.now() }, item)]);
+    return L;
+  }
+  timeline(s) {
+    // 변경 기록: 입원 · 휴원 · 퇴원 · 복귀 · 기본 정보 수정 · 날짜별 변경(예정 포함), 최근 것이 위
+    const ymd = v => { const m = /^(\d{2})\.(\d{2})\.(\d{2})$/.exec(v || ''); return m ? '20' + m[1] + '-' + m[2] + '-' + m[3] : ''; };
+    const td = this.todayYmd();
+    const SECN = { lesson: '수업 정보', fee: '수강료', cash: '현금영수증' };
+    const logs = (this.state.log || {})[s.id] || [];
+    const ev = [];
+    const jd = ymd(s.join); if (jd) ev.push({ d: jd, kind: 'join', title: '입원', lines: [] });
+    const has = k => logs.some(l => l.kind === k);
+    if (s.backDate && !has('back')) ev.push({ d: ymd(s.backDate), kind: 'back', title: '복귀', lines: [] });
+    if (s.status === 'rest' && !has('rest') && s.restDate) ev.push({ d: ymd(s.restDate), kind: 'rest', title: '휴원', lines: [s.restReason ? '사유: ' + s.restReason : '', s.restTicket ? '그 당시 수강권: ' + s.restTicket : ''].filter(Boolean) });
+    if (s.status === 'out' && !has('out') && s.leave) ev.push({ d: ymd(s.leave), kind: 'out', title: '퇴원', lines: [s.leaveReason ? '사유: ' + s.leaveReason : ''].filter(Boolean) });
+    logs.forEach(l => ev.push(l));
+    ((this.state.hist || {})[s.id] || []).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
+    return ev.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : (b.at || 0) - (a.at || 0));
+  }
   schedEntries(id, sec, skip) {
     const td = this.todayYmd();
     return ((this.state.hist || {})[id] || []).filter(h => h.sec === sec && h.from > td && (skip || []).indexOf(h.hid) < 0).sort((a, b) => a.from < b.from ? -1 : 1);
@@ -570,6 +642,10 @@ class Component extends DCLogic {
       schedView: null, svConfirm: null, err: ''
     }) });
   }
+  openHist(id) {
+    this.setState({ histView: id });
+    setTimeout(() => { const d = document.getElementById('histDlg'); if (d) d.focus(); }, 30);
+  }
   applyStatus() {
     const S = this.state.stat;
     if (!S) return;
@@ -581,7 +657,8 @@ class Component extends DCLogic {
       : { status: 'act', backDate: ymd, rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' };
     const word = { rest: '휴원', out: '퇴원', back: '재원으로 복귀' }[S.kind];
     this.flashRow(S.id, S.kind);
-    this.setState({ changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
+    const L = this.addLog(S.id, { d: S.date, kind: S.kind, title: { rest: '휴원', out: '퇴원', back: '복귀' }[S.kind], lines: S.kind === 'rest' ? [why ? '사유: ' + why : '', S.ticket ? '그 당시 수강권: ' + S.ticket : ''].filter(Boolean) : S.kind === 'out' ? [why ? '사유: ' + why : ''].filter(Boolean) : [] });
+    this.setState({ log: L, changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
@@ -710,11 +787,13 @@ class Component extends DCLogic {
       const H = Object.assign({}, this.state.hist);
       // '고치기'로 불러온 예정은 지우고 새로 저장 (바꾼 게 없으면 그대로 취소됨)
       const drop = Object.values(r.replace || {});
-      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(changed.map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], patch: now[k] })));
+      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(changed.map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], prev: was[k], patch: now[k] })));
+      const basicDiff = this.diffFields(was.basic, now.basic);
+      const L = basicDiff.length ? this.addLog(r.editId, { d: this.todayYmd(), kind: 'edit', title: '기본 정보 수정', diffs: basicDiff }) : this.state.log;
       const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); return m ? (+m[2]) + '.' + (+m[3]) : d; };
       const note = (changed.length ? ' (' + changed.map(k => SECN[k] + ' ' + fmt(r.dates[k]) + '부터').join(', ') + ')' : '') + (dropped.length ? ' · ' + dropped.map(k => SECN[k]).join(', ') + ' 예정 취소' : '');
       this.flashRow(r.editId, 'edit');
-      this.setState({ changes: this.patchStudent(r.editId, base), hist: H, reg: null, toast: now.basic.name + ' 원생 정보를 수정했습니다' + note });
+      this.setState({ changes: this.patchStudent(r.editId, base), hist: H, log: L, reg: null, toast: now.basic.name + ' 원생 정보를 수정했습니다' + note });
       clearTimeout(this._tt);
       this._tt = setTimeout(() => this.setState({ toast: '' }), 3600);
       return;
@@ -817,7 +896,7 @@ class Component extends DCLogic {
     const tabExtra = tabNow === 'rest' ? ['restDate', 'restReason', 'restTicket'] : tabNow === 'out' ? ['leave', 'leaveReason'] : [];
     const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
     const Wd = c => (st.widths || {})[c.k] || parseInt(c.w, 10);
-    const actW = (st.tab || 'act') === 'out' ? 130 : 186;
+    const actW = (st.tab || 'act') === 'out' ? 186 : 240;
     const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr) ' + actW + 'px; align-items: center';
     const minW = vis.reduce((n, c) => n + Wd(c), 0) + actW;
     const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
@@ -837,7 +916,8 @@ class Component extends DCLogic {
       edit: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
       rest: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
       out: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
-      back: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
+      back: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+      log: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #DDE2DF; background: #F3F5F4; color: #5E6873; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
     };
     const FLT = { rest: ['휴원됨', '#FFF4E0', '#9A5B00'], out: ['퇴원됨', '#FCEBEA', '#B4332B'], back: ['복귀됨', '#E6F6F6', '#007E82'], edit: ['수정됨', '#E3ECFD', '#2952A3'], new: ['새로 등록', '#E6F6F6', '#007E82'] };
     const row = s => {
@@ -885,11 +965,11 @@ class Component extends DCLogic {
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
       return { rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big,
         actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; right: 0; box-shadow: -6px 0 8px -6px rgba(23, 32, 28, 0.18)',
-        acts: ({ act: ['edit', 'rest', 'out'], rest: ['edit', 'back', 'out'], out: ['edit', 'back'] }[s.status] || []).map(k => ({
-          label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀' }[k],
-          aria: s.name + ' ' + { edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: '재원으로 복귀' }[k],
+        acts: ({ act: ['edit', 'rest', 'out', 'log'], rest: ['edit', 'back', 'out', 'log'], out: ['edit', 'back', 'log'] }[s.status] || []).map(k => ({
+          label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀', log: '기록' }[k],
+          aria: s.name + ' ' + { edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: '재원으로 복귀', log: '변경 기록 보기' }[k],
           style: ACTB[k],
-          pick: () => k === 'edit' ? this.openEdit(s) : this.openStatus(k, s)
+          pick: () => k === 'edit' ? this.openEdit(s) : k === 'log' ? this.openHist(s.id) : this.openStatus(k, s)
         })) };
     };
     const SECS = [
@@ -1108,23 +1188,35 @@ class Component extends DCLogic {
         rest: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
         out: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
       },
+      hv: (() => {
+        const id = st.histView;
+        if (id == null) return { open: false };
+        const s = all.find(x => x.id === id);
+        if (!s) return { open: false };
+        const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
+        const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
+        const items = this.timeline(s).map(e => ({
+          date: fmt(e.d), title: e.title === K[e.kind][0] ? '' : e.title,
+          chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 800; background: ' + K[e.kind][1] + '; color: ' + K[e.kind][2],
+          kind: K[e.kind][0], future: !!e.future,
+          lines: (e.lines || []).map(t => ({ t: t })),
+          diffs: e.diffs || [],
+          dot: 'width: 12px; height: 12px; flex: none; box-sizing: border-box; border-radius: 50%; margin-top: 4px; ' + (e.future ? 'border: 2px dashed #E0A23B; background: #FFFFFF' : 'background: ' + K[e.kind][2])
+        }));
+        return {
+          open: true, name: s.name, id: s.id, items: items, empty: items.length === 0,
+          close: () => this.setState({ histView: null }),
+          key: e => { if (e.key === 'Escape') this.setState({ histView: null }); }
+        };
+      })(),
       sv: (() => {
         if (!R || !R.schedView || R.editId == null) return { open: false };
         const sec = R.schedView;
         const SECN = { lesson: '수업 정보', fee: '수강료', cash: '현금영수증' };
         const was = this.formParts(R.orig || R)[sec];
-        const won = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') + '원' : '';
-        const tTxt = t => Object.keys(t || {}).map(d => (d === '변동' ? 'R' : d[0]) + ' ' + t[d]).join(', ') || '없음';
-        const F = [
-          ['teacher', '담당 강사', p => p.teacher], ['part', '수강 과목', p => p.part], ['day', '수업 요일', p => p.day],
-          ['times', '수업 시간', p => tTxt((p.extra || {}).times)], ['stick', '드럼스틱 보관함', p => (p.extra || {}).stickBox ? '사용' : '사용 안 함'],
-          ['pro', '반 구분', p => (p.flags || {}).pro ? '전문반' : '취미반'], ['count', '수강 횟수', p => (p.extra || {}).count + '회'], ['dur', '수강 시간', p => (p.extra || {}).dur + '분'],
-          ['unit', '회당 수업료', p => won((p.extra || {}).unit)], ['total', '수강료 합계', p => won((p.extra || {}).total)], ['pay', '강사 수당', p => won((p.extra || {}).pay)],
-          ['cash', '현금영수증', p => (p.flags || {}).cash ? '발급' : '발급 안 함'], ['cashType', '용도', p => (p.flags || {}).cash ? ((p.extra || {}).cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') : '—'], ['cashNo', '발급 번호', p => (p.extra || {}).cashNo || '—']
-        ];
         const items = this.schedEntries(R.editId, sec).map(h => {
           const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(h.from);
-          const diffs = F.map(f => ({ label: f[1], before: String(f[2](was)), after: String(f[2](h.patch)) })).filter(d => d.before !== d.after);
+          const diffs = this.diffFields(was, h.patch);
           const conf = R.svConfirm === h.hid;
           return {
             when: (m ? (+m[1]) + '년 ' + (+m[2]) + '월 ' + (+m[3]) + '일부터' : h.from),
