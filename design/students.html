@@ -150,7 +150,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.22.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.22.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -730,7 +730,7 @@ class Component extends DCLogic {
     const put = (r, c, v, o) => {
       o = o || {};
       const cell = { t: 's', v: v == null ? '' : String(v) };
-      const st = { alignment: { horizontal: o.align || 'center', vertical: 'center' }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold } };
+      const st = { alignment: { horizontal: o.align || 'center', vertical: 'center', wrapText: String(v == null ? '' : v).indexOf('\n') >= 0 }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold } };
       if (o.border !== false) st.border = BOR;
       if (o.fill) st.fill = { patternType: 'solid', fgColor: { rgb: o.fill } };
       cell.s = st;
@@ -832,7 +832,7 @@ class Component extends DCLogic {
     const DAY = { '월요일': ['#FDE8E7', '#B4332B'], '화요일': ['#E3ECFD', '#2952A3'], '수요일': ['#FCF1C2', '#7A6200'], '목요일': ['#DFF2E4', '#2F6B43'], '금요일': ['#FDEBDC', '#9A4A12'], '토요일': ['#ECE4F8', '#5B4A8B'], '변동': ['#EEF1F0', '#3A4450'] };
     const AGE = { '학생': ['#E3F3EC', '#2F6B43'], '성인': ['#FBE6E4', '#9A3A31'] };
     const chip = (c, w) => 'display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 10px; min-width: ' + (w || 52) + 'px; box-sizing: border-box; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1];
-    const cell = 'height: 46px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
+    const cell = 'min-height: 46px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
     const all = this.students().map(s => this.enrich(s));
     const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
     const match = s => (!q || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
@@ -916,7 +916,7 @@ class Component extends DCLogic {
     const actW = (st.tab || 'act') === 'out' ? 186 : 240;
     const xRight = visX.map((c, i) => actW + visX.slice(i + 1).reduce((n, c2) => n + Wd(c2), 0));
     const SHADOW = 'box-shadow: -6px 0 8px -6px rgba(23, 32, 28, 0.18)';
-    const COLS = 'display: grid; grid-template-columns: ' + visMain.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr) ' + visX.map(c => Wd(c) + 'px').join(' ') + ' ' + actW + 'px; align-items: center';
+    const COLS = 'display: grid; grid-template-columns: ' + visMain.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr) ' + visX.map(c => Wd(c) + 'px').join(' ') + ' ' + actW + 'px; align-items: stretch';
     const minW = vis.reduce((n, c) => n + Wd(c), 0) + actW;
     const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
     const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
@@ -946,8 +946,8 @@ class Component extends DCLogic {
       const C = cell + '; background: ' + bg;
       const CL = C + '; justify-content: flex-start; gap: 6px';
       const tp = PART[TPART[s.teacher]] || PART['원장'];
-      const T = (t, extra) => ({ isText: true, text: t, cell: C + (extra ? '; ' + extra : '') });
-      const TL = (t, extra) => ({ isText: true, text: t, cell: CL + (extra ? '; ' + extra : '') });
+      const T = (t, extra) => ({ isText: true, text: t == null ? '' : t, cell: C + (extra ? '; ' + extra : '') });
+      const TL = (t, extra) => ({ isText: true, text: t == null ? '' : t, cell: CL + (extra ? '; ' + extra : '') });
       const CH = (t, c, w) => ({ isChip: true, text: t, chip: chip(c, w), cell: C });
       const make = {
         id: () => T(s.id, 'color: #5E6873; font-size: 12px'),
@@ -973,7 +973,7 @@ class Component extends DCLogic {
         cash: () => s.cashOn ? CH('발급', ['#E6F6F6', '#007E82'], 44) : T(''),
         stick: () => s.stick ? CH('사용', ['#D7EFDD', '#2F6B43'], 44) : T(''),
         memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
-        note: () => TL(s.note, 'font-size: 13px; color: #3A4450'),
+        note: () => TL(s.note, 'font-size: 13px; color: #3A4450; white-space: pre-line; line-height: 1.5; padding-top: 10px; padding-bottom: 10px'),
         restDate: () => T(s.restDate, 'font-size: 13px; color: #9A5B00; font-weight: 700'),
         restReason: () => TL(s.restReason, 'font-size: 13px; color: #3A4450'),
         restTicket: () => T(s.restTicket, 'font-size: 12px; color: #3A4450'),
@@ -1079,7 +1079,7 @@ class Component extends DCLogic {
       th: pcell + 'background: #EEF2EE; font-weight: 700; text-align: center',
       heads: vis.map(c => ({ label: c.label })),
       rows: curRows.map(r => ({ style: 'display: table-row; break-inside: avoid; background: ' + (r.pro ? '#FDF0F2' : '#FFFFFF'),
-        cells: r.allCells.map((x, i) => ({ t: x.ptxt, style: pcell + 'text-align: ' + (vis[i].left ? 'left' : 'center') + (x.isName ? '; font-weight: 700' + (r.big ? '; background: #EFEAF8' : '') : '') })) }))
+        cells: r.allCells.map((x, i) => ({ t: x.ptxt, style: pcell + 'text-align: ' + (vis[i].left ? 'left' : 'center') + (vis[i].k === 'note' ? '; white-space: pre-line' : '') + (x.isName ? '; font-weight: 700' + (r.big ? '; background: #EFEAF8' : '') : '') })) }))
     };
     const ropt2 = (o, on, pick) => ({ label: o[1], desc: o[2], on: on ? 'true' : 'false', pick: pick,
       style: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; font-family: inherit; cursor: pointer; ' + (on ? 'background: #F2FBFB; border: 2px solid #00A6AB' : 'background: #FFFFFF; border: 1px solid #DDE2DF'),
