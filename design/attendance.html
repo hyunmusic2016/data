@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.30.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.30.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -282,6 +282,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 16px; font-weight: 800; color: #17201C">{{it.name}}</span><span style="font-size: 12px; color: #7A5C12">{{it.type}}</span></span>
           <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 금액</span><b style="color: #17201C; font-size: 16px">{{it.amount}}</b></span>
           <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 번호</span><b style="color: #17201C; font-size: 16px; letter-spacing: 0.02em">{{it.no}}</b></span>
+          <span style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px dashed #EAD9A6; font-size: 14px"><span style="color: #5E6873">발급 용도</span><b style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 9px; background: #FFFFFF; border: 1.5px solid #E2C35E; color: #7A5C12; font-size: 18px; font-weight: 800">{{it.purpose}}</b></span>
         </div>
       </sc-for>
       <button type="button" class="pbtn" onClick="{{cn.close}}" style="--sh: #E0CB8F; height: 50px; border-radius: 15px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 4px">확인</button>
@@ -877,7 +878,7 @@ class Component extends DCLogic {
     this.applyMark('V', { noNotice: true });
     // 현금영수증 발급 대상자는 수납한 뒤에도 발급 안내 창을 한 번 더 띄운다 (이번 수납 금액·횟수로)
     if (!P.paid && P.cash) {
-      this.setState({ cashNotice: [{ name: P.name, type: (P.pro ? '전문반' : '취미반') + ' · ' + P.count + '회 · ' + (P.cashType === 'biz' ? '사업자(지출증빙)' : '개인(소득공제)'), amount: Number(P.total || 0).toLocaleString('ko-KR') + '원', no: P.cashNo || '—' }] });
+      this.setState({ cashNotice: [{ name: P.name, type: (P.pro ? '전문반' : '취미반') + ' · ' + P.count + '회', purpose: P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)', amount: Number(P.total || 0).toLocaleString('ko-KR') + '원', no: P.cashNo || '—' }] });
       setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
     }
   }
@@ -900,7 +901,7 @@ class Component extends DCLogic {
           seen[c.sid] = 1;
           const T0 = s0.tickets || (s0.nameBg ? 8 : 4);
           const amt = (s0.rowBg ? 62500 : 40000) * T0;
-          cashList.push({ name: s0.name.replace('$', ''), type: (s0.rowBg ? '전문반' : '취미반') + ' · ' + T0 + '회 · 개인(소득공제)', amount: amt.toLocaleString('ko-KR') + '원', no: s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4) });
+          cashList.push({ name: s0.name.replace('$', ''), type: (s0.rowBg ? '전문반' : '취미반') + ' · ' + T0 + '회', purpose: '개인 (소득공제)', amount: amt.toLocaleString('ko-KR') + '원', no: s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4) });
         });
       }
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: allPaid ? '' : true }));
