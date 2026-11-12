@@ -73,7 +73,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span style="{{c.headName}}">이름</span>
           <span style="{{c.headStart}}">수강권</span>
           <sc-for list="{{days}}" as="h" hint-placeholder-count="30">
-            <span style="{{h.cell}}"><span style="{{h.style}}">{{h.d}}</span></span>
+            <span style="{{h.cell}}"><span style="{{h.style}}"><span>{{h.d}}</span><span style="font-size: 10px; font-weight: 600; line-height: 1; opacity: 0.85">{{h.wd}}</span></span></span>
           </sc-for>
           <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{c.headLast}}"></span></sc-for>
         </div>
@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.4</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1088,7 +1088,7 @@ class Component extends DCLogic {
     ['요일', '이름', '결산', '레슨시작일'].forEach((h, i) => put(2, i, h, { bold: true, fill: 'EEF2EE' }));
     for (let d = 1; d <= 31; d++) {
       const w = (d - 1 + FIRST) % 7;
-      put(2, 3 + d, d <= ND ? d : '', { bold: true, fill: d > ND ? 'F2F2F2' : w === 0 ? 'FDE8E7' : w === 6 ? 'E3ECFD' : 'EEF2EE', color: d > ND ? undefined : w === 0 ? 'D92D20' : w === 6 ? '2563EB' : undefined });
+      put(2, 3 + d, d <= ND ? d + '\n' + '일월화수목금토'[w] : '', { bold: true, wrap: true, fill: d > ND ? 'F2F2F2' : w === 0 ? 'FDE8E7' : w === 6 ? 'E3ECFD' : 'EEF2EE', color: d > ND ? undefined : w === 0 ? 'D92D20' : w === 6 ? '2563EB' : undefined });
     }
     let r = 3;
     const groups = [];
@@ -1114,7 +1114,7 @@ class Component extends DCLogic {
     ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxR, c: LAST } });
     ws['!merges'] = merges;
     ws['!cols'] = [{ wch: 6 }, { wch: 12 }, { wch: 6 }, { wch: 10 }].concat(Array(31).fill({ wch: 5.5 }));
-    ws['!rows'] = [{ hpt: 28 }, { hpt: 20 }];
+    ws['!rows'] = [{ hpt: 28 }, { hpt: 20 }, { hpt: 30 }];
     ws['!freeze'] = { xSplit: 4, ySplit: 3 };
     const wb = X.utils.book_new();
     X.utils.book_append_sheet(wb, ws, (MON || '') + '월 출석부');
@@ -1184,8 +1184,9 @@ class Component extends DCLogic {
     const days = [];
     for (let d = 1; d <= ND; d++) {
       const w = (d - 1 + FIRST) % 7;
-      const s = 'width: 24px; height: 24px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; ';
-      days.push({ d: d, cell: c.headDay, style: s + (d === TODAY ? 'background: #D5DBD8; color: ' + INK + '; font-weight: 800' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
+      // 날짜 아래에 요일(월 화 수 …)
+      const s = 'width: 26px; height: 36px; border-radius: 7px; display: inline-flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; font-size: 12px; line-height: 1; font-weight: 700; ';
+      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, style: s + (d === TODAY ? 'background: #D5DBD8; color: ' + INK + '; font-weight: 800' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0;
