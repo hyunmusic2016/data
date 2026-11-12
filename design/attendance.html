@@ -73,7 +73,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span><span style="{{g.countStyle}}">{{g.count}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div style="display: contents">
-                <span style="{{r.nameStyle}}"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="{{r.checkChip}}">{{r.check}}</span></span>
+                <span style="{{r.nameStyle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span style="{{r.ticketCell}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span>
@@ -129,7 +129,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.10.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.11.0</span>
   </nav>
   <sc-if value="{{cn.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{cn.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -381,7 +381,7 @@ class Component extends DCLogic {
       { id: 26, g: 'R', name: '강준호', start: 3, since: '' },
       { id: 27, g: '퇴휴', name: '임서윤', start: 0, sumOverride: '결3', status: '퇴원', since: '입금완료' },
       { id: 28, g: '퇴휴', name: 'U)권은서', start: 1, status: '휴원', unpaid: true }
-    ];
+    ].map(s => (s.time !== undefined || s.g === 'R' || s.g === '퇴휴' || s.id % 5 === 0) ? s : Object.assign({}, s, { time: ['14:00', '15:30', '16:00', '17:00', '18:30', '19:00'][s.id % 6] }));
   }
   sheetList() {
     const base = [['26\' 11월 출석부', 11], ['26\' 11월 수업진행표,업무일지', 0], ['26\' 10월 출석부', 10], ['26\' 10월 수업진행표,업무일지', 0], ['26\' 9월 출석부', 9]];
@@ -903,7 +903,10 @@ class Component extends DCLogic {
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
       const isTodayG = MON === 11 && gp[0] === '수';
-      const list = all.filter(s => s.g === gp[0]);
+      const tmin = s => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(s.time || ''); return m0 ? +m0[1] * 60 + +m0[2] : Infinity; };
+      const sortName = s => s.name.replace('$', '').replace(/^[A-Za-z]\)/, '');
+      // 시간이 있는 원생은 시간 순서, 시간이 없는 원생은 그 아래 가나다 순서
+      const list = all.filter(s => s.g === gp[0]).sort((a, b) => (tmin(a) - tmin(b)) || sortName(a).localeCompare(sortName(b), 'ko'));
       const rows = list.map(s => {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
@@ -919,6 +922,7 @@ class Component extends DCLogic {
         return {
           name: s.name.replace('$', ''),
           cash: s.name.indexOf('$') >= 0,
+          hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
           check: s.status || '', checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
@@ -1008,7 +1012,7 @@ class Component extends DCLogic {
       };
     });
     const to12 = t => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m0) return t || ''; return ((+m0[1] % 12) || 12) + ':' + m0[2]; };
-    const lt12 = firstStu ? to12(firstStu.time || LT[firstStu.id % 6]) : '';
+    const lt12 = firstStu ? to12(firstStu.time || '') : '';
     const pop = {
       open: !!P,
       isMain: !!P && P.mode === 'main',
@@ -1025,7 +1029,7 @@ class Component extends DCLogic {
       monLabel: MON + '월',
       dayLabel: first ? String(first.d) : '',
       cls: popCells.length === 1 && firstStu ? (firstStu.rowBg ? '전문반' : '취미반') : '',
-      sub: !first ? '' : popCells.length === 1 ? '수업 시간 ' + lt12 : '같은 표시가 한 번에 들어갑니다',
+      sub: !first ? '' : popCells.length === 1 ? (lt12 ? '수업 시간 ' + lt12 : '정해진 수업 시간 없음') : '같은 표시가 한 번에 들어갑니다',
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
       payStyle: '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
