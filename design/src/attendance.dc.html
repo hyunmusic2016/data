@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.35.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.36.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1204,7 +1204,10 @@ class Component extends DCLogic {
     //  - 다 쓰고 입금 없이 수업하면 미납 수업(빨간 점선) → 나중에 입금하면 그 수업이 새 수강권 1, 2회로 채워짐
     //  - 남은 회차가 있는데 또 입금하면 다음 수강권으로 대기(+4 대기), 지금 것을 다 쓰면 넘어감
     //  - 레슨시작일 = 그 수강권의 첫 수업(1 또는 결1) 날짜. 아직이면 예정일
-    const calc = s => {
+    // 수강권 계산기: 어느 달까지(MON) 어떤 줄들(all)로 계산할지 받아서 만든다 (화면용 / 수강생대장 연동용)
+    const mkCalc = (MON, EV, all, counting) => {
+    const calcCache = {};
+    return s => {
       const k = keyOf(s);
       if (calcCache[k]) return calcCache[k][s.id];
       const sibs = all.filter(x => keyOf(x) === k);
@@ -1250,7 +1253,7 @@ class Component extends DCLogic {
             marks[used - 1] = v;
             if (used === 1) firstDate = Mm + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
-            if (cur) { lessonCount++; if (s0.rowBg) lessonPro++; else lessonHobby++; }
+            if (cur && counting) { lessonCount++; if (s0.rowBg) lessonPro++; else lessonHobby++; }
             if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
             else { o.text = '결' + used; o.what = used + '회차 결석'; }
             o.kind = v;
@@ -1303,6 +1306,9 @@ class Component extends DCLogic {
       sibs.forEach(x => { calcCache[k][x.id] = Object.assign({ cells: outs[x.id] }, res); });
       return calcCache[k][s.id];
     };
+    };
+    let calcMain = null;
+    const calc = s => (calcMain = calcMain || mkCalc(MON, EV, all, true))(s);
     // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 입금일(수납 날짜)부터 가장 가까운 수업 요일 (R은 직접 넣어야 함, 입금일을 모르면 직접 입력)
     const NEWI = (() => { const o = {}; try { (JSON.parse(localStorage.getItem('academy.students') || '[]') || []).forEach(x => { o[x.name] = x; }); } catch (e) {} return o; })();
     const TKP = (() => { try { return JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {}; } catch (e) { return {}; } })();
@@ -1660,6 +1666,20 @@ class Component extends DCLogic {
       };
     });
     const curT = TEACHERS[st.teacher], curC = PART[curT[1]];
+    // 수강생대장 휴원·퇴원 탭 '수강권' 칸과 연동: 가장 최근 달까지 이어서 계산한 지금 수강권을 이름별로 저장 (academy.tickets)
+    try {
+      const Mx = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));
+      const baseAll = this.baseRows();
+      const calcX = mkCalc(Mx, this.monthEvents(Mx), baseAll, false);
+      const tks = {};
+      baseAll.forEach(s0 => {
+        const nm = s0.name.replace('$', ''); if (tks[nm]) return;
+        const x = calcX(s0); const qn = x.queue.reduce((n, c) => n + c, 0);
+        tks[nm] = (!x.paid ? (x.newReg && x.used === 0 ? '미입금' : '미납 ' + x.used + '회') : Math.min(x.used, x.T) + '/' + x.T + '회 (남은 ' + Math.max(0, x.T - x.used) + '회)') + (qn ? ' +' + qn + ' 대기' : '');
+      });
+      const js = JSON.stringify(tks);
+      if (js !== this._tkSnap) { this._tkSnap = js; localStorage.setItem('academy.tickets', js); }
+    } catch (e) {}
     this._meta = { mon: MON, nd: ND, first: FIRST, teacher: curT[0], lessons: lessonCount, hobby: lessonHobby, pro: lessonPro, count: Object.keys(all.filter(s0 => !s0.status).reduce((o, s0) => { o[s0.sid || s0.id] = 1; return o; }, {})).length };
 
     return {

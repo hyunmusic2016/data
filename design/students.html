@@ -152,7 +152,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.35.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.36.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -468,6 +468,8 @@ class Component extends DCLogic {
       { k: 'restDate', label: '휴원 날짜', w: '96px', g: null },
       { k: 'restReason', label: '휴원 사유', w: '150px', left: true, g: null },
       { k: 'restTicket', label: '휴원 당시 수강권', w: '130px', g: null },
+      // 수강권: 출석부와 연동된 지금 수강권 (휴원·퇴원 탭 끝에 자동으로 붙음)
+      { k: 'ticket', label: '수강권', w: '140px', g: null },
       { k: 'leave', label: '퇴원 날짜', w: '96px', g: null },
       { k: 'leaveReason', label: '퇴원 사유', w: '200px', left: true, g: null },
       { k: 'memo', label: '비고', w: '140px', left: true, g: null },
@@ -518,6 +520,7 @@ class Component extends DCLogic {
   students() {
     // changes: 수정·휴원·퇴원으로 바로 바뀐 내용 / hist: 적용 날짜가 있는 변경 (오늘까지 시작된 것만 반영)
     const ch = this.state.changes || {}, today = this.todayYmd();
+    let TK = {}; try { TK = JSON.parse(localStorage.getItem('academy.tickets') || '{}') || {}; } catch (e) {}
     return this.baseStudents().concat(this.state.added || []).map(s => {
       let x = ch[s.id] ? this.mergeRec(s, ch[s.id]) : s;
       this.allHist(s.id, x.name).filter(h => h.from <= today).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : 0).forEach(h => { x = this.mergeRec(x, h.patch); });
@@ -529,6 +532,9 @@ class Component extends DCLogic {
           : st.kind === 'out' ? { status: 'out', leave: ymd, leaveReason: st.reason || '' }
           : { status: 'act', backDate: ymd, rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' });
       }
+      // 수강권: 출석부(academy.tickets)에서 이름으로 맞춰 지금 상태를 가져온다. 출석부에 없는 원생은 휴원 당시 수강권(샘플)
+      const live = TK[x.name];
+      x = Object.assign({}, x, { ticket: live || x.restTicket || '', ticketNow: live || x.ticketNow });
       return x;
     });
   }
@@ -544,7 +550,7 @@ class Component extends DCLogic {
     return list;
   }
   componentDidMount() {
-    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusShared: this.readStatus() }); };
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusShared: this.readStatus() }); if (e.key === 'academy.tickets') this.setState({ tkTick: Date.now() }); };
     window.addEventListener('storage', this._st);
   }
   componentWillUnmount() { window.removeEventListener('storage', this._st); }
@@ -966,7 +972,7 @@ class Component extends DCLogic {
     const colDef = k => CAT.find(c => c.k === k);
     const tabNow = st.tab || 'act';
     // 휴원 탭: 휴원 날짜·사유·당시 수강권 / 퇴원 탭: 퇴원 날짜·사유 (설정과 상관없이 끝에 붙음)
-    const tabExtra = tabNow === 'rest' ? ['restDate', 'restReason', 'restTicket'] : tabNow === 'out' ? ['leave', 'leaveReason'] : [];
+    const tabExtra = tabNow === 'rest' ? ['restDate', 'restReason', 'ticket'] : tabNow === 'out' ? ['leave', 'leaveReason', 'ticket'] : [];
     const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
     // 휴원·퇴원 정보 칸은 '관리'처럼 오른쪽에 붙여 둔다 (인쇄·엑셀에서는 그냥 뒤에 이어서)
     const nMain = vis.length - tabExtra.length;
@@ -1037,6 +1043,7 @@ class Component extends DCLogic {
         restDate: () => T(s.restDate, 'font-size: 13px; color: #9A5B00; font-weight: 700'),
         restReason: () => TL(s.restReason, 'font-size: 13px; color: #3A4450'),
         restTicket: () => T(s.restTicket, 'font-size: 12px; color: #3A4450'),
+        ticket: () => T(s.ticket, 'font-size: 12px; font-weight: 600; color: ' + (/^미납/.test(s.ticket || '') ? '#C2410C' : /^미입금/.test(s.ticket || '') ? '#9A5B00' : '#3A4450')),
         leaveReason: () => TL(s.leaveReason, 'font-size: 13px; color: #3A4450'),
         rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
