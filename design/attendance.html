@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.36.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.37.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -190,9 +190,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; align-items: center; gap: 10px">
         <span style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F3E6C4; color: #7A5C12; font-size: 18px; font-weight: 800">₩</span>
         <span style="display: flex; flex-direction: column; gap: 2px">
-          <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 800; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 800">수납 완료</span></sc-if></span>
-          <sc-if value="{{pv.notPaid}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
-          <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수납 날짜<input id="pay_date" type="date" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #E2C35E; background: #FBF6E8; font-family: inherit; font-size: 13px; font-weight: 700; color: #7A5C12"></label></sc-if>
+          <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 800; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.umode}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FBE3E1; color: #B4332B; font-size: 12px; font-weight: 800">미납금액 수납</span></sc-if><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 800">수납 완료</span></sc-if></span>
+          <sc-if value="{{pv.showDateText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
+          <sc-if value="{{pv.showDate}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{pv.dateWord}}<input id="pay_date" type="date" min="{{pv.minDate}}" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #E2C35E; background: #FBF6E8; font-family: inherit; font-size: 13px; font-weight: 700; color: #7A5C12"></label></sc-if>
         </span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{pv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
@@ -818,8 +818,9 @@ class Component extends DCLogic {
   stuInfo(name) {
     try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); return (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) { return null; }
   }
-  openPay() {
-    const cells = this.selCells();
+  openPay(late) {
+    // late: 휴원·퇴원 원생이 다음 달 이후에 낸 미납금액 수납 (출석부 칸 없음, 수강권 칸에서 열어 고침)
+    const cells = late ? [{ sid: late.sid, d: 0 }] : this.selCells();
     if (!cells.length) return;
     const m = this.sheetList()[this.state.sheet][1] || 11;
     const cur = this.monthEvents(m);
@@ -832,12 +833,18 @@ class Component extends DCLogic {
     let count = info ? info.count : (s0.tickets || (s0.nameBg ? 8 : 4));
     let unit = info ? info.unit : (pro ? 62500 : 40000);
     let total = info ? info.total : unit * count;
-    const paid = cells.every(c => { const r = cur[c.sid] || {}; return !!(r['p' + c.d] || r[c.d] === 'V'); });
+    const paid = late ? true : cells.every(c => { const r = cur[c.sid] || {}; return !!(r['p' + c.d] || r[c.d] === 'V'); });
+    const umode = s0.g === '퇴휴' && (s0.status === '휴원' || s0.status === '퇴원');
+    const cellDate = '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0');
+    // 미납금액 수납 기본 날짜: 오늘이 이 달 이후면 오늘, 아니면 누른 칸 날짜
+    const today = this.todayYmd();
+    const recDate = late ? late.date : cellDate;
+    const newDate = umode && !paid && today.slice(0, 7) >= cellDate.slice(0, 7) ? today : cellDate;
     // 이미 수납된 칸이면 그때 저장한 수강료 내용을 보여 준다
     let rec = null;
-    try { rec = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).find(x => x.name === name && x.date === '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0')); } catch (e) {}
+    try { rec = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).find(x => x.name === name && x.date === recDate); } catch (e) {}
     if (paid && rec) { count = rec.count || count; unit = rec.unit || unit; total = rec.total || rec.amount || total; }
-    this.setState({ pop: null, pay: { name: name, sid: c0.sid, d: c0.d, m: m, date: '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0'), origDate: '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0'), paid: paid, pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
+    this.setState({ pop: null, pay: { name: name, sid: c0.sid, d: c0.d, m: m, date: paid ? recDate : newDate, origDate: recDate, paid: paid, umode: umode, late: !!late, minDate: '2026-' + String(m).padStart(2, '0') + '-01', pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
       cash: info ? !!info.cashOn : s0.name.indexOf('$') >= 0, cashType: info ? info.cashType : 'person', cashNo: (info && info.cashNo) || s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4),
       teacher: info ? info.teacher : '', part: info ? info.part : '', sched: info ? (info.day + (info.timeTxt ? ' ' + info.timeTxt : '')) : (s0.g + (s0.time ? ' ' + s0.time : '')), phone: info ? (info.gphone || info.phone) : '' } });
     setTimeout(() => { const d = document.getElementById('payDlg'); if (d) d.focus(); }, 30);
@@ -850,6 +857,33 @@ class Component extends DCLogic {
     const P = this.state.pay;
     if (!P) return;
     const rec = { name: P.name, date: P.date, amount: P.total, count: P.count, dur: P.dur, unit: P.unit, total: P.total, pay: P.pay, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher };
+    if (P.umode) {
+      // 미납금액 수납 (휴원·퇴원 원생): 그 달 안의 날짜면 그 날짜 칸에 빨간 ₩, 다음 달 이후면 칸에는 표시하지 않고 수강권 칸에 '미납금액 수납완료 (날짜)'
+      const mm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(P.date || '');
+      const sheetYm = '2026-' + String(P.m).padStart(2, '0');
+      if (!mm || P.date.slice(0, 7) < sheetYm) { this.setState({ pay: Object.assign({}, P, { err: '이 달(' + P.m + '월) 이후 날짜를 골라 주세요.' }) }); return; }
+      const same = P.date.slice(0, 7) === sheetYm, nd = +mm[3];
+      const list = this.readPays();
+      const i = P.paid ? list.findIndex(x => x.name === P.name && x.date === P.origDate) : -1;
+      if (i >= 0) list[i] = Object.assign({}, list[i], rec, { edited: Date.now(), kind: 'unpaid' }); else list.push(Object.assign({ id: 'P' + Date.now(), at: Date.now(), kind: 'unpaid' }, rec));
+      this.writePays(list);
+      const ops = [];
+      if (P.paid) {
+        if (P.late) ops.push({ m: P.m, sid: P.sid, d: 0, key: 'L' + P.origDate, v: '' });
+        else ops.push({ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }, { m: P.m, sid: P.sid, d: P.d, key: 'u' + P.d, v: '' });
+      }
+      if (same) ops.push({ m: P.m, sid: P.sid, d: nd, key: 'p' + nd, v: true }, { m: P.m, sid: P.sid, d: nd, key: 'u' + nd, v: true });
+      else ops.push({ m: P.m, sid: P.sid, d: 0, key: 'L' + P.date, v: true });
+      const patch = this.writeCells(ops, '');
+      patch.pay = null;
+      this.commit(patch);
+      this.focusSheet();
+      if (!P.paid && P.cash) {
+        this.setState({ cashNotice: [{ name: P.name, type: (P.pro ? '전문반' : '취미반') + ' · ' + P.count + '회', purpose: P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)', amount: Number(P.total || 0).toLocaleString('ko-KR') + '원', no: P.cashNo || '—' }] });
+        setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
+      }
+      return;
+    }
     if (P.paid) {
       // 수납 수정: 내용 바꾸고, 날짜가 바뀌면 출석부 수납 표시도 그 날짜 칸으로 옮긴다
       const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(P.date || '');
@@ -882,7 +916,8 @@ class Component extends DCLogic {
     if (!P) return;
     if (!P.cancelAsk) { this.setState({ pay: Object.assign({}, P, { cancelAsk: true }) }); return; }
     this.writePays(this.readPays().filter(x => !(x.name === P.name && x.date === P.origDate)));
-    const patch = this.writeCells([{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }], '');
+    const patch = this.writeCells(P.late ? [{ m: P.m, sid: P.sid, d: 0, key: 'L' + P.origDate, v: '' }]
+      : [{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }, { m: P.m, sid: P.sid, d: P.d, key: 'u' + P.d, v: '' }], '');
     patch.pay = null;
     this.commit(patch);
     this.focusSheet();
@@ -1242,6 +1277,29 @@ class Component extends DCLogic {
       };
       // 수강권·출결 회차는 지난달, 지지난달… 처음 달부터 날짜 순서대로 이어서 계산한다.
       // 이번 달 계산에는 그 전 달들의 기록만 쓰고, 이번 달 기록은 지난 달 계산에 쓰지 않는다 (지난 달 출석부는 그대로).
+      // 입금 처리 (날짜 칸 수납, 휴원·퇴원 원생이 다음 달 이후에 낸 미납금액 수납 모두 같은 절차)
+      const payNow = (c, dt) => {
+      if (!paid) {
+        // 미납(또는 신규) 상태에서 입금: 이미 받은 수업이 새 수강권 회차로 채워진다
+        // 단, 입금한 횟수만큼만 채운다. 미납 수업이 더 많으면 남은 수업은 다시 1회부터 미납으로 이어진다 (수업 전에 입금한 것과 같은 결과)
+        newReg = false;
+        if (used <= c) {
+          paid = true; T = c; prevT = 0; prevMarks = []; payDate = dt;
+          tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
+        } else {
+          const covered = tCells.slice(0, c), rest = tCells.slice(c);
+          if (covered.length) { const lc = covered[covered.length - 1]; keepStart(covered[0].m + '/' + covered[0].d, new Date(2026, lc.m - 1, lc.d)); }
+          covered.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
+          prevT = c; prevMarks = marks.slice(0, c);
+          marks = marks.slice(c); used = used - c; T = T0; paid = false; payDate = null;
+          rest.forEach((t, i) => { const n = i + 1; if (t.kind === '결') { t.text = '결' + n; t.what = n + '회차 결석 · 미납 수업'; } else { t.text = String(n); t.what = n + '회차 출석 · 미납 수업'; } });
+          tCells = rest;
+          firstDate = rest.length ? rest[0].m + '/' + rest[0].d : '';
+        }
+      } else if (used < T) { queue.push(c); queueD.push(dt); }
+      else { keepStart(firstDate, lastLesson); payDate = after(dt); T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
+      };
+      let latePaid = '';
       const runMonth = (Mm, cur) => {
         const EVm = cur ? EV : this.monthEvents(Mm);
         const NDm = new Date(2026, Mm, 0).getDate();
@@ -1272,30 +1330,22 @@ class Component extends DCLogic {
           if (pay) {
             if (!v) { o.text = '₩'; o.kind = 'V'; }
             o.what = o.what ? o.what + ' · 수납' : '수납';
-            o.pay = !!v;
+            o.pay = !!v; o.upay = !!e['u' + d];
             const pr = PAYS[s0.name.replace('$', '') + '|2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0')];
             const c = (pr && pr.count) || T0;
-            if (!paid) {
-              // 미납(또는 신규) 상태에서 입금: 이미 받은 수업이 새 수강권 회차로 채워진다
-              // 단, 입금한 횟수만큼만 채운다. 미납 수업이 더 많으면 남은 수업은 다시 1회부터 미납으로 이어진다 (수업 전에 입금한 것과 같은 결과)
-              newReg = false;
-              if (used <= c) {
-                paid = true; T = c; prevT = 0; prevMarks = []; payDate = new Date(2026, Mm - 1, d);
-                tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
-              } else {
-                const covered = tCells.slice(0, c), rest = tCells.slice(c);
-                if (covered.length) { const lc = covered[covered.length - 1]; keepStart(covered[0].m + '/' + covered[0].d, new Date(2026, lc.m - 1, lc.d)); }
-                covered.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
-                prevT = c; prevMarks = marks.slice(0, c);
-                marks = marks.slice(c); used = used - c; T = T0; paid = false; payDate = null;
-                rest.forEach((t, i) => { const n = i + 1; if (t.kind === '결') { t.text = '결' + n; t.what = n + '회차 결석 · 미납 수업'; } else { t.text = String(n); t.what = n + '회차 출석 · 미납 수업'; } });
-                tCells = rest;
-                firstDate = rest.length ? rest[0].m + '/' + rest[0].d : '';
-              }
-            } else if (used < T) { queue.push(c); queueD.push(new Date(2026, Mm - 1, d)); }
-            else { keepStart(firstDate, lastLesson); payDate = after(new Date(2026, Mm - 1, d)); T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
+            payNow(c, new Date(2026, Mm - 1, d));
           }
           if (cur) outs[x.id].push(o);
+        });
+        // 휴원·퇴원 원생이 이 달이 지난 뒤 낸 미납금액 수납: 출석부 칸에는 표시하지 않고 수강권에만 반영
+        sibs.forEach(x => {
+          const e = EVm[x.id] || {};
+          Object.keys(e).filter(k => /^L\d{4}-\d{2}-\d{2}$/.test(k)).sort().forEach(k => {
+            const ds = k.slice(1); const pr = PAYS[s0.name.replace('$', '') + '|' + ds];
+            const p = ds.split('-').map(Number);
+            payNow((pr && pr.count) || T0, new Date(p[0], p[1] - 1, p[2]));
+            if (cur) latePaid = { txt: p[1] + '/' + p[2], date: ds, sid: x.id };
+          });
         });
       };
       for (let m = M0; m < MON; m++) runMonth(m, false);
@@ -1304,7 +1354,7 @@ class Component extends DCLogic {
       runMonth(MON, true);
       // 지금 수강권을 다 썼고 대기 중인 수강권이 있으면 바로 다음 수강권을 보여 준다
       if (paid && used >= T && queue.length) nextTicket();
-      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, payDate: payDate, doneStarts: doneStarts.slice(), marks: marks,
+      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, payDate: payDate, doneStarts: doneStarts.slice(), latePaid: latePaid, marks: marks,
         done: paid && used >= T, needPay: !paid, since: firstDate, startUsed: startUsed, startPaid: startPaid };
       calcCache[k] = {};
       sibs.forEach(x => { calcCache[k][x.id] = Object.assign({ cells: outs[x.id] }, res); });
@@ -1388,9 +1438,11 @@ class Component extends DCLogic {
           : r.used > 0 ? ['—', 'color: #8A949E']
           : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
           : ['예정일 입력', 'color: #5B7FB8; font-weight: 600; text-decoration: underline'];
+        let tkUse = tk;
+        if (r.latePaid) tkUse = [(!r.paid ? tk[0] + ' · ' : '') + '미납금액 수납완료 (' + r.latePaid.txt + ')', 'color: #007E82; font-weight: 800'];
         const subParts = [];
-        if (starts.length) subParts.push({ t: starts.join(', ') + (tk[0] ? (/\(예정\)$/.test(tk[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
-        if (tk[0]) subParts.push({ t: tk[0], style: tk[1] });
+        if (starts.length) subParts.push({ t: starts.join(', ') + (tkUse[0] ? (/\(예정\)$/.test(tkUse[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
+        if (tkUse[0]) subParts.push({ t: tkUse[0], style: tkUse[1] });
         expRow.since = subParts.map(x => x.t).join('');
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
@@ -1413,9 +1465,10 @@ class Component extends DCLogic {
           subText: tk[0], subParts: subParts,
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
           queueTxt: qn ? '+' + qn + ' 대기' : '',
-          tkClick: () => { if (canPlan) this.openTkPlan(s, plan); },
+          // 다음 달 이후에 낸 미납금액 수납은 출석부 칸이 없으므로 수강권 칸을 눌러 고치거나 취소한다
+          tkClick: () => { if (r.latePaid) this.openPay({ sid: r.latePaid.sid, date: r.latePaid.date }); else if (canPlan) this.openTkPlan(s, plan); },
           tkTitle: canPlan ? '눌러서 레슨시작일(예정) 직접 넣기' : '',
-          tkCls: canPlan ? 'qname' : '',
+          tkCls: canPlan || r.latePaid ? 'qname' : '',
           lastStyle: base + 'background: ' + (s.rowBg ? rowBg : '#F7F8F8') + '; border-left: 1px solid ' + GRID,
           cells: r.cells.map(x => {
             const w = (x.d - 1 + FIRST) % 7;
@@ -1428,9 +1481,9 @@ class Component extends DCLogic {
               if (x.d === SEL.c2) edges.push('inset -2px 0 0 ' + BLUE);
             }
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
-            const bg = x.pay ? '#FAEFD2' : s.rowBg ? rowBg : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
+            const bg = x.pay ? (x.upay ? '#FCEBEA' : '#FAEFD2') : s.rowBg ? rowBg : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)) + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
+              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
@@ -1438,7 +1491,7 @@ class Component extends DCLogic {
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
               style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
-                ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px #E2C35E'] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
+                ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px ' + (x.upay ? '#E8A9A4' : '#E2C35E')] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
         };
@@ -1528,7 +1581,8 @@ class Component extends DCLogic {
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
       payStyle: '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
-      payLabel: curPay ? '수납 수정' : '수납',
+      // 휴원·퇴원 원생은 '수납' 대신 '미납금액 수납'
+      payLabel: (firstStu && firstStu.g === '퇴휴' && (firstStu.status === '휴원' || firstStu.status === '퇴원')) ? (curPay ? '미납금액 수납 수정' : '미납금액 수납') : curPay ? '수납 수정' : '수납',
       payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: #7A5C12; padding: 2px 6px; border-radius: 6px' : 'display: none',
       payKey: keycap('#7A5C12', '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
@@ -1716,8 +1770,10 @@ class Component extends DCLogic {
         const upd = p => this.setState({ pay: Object.assign({}, P, p) });
         const t12 = t => t;
         return {
-          open: true, name: P.name, paid: P.paid, notPaid: !P.paid, date: P.date,
-          setDate: e => upd({ date: e.target.value }),
+          open: true, name: P.name, paid: P.paid, notPaid: !P.paid, date: P.date, umode: !!P.umode,
+          showDate: P.paid || !!P.umode, showDateText: !P.paid && !P.umode, minDate: P.umode ? P.minDate : '',
+          dateWord: P.umode ? '결제 일자' : '수납 날짜',
+          setDate: e => upd({ date: e.target.value, err: '' }),
           cancelPay: () => this.cancelPay(),
           cancelLabel: P.cancelAsk ? '한 번 더 누르면 취소' : '수납 취소',
           clsLabel: P.pro ? '전문반' : '취미반',
@@ -1745,7 +1801,7 @@ class Component extends DCLogic {
           cashOn: P.cash,
           cashLine: (P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') + ' · 발급 번호 ' + (P.cashNo || '—') + ' · 현금으로 받으면 학원 단말기로 ' + won(P.total) + '원 발급',
           closeLabel: P.paid ? '닫기' : '취소',
-          goLabel: P.paid ? '수정 저장' : '수납하기',
+          goLabel: P.paid ? '수정 저장' : P.umode ? '미납금액 수납하기' : '수납하기',
           goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)',
           close: close,
           go: () => this.savePay(),
