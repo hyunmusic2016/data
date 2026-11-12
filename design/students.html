@@ -138,7 +138,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.18.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.18.2</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -372,6 +372,7 @@ class Component extends DCLogic {
       { k: 'birth', label: '생년월일', w: '104px', g: '기본 정보', f: ['birthY'] },
       { k: 'addr', label: '주소', w: '200px', left: true, g: '기본 정보' },
       { k: 'join', label: '입원 연월일', w: '96px', g: '기본 정보', f: ['joinY'] },
+      { k: 'backDate', label: '복귀 날짜', w: '96px', g: '기본 정보', f: ['backY'] },
       { k: 'part', label: '파트', w: '92px', g: '수업 정보', f: ['part'] },
       { k: 'teacher', label: '강사', w: '92px', g: '수업 정보', f: ['teacher'] },
       { k: 'day', label: '레슨요일', w: '92px', g: '수업 정보', f: ['day'] },
@@ -513,7 +514,7 @@ class Component extends DCLogic {
       [245, '베이스', '심소희', '', '월요일', '성인', '0102-8124', '', '24.05.07', '26.07.27', '', '', 'out', {}, null, '개인 사정'],
       [335, '보컬', '진미연', '진호준', '변동', '학생', '0109-1609', '0109-1619', '25.03.24', '26.07.31', '', '', 'out', {}]
     ];
-    return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13], days: r[14], restReason: r[15] || '', leaveReason: r[15] || '' }));
+    return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13], days: r[14], restReason: r[15] || '', leaveReason: r[15] || '', backDate: { 471: '26.09.01', 158: '25.12.03' }[r[0]] || '' }));
   }
   doPrint() {
     const bw = this.state.printBW !== false;
@@ -635,6 +636,7 @@ class Component extends DCLogic {
     const tMin = t => { const p = t.split(':'); const h = +p[0]; return (h < 9 ? h + 12 : h) * 60 + +p[1]; };
     const tSlots = all.reduce((a, s) => a.concat(tOf(s)), []).filter((v, i, a) => a.indexOf(v) === i).sort((x, y) => tMin(x) - tMin(y));
     const joinY = s => { const m = /^(\d{2})\./.exec(s.join || ''); return m ? 2000 + +m[1] : 0; };
+    const backY = s => { const m = /^(\d{2})\./.exec(s.backDate || ''); return m ? 2000 + +m[1] : 0; };
     const birthY = s => { const m = /^(\d{4})/.exec(s.birth || ''); return m ? +m[1] : 0; };
     const uniq = f0 => all.map(f0).filter((v, i, a) => a.indexOf(v) === i).sort((x, y) => x - y);
     const FCAT = {
@@ -650,6 +652,7 @@ class Component extends DCLogic {
       cash: ['현금영수증', [['y', '발급'], ['n', '발급 안 함']], s => s.cashOn ? 'y' : 'n'],
       joinY: ['입원 연도', uniq(s => joinY(s)).reverse().map(v => [v, v + '년']), s => joinY(s)],
       birthY: ['태어난 해', uniq(s => birthY(s)).filter(Boolean).reverse().map(v => [v, v + '년']).concat(all.some(s => !birthY(s)) ? [[0, '모름']] : []), s => birthY(s)],
+      backY: ['복귀 연도', uniq(s => backY(s)).filter(Boolean).reverse().map(v => [v, v + '년']).concat([[0, '복귀 기록 없음']]), s => backY(s)],
       cashType: ['현금영수증 용도', [['person', '개인 (소득공제)'], ['biz', '사업자 (지출증빙)'], ['none', '발급 안 함']], s => !s.cashOn ? 'none' : ((s.extra || {}).cashType || 'person')],
       unit: ['회당 수업료', uniq(s => s.unit).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.unit],
       total: ['수강료 합계', uniq(s => s.total).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.total],
