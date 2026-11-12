@@ -6,6 +6,11 @@
 <title>학원 출석부</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
+.aflash>*{animation:aflash 3.6s ease-out}
+@keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
+.flashtag{animation:tagfade 4s ease-out forwards}
+@keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
+
 .qname{cursor:pointer}.qname:hover{background-image:linear-gradient(rgba(138,180,232,.16),rgba(138,180,232,.16))!important}.qname.qsel{box-shadow:inset 0 0 0 2px #8AB4E8;background-image:linear-gradient(rgba(138,180,232,.2),rgba(138,180,232,.2))!important}
 .qedlg [disabled]{opacity:.42;cursor:not-allowed!important}
 body{margin:0;background:#F3F5F4}
@@ -74,8 +79,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <div class="grp" style="{{g.boxStyle}}">
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span><span style="{{g.countStyle}}">{{g.count}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
-              <div style="display: contents">
-                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
+              <div class="{{r.rowCls}}" style="display: contents">
+                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span style="{{r.ticketCell}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span>
@@ -131,7 +136,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.4</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -447,7 +452,13 @@ class Component extends DCLogic {
     const prev = { days: cur.map(x => x.g), times: cur.reduce((o, x) => { if (x.time) o[x.g] = x.time; return o; }, {}), stick: !!(cur[0] || {}).stick };
     const list = this.readShared().concat([{ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, stick: !!Q.stick, prev: prev }]);
     try { localStorage.setItem('academy.lessonChanges', JSON.stringify(list)); } catch (e) {}
+    // 옮겨 간 줄을 보여 주고 잠깐 표시
+    const before = cur.map(x => x.g).join('·'), after = days.join('·');
+    this._flash = { key: Q.key, tag: before !== after ? '→ ' + after : '수정됨' };
+    clearTimeout(this._ft);
+    this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
     this.setState({ shared: list, qe: null });
+    setTimeout(() => { const el = document.querySelector('.aflash > span'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
     this.focusSheet();
   }
   baseRows() {
@@ -1027,6 +1038,8 @@ class Component extends DCLogic {
         return {
           name: s.name.replace('$', ''),
           quick: () => { if (s.g !== '퇴휴') this.openQuick(s); },
+          rowCls: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? 'aflash' : '',
+          flashTag: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? this._flash.tag : '',
           nameCls: s.g !== '퇴휴' ? 'qname' + (st.qe && st.qe.rowId === s.id ? ' qsel' : '') : '',
           nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : '',
           cash: s.name.indexOf('$') >= 0,
