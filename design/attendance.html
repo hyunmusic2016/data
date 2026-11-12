@@ -78,7 +78,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
-                  <button type="button" onClick="{{x.press}}" aria-label="{{x.label}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span></button>
+                  <button type="button" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span><span style="{{x.handle}}"></span></button>
                 </sc-for>
                 <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{r.lastStyle}}"></span></sc-for>
               </div>
@@ -119,7 +119,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.1.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.0</span>
   </nav>
 </div>
 </template>
@@ -129,7 +129,9 @@ class DCLogic{constructor(props){this.props=props||{};this.state={}}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
+    this.dragging = false;
     this.state = {
+      sel: null,
       teacher: 0,
       sheet: 0,
       extra: [],
@@ -235,6 +237,24 @@ class Component extends DCLogic {
     if (m === 11) this.setState({ ev: evAll });
     else { const bm = Object.assign({}, this.state.evByMonth); bm[m] = evAll; this.setState({ evByMonth: bm }); }
   }
+  componentDidMount() {
+    this._up = () => { this.dragging = false; };
+    window.addEventListener('mouseup', this._up);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('mouseup', this._up);
+  }
+  selDown(e, r, c) {
+    if (e && e.preventDefault) e.preventDefault();
+    this.dragging = true;
+    this.setState({ sel: { r1: r, c1: c, r2: r, c2: c } });
+  }
+  selEnter(r, c) {
+    if (!this.dragging || !this.state.sel) return;
+    const s = this.state.sel;
+    if (s.r2 === r && s.c2 === c) return;
+    this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c } });
+  }
   renderVals() {
     const st = this.state;
     const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
@@ -319,11 +339,15 @@ class Component extends DCLogic {
 
     const all = this.students();
     const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['퇴휴', '퇴\n&\n휴']];
+    const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
+    const BLUE = '#1A73E8';
+    let rowIdx = 0;
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
       const isTodayG = MON === 11 && gp[0] === '수';
       const list = all.filter(s => s.g === gp[0]);
       const rows = list.map(s => {
+        const R = rowIdx++;
         const r = calc(s);
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
@@ -344,12 +368,25 @@ class Component extends DCLogic {
           lastStyle: base + 'background: ' + (s.rowBg ? rowBg : '#F7F8F8') + '; border-left: 1px solid ' + GRID,
           cells: r.cells.map(x => {
             const w = (x.d - 1 + FIRST) % 7;
+            const inSel = !!SEL && R >= SEL.r1 && R <= SEL.r2 && x.d >= SEL.c1 && x.d <= SEL.c2;
+            const edges = [];
+            if (inSel) {
+              if (R === SEL.r1) edges.push('inset 0 2px 0 ' + BLUE);
+              if (R === SEL.r2) edges.push('inset 0 -2px 0 ' + BLUE);
+              if (x.d === SEL.c1) edges.push('inset 2px 0 0 ' + BLUE);
+              if (x.d === SEL.c2) edges.push('inset -2px 0 0 ' + BLUE);
+            }
+            const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const bg = s.rowBg ? rowBg : x.d === TODAY ? '#FFFBEB' : (w === 0 || w === 6) ? tintWe : tint;
             return {
               text: x.text.replace('!', ''), chip: s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
-              press: () => this.press(s.id, x.d),
-              style: base + 'background: ' + bg + '; border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: pointer; font-family: inherit'
+              down: e => this.selDown(e, R, x.d),
+              enter: () => this.selEnter(R, x.d),
+              selected: inSel ? 'true' : 'false',
+              handle: corner ? 'position: absolute; right: -5px; bottom: -5px; width: 9px; height: 9px; border-radius: 50%; background: ' + BLUE + '; border: 1.5px solid #FFFFFF; z-index: 3; pointer-events: none' : 'display: none',
+              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(26, 115, 232, 0.12), rgba(26, 115, 232, 0.12)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: cell; font-family: inherit; ' +
+                (edges.length ? 'box-shadow: ' + edges.join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
         };
@@ -456,6 +493,7 @@ function render(){const app=document.getElementById('app');const keepX=[...app.q
   tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));app.replaceChildren(frag);
   app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]})}
 render();
+if(comp.componentDidMount)comp.componentDidMount();
 </script>
 </body>
 </html>
