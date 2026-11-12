@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <title>출석부</title>
 <script src="./support.js"></script>
+<script src="/_blob/d362ec134415b0d7cc446ad841566554"></script>
 </head>
 <body>
 <x-dc>
@@ -100,7 +101,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
       <div style="display: flex; align-items: center; gap: 8px">
       </div>
-      <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+      <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
         엑셀로 내보내기
       </button>
@@ -121,7 +122,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.6.0</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -552,6 +553,85 @@ class Component extends DCLogic {
     if (e.shiftKey) this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c }, pop: null });
     else this.setState({ sel: { r1: r, c1: c, r2: r, c2: c }, pop: null });
   }
+  async exportExcel() {
+    const X = window.XLSX;
+    const meta = this._meta || {};
+    if (!X || !this._exp) { window.console && console.warn('엑셀 도구를 불러오지 못했습니다'); return; }
+    const MON = meta.mon, ND = meta.nd, FIRST = meta.first;
+    const LINE = { style: 'thin', color: { rgb: 'C9D0CC' } };
+    const BOR = { top: LINE, bottom: LINE, left: LINE, right: LINE };
+    const ws = {}, merges = [];
+    let maxR = 0;
+    const put = (r, c, v, o) => {
+      o = o || {};
+      const cell = typeof v === 'number' ? { t: 'n', v: v } : { t: 's', v: v == null ? '' : String(v) };
+      const s = { alignment: { horizontal: o.align || 'center', vertical: 'center', wrapText: !!o.wrap }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold } };
+      if (o.color) s.font.color = { rgb: o.color };
+      if (o.border !== false) s.border = BOR;
+      if (o.fill) s.fill = { patternType: 'solid', fgColor: { rgb: o.fill } };
+      cell.s = s;
+      ws[X.utils.encode_cell({ r: r, c: c })] = cell;
+      if (r > maxR) maxR = r;
+    };
+    const LAST = 4 + 31 - 1;
+    const circ = n => (n >= 1 && n <= 20) ? String.fromCharCode(0x245F + n) : String(n);
+    const dayText = c => {
+      const t = (c.text || '').replace('!', '');
+      let b = c.kind === '수' ? circ(+t) : c.kind === '결' ? t : c.kind === '보' ? '보' : c.kind === 'M' ? '보강 ' + t : c.kind === '연' ? '연' : c.kind === 'V' ? 'V' : '';
+      if (c.pay && c.kind !== 'V') b += ' V';
+      return b;
+    };
+    for (let c = 0; c <= LAST; c++) put(0, c, c === 0 ? '현실용음악학원 출석부' : '', { bold: true, sz: 15, fill: 'E6F6F6', border: false });
+    merges.push({ s: { r: 0, c: 0 }, e: { r: 0, c: LAST } });
+    const info = [[0, 3, MON ? '2026년 ' + MON + '월' : ''], [4, 19, meta.teacher || ''], [20, 27, '레슨횟수 ' + (meta.lessons || 0) + ' (취미 ' + (meta.hobby || 0) + ' / 전문 ' + (meta.pro || 0) + ')'], [28, LAST, '재원 ' + (meta.count || 0) + '명']];
+    info.forEach(([a, b, v]) => { for (let c = a; c <= b; c++) put(1, c, c === a ? v : '', { bold: true }); merges.push({ s: { r: 1, c: a }, e: { r: 1, c: b } }); });
+    ['요일', '이름', '결산', '레슨시작일'].forEach((h, i) => put(2, i, h, { bold: true, fill: 'EEF2EE' }));
+    for (let d = 1; d <= 31; d++) {
+      const w = (d - 1 + FIRST) % 7;
+      put(2, 3 + d, d <= ND ? d : '', { bold: true, fill: d > ND ? 'F2F2F2' : w === 0 ? 'FDE8E7' : w === 6 ? 'E3ECFD' : 'EEF2EE', color: d > ND ? undefined : w === 0 ? 'D92D20' : w === 6 ? '2563EB' : undefined });
+    }
+    let r = 3;
+    const groups = [];
+    this._exp.forEach(x => { const g = groups[groups.length - 1]; if (g && g.g === x.g) g.rows.push(x); else groups.push({ g: x.g, label: x.label, rows: [x] }); });
+    groups.forEach(g => {
+      const start = r;
+      g.rows.forEach(x => {
+        const fill = x.pro ? 'FDF0F2' : undefined;
+        put(r, 0, r === start ? g.label : '', { bold: true, sz: 12 });
+        put(r, 1, x.name + (x.cash ? ' $' : ''), { bold: true, fill: x.t8 ? 'E6DFF5' : fill });
+        put(r, 2, x.sum ? circ(x.sum) : '', { fill: fill, sz: 11 });
+        put(r, 3, x.needPay ? '미납' : (x.since || ''), { fill: fill, color: x.needPay ? 'C2410C' : undefined });
+        for (let d = 1; d <= 31; d++) {
+          const c = x.cells[d - 1];
+          const txt = c ? dayText(c) : '';
+          const col = c && c.kind === '결' ? 'C2410C' : c && (c.kind === 'M' || c.kind === '보') ? '1E4FA8' : c && c.kind === 'V' ? '7A5C12' : c && c.kind === '연' ? '5E6873' : x.pro && c && c.kind === '수' ? 'C8323C' : '1F7A5A';
+          put(r, 3 + d, txt, { fill: d > ND ? 'F2F2F2' : (c && c.pay ? 'FAEFD2' : fill), color: col, sz: 11 });
+        }
+        r++;
+      });
+      if (r - 1 > start) merges.push({ s: { r: start, c: 0 }, e: { r: r - 1, c: 0 } });
+    });
+    ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxR, c: LAST } });
+    ws['!merges'] = merges;
+    ws['!cols'] = [{ wch: 6 }, { wch: 12 }, { wch: 6 }, { wch: 10 }].concat(Array(31).fill({ wch: 5.5 }));
+    ws['!rows'] = [{ hpt: 28 }, { hpt: 20 }];
+    ws['!freeze'] = { xSplit: 4, ySplit: 3 };
+    const wb = X.utils.book_new();
+    X.utils.book_append_sheet(wb, ws, (MON || '') + '월 출석부');
+    const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+    const fname = '출석부_' + (meta.teacher || '').replace(/\s/g, '') + '_2026년' + MON + '월.xlsx';
+    const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    try {
+      if (window.claude && window.claude.use) {
+        const dl = await window.claude.use('downloads');
+        if (dl) { await dl.save({ filename: fname, data: blob }); return; }
+      }
+    } catch (err) { if (err && err.code === 'declined') return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
   renderVals() {
     const st = this.state;
     const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
@@ -658,6 +738,7 @@ class Component extends DCLogic {
     let rowIdx = 0;
     this._rowSids = [];
     this._nd = ND;
+    this._exp = [];
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
       const isTodayG = MON === 11 && gp[0] === '수';
@@ -666,6 +747,7 @@ class Component extends DCLogic {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
         const r = calc(s);
+        this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: s.start, since: r.since, needPay: r.needPay, cells: r.cells });
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
@@ -842,6 +924,7 @@ class Component extends DCLogic {
       };
     });
     const curT = TEACHERS[st.teacher], curC = PART[curT[1]];
+    this._meta = { mon: MON, nd: ND, first: FIRST, teacher: curT[0], lessons: lessonCount, hobby: lessonHobby, pro: lessonPro, count: all.filter(s0 => !s0.status).length };
 
     return {
       teacherTabs: teacherTabs,
@@ -862,6 +945,7 @@ class Component extends DCLogic {
       gridStyle: COLS,
       c: c,
       headCount: all.filter(s => !s.status).length,
+      exportX: () => this.exportExcel(),
       lessonCount: lessonCount,
       lessonHobby: lessonHobby,
       lessonPro: lessonPro,
