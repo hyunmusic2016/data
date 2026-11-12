@@ -130,7 +130,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.7.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.7.1</span>
   </nav>
   <sc-if value="{{sm.anyOpen}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{sm.closeAll}}" onContextMenu="{{sm.closeAll}}" style="position: fixed; inset: 0; z-index: 30"></div>
@@ -145,7 +145,12 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
   </sc-if>
   <sc-if value="{{sm.listOpen}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" role="menu" aria-label="모든 시트" style="position: fixed; left: 12px; bottom: 44px; z-index: 31; width: 300px; max-height: 60vh; overflow: auto; padding: 6px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.16)">
-      <div style="padding: 6px 10px 8px; font-size: 11px; font-weight: 700; color: #8A949E">모든 시트 · 최신순</div>
+      <div role="tablist" aria-label="시트 종류" style="display: flex; gap: 4px; padding: 4px; margin-bottom: 4px; border-radius: 9px; background: #F1F3F2">
+        <sc-for list="{{sm.kinds}}" as="k" hint-placeholder-count="2">
+          <button type="button" role="tab" aria-selected="{{k.on}}" onClick="{{k.pick}}" style="{{k.style}}">{{k.label}}<span style="{{k.cntStyle}}">{{k.cnt}}</span></button>
+        </sc-for>
+      </div>
+      <div style="padding: 4px 10px 6px; font-size: 11px; font-weight: 600; color: #8A949E">최신순</div>
       <sc-for list="{{sm.items}}" as="it" hint-placeholder-count="5">
         <button type="button" role="menuitem" onClick="{{it.pick}}" style="{{it.style}}"><span style="{{it.dot}}"></span><span style="flex: 1; text-align: left; white-space: nowrap">{{it.name}}</span><span style="{{it.tagStyle}}">숨김</span></button>
       </sc-for>
@@ -251,6 +256,7 @@ class Component extends DCLogic {
       hiddenSheets: [],
       sheetCtx: null,
       sheetList: false,
+      sheetListTab: 'att',
       sel: null,
       past: [],
       future: [],
@@ -973,7 +979,16 @@ class Component extends DCLogic {
       ctxOpen: !!ctx,
       listOpen: !!st.sheetList,
       closeAll: e => { if (e && e.preventDefault && e.type === 'contextmenu') e.preventDefault(); this.setState({ sheetCtx: null, sheetList: false }); },
-      toggleList: () => this.setState({ sheetList: !st.sheetList, sheetCtx: null }),
+      toggleList: () => this.setState({ sheetList: !st.sheetList, sheetCtx: null, sheetListTab: (sheets[st.sheet] && sheets[st.sheet][1] === 0) ? 'log' : 'att' }),
+      kinds: [['att', '출석부'], ['log', '수업진행표·업무일지']].map(k => {
+        const on = (st.sheetListTab || 'att') === k[0];
+        return {
+          label: k[1], on: on ? 'true' : 'false', cnt: sheets.filter(t => (k[0] === 'att') === (t[1] > 0)).length,
+          pick: () => this.setState({ sheetListTab: k[0] }),
+          style: 'flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 30px; padding: 0 8px; border: none; border-radius: 7px; font-family: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #FFFFFF; color: #17201C; font-weight: 700; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.12)' : 'background: transparent; color: #5E6873; font-weight: 500'),
+          cntStyle: 'font-size: 10px; font-weight: 700; color: ' + (on ? (k[0] === 'att' ? '#00A6AB' : '#5B86C9') : '#8A949E')
+        };
+      }),
       ctxStyle: 'position: fixed; left: ' + (ctx ? Math.min(ctx.x, window.innerWidth - 180) : 0) + 'px; top: ' + (ctx ? Math.max(8, ctx.y - 52) : 0) + 'px; z-index: 31; width: 168px; padding: 4px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 10px; box-shadow: 0 10px 28px rgba(23, 32, 28, 0.16)',
       hideDis: visibleCount <= 1,
       hideStyle: 'display: flex; align-items: center; gap: 8px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; background: #FFFFFF; font-family: inherit; font-size: 13px; text-align: left; cursor: ' + (visibleCount <= 1 ? 'not-allowed; color: #B7C0BC' : 'pointer; color: #17201C'),
@@ -985,7 +1000,7 @@ class Component extends DCLogic {
         if (ns === ctx.i) { const nx = sheets.findIndex(t => nh.indexOf(t[0]) < 0); ns = nx < 0 ? 0 : nx; }
         this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null });
       },
-      items: ordered.map(o => {
+      items: ordered.filter(o => ((st.sheetListTab || 'att') === 'att') === (o.t[1] > 0)).map(o => {
         const isH = hidden.indexOf(o.t[0]) >= 0, on = o.i === st.sheet;
         return {
           name: o.t[0],
