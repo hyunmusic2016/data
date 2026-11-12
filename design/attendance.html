@@ -89,7 +89,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                 <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
-                    <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span>
+                    <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{r.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; letter-spacing: -0.02em; color: #B4332B; white-space: nowrap">{{r.lateLine}}</span></sc-if>
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.37.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.37.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -188,11 +188,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div class="noprint" onMouseDown="{{pv.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
     <div class="noprint" role="dialog" aria-label="수납" onKeyDown="{{pv.key}}" tabIndex="-1" id="payDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 760px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F3E6C4; color: #7A5C12; font-size: 18px; font-weight: 800">₩</span>
+        <span style="{{pv.iconStyle}}">₩</span>
         <span style="display: flex; flex-direction: column; gap: 2px">
           <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 800; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.umode}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FBE3E1; color: #B4332B; font-size: 12px; font-weight: 800">미납금액 수납</span></sc-if><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 800">수납 완료</span></sc-if></span>
           <sc-if value="{{pv.showDateText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
-          <sc-if value="{{pv.showDate}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{pv.dateWord}}<input id="pay_date" type="date" min="{{pv.minDate}}" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #E2C35E; background: #FBF6E8; font-family: inherit; font-size: 13px; font-weight: 700; color: #7A5C12"></label></sc-if>
+          <sc-if value="{{pv.showDate}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{pv.dateWord}}<input id="pay_date" type="date" min="{{pv.minDate}}" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="{{pv.dateStyle}}"></label></sc-if>
         </span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{pv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
@@ -210,7 +210,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 
       <div style="display: flex; flex-direction: column; gap: 12px">
         <div style="display: flex; align-items: center; gap: 10px">
-          <span style="width: 30px; height: 30px; flex: none; border-radius: 9px; background: #F3E6C4; color: #7A5C12; display: inline-flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4"></path></svg></span>
+          <span style="{{pv.feeIcon}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4"></path></svg></span>
           <span style="font-size: 16px; font-weight: 800; color: #17201C">수강료</span>
           <span style="font-size: 12px; font-weight: 600; color: #8A949E">이번 수납에만 적용</span>
         </div>
@@ -382,11 +382,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             </button>
           </sc-for>
         </div>
-        <button type="button" class="pbtn" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
+        <sc-if value="{{pop.showPay}}" hint-placeholder-val="{{ true }}"><button type="button" class="pbtn" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
           <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">{{pop.payLabel}}</span>
           <span style="{{pop.payCur}}">현재</span>
           <span style="{{pop.payKey}}">0</span>
-        </button>
+        </button></sc-if>
         <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
           <span><b style="color: #5E6873">Delete</b> 지우기</span>
           <span><b style="color: #5E6873">Esc</b> 닫기</span>
@@ -839,7 +839,11 @@ class Component extends DCLogic {
     // 미납금액 수납 기본 날짜: 오늘이 이 달 이후면 오늘, 아니면 누른 칸 날짜
     const today = this.todayYmd();
     const recDate = late ? late.date : cellDate;
-    const newDate = umode && !paid && today.slice(0, 7) >= cellDate.slice(0, 7) ? today : cellDate;
+    // 미납금액 수납: 누른 칸 날짜가 결제 일자 (다음 달 이후에 받았으면 달력에서 바꿈)
+    const newDate = cellDate;
+    const unpaidN = (this._unpaid || {})[c0.sid] || 0;
+    if (umode && !paid && !unpaidN) return;
+    if (umode && !paid) { count = unpaidN; total = unit * count; }
     // 이미 수납된 칸이면 그때 저장한 수강료 내용을 보여 준다
     let rec = null;
     try { rec = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).find(x => x.name === name && x.date === recDate); } catch (e) {}
@@ -1386,6 +1390,7 @@ class Component extends DCLogic {
     this._rowSids = [];
     this._nd = ND;
     this._exp = [];
+    this._unpaid = {};
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
       const isTodayG = MON === 11 && gp[0] === '수';
@@ -1438,12 +1443,14 @@ class Component extends DCLogic {
           : r.used > 0 ? ['—', 'color: #8A949E']
           : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
           : ['예정일 입력', 'color: #5B7FB8; font-weight: 600; text-decoration: underline'];
-        let tkUse = tk;
-        if (r.latePaid) tkUse = [(!r.paid ? tk[0] + ' · ' : '') + '미납금액 수납완료 (' + r.latePaid.txt + ')', 'color: #007E82; font-weight: 800'];
+        const tkUse = tk;
+        const lateLine = r.latePaid ? '미납금액 수납완료 (' + r.latePaid.txt + ')' : '';
         const subParts = [];
         if (starts.length) subParts.push({ t: starts.join(', ') + (tkUse[0] ? (/\(예정\)$/.test(tkUse[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
         if (tkUse[0]) subParts.push({ t: tkUse[0], style: tkUse[1] });
-        expRow.since = subParts.map(x => x.t).join('');
+        expRow.since = subParts.map(x => x.t).join('') + (lateLine ? ' · ' + lateLine : '');
+        // 미납 횟수 (미납금액 수납 기본 횟수, 없으면 미납금액 수납 버튼을 숨김)
+        this._unpaid[s.id] = !r.paid ? r.used : 0;
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
           name: s.name.replace('$', ''),
@@ -1462,7 +1469,7 @@ class Component extends DCLogic {
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
           dotGroups: dotGroups, dotLines: dotLines,
-          subText: tk[0], subParts: subParts,
+          subText: tk[0], subParts: subParts, lateLine: lateLine,
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
           queueTxt: qn ? '+' + qn + ' 대기' : '',
           // 다음 달 이후에 낸 미납금액 수납은 출석부 칸이 없으므로 수강권 칸을 눌러 고치거나 취소한다
@@ -1541,6 +1548,7 @@ class Component extends DCLogic {
     const curRow = popCells.length === 1 ? (this.monthEvents(MON)[first.sid] || {}) : {};
     const curV = popCells.length === 1 ? (curRow[first.d] === 'V' ? '' : (curRow[first.d] || '')) : '';
     const curPay = popCells.length === 1 && !!(curRow['p' + first.d] || curRow[first.d] === 'V');
+    const popU = !!(firstStu && firstStu.g === '퇴휴' && (firstStu.status === '휴원' || firstStu.status === '퇴원'));
     const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
     const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center';
     const popBtns = [
@@ -1580,11 +1588,13 @@ class Component extends DCLogic {
       sub: !first ? '' : popCells.length === 1 ? (lt12 ? '수업 시간 ' + lt12 : '') : '같은 표시가 한 번에 들어갑니다',
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
-      payStyle: '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
-      // 휴원·퇴원 원생은 '수납' 대신 '미납금액 수납'
-      payLabel: (firstStu && firstStu.g === '퇴휴' && (firstStu.status === '휴원' || firstStu.status === '퇴원')) ? (curPay ? '미납금액 수납 수정' : '미납금액 수납') : curPay ? '수납 수정' : '수납',
-      payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: #7A5C12; padding: 2px 6px; border-radius: 6px' : 'display: none',
-      payKey: keycap('#7A5C12', '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
+      payStyle: popU ? '--sh: #EBB5B0; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #B4332B' : '1px solid #F2C6C2') + '; background: linear-gradient(180deg, #FFFFFF 0%, #FCE6E4 55%); color: #B4332B; font-family: inherit; cursor: pointer; margin-bottom: 4px'
+        : '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
+      // 휴원·퇴원 원생은 '수납' 대신 '미납금액 수납' (빨강). 미납금액이 없으면 버튼이 생기지 않음 (이미 넣은 수납 수정은 가능)
+      payLabel: popU ? (curPay ? '미납금액 수납 수정' : '미납금액 수납') : curPay ? '수납 수정' : '수납',
+      showPay: !popU || curPay || (popCells.length === 1 && (this._unpaid[first.sid] || 0) > 0),
+      payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: ' + (popU ? '#B4332B' : '#7A5C12') + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
+      payKey: keycap(popU ? '#B4332B' : '#7A5C12', popU ? '#F2C6C2' : '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
       pay: () => this.openPay(),
       back: () => this.setState({ pop: Object.assign({}, P, { mode: 'main' }) }),
@@ -1773,6 +1783,9 @@ class Component extends DCLogic {
           open: true, name: P.name, paid: P.paid, notPaid: !P.paid, date: P.date, umode: !!P.umode,
           showDate: P.paid || !!P.umode, showDateText: !P.paid && !P.umode, minDate: P.umode ? P.minDate : '',
           dateWord: P.umode ? '결제 일자' : '수납 날짜',
+          feeIcon: 'width: 30px; height: 30px; flex: none; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
+          iconStyle: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; font-size: 18px; font-weight: 800; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
+          dateStyle: 'height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 700; ' + (P.umode ? 'border: 1px solid #E8A9A4; background: #FDF1F0; color: #B4332B' : 'border: 1px solid #E2C35E; background: #FBF6E8; color: #7A5C12'),
           setDate: e => upd({ date: e.target.value, err: '' }),
           cancelPay: () => this.cancelPay(),
           cancelLabel: P.cancelAsk ? '한 번 더 누르면 취소' : '수납 취소',
@@ -1802,7 +1815,7 @@ class Component extends DCLogic {
           cashLine: (P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') + ' · 발급 번호 ' + (P.cashNo || '—') + ' · 현금으로 받으면 학원 단말기로 ' + won(P.total) + '원 발급',
           closeLabel: P.paid ? '닫기' : '취소',
           goLabel: P.paid ? '수정 저장' : P.umode ? '미납금액 수납하기' : '수납하기',
-          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)',
+          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + (P.umode ? 'border: none; background: #F2B8B3; color: #7A1F1A; box-shadow: 0 6px 16px rgba(224, 96, 90, 0.25)' : 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)'),
           close: close,
           go: () => this.savePay(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.savePay(); } }
