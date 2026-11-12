@@ -12,7 +12,7 @@
 .phead{position:sticky;top:0;z-index:6;background:#FFFFFF;box-shadow:0 6px 10px -8px rgba(23,32,28,.25)}@media print{.phead{position:static!important;box-shadow:none!important}}
 
 .aflash>*{animation:aflash 3.6s ease-out}
-@keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
+@keyframes tabdrop{0%{transform:translateY(-3px);background-color:#E6F6F6}60%{transform:translateY(0);background-color:#E6F6F6}100%{transform:none}}.tabdrop{animation:tabdrop .7s ease-out}@keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
 .flashtag{animation:tagfade 4s ease-out forwards}
 @keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
 
@@ -139,9 +139,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <button type="button" onClick="{{sm.toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
-      <button type="button" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
+      <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.35.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.35.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1571,7 +1571,8 @@ class Component extends DCLogic {
       names.splice(a, 1); names.splice(b, 0, from);
       const full = names.concat(tabOrder.filter(n => names.indexOf(n) < 0));
       try { localStorage.setItem('attendance.tabOrder', JSON.stringify(full)); } catch (e) {}
-      this.setState({ tabOrder: full, sheetCtx: null });
+      this.setState({ tabOrder: full, sheetCtx: null, tabFlash: from });
+      clearTimeout(this._tabFlashT); this._tabFlashT = setTimeout(() => this.setState({ tabFlash: null }), 800);
     };
     const sheetTabs = tabsOrd.map(o => {
       const t = o.t, i = o.i;
@@ -1581,9 +1582,20 @@ class Component extends DCLogic {
       return {
         // 끄는 동안에는 화면을 다시 그리지 않는다 (다시 그리면 끌기가 끊김)
         dragStart: e => { try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', t[0]); } catch (x) {} this._tabDrag = t[0]; if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; },
-        dragOver: e => { if (this._tabDrag) { e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {} } },
-        drop: e => { e.preventDefault(); const from = this._tabDrag; this._tabDrag = null; if (from) moveTab(from, t[0]); },
+        // 놓을 자리 표시: 그 탭의 왼쪽(앞으로 옮길 때) 또는 오른쪽(뒤로 옮길 때)에 청록 세로 막대 + 연한 청록 바탕
+        dragOver: e => {
+          if (!this._tabDrag) return;
+          e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {}
+          const el = e.currentTarget; if (!el || this._tabDrag === t[0]) return;
+          const names = tabsOrd.map(x => x.t[0]);
+          const left = names.indexOf(this._tabDrag) > names.indexOf(t[0]);
+          el.style.boxShadow = (left ? 'inset 3px 0 0 #00A6AB' : 'inset -3px 0 0 #00A6AB');
+          el.style.backgroundColor = '#E6F6F6';
+        },
+        dragLeave: e => { const el = e.currentTarget; if (el && !el.contains(e.relatedTarget)) { el.style.boxShadow = ''; el.style.backgroundColor = ''; } },
+        drop: e => { e.preventDefault(); const el = e.currentTarget; if (el) { el.style.boxShadow = ''; el.style.backgroundColor = ''; } const from = this._tabDrag; this._tabDrag = null; if (from) moveTab(from, t[0]); },
         dragEnd: e => { this._tabDrag = null; if (e.currentTarget) e.currentTarget.style.opacity = ''; },
+        cls: st.tabFlash === t[0] ? 'tabdrop' : '',
         name: t[0], on: on ? 'true' : 'false',
         pick: () => this.setState({ sheet: i, sheetCtx: null, sheetList: false }),
         ctx: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ sheetCtx: { i: i, x: e.clientX, y: e.clientY }, sheetList: false }); },
