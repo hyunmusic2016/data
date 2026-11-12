@@ -23,7 +23,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
   <header class="noprint" style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
     <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
       <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
-        <a href="#" style="{{t.style}}">{{t.label}}<span style="font-size: 11px; color: #66716A; margin-left: 4px">{{t.cnt}}</span></a>
+        <a href="{{t.href}}" style="{{t.style}}">{{t.label}}<span style="font-size: 11px; color: #66716A; margin-left: 4px">{{t.cnt}}</span></a>
       </sc-for>
     </nav>
   </header>
@@ -916,8 +916,8 @@ class Component extends DCLogic {
       };
     });
 
-    const tabs = [['수강생대장', '26명'], ['출석부', ''], ['수입·지출', ''], ['통계', ''], ['직원명부', '']].map(t => ({
-      label: t[0], cnt: t[1],
+    const tabs = [['수강생대장', '19명', 'Students.dc.html'], ['출석부', '', 'Main.dc.html'], ['수입·지출', '', '#'], ['통계', '', '#'], ['직원명부', '', '#']].map(t => ({
+      label: t[0], cnt: t[1], href: t[2],
       style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
         (t[0] === '출석부' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));

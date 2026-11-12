@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수강생대장</title>
+<style>
+body{margin:0;background:#F3F5F4}
+a{color:#007E82}a:hover{color:#005F62}
+button,input{font-family:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6AB;outline-offset:1px}
+.srow:hover>span{background-color:#F7FAFA}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+<div style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
+    <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+        <a href="{{t.href}}" style="{{t.style}}">{{t.label}}<span style="font-size: 11px; color: #66716A; margin-left: 4px">{{t.cnt}}</span></a>
+      </sc-for>
+    </nav>
+  </header>
+
+  <main style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 18px 28px 40px; box-sizing: border-box">
+
+    <section aria-label="수강생대장" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
+        <span style="display: inline-flex; align-items: center; gap: 14px">
+          <span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 166, 171, 0.32)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg></span>
+          <span style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #BFEAEB 62%, #BFEAEB 92%, transparent 92%)">현실용음악학원 수강생대장</span>
+        </span>
+        <span style="flex: 1"></span>
+        <div style="display: flex; gap: 8px">
+          <sc-for list="{{stats}}" as="s" hint-placeholder-count="3">
+            <a href="{{s.href}}" style="{{s.style}}"><span style="font-size: 12px; color: #5E6873">{{s.label}}</span><span style="{{s.numStyle}}">{{s.n}}<span style="font-size: 12px; font-weight: 600; margin-left: 2px">명</span></span></a>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 22px; border-bottom: 1px solid #EBEEEC; background: #FAFBFA">
+        <label for="q" style="position: absolute; left: -9999px">이름, 보호자, 전화번호, 등록번호로 찾기</label>
+        <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 280px; max-width: 100%; box-sizing: border-box">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
+          <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
+        </span>
+        <span style="width: 1px; height: 22px; background: #DDE2DF"></span>
+        <sc-for list="{{partFilters}}" as="p" hint-placeholder-count="6">
+          <button type="button" onClick="{{p.pick}}" aria-pressed="{{p.on}}" style="{{p.style}}">{{p.label}}<span style="font-size: 11px; opacity: 0.7">{{p.n}}</span></button>
+        </sc-for>
+        <span style="flex: 1"></span>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
+      </div>
+
+      <div style="overflow-x: auto">
+        <div style="min-width: 1180px">
+          <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
+            <div id="{{sec.id}}" style="{{sec.bandStyle}}">
+              <span style="{{sec.dotStyle}}"></span>
+              <span style="font-size: 15px; font-weight: 800">{{sec.title}}</span>
+              <span style="{{sec.countStyle}}">{{sec.count}}명</span>
+              <span style="font-size: 12px; color: #8A949E">{{sec.note}}</span>
+            </div>
+            <div style="{{gridHead}}">
+              <span style="{{c.h}}">등록번호</span>
+              <span style="{{c.h}}">파트</span>
+              <span style="{{c.hl}}">이름 / 보호자</span>
+              <span style="{{c.h}}">강사</span>
+              <span style="{{c.h}}">레슨요일</span>
+              <span style="{{c.h}}">연령</span>
+              <span style="{{c.h}}">원생 전화번호</span>
+              <span style="{{c.h}}">보호자 전화번호</span>
+              <span style="{{c.h}}">입원 연월일</span>
+              <span style="{{c.h}}">퇴원 연월일</span>
+              <span style="{{c.hl}}">비고</span>
+              <span style="{{c.hl}}">휴원정보</span>
+            </div>
+            <sc-for list="{{sec.rows}}" as="r" hint-placeholder-count="6">
+              <div class="srow" style="{{gridRow}}">
+                <span style="{{r.cell}}; color: #5E6873; font-size: 12px">{{r.id}}</span>
+                <span style="{{r.cell}}"><span style="{{r.partChip}}">{{r.part}}</span></span>
+                <span style="{{r.cellL}}"><span style="{{r.nameStyle}}">{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{r.guardian}}</span></span>
+                <span style="{{r.cell}}"><span style="{{r.teacherChip}}">{{r.teacher}}</span></span>
+                <span style="{{r.cell}}"><span style="{{r.dayChip}}">{{r.day}}</span></span>
+                <span style="{{r.cell}}"><span style="{{r.ageChip}}">{{r.age}}</span></span>
+                <span style="{{r.cell}}; font-size: 13px">{{r.phone}}</span>
+                <span style="{{r.cell}}; font-size: 13px; color: #3A4450">{{r.gphone}}</span>
+                <span style="{{r.cell}}; font-size: 13px">{{r.join}}</span>
+                <span style="{{r.cell}}; font-size: 13px; color: #C2410C">{{r.leave}}</span>
+                <span style="{{r.cellL}}; font-size: 12px; color: #3A4450">{{r.memo}}</span>
+                <span style="{{r.cellL}}"><span style="{{r.restChip}}">{{r.rest}}</span></span>
+              </div>
+            </sc-for>
+            <sc-if value="{{sec.empty}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 22px; text-align: center; font-size: 13px; color: #8A949E; border-bottom: 1px solid #EBEEEC">찾는 원생이 없습니다.</div>
+            </sc-if>
+          </sc-for>
+        </div>
+      </div>
+    </section>
+
+    <div style="display: flex; justify-content: flex-end; gap: 8px">
+      <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
+        인쇄
+      </button>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
+        엑셀로 내보내기
+      </button>
+    </div>
+  </main>
+
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.1.0</div>
+</div>
+</template>
+<script>
+class DCLogic{constructor(props){this.props=props||{};this.state={}}
+  setState(p){this.state=Object.assign({},this.state,p);render()}}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { q: '', part: '전체' };
+  }
+  students() {
+    const T = { '드럼': '박서준', '보컬': '이하늘', '기타': '김도윤', '베이스': '최민재', '피아노': '정우진', '우쿨렐레': '김도윤' };
+    const raw = [
+      [507, '드럼', '김재윤', '', '월요일', '성인', '0102-6870', '', '26.11.02', '', '', '', 'act', { t12: 1 }],
+      [368, '드럼', '손하율', '', '월요일', '성인', '0104-7312', '', '25.07.10', '', '스틱 대여', '', 'act', { pro: 1 }],
+      [472, '드럼', '정다온', '', '월요일', '성인', '0104-2313', '', '26.05.21', '', '', '', 'act', { cash: 1, t8: 1 }],
+      [509, '드럼', '변예준', '', '화요일', '성인', '0106-4193', '', '26.11.03', '', '', '', 'act', {}],
+      [452, '드럼', '마서윤', '마정호', '화요일', '학생', '0107-6675', '0107-3955', '26.04.07', '', '', '', 'act', {}],
+      [332, '드럼', '이예린', '이수빈', '화요일', '학생', '0108-7449', '0108-5459', '25.03.18', '', '스틱 대여', '', 'act', {}],
+      [456, '드럼', '김소윤', '김재용', '목요일', '학생', '0107-1546', '0107-1536', '26.04.17', '', '', '', 'act', {}],
+      [465, '드럼', '오태현', '오상현', '금요일', '학생', '0102-1544', '0108-8344', '26.05.08', '', '', '', 'act', {}],
+      [482, '드럼', '이은서', '', '금요일', '성인', '0108-7079', '', '26.07.01', '', '', '', 'act', {}],
+      [471, '보컬', '윤가람', '', '목요일', '성인', '0108-5281', '', '26.05.21', '', '', '', 'act', {}],
+      [469, '보컬', '김경민', '김지현', '목요일', '학생', '0109-4810', '0108-6312', '26.05.18', '', '', '', 'act', {}],
+      [506, '보컬', '강도윤', '강미경', '목요일', '학생', '0107-2329', '0107-3239', '26.10.31', '', '', '', 'act', {}],
+      [158, '보컬', '허준서', '', '변동', '성인', '0105-2012', '', '19.12.19', '', '', '', 'act', {}],
+      [234, '기타', '천가윤', '천호석', '화요일', '학생', '0105-5479', '0104-2429', '24.04.11', '', '', '', 'act', {}],
+      [412, '기타', '박상민', '', '수요일', '성인', '0103-1123', '', '25.10.02', '', '', '', 'act', { cash: 1 }],
+      [488, '베이스', '서홍빈', '', '월요일', '성인', '0102-8124', '', '26.02.11', '', '', '', 'act', {}],
+      [501, '베이스', '이소민', '', '수요일', '성인', '0106-7334', '', '26.09.05', '', '', '', 'act', {}],
+      [495, '피아노', '이서준', '이은정', '금요일', '학생', '0109-7545', '0109-1785', '26.08.20', '', '', '', 'act', {}],
+      [377, '우쿨렐레', '전태윤', '', '토요일', '성인', '0108-7325', '', '25.08.02', '', '', '', 'act', {}],
+      [330, '기타', '김재희', '', '토요일', '성인', '0102-8547', '', '25.03.10', '', '', '9.19 (수업 3/4)', 'rest', {}],
+      [398, '드럼', '장현우', '', '목요일', '성인', '0106-7625', '', '26.07.22', '', '스틱 대여', '10.14', 'rest', {}],
+      [432, '드럼', '이시윤', '', '금요일', '성인', '0104-2071', '', '26.08.14', '', '', '10.16', 'rest', {}],
+      [443, '기타', '노은우', '노현철', '수요일', '학생', '0109-6186', '0104-7617', '26.03.25', '26.07.08', '', '', 'out', {}],
+      [308, '드럼', '김선우', '오선유', '금요일', '학생', '0109-9755', '0102-0255', '24.12.16', '26.07.14', '스틱 대여', '6.18 (수업 3/4)', 'out', {}],
+      [245, '베이스', '심소희', '', '월요일', '성인', '0102-8124', '', '24.05.07', '26.07.27', '', '', 'out', {}],
+      [335, '보컬', '진미연', '진호준', '변동', '학생', '0109-1609', '0109-1619', '25.03.24', '26.07.31', '', '', 'out', {}]
+    ];
+    return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13] }));
+  }
+  renderVals() {
+    const st = this.state;
+    const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
+    const TPART = { '김도윤': '원장', '이하늘': '보컬', '박서준': '드럼', '최민재': '베이스', '정우진': '피아노' };
+    const DAY = { '월요일': ['#FDE8E7', '#B4332B'], '화요일': ['#E3ECFD', '#2952A3'], '수요일': ['#FCF1C2', '#7A6200'], '목요일': ['#DFF2E4', '#2F6B43'], '금요일': ['#FDEBDC', '#9A4A12'], '토요일': ['#ECE4F8', '#5B4A8B'], '변동': ['#EEF1F0', '#3A4450'] };
+    const AGE = { '학생': ['#E3F3EC', '#2F6B43'], '성인': ['#FBE6E4', '#9A3A31'] };
+    const chip = (c, w) => 'display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 10px; min-width: ' + (w || 52) + 'px; box-sizing: border-box; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1];
+    const COLS = 'display: grid; grid-template-columns: 76px 92px minmax(150px, 1.4fr) 92px 92px 70px 128px 128px 96px 96px minmax(110px, 1fr) minmax(120px, 1fr); align-items: center';
+    const cell = 'height: 46px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
+    const all = this.students();
+    const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
+    const match = s => (st.part === '전체' || s.part === st.part) && (!q || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
+    const PORDER = ['드럼', '보컬', '기타', '베이스', '피아노', '우쿨렐레'];
+    const DORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'];
+    const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf(a.day) - DORDER.indexOf(b.day) || a.name.localeCompare(b.name, 'ko'));
+    const row = s => {
+      const pro = !!s.flags.pro, big = s.flags.t8 || s.flags.t12;
+      const bg = pro ? '#FDF0F2' : '#FFFFFF';
+      const tp = PART[TPART[s.teacher]] || PART['원장'];
+      return {
+        id: s.id, part: s.part, name: s.name, guardian: s.guardian ? '/ ' + s.guardian : '', cash: !!s.flags.cash,
+        teacher: s.teacher, day: s.day === '변동' ? '변동' : s.day, age: s.age, phone: s.phone, gphone: s.gphone, join: s.join, leave: s.leave, memo: s.memo, rest: s.rest,
+        cell: cell + '; background: ' + bg,
+        cellL: cell + '; justify-content: flex-start; gap: 6px; background: ' + bg,
+        nameStyle: 'font-size: 14px; font-weight: 700; color: #17201C' + (big ? '; background: #EFEAF8; padding: 2px 6px; border-radius: 6px; color: #4C2E83' : ''),
+        partChip: chip(PART[s.part] || PART['원장'], 60),
+        teacherChip: chip(tp, 64),
+        dayChip: chip(DAY[s.day] || DAY['변동'], 60),
+        ageChip: chip(AGE[s.age] || AGE['성인'], 44),
+        restChip: s.rest ? 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00' : 'display: none'
+      };
+    };
+    const SECS = [
+      ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
+      ['rest', '휴원생', 'sec-rest', '#E0A23B', '#FFF4E0', '#9A5B00', '휴원정보에 휴원 날짜와 남은 수업을 적습니다'],
+      ['out', '퇴원생', 'sec-out', '#D9746C', '#FCEBEA', '#B4332B', '']
+    ];
+    const sections = SECS.map(x => {
+      const list = sorted.filter(s => s.status === x[0]);
+      const rows = list.filter(match).map(row);
+      return {
+        id: x[2], title: x[1], count: list.length, note: x[6], rows: rows, empty: rows.length === 0,
+        bandStyle: 'display: flex; align-items: center; gap: 10px; padding: 14px 22px; background: ' + x[4] + '; border-bottom: 1px solid #E1E6E3; border-top: 1px solid #E1E6E3',
+        dotStyle: 'width: 10px; height: 10px; border-radius: 50%; background: ' + x[3],
+        countStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 800; color: ' + x[5]
+      };
+    });
+    const cnt = k => all.filter(s => s.status === k).length;
+    const stats = [['재원', cnt('act'), '#007E82', '#sec-act'], ['휴원', cnt('rest'), '#9A5B00', '#sec-rest'], ['퇴원', cnt('out'), '#B4332B', '#sec-out']].map(s => ({
+      label: s[0], n: s[1], href: s[3],
+      style: 'display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 76px; padding: 8px 14px; border-radius: 12px; border: 1px solid #E8ECEA; background: #FAFBFA; text-decoration: none',
+      numStyle: 'font-size: 22px; font-weight: 800; color: ' + s[2]
+    }));
+    const partFilters = ['전체'].concat(PORDER).map(p => {
+      const on = st.part === p, c = PART[p];
+      return {
+        label: p, n: p === '전체' ? cnt('act') : all.filter(s => s.status === 'act' && s.part === p).length, on: on ? 'true' : 'false',
+        pick: () => this.setState({ part: p }),
+        style: 'display: inline-flex; align-items: center; gap: 5px; height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; cursor: pointer; ' +
+          (on ? (c ? 'background: ' + c[0] + '; color: ' + c[1] + '; border: 1px solid ' + c[1] + '55; font-weight: 700' : 'background: #17201C; color: #FFFFFF; border: 1px solid #17201C; font-weight: 700') : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500')
+      };
+    });
+    const tabs = [['수강생대장', cnt('act') + '명', 'students.html'], ['출석부', '', 'attendance.html'], ['수입·지출', '', '#'], ['통계', '', '#'], ['직원명부', '', '#']].map(t => ({
+      label: t[0], cnt: t[1], href: t[2],
+      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
+        (t[0] === '수강생대장' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
+    }));
+    return {
+      q: st.q, tabs: tabs, stats: stats, partFilters: partFilters, sections: sections,
+      onSearch: e => this.setState({ q: e.target.value }),
+      gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
+      gridRow: COLS,
+      c: {
+        h: 'height: 36px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap',
+        hl: 'height: 36px; display: flex; align-items: center; justify-content: flex-start; padding-left: 8px; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap'
+      }
+    };
+  }
+}
+const comp=new Component({});
+const tpl=document.getElementById('tpl');
+function look(scope,path){path=path.trim();if(path==='true')return true;if(path==='false')return false;
+  return path.split('.').reduce((o,k)=>o==null?undefined:o[k],scope)}
+function interp(str,scope){const whole=str.match(/^\s*\{\{([^}]+)\}\}\s*$/);if(whole)return look(scope,whole[1]);
+  return str.replace(/\{\{([^}]+)\}\}/g,(_,p)=>{const v=look(scope,p);return v==null?'':v})}
+function build(node,scope,out){
+  if(node.nodeType===3){out.appendChild(document.createTextNode(interp(node.nodeValue,scope)));return}
+  if(node.nodeType!==1)return;
+  const tag=node.tagName.toLowerCase();
+  if(tag==='sc-for'){const list=look(scope,node.getAttribute('list').replace(/[{}]/g,''))||[];const as=node.getAttribute('as');
+    list.forEach((it,i)=>{const s=Object.create(scope);s[as]=it;s.$index=i;node.childNodes.forEach(ch=>build(ch,s,out))});return}
+  if(tag==='sc-if'){if(look(scope,node.getAttribute('value').replace(/[{}]/g,'')))node.childNodes.forEach(ch=>build(ch,scope,out));return}
+  const el=document.createElementNS(node.namespaceURI,node.localName);
+  for(const a of node.attributes){
+    if(/^on[A-Z]/.test(a.name)||/^on[a-z]/.test(a.name)&&a.value.includes('{{')){const fn=interp(a.value,scope);if(typeof fn==='function')el.addEventListener(a.name.slice(2).toLowerCase(),fn);continue}
+    if(a.name.startsWith('hint-'))continue;
+    if(a.name==='disabled'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('disabled','');continue;}
+    if(a.name==='defaultvalue'){el.setAttribute('value',interp(a.value,scope));continue;}
+    el.setAttribute(a.name,interp(a.value,scope))}
+  if(tag==='textarea'){el.value=interp(node.textContent,scope);out.appendChild(el);return}
+  node.childNodes.forEach(ch=>build(ch,scope,el));out.appendChild(el)}
+function render(){const app=document.getElementById('app');const ae=document.activeElement;const fid=ae&&ae.id;const fsel=ae&&ae.selectionStart;const hadFocus=!!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches('section[tabindex]'));const keepX=[...app.querySelectorAll('section')].map(s=>s.scrollLeft);
+  const frag=document.createDocumentFragment();const vals=comp.renderVals();
+  tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));app.replaceChildren(frag);if(fid){const ne=document.getElementById(fid);if(ne){ne.focus();if(fsel!=null&&ne.setSelectionRange)try{ne.setSelectionRange(fsel,fsel)}catch(e){}}}if(hadFocus){const sf=app.querySelector('section[tabindex]');if(sf)sf.focus({preventScroll:true});}
+  app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]})}
+render();
+if(comp.componentDidMount)comp.componentDidMount();
+</script>
+</body>
+</html>
