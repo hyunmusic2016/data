@@ -105,7 +105,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
               <span style="{{h.style}}">{{h.label}}<span class="colgrip" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></span>
             </sc-for>
             <span></span>
-            <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}"><span style="{{actHead}}">관리</span></sc-if>
+            <span style="{{actHead}}">관리</span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
             <div class="srow" style="{{gridRow}}">
@@ -113,13 +113,11 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
                 <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
               <span style="{{r.fill}}"></span>
-              <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}">
-                <span style="{{r.actCell}}">
-                  <button type="button" onClick="{{r.edit}}" aria-label="{{r.editLabel}}" style="{{actBtn.edit}}">수정</button>
-                  <button type="button" onClick="{{r.rest}}" aria-label="{{r.restLabel}}" style="{{actBtn.rest}}">휴원</button>
-                  <button type="button" onClick="{{r.out}}" aria-label="{{r.outLabel}}" style="{{actBtn.out}}">퇴원</button>
-                </span>
-              </sc-if>
+              <span style="{{r.actCell}}">
+                <sc-for list="{{r.acts}}" as="a" hint-placeholder-count="3">
+                  <button type="button" onClick="{{a.pick}}" aria-label="{{a.aria}}" style="{{a.style}}">{{a.label}}</button>
+                </sc-for>
+              </span>
             </div>
           </sc-for>
           <sc-if value="{{cur.empty}}" hint-placeholder-val="{{ false }}">
@@ -141,7 +139,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.17.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.18.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -287,9 +285,9 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <button type="button" onClick="{{sd.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
       <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="color: #17201C">{{sd.name}}</b> 원생 (등록번호 {{sd.id}})을 {{sd.kindLabel}} 처리합니다.</span>
+      <sc-if value="{{sd.dated}}" hint-placeholder-val="{{ true }}">
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{sd.dateLabel}}<input id="sd_date" type="date" defaultValue="{{sd.date}}" onChange="{{sd.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
-      <sc-if value="{{sd.isRest}}" hint-placeholder-val="{{ true }}">
-        <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">남은 수업<input id="sd_memo" type="text" defaultValue="{{sd.memo}}" onInput="{{sd.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+        <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{sd.reasonLabel}}<input id="sd_memo" type="text" defaultValue="{{sd.memo}}" onInput="{{sd.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       </sc-if>
       <div style="display: flex; gap: 10px; margin-top: 2px">
         <button type="button" onClick="{{sd.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
@@ -384,7 +382,11 @@ class Component extends DCLogic {
       { k: 'total', label: '수강료 합계', w: '110px', g: '수강료', f: ['total'] },
       { k: 'pay', label: '강사 수당', w: '96px', g: '수강료', f: ['pay'] },
       { k: 'cash', label: '현금영수증', w: '90px', g: '현금영수증', f: ['cash', 'cashType'] },
-      { k: 'leave', label: '퇴원 연월일', w: '96px', g: null },
+      { k: 'restDate', label: '휴원 날짜', w: '96px', g: null },
+      { k: 'restReason', label: '휴원 사유', w: '150px', left: true, g: null },
+      { k: 'restTicket', label: '휴원 당시 수강권', w: '130px', g: null },
+      { k: 'leave', label: '퇴원 날짜', w: '96px', g: null },
+      { k: 'leaveReason', label: '퇴원 사유', w: '200px', left: true, g: null },
       { k: 'memo', label: '비고', w: '140px', left: true, g: null },
       { k: 'rest', label: '휴원정보', w: '150px', left: true, g: null }
     ];
@@ -415,6 +417,17 @@ class Component extends DCLogic {
       gender: s.extra ? (ex.gender || '') : (s.id % 2 ? '남' : '여'),
       birth: birth, addr: s.extra ? (ex.addr || '') : '샘플구 음악로 ' + (s.id % 90 + 1),
       count: count, dur: ex.dur || 60, unit: unit, total: ex.total || unit * count, pay: ex.pay || Math.round(unit * 0.5),
+      ...(() => {
+        // 휴원: 날짜·사유·그 당시 수강권 / 지금 수강권(샘플: 출석부와 아직 연결 전)
+        const tk = (used, cnt) => used + '/' + cnt + '회 (남은 ' + (cnt - used) + '회)';
+        const usedNow = 1 + s.id % count;
+        const rm = /^(\d{1,2})\.(\d{1,2})(?:\s*\((?:수업\s*)?(\d+)\/(\d+)\))?/.exec(s.rest || '');
+        return {
+          ticketNow: tk(Math.min(usedNow, count), count),
+          restDate: s.restDate || (rm ? '26.' + String(rm[1]).padStart(2, '0') + '.' + String(rm[2]).padStart(2, '0') : ''),
+          restTicket: s.restTicket || (rm && rm[3] ? tk(+rm[3], +rm[4]) : s.status === 'rest' ? tk(Math.min(usedNow, count), count) : '')
+        };
+      })(),
       cashOn: !!fl.cash, stick: s.extra ? !!ex.stickBox : (s.part === '드럼' && (s.id % 3 === 0 || (s.memo || '').indexOf('스틱') >= 0))
     });
   }
@@ -451,17 +464,20 @@ class Component extends DCLogic {
   }
   openStatus(kind, s) {
     const t = new Date();
-    this.setState({ stat: { kind: kind, id: s.id, name: s.name, date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    this.setState({ stat: { kind: kind, id: s.id, name: s.name, ticket: s.ticketNow || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
     setTimeout(() => { const d = document.getElementById('statusDlg'); if (d) d.focus(); }, 30);
   }
   applyStatus() {
     const S = this.state.stat;
     if (!S) return;
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(S.date || '');
-    const patch = S.kind === 'rest'
-      ? { status: 'rest', rest: (m ? (+m[2]) + '.' + (+m[3]) : '') + (S.memo.trim() ? ' (' + S.memo.trim() + ')' : '') }
-      : { status: 'out', leave: m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : '' };
-    this.setState({ changes: this.patchStudent(S.id, patch), stat: null, toast: S.name + ' 원생을 ' + (S.kind === 'rest' ? '휴원' : '퇴원') + ' 처리했습니다' });
+    const ymd = m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : '';
+    const why = S.memo.trim();
+    const patch = S.kind === 'rest' ? { status: 'rest', rest: '', restDate: ymd, restReason: why, restTicket: S.ticket }
+      : S.kind === 'out' ? { status: 'out', leave: ymd, leaveReason: why }
+      : { status: 'act', rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' };
+    const word = { rest: '휴원', out: '퇴원', back: '재원으로 복귀' }[S.kind];
+    this.setState({ changes: this.patchStudent(S.id, patch), stat: null, tab: S.kind === 'back' ? 'act' : this.state.tab, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
@@ -488,15 +504,15 @@ class Component extends DCLogic {
       [497, '드럼', '한지우', '한상철', '화·금', '학생', '0103-6618', '0104-2210', '26.09.08', '', '', '', 'act', {}, ['화요일', '금요일']],
       [495, '피아노', '이서준', '이은정', '금요일', '학생', '0109-7545', '0109-1785', '26.08.20', '', '', '', 'act', {}],
       [377, '우쿨렐레', '전태윤', '', '토요일', '성인', '0108-7325', '', '25.08.02', '', '', '', 'act', {}],
-      [330, '기타', '김재희', '', '토요일', '성인', '0102-8547', '', '25.03.10', '', '', '9.19 (수업 3/4)', 'rest', {}],
-      [398, '드럼', '장현우', '', '목요일', '성인', '0106-7625', '', '26.07.22', '', '스틱 대여', '10.14', 'rest', {}],
+      [330, '기타', '김재희', '', '토요일', '성인', '0102-8547', '', '25.03.10', '', '', '9.19 (수업 3/4)', 'rest', {}, null, '이사 준비'],
+      [398, '드럼', '장현우', '', '목요일', '성인', '0106-7625', '', '26.07.22', '', '스틱 대여', '10.14', 'rest', {}, null, '시험 기간'],
       [432, '드럼', '이시윤', '', '금요일', '성인', '0104-2071', '', '26.08.14', '', '', '10.16', 'rest', {}],
-      [443, '기타', '노은우', '노현철', '수요일', '학생', '0109-6186', '0104-7617', '26.03.25', '26.07.08', '', '', 'out', {}],
+      [443, '기타', '노은우', '노현철', '수요일', '학생', '0109-6186', '0104-7617', '26.03.25', '26.07.08', '', '', 'out', {}, null, '다른 지역으로 이사'],
       [308, '드럼', '김선우', '오선유', '금요일', '학생', '0109-9755', '0102-0255', '24.12.16', '26.07.14', '스틱 대여', '6.18 (수업 3/4)', 'out', {}],
-      [245, '베이스', '심소희', '', '월요일', '성인', '0102-8124', '', '24.05.07', '26.07.27', '', '', 'out', {}],
+      [245, '베이스', '심소희', '', '월요일', '성인', '0102-8124', '', '24.05.07', '26.07.27', '', '', 'out', {}, null, '개인 사정'],
       [335, '보컬', '진미연', '진호준', '변동', '학생', '0109-1609', '0109-1619', '25.03.24', '26.07.31', '', '', 'out', {}]
     ];
-    return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13], days: r[14] }));
+    return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13], days: r[14], restReason: r[15] || '', leaveReason: r[15] || '' }));
   }
   doPrint() {
     const bw = this.state.printBW !== false;
@@ -675,12 +691,13 @@ class Component extends DCLogic {
     const visible = this.visibleCols();
     const colDef = k => CAT.find(c => c.k === k);
     const tabNow = st.tab || 'act';
-    const tabExtra = [];
+    // 휴원 탭: 휴원 날짜·사유·당시 수강권 / 퇴원 탭: 퇴원 날짜·사유 (설정과 상관없이 끝에 붙음)
+    const tabExtra = tabNow === 'rest' ? ['restDate', 'restReason', 'restTicket'] : tabNow === 'out' ? ['leave', 'leaveReason'] : [];
     const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
     const Wd = c => (st.widths || {})[c.k] || parseInt(c.w, 10);
-    const showAct = (st.tab || 'act') === 'act';
-    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr)' + (showAct ? ' 186px' : '') + '; align-items: center';
-    const minW = vis.reduce((n, c) => n + Wd(c), 0) + (showAct ? 186 : 0);
+    const actW = (st.tab || 'act') === 'out' ? 130 : 186;
+    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr) ' + actW + 'px; align-items: center';
+    const minW = vis.reduce((n, c) => n + Wd(c), 0) + actW;
     const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
     const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
     const headCols = vis.map(c => ({ label: c.label, style: hBase + 'position: relative; ' + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center'),
@@ -694,6 +711,12 @@ class Component extends DCLogic {
       resetW: () => { const w = Object.assign({}, st.widths); delete w[c.k]; this.setState({ widths: w }, saveW); setTimeout(saveW, 0); }
     }));
     const won = n => n ? Number(n).toLocaleString('ko-KR') + '원' : '';
+    const ACTB = {
+      edit: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+      rest: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+      out: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+      back: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
+    };
     const row = s => {
       const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
       const bg = pro ? '#FDF0F2' : '#FFFFFF';
@@ -727,19 +750,27 @@ class Component extends DCLogic {
         cash: () => s.cashOn ? CH('발급', ['#E6F6F6', '#007E82'], 44) : T(''),
         stick: () => s.stick ? CH('사용', ['#D7EFDD', '#2F6B43'], 44) : T(''),
         memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
+        restDate: () => T(s.restDate, 'font-size: 13px; color: #9A5B00; font-weight: 700'),
+        restReason: () => TL(s.restReason, 'font-size: 13px; color: #3A4450'),
+        restTicket: () => T(s.restTicket, 'font-size: 12px; color: #3A4450'),
+        leaveReason: () => TL(s.leaveReason, 'font-size: 13px; color: #3A4450'),
         rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
       const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
       // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
       return { fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big,
-        actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; right: 0',
-        edit: () => this.openEdit(s), rest: () => this.openStatus('rest', s), out: () => this.openStatus('out', s),
-        editLabel: s.name + ' 정보 수정', restLabel: s.name + ' 휴원 처리', outLabel: s.name + ' 퇴원 처리' };
+        actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; right: 0; box-shadow: -6px 0 8px -6px rgba(23, 32, 28, 0.18)',
+        acts: ({ act: ['edit', 'rest', 'out'], rest: ['edit', 'back', 'out'], out: ['edit', 'back'] }[s.status] || []).map(k => ({
+          label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀' }[k],
+          aria: s.name + ' ' + { edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: '재원으로 복귀' }[k],
+          style: ACTB[k],
+          pick: () => k === 'edit' ? this.openEdit(s) : this.openStatus(k, s)
+        })) };
     };
     const SECS = [
       ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
-      ['rest', '휴원생', 'sec-rest', '#E0A23B', '#FFF4E0', '#9A5B00', '휴원정보에 휴원 날짜와 남은 수업을 적습니다'],
+      ['rest', '휴원생', 'sec-rest', '#E0A23B', '#FFF4E0', '#9A5B00', ''],
       ['out', '퇴원생', 'sec-out', '#D9746C', '#FCEBEA', '#B4332B', '']
     ];
     const curSec = SECS.find(x => x[0] === (st.tab || 'act'));
@@ -933,12 +964,12 @@ class Component extends DCLogic {
       sd: (() => {
         const S = st.stat;
         if (!S) return { open: false };
-        const rest = S.kind === 'rest';
+        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: ['복귀', '', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
         return {
-          open: true, isRest: rest, kindLabel: rest ? '휴원' : '퇴원', title: rest ? '휴원 처리' : '퇴원 처리', name: S.name, id: S.id,
-          dateLabel: rest ? '휴원 날짜' : '퇴원 날짜', date: S.date, memo: S.memo,
-          chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; ' + (rest ? 'background: #FFF4E0; color: #9A5B00' : 'background: #FCEBEA; color: #B4332B'),
-          goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; ' + (rest ? 'border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00' : 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B'),
+          open: true, dated: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, id: S.id,
+          dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
+          chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: ' + K[3] + '; color: ' + K[4],
+          goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
           close: () => this.setState({ stat: null }),
           go: () => this.applyStatus(),
           key: e => { if (e.key === 'Escape') this.setState({ stat: null }); else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyStatus(); } },
