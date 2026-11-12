@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.30.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.30.2</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -875,6 +875,11 @@ class Component extends DCLogic {
     try { localStorage.setItem('academy.payments', JSON.stringify(list)); } catch (e) {}
     this.setState({ pay: null });
     this.applyMark('V', { noNotice: true });
+    // 현금영수증 발급 대상자는 수납한 뒤에도 발급 안내 창을 한 번 더 띄운다 (이번 수납 금액·횟수로)
+    if (!P.paid && P.cash) {
+      this.setState({ cashNotice: [{ name: P.name, type: (P.pro ? '전문반' : '취미반') + ' · ' + P.count + '회 · ' + (P.cashType === 'biz' ? '사업자(지출증빙)' : '개인(소득공제)'), amount: Number(P.total || 0).toLocaleString('ko-KR') + '원', no: P.cashNo || '—' }] });
+      setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
+    }
   }
   applyMark(v, opt) {
     const cells = this.selCells();
