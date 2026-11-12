@@ -111,7 +111,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.11.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.11.3</div>
   <sc-if value="{{reg.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{reg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="원생 등록" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 1120px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -174,11 +174,6 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
             <label style="{{reg.lbl}}">회당 수업료<span style="{{reg.unitWrap}}"><input id="r_unit" type="text" inputmode="numeric" defaultValue="{{reg.f.unitTxt}}" onInput="{{reg.set.unit}}" style="{{reg.numInp}}"><span>원</span></span></label>
             <label style="{{reg.lbl}}">수강료 합계<span style="{{reg.unitWrap}}; background: #F2FBFB; border-color: #A9DCDE"><input id="r_total" type="text" inputmode="numeric" defaultValue="{{reg.f.totalTxt}}" onInput="{{reg.set.total}}" style="{{reg.numInp}}; font-weight: 800; color: #007E82"><span>원</span></span></label>
             <label style="{{reg.lbl}}">강사 수당 (회당)<span style="{{reg.unitWrap}}; background: #FBF6E8; border-color: #EAD9A6"><input id="r_pay" type="text" inputmode="numeric" defaultValue="{{reg.f.payTxt}}" onInput="{{reg.set.pay}}" style="{{reg.numInp}}; color: #7A5C12"><span>원</span></span></label>
-          </div>
-          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 16px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E8ECEA; font-size: 14px; color: #3A4450">
-            <span>{{reg.sumLine}}</span>
-            <span style="flex: 1"></span>
-            <span style="font-size: 12px; color: #8A949E">회당 수업료를 바꾸면 수당(50%)과 합계가 같이 바뀌고, 합계를 고치면 회당 수업료가 다시 계산됩니다.</span>
           </div>
         </section>
 
