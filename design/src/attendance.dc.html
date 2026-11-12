@@ -36,7 +36,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 
 
     <sc-if value="{{isSheet}}" hint-placeholder-val="{{ true }}">
-    <section aria-label="출석부" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow-x: auto; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+    <section aria-label="출석부" tabIndex="0" onKeyDown="{{onKey}}" style="outline: none; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow-x: auto; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
       <div style="min-width: 1080px; font-size: 13px">
 
         <div style="{{gridStyle}}">
@@ -79,7 +79,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
-                  <button type="button" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span><span style="{{x.handle}}"></span></button>
+                  <button type="button" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span></button>
                 </sc-for>
                 <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{r.lastStyle}}"></span></sc-for>
               </div>
@@ -120,7 +120,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.3</span>
   </nav>
 </div>
 </x-dc>
@@ -245,6 +245,8 @@ class Component extends DCLogic {
   }
   selDown(e, r, c) {
     if (e && e.preventDefault) e.preventDefault();
+    const sec = e && e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('section') : null;
+    if (sec) sec.focus({ preventScroll: true });
     this.dragging = true;
     this.setState({ sel: { r1: r, c1: c, r2: r, c2: c } });
   }
@@ -253,6 +255,17 @@ class Component extends DCLogic {
     const s = this.state.sel;
     if (s.r2 === r && s.c2 === c) return;
     this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c } });
+  }
+  selKey(e) {
+    const D = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+    const s = this.state.sel;
+    if (!D || !s) return;
+    e.preventDefault();
+    const clampR = v => Math.max(0, Math.min((this._rows || 1) - 1, v));
+    const clampC = v => Math.max(1, Math.min(this._nd || 30, v));
+    const r = clampR(s.r2 + D[0]), c = clampC(s.c2 + D[1]);
+    if (e.shiftKey) this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c } });
+    else this.setState({ sel: { r1: r, c1: c, r2: r, c2: c } });
   }
   renderVals() {
     const st = this.state;
@@ -341,6 +354,7 @@ class Component extends DCLogic {
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
     const BLUE = '#8AB4E8';
     let rowIdx = 0;
+    this._nd = ND;
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
       const isTodayG = MON === 11 && gp[0] === '수';
@@ -383,7 +397,6 @@ class Component extends DCLogic {
               down: e => this.selDown(e, R, x.d),
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
-              handle: corner ? 'position: absolute; right: -5px; bottom: -5px; width: 9px; height: 9px; border-radius: 50%; background: ' + BLUE + '; border: 1.5px solid #FFFFFF; z-index: 3; pointer-events: none' : 'display: none',
               style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: cell; font-family: inherit; ' +
                 (edges.length ? 'box-shadow: ' + edges.join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
@@ -415,6 +428,7 @@ class Component extends DCLogic {
       return { label: g, dots: dots };
     });
 
+    this._rows = rowIdx;
     const sheetTabs = sheets.map((t, i) => {
       const on = i === st.sheet, att = t[1] > 0;
       const col = att ? '#00A6AB' : '#8FB5E0';
@@ -463,7 +477,8 @@ class Component extends DCLogic {
       headCount: all.filter(s => !s.status).length,
       lessonCount: lessonCount,
       lessonHobby: lessonHobby,
-      lessonPro: lessonPro
+      lessonPro: lessonPro,
+      onKey: e => this.selKey(e)
     };
   }
 }
