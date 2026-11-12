@@ -9,7 +9,9 @@
 <body>
 <x-dc>
 <helmet>
-<style>.phead{position:sticky;top:-77px;z-index:6;background:#FFFFFF;box-shadow:0 6px 10px -8px rgba(23,32,28,.25)}@media print{.phead{position:static!important;box-shadow:none!important}}
+<style>.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
+@media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
+.phead{position:sticky;top:0;z-index:6;background:#FFFFFF;box-shadow:0 6px 10px -8px rgba(23,32,28,.25)}@media print{.phead{position:static!important;box-shadow:none!important}}
 .aflash>*{animation:aflash 3.6s ease-out}
 @keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
 .flashtag{animation:tagfade 4s ease-out forwards}
@@ -25,7 +27,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 .pbtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 var(--sh),0 8px 16px rgba(23,32,28,.08);transition:transform .07s ease,box-shadow .07s ease;-webkit-tap-highlight-color:transparent}.pbtn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 1px 0 var(--sh),0 2px 4px rgba(23,32,28,.08)}
 </style>
 </helmet>
-<div class="approot" style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
+<div class="approot shell" style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
 
   <header class="noprint" style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
     <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
@@ -35,7 +37,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     </nav>
   </header>
 
-  <main style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 6px 28px 40px; box-sizing: border-box">
+  <main class="shellmain" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 6px 28px 40px; box-sizing: border-box">
 
 
     <div role="tablist" aria-label="강사" class="noprint" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0 10px; border-bottom: 1px solid #DDE2DF">
@@ -46,8 +48,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 
 
     <sc-if value="{{isSheet}}" hint-placeholder-val="{{ true }}">
-    <section aria-label="출석부" tabIndex="0" onKeyDown="{{onKey}}" style="outline: none; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow: clip; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
-      <div style="min-width: 1080px; font-size: 13px">
+    <section aria-label="출석부" class="shellsec" tabIndex="0" onKeyDown="{{onKey}}" style="outline: none; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow: clip; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+      <div id="sheetScroll" class="shellscroll"><div style="min-width: 1080px; font-size: 13px">
 
         <div class="phead" style="{{gridStyle}}">
           <span style="{{c.title}}">
@@ -104,7 +106,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 * 소율,소민(금) (11월6일 기준) 9/8</span>
           <span style="padding: 40px 0 0 8px; font-size: 12px; color: #3A4450">* 김예나 2회 수업 (11/2 : 결석, 11/9 : 수업)</span>
         </div>
-      </div>
+      </div></div>
     </section>
     <div class="noprint" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
       <div style="display: flex; align-items: center; gap: 8px">
@@ -137,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.27.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
