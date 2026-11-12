@@ -120,18 +120,18 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.9</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.10</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div role="dialog" aria-label="출결 입력" onKeyDown="{{pop.key}}" style="{{pop.style}}">
       <div style="display: flex; align-items: center; gap: 14px">
-        <div style="width: 56px; height: 60px; flex: none; border-radius: 14px; overflow: hidden; border: 1px solid #E1E6E3; display: flex; flex-direction: column; text-align: center; background: #FFFFFF">
-          <span style="height: 20px; line-height: 20px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 700">{{pop.monLabel}}</span>
-          <span style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #17201C">{{pop.dayLabel}}</span>
+        <div style="width: 44px; height: 48px; flex: none; border-radius: 12px; overflow: hidden; border: 1px solid #E1E6E3; display: flex; flex-direction: column; text-align: center; background: #FFFFFF">
+          <span style="height: 16px; line-height: 16px; background: #00A6AB; color: #FFFFFF; font-size: 10px; font-weight: 700">{{pop.monLabel}}</span>
+          <span style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #17201C">{{pop.dayLabel}}</span>
         </div>
         <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
-          <span style="font-size: 18px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">{{pop.title}}</span>
+          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 18px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">{{pop.title}}</span><span style="font-size: 12px; color: #5E6873">{{pop.cls}}</span></span>
           <span style="font-size: 12px; color: #5E6873">{{pop.sub}}</span>
         </div>
         <button type="button" onClick="{{pop.close}}" aria-label="닫기" style="align-self: flex-start; width: 32px; height: 32px; flex: none; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
@@ -174,13 +174,20 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F4F7FD; border: 1px solid #DCE5F7">
           <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #1E4FA8"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #E3ECFD; font-size: 12px">보</span>보강 일정</span>
           <button type="button" role="switch" aria-checked="{{pop.mkOnStr}}" onClick="{{pop.toggleMk}}" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid #DCE5F7; background: #FFFFFF; font-family: inherit; cursor: pointer">
-            <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 14px; font-weight: 700; color: #17201C">보강 일정 정하기</span><span style="font-size: 11px; color: #8A949E">끄면 이 칸에 '보'만 표시합니다</span></span>
+            <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 14px; font-weight: 700; color: #17201C">보강 일정 정하기</span></span>
             <span style="{{pop.swTrack}}"><span style="{{pop.swKnob}}"></span></span>
           </button>
           <label for="mkDate" style="{{pop.lblStyle}}">보강 날짜</label>
           <input id="mkDate" type="date" disabled="{{pop.mkDis}}" defaultValue="{{pop.mkDate}}" style="{{pop.inOpacity}}; height: 44px; padding: 0 12px; border-radius: 11px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; color: #17201C">
-          <label for="mkTime" style="{{pop.lblStyle}}">보강 시간</label>
-          <input id="mkTime" type="text" disabled="{{pop.mkDis}}" defaultValue="{{pop.mkTime}}" placeholder="예: 16:00" style="{{pop.inOpacity}}; height: 44px; padding: 0 12px; border-radius: 11px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; color: #17201C">
+          <span style="{{pop.lblStyle}}">보강 시간</span>
+          <div style="display: flex; align-items: center; gap: 8px">
+            <label for="mkHour" style="position: absolute; left: -9999px">시</label>
+            <input id="mkHour" type="number" min="1" max="12" inputmode="numeric" disabled="{{pop.mkDis}}" defaultValue="{{pop.mkHour}}" style="{{pop.inOpacity}}; flex: 1; min-width: 0; text-align: center; height: 44px; padding: 0 12px; border-radius: 11px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; color: #17201C">
+            <span style="{{pop.unitStyle}}">시</span>
+            <label for="mkMin" style="position: absolute; left: -9999px">분</label>
+            <input id="mkMin" type="number" min="0" max="59" step="5" inputmode="numeric" disabled="{{pop.mkDis}}" defaultValue="{{pop.mkMin}}" style="{{pop.inOpacity}}; flex: 1; min-width: 0; text-align: center; height: 44px; padding: 0 12px; border-radius: 11px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; color: #17201C">
+            <span style="{{pop.unitStyle}}">분</span>
+          </div>
           <span style="{{pop.hintStyle}}">시간 기본값은 원생의 수업 시간입니다.</span>
         </div>
         <div style="display: flex; gap: 10px">
@@ -422,8 +429,10 @@ class Component extends DCLogic {
       this.focusSheet();
       return;
     }
-    const dEl = document.getElementById('mkDate'), tEl = document.getElementById('mkTime');
-    const dv = dEl ? dEl.value : '', tv = tEl ? tEl.value.trim() : '';
+    const dEl = document.getElementById('mkDate'), hEl = document.getElementById('mkHour'), nEl = document.getElementById('mkMin');
+    const dv = dEl ? dEl.value : '';
+    const hh = hEl ? parseInt(hEl.value, 10) : NaN, nn = nEl ? parseInt(nEl.value, 10) : NaN;
+    const tv = hh >= 1 && hh <= 12 ? hh + ':' + String(nn >= 0 && nn <= 59 ? nn : 0).padStart(2, '0') : '';
     const mt = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dv);
     if (!mt) { if (dEl) dEl.focus(); return; }
     const m = +mt[2], d = +mt[3];
@@ -683,6 +692,8 @@ class Component extends DCLogic {
         pick: () => (b[0] === '보' ? this.openPop('mk') : this.applyMark(b[0]))
       };
     });
+    const to12 = t => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m0) return t || ''; return ((+m0[1] % 12) || 12) + ':' + m0[2]; };
+    const lt12 = firstStu ? to12(firstStu.time || LT[firstStu.id % 6]) : '';
     const pop = {
       open: !!P,
       isMain: !!P && P.mode === 'main',
@@ -693,7 +704,8 @@ class Component extends DCLogic {
       title: !first ? '' : popCells.length === 1 ? sidName[first.sid] : popCells.length + '칸 선택',
       monLabel: MON + '월',
       dayLabel: first ? String(first.d) : '',
-      sub: !first ? '' : popCells.length === 1 ? MON + '월 ' + first.d + '일 ' + WD[(first.d - 1 + FIRST) % 7] + '요일' + (firstStu ? ' · ' + (firstStu.rowBg ? '전문반' : '취미반') : '') : '같은 표시가 한 번에 들어갑니다',
+      cls: popCells.length === 1 && firstStu ? (firstStu.rowBg ? '전문반' : '취미반') : '',
+      sub: !first ? '' : popCells.length === 1 ? '수업 시간 ' + lt12 : '같은 표시가 한 번에 들어갑니다',
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
       payStyle: '--sh: #A9DCDE; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curV === 'V' ? '2px solid #007E82' : '1px solid #C7EBEC') + '; background: linear-gradient(180deg, #FFFFFF 0%, #E6F6F6 55%); color: #007E82; font-family: inherit; cursor: pointer; margin-bottom: 4px',
@@ -710,7 +722,7 @@ class Component extends DCLogic {
       lblStyle: 'font-size: 12px; font-weight: 600; margin-top: 4px; color: ' + (P && P.mkOn ? '#5E6873' : '#B7C0BC'),
       inOpacity: 'opacity: ' + (P && P.mkOn ? '1' : '0.45') + '; cursor: ' + (P && P.mkOn ? 'text' : 'not-allowed'),
       hintStyle: 'font-size: 11px; color: ' + (P && P.mkOn ? '#8A949E' : '#C9D0CC'),
-      saveLabel: P && P.mkOn ? '보강 등록' : "'보'만 표시",
+      saveLabel: '보강 등록',
       key: e => {
         if (e.key === 'Escape') { e.preventDefault(); this.closePop(); return; }
         if (e.key === 'Enter' && P && P.mode === 'mk') { e.preventDefault(); this.saveMakeup(); return; }
@@ -721,7 +733,9 @@ class Component extends DCLogic {
         else if (e.key === '3') { e.preventDefault(); this.openPop('mk'); }
       },
       mkDate: first ? '2026-' + String(MON).padStart(2, '0') + '-' + String(first.d).padStart(2, '0') : '',
-      mkTime: firstStu ? (firstStu.time || LT[firstStu.id % 6]) : ''
+      mkHour: lt12.split(':')[0] || '',
+      mkMin: lt12.split(':')[1] || '',
+      unitStyle: 'font-size: 14px; font-weight: 600; color: ' + (P && P.mkOn ? '#5E6873' : '#B7C0BC')
     };
 
     const sheetTabs = sheets.map((t, i) => {
