@@ -14,12 +14,13 @@ body{margin:0;background:#F3F5F4}
 a{color:#1F7A5A}a:hover{color:#165C43}
 button{font-family:inherit}
 button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+@page{size:A4 landscape;margin:7mm}@media print{.noprint{display:none!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}main{padding:0!important;gap:0!important}section[aria-label="출석부"]{box-shadow:none!important;overflow:visible!important;border-radius:0!important}}
 .pbtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 var(--sh),0 8px 16px rgba(23,32,28,.08);transition:transform .07s ease,box-shadow .07s ease;-webkit-tap-highlight-color:transparent}.pbtn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 1px 0 var(--sh),0 2px 4px rgba(23,32,28,.08)}
 </style>
 </helmet>
 <div style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
 
-  <header style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
+  <header class="noprint" style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
     <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
       <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
         <a href="#" style="{{t.style}}">{{t.label}}<span style="font-size: 11px; color: #66716A; margin-left: 4px">{{t.cnt}}</span></a>
@@ -30,7 +31,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
   <main style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 6px 28px 40px; box-sizing: border-box">
 
 
-    <div role="tablist" aria-label="강사" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0 10px; border-bottom: 1px solid #DDE2DF">
+    <div role="tablist" aria-label="강사" class="noprint" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0 10px; border-bottom: 1px solid #DDE2DF">
       <sc-for list="{{teacherTabs}}" as="tt" hint-placeholder-count="5">
         <button type="button" role="tab" aria-selected="{{tt.on}}" onClick="{{tt.pick}}" style="{{tt.style}}"><span style="{{tt.chip}}">{{tt.part}}</span>{{tt.name}}</button>
       </sc-for>
@@ -98,13 +99,19 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
       </div>
     </section>
-    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+    <div class="noprint" style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
       <div style="display: flex; align-items: center; gap: 8px">
       </div>
+      <div class="noprint" style="display: flex; align-items: center; gap: 8px">
+      <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
+        인쇄
+      </button>
       <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
         엑셀로 내보내기
       </button>
+      </div>
     </div>
     </sc-if>
     <sc-if value="{{isLog}}" hint-placeholder-val="{{ false }}">
@@ -116,13 +123,13 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     </sc-if>
   </main>
 
-  <nav aria-label="시트" style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: stretch; gap: 2px; background: #FFFFFF; border-top: 1px solid #DDE2DF; padding: 0 12px; box-shadow: 0 -2px 8px rgba(23, 32, 28, 0.04); overflow-x: auto">
+  <nav aria-label="시트" class="noprint" style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: stretch; gap: 2px; background: #FFFFFF; border-top: 1px solid #DDE2DF; padding: 0 12px; box-shadow: 0 -2px 8px rgba(23, 32, 28, 0.04); overflow-x: auto">
     <button type="button" onClick="{{addSheet}}" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.6.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.6.1</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -332,7 +339,29 @@ class Component extends DCLogic {
     if (m === 11) this.setState({ ev: evAll });
     else { const bm = Object.assign({}, this.state.evByMonth); bm[m] = evAll; this.setState({ evByMonth: bm }); }
   }
+  fitPrint() {
+    const sec = document.querySelector('section[aria-label="출석부"]');
+    if (!sec) return;
+    sec.style.zoom = '';
+    const inner = sec.firstElementChild || sec;
+    const w = inner.scrollWidth, h = sec.scrollHeight;
+    const PW = 1065, PH = 735;
+    const z = Math.min(1, PW / w, PH / h) * 0.98;
+    sec.style.zoom = String(z);
+  }
+  unfitPrint() {
+    const sec = document.querySelector('section[aria-label="출석부"]');
+    if (sec) sec.style.zoom = '';
+  }
+  printSheet() {
+    this.fitPrint();
+    window.print();
+  }
   componentDidMount() {
+    this._bp = () => this.fitPrint();
+    this._ap = () => this.unfitPrint();
+    window.addEventListener('beforeprint', this._bp);
+    window.addEventListener('afterprint', this._ap);
     this._up = () => {
       this.mouseIsDown = false;
       this.dragging = false;
@@ -946,6 +975,7 @@ class Component extends DCLogic {
       c: c,
       headCount: all.filter(s => !s.status).length,
       exportX: () => this.exportExcel(),
+      printX: () => this.printSheet(),
       lessonCount: lessonCount,
       lessonHobby: lessonHobby,
       lessonPro: lessonPro,
