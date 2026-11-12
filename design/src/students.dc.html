@@ -111,6 +111,9 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
               <span style="{{h.style}}">{{h.label}}<span class="colgrip" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></span>
             </sc-for>
             <span></span>
+            <sc-for list="{{xHeads}}" as="h" hint-placeholder-count="0">
+              <span style="{{h.style}}">{{h.label}}<span class="colgrip" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; left: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></span>
+            </sc-for>
             <span style="{{actHead}}">관리</span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
@@ -119,6 +122,9 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
                 <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
               <span style="{{r.fill}}"></span>
+              <sc-for list="{{r.xcells}}" as="x" hint-placeholder-count="0">
+                <span style="{{x.cell}}">{{x.text}}</span>
+              </sc-for>
               <span style="{{r.actCell}}">
                 <sc-for list="{{r.acts}}" as="a" hint-placeholder-count="3">
                   <button type="button" onClick="{{a.pick}}" aria-label="{{a.aria}}" style="{{a.style}}">{{a.label}}</button>
@@ -145,7 +151,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.21.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.21.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -895,13 +901,18 @@ class Component extends DCLogic {
     // 휴원 탭: 휴원 날짜·사유·당시 수강권 / 퇴원 탭: 퇴원 날짜·사유 (설정과 상관없이 끝에 붙음)
     const tabExtra = tabNow === 'rest' ? ['restDate', 'restReason', 'restTicket'] : tabNow === 'out' ? ['leave', 'leaveReason'] : [];
     const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
+    // 휴원·퇴원 정보 칸은 '관리'처럼 오른쪽에 붙여 둔다 (인쇄·엑셀에서는 그냥 뒤에 이어서)
+    const nMain = vis.length - tabExtra.length;
+    const visMain = vis.slice(0, nMain), visX = vis.slice(nMain);
     const Wd = c => (st.widths || {})[c.k] || parseInt(c.w, 10);
     const actW = (st.tab || 'act') === 'out' ? 186 : 240;
-    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr) ' + actW + 'px; align-items: center';
+    const xRight = visX.map((c, i) => actW + visX.slice(i + 1).reduce((n, c2) => n + Wd(c2), 0));
+    const SHADOW = 'box-shadow: -6px 0 8px -6px rgba(23, 32, 28, 0.18)';
+    const COLS = 'display: grid; grid-template-columns: ' + visMain.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr) ' + visX.map(c => Wd(c) + 'px').join(' ') + ' ' + actW + 'px; align-items: center';
     const minW = vis.reduce((n, c) => n + Wd(c), 0) + actW;
     const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
     const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
-    const headCols = vis.map(c => ({ label: c.label, style: hBase + 'position: relative; ' + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center'),
+    const headCols = vis.map((c, i) => ({ label: c.label, style: hBase + (i >= nMain ? 'position: sticky; z-index: 1; right: ' + xRight[i - nMain] + 'px; background: #F7F9F8; ' + (i === nMain ? SHADOW + '; ' : '') : 'position: relative; ') + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center'),
       resize: e => {
         e.preventDefault(); e.stopPropagation();
         const x0 = e.clientX, w0 = Wd(c);
@@ -963,8 +974,9 @@ class Component extends DCLogic {
       const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
       // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
-      return { rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big,
-        actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; right: 0; box-shadow: -6px 0 8px -6px rgba(23, 32, 28, 0.18)',
+      const xcells = cells.slice(nMain).map((x, i) => Object.assign({}, x, { cell: x.cell + '; position: sticky; z-index: 1; right: ' + xRight[i] + 'px' + (i === 0 ? '; ' + SHADOW : '') }));
+      return { rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', allCells: cells, cells: cells.slice(0, nMain), xcells: xcells, pro: pro, big: !!big,
+        actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; z-index: 1; right: 0' + (visX.length ? '' : '; ' + SHADOW),
         acts: ({ act: ['edit', 'rest', 'out', 'log'], rest: ['edit', 'back', 'out', 'log'], out: ['edit', 'back', 'log'] }[s.status] || []).map(k => ({
           label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀', log: '기록' }[k],
           aria: s.name + ' ' + { edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: '재원으로 복귀', log: '변경 기록 보기' }[k],
@@ -1049,7 +1061,7 @@ class Component extends DCLogic {
       title: '현실용음악학원 수강생대장', info: xInfo, tab: curSec[1],
       heads: vis.map(c => c.label), widths: vis.map(c => Math.max(6, Math.round(Wd(c) / 7))), lefts: vis.map(c => !!c.left),
       nameIdx: vis.findIndex(c => c.k === 'name'),
-      rows: curRows.map(r => ({ pro: r.pro, big: r.big, cells: r.cells.map(x => x.ptxt) })),
+      rows: curRows.map(r => ({ pro: r.pro, big: r.big, cells: r.allCells.map(x => x.ptxt) })),
       fname: '수강생대장_' + curSec[1] + '_' + now.getFullYear() + '년' + (now.getMonth() + 1) + '월' + now.getDate() + '일.xlsx'
     };
     const pcell = 'display: table-cell; padding: 5px 6px; border: 1px solid #C9D0CC; vertical-align: middle; white-space: nowrap; ';
@@ -1058,7 +1070,7 @@ class Component extends DCLogic {
       th: pcell + 'background: #EEF2EE; font-weight: 700; text-align: center',
       heads: vis.map(c => ({ label: c.label })),
       rows: curRows.map(r => ({ style: 'display: table-row; break-inside: avoid; background: ' + (r.pro ? '#FDF0F2' : '#FFFFFF'),
-        cells: r.cells.map((x, i) => ({ t: x.ptxt, style: pcell + 'text-align: ' + (vis[i].left ? 'left' : 'center') + (x.isName ? '; font-weight: 700' + (r.big ? '; background: #EFEAF8' : '') : '') })) }))
+        cells: r.allCells.map((x, i) => ({ t: x.ptxt, style: pcell + 'text-align: ' + (vis[i].left ? 'left' : 'center') + (x.isName ? '; font-weight: 700' + (r.big ? '; background: #EFEAF8' : '') : '') })) }))
     };
     const ropt2 = (o, on, pick) => ({ label: o[1], desc: o[2], on: on ? 'true' : 'false', pick: pick,
       style: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; font-family: inherit; cursor: pointer; ' + (on ? 'background: #F2FBFB; border: 2px solid #00A6AB' : 'background: #FFFFFF; border: 1px solid #DDE2DF'),
@@ -1179,10 +1191,10 @@ class Component extends DCLogic {
         (t[0] === '수강생대장' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));
     return {
-      q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols,
+      q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols.slice(0, nMain), xHeads: headCols.slice(nMain),
       tableMin: 'min-width: ' + minW + 'px',
       pt: pt, pr: pr,
-      actHead: hBase + 'justify-content: center; position: sticky; right: 0; background: #F7F9F8',
+      actHead: hBase + 'justify-content: center; position: sticky; z-index: 1; right: 0; background: #F7F9F8' + (visX.length ? '' : '; ' + SHADOW),
       actBtn: {
         edit: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
         rest: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
