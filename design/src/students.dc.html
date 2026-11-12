@@ -151,7 +151,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.26.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.26.5</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1056,7 +1056,13 @@ class Component extends DCLogic {
       ['out', '퇴원생', 'sec-out', '#D9746C', '#FCEBEA', '#B4332B', '']
     ];
     const curSec = SECS.find(x => x[0] === (st.tab || 'act'));
-    const curList = sorted.filter(s => s.status === curSec[0]);
+    // 휴원 탭은 휴원 날짜, 퇴원 탭은 퇴원 날짜 순서 (오래된 것이 위, 최근이 아래). 날짜가 없으면 맨 아래
+    const dKey = { rest: 'restDate', out: 'leave' }[curSec[0]];
+    const curList = sorted.filter(s => s.status === curSec[0]).map((s, i) => [s, i]).sort((a, b) => {
+      if (!dKey) return a[1] - b[1];
+      const x = a[0][dKey] || '99', y = b[0][dKey] || '99';
+      return x < y ? -1 : x > y ? 1 : a[1] - b[1];
+    }).map(p => p[0]);
     const curRows = curList.filter(match).filter(pass).map(row);
     const cur = {
       id: curSec[2], title: curSec[1], count: curList.length, note: curSec[6], rows: curRows, empty: curRows.length === 0, canReg: curSec[0] === 'act',
