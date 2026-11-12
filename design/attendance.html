@@ -138,7 +138,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.25.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.25.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1051,7 +1051,10 @@ class Component extends DCLogic {
       const rows = list.map(s => {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
-        const r = calc(s);
+        const r0 = calc(s);
+        // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
+        const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
+        const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
         this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: s.start, since: r.since, needPay: r.needPay, cells: r.cells });
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
@@ -1089,7 +1092,7 @@ class Component extends DCLogic {
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const bg = x.pay ? '#FAEFD2' : s.rowBg ? rowBg : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)) + (((s.dimBefore && x.d < s.dimBefore) || (s.dimFrom && x.d >= s.dimFrom)) ? '; opacity: 0.35' : ''),
+              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
