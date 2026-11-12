@@ -9,7 +9,7 @@
 <body>
 <x-dc>
 <helmet>
-<style>.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
+<style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 .phead{position:sticky;top:0;z-index:6;background:#FFFFFF;box-shadow:0 6px 10px -8px rgba(23,32,28,.25)}@media print{.phead{position:static!important;box-shadow:none!important}}
 .aflash>*{animation:aflash 3.6s ease-out}
@@ -116,10 +116,21 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
       </button>
-      <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
+      <span style="position: relative; display: inline-flex">
+      <button type="button" onClick="{{exp.toggle}}" aria-haspopup="menu" aria-expanded="{{exp.openStr}}" style="{{exp.btnStyle}}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
-        엑셀로 내보내기
+        {{exp.label}}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"></path></svg>
       </button>
+      <sc-if value="{{exp.open}}" hint-placeholder-val="{{ false }}">
+        <div onMouseDown="{{exp.close}}" style="position: fixed; inset: 0; z-index: 60"></div>
+        <div role="menu" aria-label="내보내기" style="position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 61; width: 200px; box-sizing: border-box; padding: 6px; display: flex; flex-direction: column; gap: 2px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.16)">
+          <button type="button" role="menuitem" onClick="{{exp.img}}" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer" class="expitem"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #E3ECFD; color: #2952A3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4"></path><circle cx="9" cy="9" r="1.5"></circle></svg></span>이미지로 내보내기</button>
+          <button type="button" role="menuitem" onClick="{{exp.pdf}}" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer" class="expitem"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #FCE4E6; color: #C8323C"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM9 12h6M9 16h6"></path></svg></span>PDF로 내보내기</button>
+          <button type="button" role="menuitem" onClick="{{exp.xls}}" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer" class="expitem"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #E2F1EA; color: #1F7A5A"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg></span>엑셀로 내보내기</button>
+        </div>
+      </sc-if>
+      </span>
       </div>
     </div>
     </sc-if>
@@ -139,7 +150,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.37.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.38.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1092,6 +1103,92 @@ class Component extends DCLogic {
     if (e.shiftKey) this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c }, pop: null });
     else this.setState({ sel: { r1: r, c1: c, r2: r, c2: c }, pop: null });
   }
+  // 내보내기: 이미지(PNG) / PDF / 엑셀. 이미지·PDF는 화면에 보이는 표를 그대로 (메뉴·버튼은 빼고, 고정 머리글·스크롤은 풀어서 전체를)
+  loadLib(src, name) {
+    return new Promise((res, rej) => {
+      if (window[name]) { res(window[name]); return; }
+      const sc = document.createElement('script'); sc.src = src; sc.onload = () => res(window[name]); sc.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(sc);
+    });
+  }
+  async saveBlob(fname, blob) {
+    try {
+      if (window.claude && window.claude.use) {
+        const dl = await window.claude.use('downloads');
+        if (dl) { await dl.save({ filename: fname, data: blob }); return; }
+      }
+    } catch (err) { if (err && err.code === 'declined') return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+  async snapCanvas() {
+    const h2c = await this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'html2canvas');
+    const SEL = 'section[aria-label="출석부"]';
+    // 화면을 다시 그린 뒤에 찍는다 (다시 그리면 요소가 바뀌므로 그 다음에 찾음)
+    this.setState({ expBusy: true });
+    await new Promise(r => setTimeout(r, 60));
+    const el = document.querySelector(SEL);
+    if (!el) { this.setState({ expBusy: false }); throw new Error('no section'); }
+    try {
+      return await h2c(el, {
+        scale: 2, backgroundColor: '#FFFFFF', useCORS: true, logging: false,
+        // 표 안의 메뉴·버튼(noprint)만 뺀다 (표를 감싼 바깥 틀은 그대로)
+        ignoreElements: e => !!(e.classList && (e.classList.contains('noprint') || e.classList.contains('noexp')) && e !== el && el.contains(e)),
+        onclone: doc => {
+          const st = doc.createElement('style');
+          st.textContent = '.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important;overflow:visible!important}.shellscroll{overflow:visible!important}';
+          doc.head.appendChild(st);
+          const sec = doc.querySelector(SEL);
+          if (!sec) return;
+          [sec].concat([].slice.call(sec.querySelectorAll('*'))).forEach(x => {
+            const cs = doc.defaultView.getComputedStyle(x);
+            if (cs.position === 'sticky') x.style.setProperty('position', 'static', 'important');
+            if (/auto|scroll/.test(cs.overflowX + ' ' + cs.overflowY)) x.style.setProperty('overflow', 'visible', 'important');
+            // 안쪽 테두리 그림자(오늘 요일 테두리, 수납 칸 테두리)는 이미지 도구가 칠해 버리므로 테두리로 바꾸고, 선택 표시는 뺀다
+            const bs = cs.boxShadow;
+            if (bs && bs !== 'none' && /inset/.test(bs)) {
+              const m = /(rgba?\([^)]*\)) 0px 0px 0px ([\d.]+)px inset/.exec(bs);
+              x.style.setProperty('box-shadow', 'none', 'important');
+              if (m) { x.style.setProperty('border', m[2] + 'px solid ' + m[1], 'important'); x.style.setProperty('box-sizing', 'border-box', 'important'); }
+            }
+          });
+          sec.style.setProperty('overflow', 'visible', 'important');
+          sec.style.setProperty('width', 'max-content', 'important');
+          sec.style.setProperty('min-width', el.getBoundingClientRect().width + 'px', 'important');
+        }
+      });
+    } finally { this.setState({ expBusy: false }); }
+  }
+  expName(ext) { return ('출석부_' + ((this._meta || {}).teacher || '').replace(/\s/g, '') + '_2026년' + ((this._meta || {}).mon || '') + '월.xlsx').replace(/\.xlsx$/, '') + '.' + ext; }
+  async exportImage() {
+    this.setState({ expOpen: false });
+    try {
+      const cv = await this.snapCanvas();
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      await this.saveBlob(this.expName('png'), blob);
+    } catch (e) { window.console && console.warn('이미지로 내보내지 못했습니다', e); }
+  }
+  async exportPdf() {
+    this.setState({ expOpen: false });
+    try {
+      const cv = await this.snapCanvas();
+      const lib = await this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf');
+      const pdf = new lib.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      // A4 가로에 폭을 맞추고, 길면 여러 장으로 나눈다
+      const M = 7, PW = 297 - M * 2, PH = 210 - M * 2;
+      const pxPerMm = cv.width / PW;
+      const sliceH = Math.floor(PH * pxPerMm);
+      for (let y = 0, page = 0; y < cv.height; y += sliceH, page++) {
+        const h = Math.min(sliceH, cv.height - y);
+        const pc = document.createElement('canvas'); pc.width = cv.width; pc.height = h;
+        const g = pc.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, pc.width, h); g.drawImage(cv, 0, y, cv.width, h, 0, 0, cv.width, h);
+        if (page) pdf.addPage();
+        pdf.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', M, M, PW, h / pxPerMm);
+      }
+      await this.saveBlob(this.expName('pdf'), pdf.output('blob'));
+    } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
+  }
   async exportExcel() {
     const X = window.XLSX;
     const meta = this._meta || {};
@@ -1785,6 +1882,15 @@ class Component extends DCLogic {
       c: c,
       headCount: Object.keys(all.filter(s => !s.status).reduce((o, s) => { o[s.sid || s.id] = 1; return o; }, {})).length,
       exportX: () => this.exportExcel(),
+      exp: {
+        open: !!st.expOpen, openStr: st.expOpen ? 'true' : 'false', label: st.expBusy ? '내보내는 중…' : '내보내기',
+        btnStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid ' + (st.expOpen ? '#8AB4E8' : '#D9DEE3') + '; background: ' + (st.expOpen ? '#F3F7FD' : '#FFFFFF') + '; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer',
+        toggle: () => this.setState({ expOpen: !st.expOpen }),
+        close: () => this.setState({ expOpen: false }),
+        img: () => this.exportImage(),
+        pdf: () => this.exportPdf(),
+        xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
+      },
       printX: () => this.printSheet(),
       pv: (() => {
         const P = st.pay;

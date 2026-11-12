@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>수강생대장</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
-<style>.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
+<style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 
 body{margin:0;background:#F3F5F4}
@@ -63,7 +63,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <span style="{{cur.countStyle}}">{{cur.count}}명</span>
         <span style="font-size: 12px; color: #8A949E">{{cur.note}}</span>
         <span style="flex: 1"></span>
-        <div style="position: relative">
+        <div class="noexp" style="position: relative">
           <button type="button" onClick="{{flt.toggle}}" aria-expanded="{{flt.openTxt}}" aria-haspopup="dialog" style="{{flt.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{flt.hasActive}}" hint-placeholder-val="{{ false }}"><span style="{{flt.badge}}">{{flt.count}}</span></sc-if></button>
           <sc-if value="{{flt.open}}" hint-placeholder-val="{{ false }}">
             <div onMouseDown="{{flt.close}}" style="position: fixed; inset: 0; z-index: 30"></div>
@@ -95,14 +95,14 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           </sc-if>
         </div>
         <label for="q" style="position: absolute; left: -9999px">이름, 보호자, 전화번호, 등록번호로 찾기</label>
-        <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 260px; box-sizing: border-box">
+        <span class="noexp" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 260px; box-sizing: border-box">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
           <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
         </span>
         <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}">
-          <button type="button" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
+          <button type="button" class="noexp" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
         </sc-if>
-        <button type="button" onClick="{{colsCfg.open}}" aria-label="표시할 항목 설정" title="표시할 항목 설정" style="width: 36px; height: 36px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
+        <button type="button" class="noexp" onClick="{{colsCfg.open}}" aria-label="표시할 항목 설정" title="표시할 항목 설정" style="width: 36px; height: 36px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
       </div>
 
       <div id="tableScroll" class="shellscroll" style="overflow-x: auto; border-radius: 0 0 16px 16px">
@@ -115,7 +115,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
             <sc-for list="{{xHeads}}" as="h" hint-placeholder-count="0">
               <span style="{{h.style}}">{{h.label}}<span class="colgrip" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; left: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></span>
             </sc-for>
-            <span style="{{actHead}}">관리</span>
+            <span class="noexp" style="{{actHead}}">관리</span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
             <div class="{{r.rowCls}}" style="{{gridRow}}">
@@ -126,7 +126,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
               <sc-for list="{{r.xcells}}" as="x" hint-placeholder-count="0">
                 <span style="{{x.cell}}"><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if><sc-if value="{{x.notTk}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
-              <span style="{{r.actCell}}">
+              <span class="noexp" style="{{r.actCell}}">
                 <sc-for list="{{r.acts}}" as="a" hint-placeholder-count="3">
                   <button type="button" onClick="{{a.pick}}" aria-label="{{a.aria}}" style="{{a.style}}">{{a.label}}</button>
                 </sc-for>
@@ -145,14 +145,25 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
       </button>
-      <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
+      <span style="position: relative; display: inline-flex">
+      <button type="button" onClick="{{exp.toggle}}" aria-haspopup="menu" aria-expanded="{{exp.openStr}}" style="{{exp.btnStyle}}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
-        엑셀로 내보내기
+        {{exp.label}}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"></path></svg>
       </button>
+      <sc-if value="{{exp.open}}" hint-placeholder-val="{{ false }}">
+        <div onMouseDown="{{exp.close}}" style="position: fixed; inset: 0; z-index: 60"></div>
+        <div role="menu" aria-label="내보내기" style="position: absolute; right: 0; bottom: calc(100% + 6px); z-index: 61; width: 200px; box-sizing: border-box; padding: 6px; display: flex; flex-direction: column; gap: 2px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.16)">
+          <button type="button" role="menuitem" onClick="{{exp.img}}" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer" class="expitem"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #E3ECFD; color: #2952A3"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4"></path><circle cx="9" cy="9" r="1.5"></circle></svg></span>이미지로 내보내기</button>
+          <button type="button" role="menuitem" onClick="{{exp.pdf}}" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer" class="expitem"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #FCE4E6; color: #C8323C"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM9 12h6M9 16h6"></path></svg></span>PDF로 내보내기</button>
+          <button type="button" role="menuitem" onClick="{{exp.xls}}" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: none; border-radius: 9px; background: transparent; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; text-align: left; cursor: pointer" class="expitem"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 7px; background: #E2F1EA; color: #1F7A5A"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg></span>엑셀로 내보내기</button>
+        </div>
+      </sc-if>
+      </span>
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.37.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -782,6 +793,92 @@ class Component extends DCLogic {
       window.print();
     }, 80);
   }
+  // 내보내기: 이미지(PNG) / PDF / 엑셀. 이미지·PDF는 화면에 보이는 표를 그대로 (메뉴·버튼은 빼고, 고정 머리글·스크롤은 풀어서 전체를)
+  loadLib(src, name) {
+    return new Promise((res, rej) => {
+      if (window[name]) { res(window[name]); return; }
+      const sc = document.createElement('script'); sc.src = src; sc.onload = () => res(window[name]); sc.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(sc);
+    });
+  }
+  async saveBlob(fname, blob) {
+    try {
+      if (window.claude && window.claude.use) {
+        const dl = await window.claude.use('downloads');
+        if (dl) { await dl.save({ filename: fname, data: blob }); return; }
+      }
+    } catch (err) { if (err && err.code === 'declined') return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+  async snapCanvas() {
+    const h2c = await this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'html2canvas');
+    const SEL = 'section[aria-label="수강생대장"]';
+    // 화면을 다시 그린 뒤에 찍는다 (다시 그리면 요소가 바뀌므로 그 다음에 찾음)
+    this.setState({ expBusy: true });
+    await new Promise(r => setTimeout(r, 60));
+    const el = document.querySelector(SEL);
+    if (!el) { this.setState({ expBusy: false }); throw new Error('no section'); }
+    try {
+      return await h2c(el, {
+        scale: 2, backgroundColor: '#FFFFFF', useCORS: true, logging: false,
+        // 표 안의 메뉴·버튼(noprint)만 뺀다 (표를 감싼 바깥 틀은 그대로)
+        ignoreElements: e => !!(e.classList && (e.classList.contains('noprint') || e.classList.contains('noexp')) && e !== el && el.contains(e)),
+        onclone: doc => {
+          const st = doc.createElement('style');
+          st.textContent = '.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important;overflow:visible!important}.shellscroll{overflow:visible!important}';
+          doc.head.appendChild(st);
+          const sec = doc.querySelector(SEL);
+          if (!sec) return;
+          [sec].concat([].slice.call(sec.querySelectorAll('*'))).forEach(x => {
+            const cs = doc.defaultView.getComputedStyle(x);
+            if (cs.position === 'sticky') x.style.setProperty('position', 'static', 'important');
+            if (/auto|scroll/.test(cs.overflowX + ' ' + cs.overflowY)) x.style.setProperty('overflow', 'visible', 'important');
+            // 안쪽 테두리 그림자(오늘 요일 테두리, 수납 칸 테두리)는 이미지 도구가 칠해 버리므로 테두리로 바꾸고, 선택 표시는 뺀다
+            const bs = cs.boxShadow;
+            if (bs && bs !== 'none' && /inset/.test(bs)) {
+              const m = /(rgba?\([^)]*\)) 0px 0px 0px ([\d.]+)px inset/.exec(bs);
+              x.style.setProperty('box-shadow', 'none', 'important');
+              if (m) { x.style.setProperty('border', m[2] + 'px solid ' + m[1], 'important'); x.style.setProperty('box-sizing', 'border-box', 'important'); }
+            }
+          });
+          sec.style.setProperty('overflow', 'visible', 'important');
+          sec.style.setProperty('width', 'max-content', 'important');
+          sec.style.setProperty('min-width', el.getBoundingClientRect().width + 'px', 'important');
+        }
+      });
+    } finally { this.setState({ expBusy: false }); }
+  }
+  expName(ext) { return ((this._xdata && this._xdata.fname) || '수강생대장.xlsx').replace(/\.xlsx$/, '') + '.' + ext; }
+  async exportImage() {
+    this.setState({ expOpen: false });
+    try {
+      const cv = await this.snapCanvas();
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      await this.saveBlob(this.expName('png'), blob);
+    } catch (e) { window.console && console.warn('이미지로 내보내지 못했습니다', e); }
+  }
+  async exportPdf() {
+    this.setState({ expOpen: false });
+    try {
+      const cv = await this.snapCanvas();
+      const lib = await this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf');
+      const pdf = new lib.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      // A4 가로에 폭을 맞추고, 길면 여러 장으로 나눈다
+      const M = 7, PW = 297 - M * 2, PH = 210 - M * 2;
+      const pxPerMm = cv.width / PW;
+      const sliceH = Math.floor(PH * pxPerMm);
+      for (let y = 0, page = 0; y < cv.height; y += sliceH, page++) {
+        const h = Math.min(sliceH, cv.height - y);
+        const pc = document.createElement('canvas'); pc.width = cv.width; pc.height = h;
+        const g = pc.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, pc.width, h); g.drawImage(cv, 0, y, cv.width, h, 0, 0, cv.width, h);
+        if (page) pdf.addPage();
+        pdf.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', M, M, PW, h / pxPerMm);
+      }
+      await this.saveBlob(this.expName('pdf'), pdf.output('blob'));
+    } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
+  }
   async exportExcel() {
     const X = window.XLSX, D = this._xdata;
     if (!X || !D) { window.console && console.warn('엑셀 도구를 불러오지 못했습니다'); return; }
@@ -1358,6 +1455,15 @@ class Component extends DCLogic {
       })(),
       printX: () => { this.setState({ printOpen: true }); setTimeout(() => { const d = document.getElementById('printDlg'); if (d) d.focus(); }, 30); },
       exportX: () => this.exportExcel(),
+      exp: {
+        open: !!st.expOpen, openStr: st.expOpen ? 'true' : 'false', label: st.expBusy ? '내보내는 중…' : '내보내기',
+        btnStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid ' + (st.expOpen ? '#8AB4E8' : '#D9DEE3') + '; background: ' + (st.expOpen ? '#F3F7FD' : '#FFFFFF') + '; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer',
+        toggle: () => this.setState({ expOpen: !st.expOpen }),
+        close: () => this.setState({ expOpen: false }),
+        img: () => this.exportImage(),
+        pdf: () => this.exportPdf(),
+        xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
+      },
       reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
       onSearch: e => this.setState({ q: e.target.value }),
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
