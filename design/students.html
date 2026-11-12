@@ -10,6 +10,7 @@ a{color:#007E82}a:hover{color:#005F62}
 button,input{font-family:inherit}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6AB;outline-offset:1px}
 .idInp:hover{border-color:#CDD4D0 !important;background:#FFFFFF !important}.idInp:focus{border-color:#00A6AB !important;background:#FFFFFF !important}
+.colgrip:hover,.colgrip:active{background:linear-gradient(to right,transparent 3px,#00A6AB 3px,#00A6AB 5px,transparent 5px)}
 .srow:hover>span{background-color:#F7FAFA}
 </style>
 </head>
@@ -87,14 +88,16 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
         <div style="{{tableMin}}">
           <div style="{{gridHead}}">
             <sc-for list="{{headCols}}" as="h" hint-placeholder-count="12">
-              <span style="{{h.style}}">{{h.label}}</span>
+              <span style="{{h.style}}">{{h.label}}<span class="colgrip" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></span>
             </sc-for>
+            <span></span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
             <div class="srow" style="{{gridRow}}">
               <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
                 <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
+              <span style="{{r.fill}}"></span>
             </div>
           </sc-for>
           <sc-if value="{{cur.empty}}" hint-placeholder-val="{{ false }}">
@@ -116,7 +119,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.12.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.12.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="표시할 항목" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -258,14 +261,16 @@ class Component extends DCLogic {
     super(props);
     let cols = null;
     try { const v = JSON.parse(localStorage.getItem('students.cols') || 'null'); if (Array.isArray(v)) cols = v; } catch (e) {}
-    this.state = { q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+    let widths = {};
+    try { const w = JSON.parse(localStorage.getItem('students.widths') || 'null'); if (w && typeof w === 'object') widths = w; } catch (e) {}
+    this.state = { widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
   colCatalog() {
     return [
       { k: 'id', label: '등록번호', w: '76px' },
       { k: 'cls', label: '반 구분', w: '84px' },
       { k: 'part', label: '파트', w: '92px' },
-      { k: 'name', label: '이름 / 보호자', w: 'minmax(150px, 1.4fr)', min: 150, left: true },
+      { k: 'name', label: '이름 / 보호자', w: '150px', left: true },
       { k: 'teacher', label: '강사', w: '92px' },
       { k: 'day', label: '레슨요일', w: '92px' },
       { k: 'time', label: '수업 시간', w: '120px' },
@@ -274,7 +279,7 @@ class Component extends DCLogic {
       { k: 'phone', label: '원생 전화번호', w: '128px' },
       { k: 'gphone', label: '보호자 전화번호', w: '128px' },
       { k: 'birth', label: '생년월일', w: '104px' },
-      { k: 'addr', label: '주소', w: 'minmax(160px, 1.4fr)', min: 160, left: true },
+      { k: 'addr', label: '주소', w: '200px', left: true },
       { k: 'join', label: '입원 연월일', w: '96px' },
       { k: 'leave', label: '퇴원 연월일', w: '96px' },
       { k: 'count', label: '수강 횟수', w: '80px' },
@@ -284,13 +289,14 @@ class Component extends DCLogic {
       { k: 'pay', label: '강사 수당', w: '96px' },
       { k: 'cash', label: '현금영수증', w: '90px' },
       { k: 'stick', label: '드럼스틱 보관함', w: '110px' },
-      { k: 'memo', label: '비고', w: 'minmax(110px, 1fr)', min: 110, left: true },
-      { k: 'rest', label: '휴원정보', w: 'minmax(120px, 1fr)', min: 120, left: true }
+      { k: 'memo', label: '비고', w: '140px', left: true },
+      { k: 'rest', label: '휴원정보', w: '150px', left: true }
     ];
   }
   visibleCols() {
-    const DEF = ['id', 'part', 'name', 'teacher', 'day', 'age', 'phone', 'gphone', 'join', 'leave', 'memo', 'rest'];
-    const keys = this.colCatalog().map(c => c.k);
+    const DEF = ['id', 'part', 'name', 'teacher', 'day', 'age', 'phone', 'gphone', 'join'];
+    // 휴원정보·퇴원 연월일·비고는 설정에 넣지 않고 휴원·퇴원 탭에서만 붙인다
+    const keys = this.colCatalog().map(c => c.k).filter(k => ['leave', 'memo', 'rest'].indexOf(k) < 0);
     const v = (this.state.cols || DEF).filter(k => keys.indexOf(k) >= 0);
     return v.indexOf('name') >= 0 ? v : ['name'].concat(v);
   }
@@ -439,11 +445,24 @@ class Component extends DCLogic {
     const CAT = this.colCatalog();
     const visible = this.visibleCols();
     const colDef = k => CAT.find(c => c.k === k);
-    const vis = visible.map(colDef).filter(Boolean);
-    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => c.w).join(' ') + '; align-items: center';
-    const minW = vis.reduce((n, c) => n + (c.min || parseInt(c.w, 10) || 100), 0);
+    const tabNow = st.tab || 'act';
+    const tabExtra = tabNow === 'rest' ? ['rest', 'memo'] : tabNow === 'out' ? ['leave', 'memo'] : [];
+    const vis = visible.concat(tabExtra).map(colDef).filter(Boolean);
+    const Wd = c => (st.widths || {})[c.k] || parseInt(c.w, 10);
+    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => Wd(c) + 'px').join(' ') + ' minmax(0, 1fr); align-items: center';
+    const minW = vis.reduce((n, c) => n + Wd(c), 0);
+    const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
     const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
-    const headCols = vis.map(c => ({ label: c.label, style: hBase + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center') }));
+    const headCols = vis.map(c => ({ label: c.label, style: hBase + 'position: relative; ' + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center'),
+      resize: e => {
+        e.preventDefault(); e.stopPropagation();
+        const x0 = e.clientX, w0 = Wd(c);
+        const mv = ev => { const w = Math.max(44, Math.round(w0 + ev.clientX - x0)); this.setState({ widths: Object.assign({}, this.state.widths, { [c.k]: w }) }); };
+        const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); saveW(); };
+        window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+      },
+      resetW: () => { const w = Object.assign({}, st.widths); delete w[c.k]; this.setState({ widths: w }, saveW); setTimeout(saveW, 0); }
+    }));
     const won = n => n ? Number(n).toLocaleString('ko-KR') + '원' : '';
     const row = s => {
       const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
@@ -480,7 +499,7 @@ class Component extends DCLogic {
         memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
         rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
-      return { cells: vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k]())) };
+      return { fill: C + '; padding: 0', cells: vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k]())) };
     };
     const SECS = [
       ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
@@ -497,7 +516,7 @@ class Component extends DCLogic {
       countStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 800; color: ' + curSec[5]
     };
     // 표시할 항목 설정 창
-    const GROUPS = [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join', 'leave']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']], ['기타', ['memo', 'rest']]];
+    const GROUPS = [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']]];
     const saveCols = list => { try { localStorage.setItem('students.cols', JSON.stringify(list)); } catch (e) {} this.setState({ cols: list }); };
     const move = (k, to) => { const l = visible.filter(x => x !== k); l.splice(Math.max(0, Math.min(to, l.length)), 0, k); saveCols(l); };
     const boxS = on => 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD');
@@ -506,7 +525,7 @@ class Component extends DCLogic {
       open: () => this.setState({ colsOpen: true }),
       close: () => this.setState({ colsOpen: false }),
       key: e => { if (e.key === 'Escape') this.setState({ colsOpen: false }); },
-      reset: () => { try { localStorage.removeItem('students.cols'); } catch (e) {} this.setState({ cols: null }); },
+      reset: () => { try { localStorage.removeItem('students.cols'); localStorage.removeItem('students.widths'); } catch (e) {} this.setState({ cols: null, widths: {} }); },
       count: visible.length,
       cats: GROUPS.map(g => ({ label: g[0], items: g[1].map(k => {
         const on = visible.indexOf(k) >= 0, lock = k === 'name';
