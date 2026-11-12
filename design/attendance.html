@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.30.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.31.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -191,7 +191,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <span style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F3E6C4; color: #7A5C12; font-size: 18px; font-weight: 800">₩</span>
         <span style="display: flex; flex-direction: column; gap: 2px">
           <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 800; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 800">수납 완료</span></sc-if></span>
-          <span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span>
+          <sc-if value="{{pv.notPaid}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
+          <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수납 날짜<input id="pay_date" type="date" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #E2C35E; background: #FBF6E8; font-family: inherit; font-size: 13px; font-weight: 700; color: #7A5C12"></label></sc-if>
         </span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{pv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
@@ -215,7 +216,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
         <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
           <sc-for list="{{pv.fees}}" as="x" hint-placeholder-count="5">
-            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873; min-width: 0">{{x.label}}<span style="{{x.wrap}}"><input id="{{x.id}}" type="text" inputmode="numeric" defaultValue="{{x.val}}" disabled="{{pv.paidTxt}}" onInput="{{x.set}}" style="{{x.inp}}"><span>{{x.unit}}</span></span></label>
+            <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873; min-width: 0">{{x.label}}<span style="{{x.wrap}}"><input id="{{x.id}}" type="text" inputmode="numeric" defaultValue="{{x.val}}" onInput="{{x.set}}" style="{{x.inp}}"><span>{{x.unit}}</span></span></label>
           </sc-for>
         </div>
         <sc-if value="{{pv.cashOn}}" hint-placeholder-val="{{ false }}">
@@ -227,6 +228,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       </div>
 
       <div style="display: flex; gap: 10px">
+        <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
         <button type="button" onClick="{{pv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.closeLabel}}</button>
         <button type="button" onClick="{{pv.go}}" style="{{pv.goStyle}}">{{pv.goLabel}}</button>
       </div>
@@ -362,7 +364,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </sc-for>
         </div>
         <button type="button" class="pbtn" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
-          <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">수납</span>
+          <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">{{pop.payLabel}}</span>
           <span style="{{pop.payCur}}">현재</span>
           <span style="{{pop.payKey}}">0</span>
         </button>
@@ -860,27 +862,55 @@ class Component extends DCLogic {
     let rec = null;
     try { rec = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).find(x => x.name === name && x.date === '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0')); } catch (e) {}
     if (paid && rec) { count = rec.count || count; unit = rec.unit || unit; total = rec.total || rec.amount || total; }
-    this.setState({ pop: null, pay: { name: name, d: c0.d, m: m, paid: paid, pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
+    this.setState({ pop: null, pay: { name: name, sid: c0.sid, d: c0.d, m: m, date: '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0'), origDate: '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0'), paid: paid, pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
       cash: info ? !!info.cashOn : s0.name.indexOf('$') >= 0, cashType: info ? info.cashType : 'person', cashNo: (info && info.cashNo) || s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4),
       teacher: info ? info.teacher : '', part: info ? info.part : '', sched: info ? (info.day + (info.timeTxt ? ' ' + info.timeTxt : '')) : (s0.g + (s0.time ? ' ' + s0.time : '')), phone: info ? (info.gphone || info.phone) : '' } });
     setTimeout(() => { const d = document.getElementById('payDlg'); if (d) d.focus(); }, 30);
   }
+  readPays() {
+    try { const v = JSON.parse(localStorage.getItem('academy.payments') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  writePays(list) { try { localStorage.setItem('academy.payments', JSON.stringify(list)); } catch (e) {} }
   savePay() {
     const P = this.state.pay;
     if (!P) return;
-    const date = '2026-' + String(P.m).padStart(2, '0') + '-' + String(P.d).padStart(2, '0');
-    let list = [];
-    try { list = JSON.parse(localStorage.getItem('academy.payments') || '[]'); if (!Array.isArray(list)) list = []; } catch (e) {}
-    if (P.paid) list = list.filter(x => !(x.name === P.name && x.date === date));
-    else list = list.concat([{ id: 'P' + Date.now(), at: Date.now(), name: P.name, date: date, amount: P.total, count: P.count, dur: P.dur, unit: P.unit, total: P.total, pay: P.pay, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher }]);
-    try { localStorage.setItem('academy.payments', JSON.stringify(list)); } catch (e) {}
+    const rec = { name: P.name, date: P.date, amount: P.total, count: P.count, dur: P.dur, unit: P.unit, total: P.total, pay: P.pay, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher };
+    if (P.paid) {
+      // 수납 수정: 내용 바꾸고, 날짜가 바뀌면 출석부 수납 표시도 그 날짜 칸으로 옮긴다
+      const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(P.date || '');
+      if (!m) return;
+      const nm = +m[2], nd = +m[3];
+      const list = this.readPays();
+      const i = list.findIndex(x => x.name === P.name && x.date === P.origDate);
+      if (i >= 0) list[i] = Object.assign({}, list[i], rec, { edited: Date.now() }); else list.push(Object.assign({ id: 'P' + Date.now(), at: Date.now() }, rec));
+      this.writePays(list);
+      if (P.date !== P.origDate) {
+        const patch = this.writeCells([{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }, { m: nm, sid: P.sid, d: nd, key: 'p' + nd, v: true }], '');
+        patch.pay = null;
+        if (nm === P.m) patch.sel = { r1: this.state.sel ? this.state.sel.r1 : 0, r2: this.state.sel ? this.state.sel.r1 : 0, c1: nd, c2: nd };
+        this.commit(patch);
+      } else this.setState({ pay: null });
+      this.focusSheet();
+      return;
+    }
+    this.writePays(this.readPays().concat([Object.assign({ id: 'P' + Date.now(), at: Date.now() }, rec)]));
     this.setState({ pay: null });
     this.applyMark('V', { noNotice: true });
     // 현금영수증 발급 대상자는 수납한 뒤에도 발급 안내 창을 한 번 더 띄운다 (이번 수납 금액·횟수로)
-    if (!P.paid && P.cash) {
+    if (P.cash) {
       this.setState({ cashNotice: [{ name: P.name, type: (P.pro ? '전문반' : '취미반') + ' · ' + P.count + '회', purpose: P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)', amount: Number(P.total || 0).toLocaleString('ko-KR') + '원', no: P.cashNo || '—' }] });
       setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
     }
+  }
+  cancelPay() {
+    const P = this.state.pay;
+    if (!P) return;
+    if (!P.cancelAsk) { this.setState({ pay: Object.assign({}, P, { cancelAsk: true }) }); return; }
+    this.writePays(this.readPays().filter(x => !(x.name === P.name && x.date === P.origDate)));
+    const patch = this.writeCells([{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }], '');
+    patch.pay = null;
+    this.commit(patch);
+    this.focusSheet();
   }
   applyMark(v, opt) {
     const cells = this.selCells();
@@ -1391,6 +1421,7 @@ class Component extends DCLogic {
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
       payStyle: '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
+      payLabel: curPay ? '수납 수정' : '수납',
       payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: #7A5C12; padding: 2px 6px; border-radius: 6px' : 'display: none',
       payKey: keycap('#7A5C12', '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
@@ -1528,7 +1559,10 @@ class Component extends DCLogic {
         const upd = p => this.setState({ pay: Object.assign({}, P, p) });
         const t12 = t => t;
         return {
-          open: true, name: P.name, paid: P.paid, paidTxt: P.paid ? 'true' : 'false',
+          open: true, name: P.name, paid: P.paid, notPaid: !P.paid, date: P.date,
+          setDate: e => upd({ date: e.target.value }),
+          cancelPay: () => this.cancelPay(),
+          cancelLabel: P.cancelAsk ? '한 번 더 누르면 취소' : '수납 취소',
           clsLabel: P.pro ? '전문반' : '취미반',
           clsChip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 800; ' + (P.pro ? 'background: #FBE3E6; color: #C8323C' : 'background: #E6F6F6; color: #007E82'),
           dateLabel: P.m + '월 ' + P.d + '일',
@@ -1554,8 +1588,8 @@ class Component extends DCLogic {
           cashOn: P.cash,
           cashLine: (P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') + ' · 발급 번호 ' + (P.cashNo || '—') + ' · 현금으로 받으면 학원 단말기로 ' + won(P.total) + '원 발급',
           closeLabel: P.paid ? '닫기' : '취소',
-          goLabel: P.paid ? '수납 취소' : '수납하기',
-          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + (P.paid ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B' : 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)'),
+          goLabel: P.paid ? '수정 저장' : '수납하기',
+          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)',
           close: close,
           go: () => this.savePay(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.savePay(); } }
