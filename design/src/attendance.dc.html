@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -618,36 +618,36 @@ class Component extends DCLogic {
   baseRows() {
     const P = '#DCD3EE';
     return [
-      { id: 1, g: '월', name: '김재윤', start: 0 },
-      { id: 2, g: '월', name: '손하율', start: 0, rowBg: '#F9DADC' },
-      { id: 3, g: '월', name: '정다온$', start: 0, nameBg: P },
-      { id: 4, g: '월', name: '변예준', start: 0 },
-      { id: 5, g: '화', name: '마서윤', start: 0 },
-      { id: 6, g: '화', name: '이예린', start: 0 },
-      { id: 7, g: '화', name: '김소윤', start: 0 },
-      { id: 29, sid: 'S29', g: '화', name: '한지우', start: 0, time: '16:00' },
-      { id: 8, g: '수', name: '윤가람', start: 0 },
-      { id: 9, g: '수', name: '김경민', start: 0 },
-      { id: 10, g: '수', name: '강도윤', start: 0 },
-      { id: 11, g: '수', name: '허준서', start: 0 },
-      { id: 12, g: '목', name: '오태현', start: 0 },
-      { id: 13, g: '목', name: '이은서', start: 0 },
-      { id: 14, g: '목', name: '천가윤', start: 0 },
-      { id: 15, g: '목', name: '박상민', start: 0 },
-      { id: 16, g: '금', name: 'D)강연서', start: 0 },
-      { id: 17, g: '금', name: '서홍빈', start: 0 },
-      { id: 18, g: '금', name: '이소민', start: 0, nameBg: P },
-      { id: 19, g: '금', name: '이서준', start: 0 },
-      { id: 30, sid: 'S29', g: '금', name: '한지우', start: 0, time: '18:30' },
-      { id: 20, g: '토', name: '전태윤', start: 0 },
-      { id: 21, g: '토', name: '김재희', start: 0 },
-      { id: 22, g: 'R', name: '장현우', start: 0 },
-      { id: 23, g: 'R', name: '이시윤', start: 0 },
-      { id: 24, g: 'R', name: '방예준$', start: 0 },
-      { id: 25, g: 'R', name: '조민아', start: 0 },
-      { id: 26, g: 'R', name: '강준호', start: 0 },
-      { id: 27, g: '퇴휴', name: '임서윤', start: 0, status: '퇴원' },
-      { id: 28, g: '퇴휴', name: 'U)권은서', start: 0, status: '휴원' },
+      { id: 1, g: '월', name: '김재윤', start: 0, fresh: true },
+      { id: 2, g: '월', name: '손하율', start: 0, fresh: true, rowBg: '#F9DADC' },
+      { id: 3, g: '월', name: '정다온$', start: 0, fresh: true, nameBg: P },
+      { id: 4, g: '월', name: '변예준', start: 0, fresh: true },
+      { id: 5, g: '화', name: '마서윤', start: 0, fresh: true },
+      { id: 6, g: '화', name: '이예린', start: 0, fresh: true },
+      { id: 7, g: '화', name: '김소윤', start: 0, fresh: true },
+      { id: 29, sid: 'S29', g: '화', name: '한지우', start: 0, fresh: true, time: '16:00' },
+      { id: 8, g: '수', name: '윤가람', start: 0, fresh: true },
+      { id: 9, g: '수', name: '김경민', start: 0, fresh: true },
+      { id: 10, g: '수', name: '강도윤', start: 0, fresh: true },
+      { id: 11, g: '수', name: '허준서', start: 0, fresh: true },
+      { id: 12, g: '목', name: '오태현', start: 0, fresh: true },
+      { id: 13, g: '목', name: '이은서', start: 0, fresh: true },
+      { id: 14, g: '목', name: '천가윤', start: 0, fresh: true },
+      { id: 15, g: '목', name: '박상민', start: 0, fresh: true },
+      { id: 16, g: '금', name: 'D)강연서', start: 0, fresh: true },
+      { id: 17, g: '금', name: '서홍빈', start: 0, fresh: true },
+      { id: 18, g: '금', name: '이소민', start: 0, fresh: true, nameBg: P },
+      { id: 19, g: '금', name: '이서준', start: 0, fresh: true },
+      { id: 30, sid: 'S29', g: '금', name: '한지우', start: 0, fresh: true, time: '18:30' },
+      { id: 20, g: '토', name: '전태윤', start: 0, fresh: true },
+      { id: 21, g: '토', name: '김재희', start: 0, fresh: true },
+      { id: 22, g: 'R', name: '장현우', start: 0, fresh: true },
+      { id: 23, g: 'R', name: '이시윤', start: 0, fresh: true },
+      { id: 24, g: 'R', name: '방예준$', start: 0, fresh: true },
+      { id: 25, g: 'R', name: '조민아', start: 0, fresh: true },
+      { id: 26, g: 'R', name: '강준호', start: 0, fresh: true },
+      { id: 27, g: '퇴휴', name: '임서윤', start: 0, fresh: true, status: '퇴원' },
+      { id: 28, g: '퇴휴', name: 'U)권은서', start: 0, fresh: true, status: '휴원' },
       { id: 31, g: '목', name: '박하늘', start: 0, newReg: true, time: '16:30' }
     ].map(s => (s.time !== undefined || s.g === 'R' || s.g === '퇴휴' || s.id % 5 === 0) ? s : Object.assign({}, s, { time: ['14:00', '15:30', '16:00', '17:00', '18:30', '19:00'][s.id % 6] }));
   }
@@ -1206,10 +1206,16 @@ class Component extends DCLogic {
       const sibs = all.filter(x => keyOf(x) === k);
       const s0 = sibs[0];
       const T0 = s0.tickets || (s0.nameBg ? 8 : 4);
-      let T = T0, used = s0.start || 0, paid = !s0.unpaid && !s0.newReg, newReg = !!s0.newReg;
+      // fresh: 테스트용 처음 상태(입금 전, 동그라미 없음). 첫 수납부터 수강권 시작
+      let T = T0, used = s0.start || 0, paid = !s0.unpaid && !s0.newReg && !s0.fresh, newReg = !!s0.newReg || !!s0.fresh;
       let prevT = (!paid && !newReg) ? T0 : 0, prevMarks = (!paid && !newReg) ? Array(T0).fill('수') : [];
       let firstDate = paid && (s0.since && s0.since !== '입금완료') ? s0.since : '';
-      const queue = [];
+      const queue = [], queueD = [];
+      // 지금 수강권의 입금일 (레슨시작일 예정 계산용). 이번 달 수납 전이면 지난달 마지막 수납일
+      let payDate = null, lastLesson = null;
+      // 다음 수강권 예정일은 입금일과 지난 수강권 마지막 수업 다음 날 중 늦은 날부터
+      const after = dt => (lastLesson && lastLesson >= dt) ? new Date(lastLesson.getFullYear(), lastLesson.getMonth(), lastLesson.getDate() + 1) : dt;
+      if (PREV && paid && used === 0) for (let pd = 1; pd <= 31; pd++) sibs.forEach(x => { const pe = PREV[x.id] || {}; if (pe['p' + pd] || pe[pd] === 'V') payDate = new Date(2026, MON - 2, pd); });
       let tCells = [];
       const outs = {};
       sibs.forEach(x => { outs[x.id] = []; });
@@ -1218,8 +1224,8 @@ class Component extends DCLogic {
       let marks = [];
       for (let i = 0; i < used; i++) marks.push(prevSeq[prevSeq.length - used + i] || '수');
       const nextTicket = () => {
-        if (queue.length) { T = queue.shift(); paid = true; prevT = 0; prevMarks = []; }
-        else { prevT = T; prevMarks = marks.slice(); T = T0; paid = false; }
+        if (queue.length) { T = queue.shift(); payDate = after(queueD.shift()); paid = true; prevT = 0; prevMarks = []; }
+        else { prevT = T; prevMarks = marks.slice(); T = T0; paid = false; payDate = null; }
         used = 0; marks = []; firstDate = ''; tCells = [];
       };
       for (let d = 1; d <= ND; d++) sibs.forEach(x => {
@@ -1233,6 +1239,7 @@ class Component extends DCLogic {
           used++;
           marks[used - 1] = v;
           if (used === 1) firstDate = MON + '/' + d;
+          lastLesson = new Date(2026, MON - 1, d);
           lessonCount++; if (s0.rowBg) lessonPro++; else lessonHobby++;
           if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
           else { o.text = '결' + used; o.what = used + '회차 결석'; }
@@ -1253,31 +1260,32 @@ class Component extends DCLogic {
           const c = (pr && pr.count) || T0;
           if (!paid) {
             // 미납(또는 신규) 상태에서 입금: 이미 받은 수업이 새 수강권 회차로 채워진다
-            paid = true; newReg = false; T = c; prevT = 0; prevMarks = [];
+            paid = true; newReg = false; T = c; prevT = 0; prevMarks = []; payDate = new Date(2026, MON - 1, d);
             tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
-          } else if (used < T) queue.push(c);
-          else { T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
+          } else if (used < T) { queue.push(c); queueD.push(new Date(2026, MON - 1, d)); }
+          else { payDate = after(new Date(2026, MON - 1, d)); T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
         }
         outs[x.id].push(o);
       });
       // 지금 수강권을 다 썼고 대기 중인 수강권이 있으면 바로 다음 수강권을 보여 준다
       if (paid && used >= T && queue.length) nextTicket();
-      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, marks: marks,
+      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, payDate: payDate, marks: marks,
         done: paid && used >= T, needPay: !paid, since: firstDate };
       calcCache[k] = {};
       sibs.forEach(x => { calcCache[k][x.id] = Object.assign({ cells: outs[x.id] }, res); });
       return calcCache[k][s.id];
     };
-    // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 오늘부터 가장 가까운 수업 요일 (R은 직접 넣어야 함)
+    // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 입금일(수납 날짜)부터 가장 가까운 수업 요일 (R은 직접 넣어야 함, 입금일을 모르면 직접 입력)
     const NEWI = (() => { const o = {}; try { (JSON.parse(localStorage.getItem('academy.students') || '[]') || []).forEach(x => { o[x.name] = x; }); } catch (e) {} return o; })();
     const TKP = (() => { try { return JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {}; } catch (e) { return {}; } })();
-    const planOf = s => {
+    const planOf = (s, r) => {
       const nm = s.name.replace('$', '');
       if (TKP[nm]) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(TKP[nm]); if (m) return { txt: (+m[2]) + '/' + (+m[3]), manual: true }; }
       const WD = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
       const ws = all.filter(x => keyOf(x) === keyOf(s)).map(x => WD[x.g]).filter(w => w != null);
       if (!ws.length) return null;
-      const t = new Date();
+      const t = r && r.payDate;
+      if (!t) return null;
       for (let i = 0; i < 8; i++) { const dt = new Date(t.getFullYear(), t.getMonth(), t.getDate() + i); if (ws.indexOf(dt.getDay()) >= 0) return { txt: (dt.getMonth() + 1) + '/' + dt.getDate(), manual: false }; }
       return null;
     };
@@ -1312,7 +1320,7 @@ class Component extends DCLogic {
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
         const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
         const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
-        this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: s.start, since: !r.paid ? (r.newReg && r.used === 0 ? '신규 (미입금)' : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells });
+        this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: s.start, since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells });
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
@@ -1328,8 +1336,8 @@ class Component extends DCLogic {
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
         // 수강권 아래 줄
         const canPlan = !r.firstDate && r.paid && !r.done && r.used === 0 && s.g !== '퇴휴';
-        const plan = canPlan ? planOf(s) : null;
-        const tk = !r.paid && r.newReg && r.used === 0 ? ['신규 (미입금)', 'color: #9A5B00; font-weight: 700']
+        const plan = canPlan ? planOf(s, r) : null;
+        const tk = !r.paid && r.newReg && r.used === 0 ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 700']
           : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 800']
           : r.done ? ['수업완료', 'color: #007E82; font-weight: 800']
           : r.firstDate ? [r.firstDate, 'color: #8A949E']
