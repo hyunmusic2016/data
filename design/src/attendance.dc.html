@@ -14,11 +14,11 @@ body{margin:0;background:#F3F5F4}
 a{color:#1F7A5A}a:hover{color:#165C43}
 button{font-family:inherit}
 button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
-@page{size:A4 landscape;margin:7mm}@media print{.noprint{display:none!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}main{padding:0!important;gap:0!important}section[aria-label="출석부"]{box-shadow:none!important;overflow:visible!important;border-radius:0!important}}
+@page{size:A4 landscape;margin:7mm}html.bwp section[aria-label="출석부"] *{color:#000!important;background-color:transparent!important;background-image:none!important}html.bwp section[aria-label="출석부"] [style*="1.5px solid"]{border-color:#000!important}html.bwp section[aria-label="출석부"] [style*="background: #00A6AB"],html.bwp section[aria-label="출석부"] [style*="background: #E0605A"]{background-color:#000!important}html.bwp section[aria-label="출석부"] [style*="#E2C35E"]{box-shadow:inset 0 0 0 2px #000!important}html.bwp section[aria-label="출석부"] [style*="background: #00A6AB"][style*="color: #FFFFFF"],html.bwp section[aria-label="출석부"] [style*="background: #00A6AB; color: #FFFFFF"]{background-color:transparent!important;box-shadow:inset 0 0 0 1.5px #000!important}@media print{.noprint{display:none!important}.approot{min-height:0!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}main{padding:0!important;gap:0!important}section[aria-label="출석부"]{box-shadow:none!important;overflow:visible!important;border-radius:0!important}}
 .pbtn{box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 0 var(--sh),0 8px 16px rgba(23,32,28,.08);transition:transform .07s ease,box-shadow .07s ease;-webkit-tap-highlight-color:transparent}.pbtn:active{transform:translateY(3px);box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 1px 0 var(--sh),0 2px 4px rgba(23,32,28,.08)}
 </style>
 </helmet>
-<div style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
+<div class="approot" style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
 
   <header class="noprint" style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
     <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
@@ -42,7 +42,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <section aria-label="출석부" tabIndex="0" onKeyDown="{{onKey}}" style="outline: none; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow-x: auto; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
       <div style="min-width: 1080px; font-size: 13px">
 
-        <div style="{{gridStyle}}">
+        <div class="phead" style="{{gridStyle}}">
           <span style="{{c.title}}">
             <span style="{{c.logo}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"></path></svg></span>
             <span style="{{c.titleText}}">현실용음악학원 출석부</span>
@@ -70,7 +70,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
 
         <sc-for list="{{groups}}" as="g" hint-placeholder-count="8">
-          <div style="{{g.boxStyle}}">
+          <div class="grp" style="{{g.boxStyle}}">
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span><span style="{{g.countStyle}}">{{g.count}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div style="display: contents">
@@ -90,7 +90,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </div>
         </sc-for>
 
-        <div style="display: grid; grid-template-columns: 132px 304px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
+        <div class="pnote" style="display: grid; grid-template-columns: 132px 304px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
           <span style="display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #3A4450">비고</span>
           <span style="padding: 22px 0 0 8px; font-size: 12px; line-height: 1.5; white-space: pre-line; color: #3A4450">* 김재윤(월) (11월9일 기준) 6/8
 * 정다온(월) (11월9일 기준) 3/8
@@ -130,8 +130,33 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.7.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.8.0</span>
   </nav>
+  <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
+    <div class="noprint" role="dialog" aria-label="인쇄 설정" onKeyDown="{{pr.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">인쇄</span>
+        <button type="button" onClick="{{pr.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #5E6873">레이아웃 · A4 가로</span>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{pr.layouts}}" as="o" hint-placeholder-count="2">
+          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
+        </sc-for>
+      </div>
+      <span style="font-size: 12px; font-weight: 700; color: #5E6873">색상</span>
+      <div style="display: flex; gap: 8px">
+        <sc-for list="{{pr.colors}}" as="o" hint-placeholder-count="2">
+          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; flex: 1"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 4px">
+        <button type="button" class="pbtn" onClick="{{pr.close}}" style="--sh: #D5DBD8; flex: 1; height: 50px; border-radius: 15px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #3A4450; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">취소</button>
+        <button type="button" class="pbtn" onClick="{{pr.go}}" style="--sh: #8FCFD1; flex: 2; height: 50px; border-radius: 15px; border: 1px solid #A9DCDE; background: linear-gradient(180deg, #FFFFFF 0%, #DDF3F3 55%); color: #007E82; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 4px">인쇄하기</button>
+      </div>
+    </div>
+  </sc-if>
   <sc-if value="{{sm.anyOpen}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{sm.closeAll}}" onContextMenu="{{sm.closeAll}}" style="position: fixed; inset: 0; z-index: 30"></div>
   </sc-if>
@@ -253,6 +278,9 @@ class Component extends DCLogic {
     super(props);
     this.dragging = false;
     this.state = {
+      printOpen: false,
+      printLayout: 'fit',
+      printBW: false,
       hiddenSheets: [],
       sheetCtx: null,
       sheetList: false,
@@ -368,27 +396,55 @@ class Component extends DCLogic {
     if (m === 11) this.setState({ ev: evAll });
     else { const bm = Object.assign({}, this.state.evByMonth); bm[m] = evAll; this.setState({ evByMonth: bm }); }
   }
-  fitPrint() {
+  fitPrint(layout) {
+    this.unfitPrint();
     const sec = document.querySelector('section[aria-label="출석부"]');
     if (!sec) return;
-    sec.style.zoom = '';
     const inner = sec.firstElementChild || sec;
     const w = inner.scrollWidth, h = sec.scrollHeight;
     const PW = 1065, PH = 735;
-    const z = Math.min(1, PW / w, PH / h) * 0.98;
-    sec.style.zoom = String(z);
+    if ((layout || this.state.printLayout) === 'split') {
+      const z = Math.min(1, PW / w) * 0.98;
+      sec.style.zoom = String(z);
+      const head = inner.querySelector('.phead');
+      const avail = (PH / z) * 0.97;
+      const headH = head ? head.offsetHeight : 0;
+      let used = headH;
+      [...inner.children].filter(el => el.classList.contains('grp') || el.classList.contains('pnote')).forEach(g => {
+        const gh = g.offsetHeight;
+        if (used + gh > avail && used > headH) {
+          const clone = head.cloneNode(true);
+          clone.classList.add('pclone');
+          clone.style.breakBefore = 'page';
+          clone.style.pageBreakBefore = 'always';
+          g.parentNode.insertBefore(clone, g);
+          used = headH + gh;
+        } else used += gh;
+      });
+    } else {
+      const z = Math.min(1, PW / w, PH / h) * 0.98;
+      sec.style.zoom = String(z);
+    }
   }
   unfitPrint() {
     const sec = document.querySelector('section[aria-label="출석부"]');
-    if (sec) sec.style.zoom = '';
+    if (sec) { sec.style.zoom = ''; sec.querySelectorAll('.pclone').forEach(n => n.remove()); }
   }
   printSheet() {
-    this.fitPrint();
-    window.print();
+    this.setState({ printOpen: true });
+  }
+  doPrint() {
+    const bw = !!this.state.printBW, layout = this.state.printLayout || 'fit';
+    this.setState({ printOpen: false });
+    setTimeout(() => {
+      if (bw) document.documentElement.classList.add('bwp');
+      this.fitPrint(layout);
+      window.print();
+    }, 80);
   }
   componentDidMount() {
-    this._bp = () => this.fitPrint();
-    this._ap = () => this.unfitPrint();
+    this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
+    this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
     window.addEventListener('beforeprint', this._bp);
     window.addEventListener('afterprint', this._ap);
     this._up = () => {
@@ -974,6 +1030,11 @@ class Component extends DCLogic {
     const visibleCount = sheets.length - hidden.filter(h => sheets.some(t => t[0] === h)).length;
     const ctx = st.sheetCtx;
     const ordered = sheets.map((t, i) => ({ t: t, i: i })).sort((a, b) => (b.t[0].match(/(\d+)월/) ? +b.t[0].match(/(\d+)월/)[1] : 0) - (a.t[0].match(/(\d+)월/) ? +a.t[0].match(/(\d+)월/)[1] : 0) || (b.t[1] > 0) - (a.t[1] > 0));
+    const opt = (o, on, pick) => ({
+      label: o[1], desc: o[2], on: on ? 'true' : 'false', pick: pick,
+      style: 'display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; font-family: inherit; cursor: pointer; border: ' + (on ? '2px solid #00A6AB; background: #F2FBFB' : '1px solid #E1E6E3; background: #FFFFFF'),
+      radio: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 50%; border: ' + (on ? '5px solid #00A6AB' : '2px solid #CDD4D0') + '; background: #FFFFFF'
+    });
     const sm = {
       anyOpen: !!ctx || !!st.sheetList,
       ctxOpen: !!ctx,
@@ -1043,12 +1104,20 @@ class Component extends DCLogic {
       fillers: fillers,
       tabs: tabs,
       days: days,
-      groups: groups,
+      groups: groups.filter(g => g.rows.length),
       gridStyle: COLS,
       c: c,
       headCount: all.filter(s => !s.status).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
+      pr: {
+        open: !!st.printOpen,
+        close: () => this.setState({ printOpen: false }),
+        go: () => this.doPrint(),
+        key: e => { if (e.key === 'Escape') this.setState({ printOpen: false }); else if (e.key === 'Enter') { e.preventDefault(); this.doPrint(); } },
+        layouts: [['fit', '한 장에 모두', 'A4 가로 한 장에 맞춰 줄입니다. 원생이 적으면 원래 크기로.'], ['split', '요일 묶음별로 나누기', '글씨를 크게 두고, 요일 묶음이 잘리지 않게 여러 장으로 나눕니다.']].map(o => opt(o, (st.printLayout || 'fit') === o[0], () => this.setState({ printLayout: o[0] }))),
+        colors: [['color', '컬러', '화면 색 그대로'], ['bw', '흑백', '모든 내용을 검정으로']].map(o => opt(o, (st.printBW ? 'bw' : 'color') === o[0], () => this.setState({ printBW: o[0] === 'bw' })))
+      },
       lessonCount: lessonCount,
       lessonHobby: lessonHobby,
       lessonPro: lessonPro,
