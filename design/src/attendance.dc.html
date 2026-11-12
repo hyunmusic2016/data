@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>출석부</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0;background:#F3F5F4}
+a{color:#1F7A5A}a:hover{color:#165C43}
+button{font-family:inherit}
+button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+</style>
+</helmet>
+<div style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
+    <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+        <a href="#" style="{{t.style}}">{{t.label}}<span style="font-size: 11px; color: #66716A; margin-left: 4px">{{t.cnt}}</span></a>
+      </sc-for>
+    </nav>
+  </header>
+
+  <main style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 6px 28px 40px; box-sizing: border-box">
+
+
+    <div role="tablist" aria-label="강사" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 4px 0 10px; border-bottom: 1px solid #DDE2DF">
+      <sc-for list="{{teacherTabs}}" as="tt" hint-placeholder-count="5">
+        <button type="button" role="tab" aria-selected="{{tt.on}}" onClick="{{tt.pick}}" style="{{tt.style}}"><span style="{{tt.chip}}">{{tt.part}}</span>{{tt.name}}</button>
+      </sc-for>
+    </div>
+
+
+    <sc-if value="{{isSheet}}" hint-placeholder-val="{{ true }}">
+    <section aria-label="출석부" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow-x: auto; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+      <div style="min-width: 1080px; font-size: 13px">
+
+        <div style="{{gridStyle}}">
+          <span style="{{c.title}}">
+            <span style="{{c.logo}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"></path></svg></span>
+            <span style="{{c.titleText}}">현실용음악학원 출석부</span>
+            <span style="{{c.divider}}"></span>
+            <span style="{{c.month}}">{{monthLabel}}</span>
+          </span>
+          <span style="{{c.spacer}}"></span>
+          <span style="{{c.countCell}}"><span style="font-size: 12px; color: #5E6873">재원</span><span style="font-size: 18px; font-weight: 700; color: #1F7A5A">{{headCount}}명</span></span>
+          <span style="{{c.teacherCell}}"><span style="{{teacherAvatar}}">{{teacherInitial}}</span><span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{teacherName}}</span><span style="font-size: 11px; color: #5E6873">{{teacherPart}}</span></span></span>
+
+          <span style="{{c.headName}}">요일</span>
+          <span style="{{c.headName}}">이름</span>
+          <span style="{{c.headStart}}">수강권</span>
+          <sc-for list="{{days}}" as="h" hint-placeholder-count="30">
+            <span style="{{c.headDay}}"><span style="{{h.style}}">{{h.d}}</span></span>
+          </sc-for>
+          <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{c.headLast}}"></span></sc-for>
+        </div>
+
+        <sc-for list="{{groups}}" as="g" hint-placeholder-count="8">
+          <div style="{{g.boxStyle}}">
+            <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span><span style="{{g.countStyle}}">{{g.count}}</span></span>
+            <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
+              <div style="display: contents">
+                <span style="{{r.nameStyle}}"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="{{r.checkChip}}">{{r.check}}</span></span>
+                <span style="{{r.ticketCell}}">
+                  <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
+                    <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span>
+                    <span style="{{r.subStyle}}">{{r.subText}}</span>
+                  </span>
+                </span>
+                <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
+                  <button type="button" onClick="{{x.press}}" aria-label="{{x.label}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span></button>
+                </sc-for>
+                <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{r.lastStyle}}"></span></sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+
+        <div style="display: grid; grid-template-columns: 132px 304px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
+          <span style="display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #3A4450">비고</span>
+          <span style="padding: 22px 0 0 8px; font-size: 12px; line-height: 1.5; white-space: pre-line; color: #3A4450">* 김재윤(월) (11월9일 기준) 6/8
+* 정다온(월) (11월9일 기준) 3/8
+* 소율,소민(금) (11월6일 기준) 9/8</span>
+          <span style="padding: 40px 0 0 8px; font-size: 12px; color: #3A4450">* 김예나 2회 수업 (11/2 : 결석, 11/9 : 수업)</span>
+        </div>
+      </div>
+    </section>
+    <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <span style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 6px 0 12px; border-radius: 999px; background: #FFFFFF; border: 1px solid #E1E6E3; font-size: 13px; color: #5E6873">레슨횟수<span style="display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: #17201C; color: #FFFFFF; font-size: 12px; font-weight: 700">{{lessonCount}}</span></span>
+      </div>
+      <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
+        엑셀로 내보내기
+      </button>
+    </div>
+    </sc-if>
+    <sc-if value="{{isLog}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="{{activeName}}" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
+        <span style="width: 44px; height: 44px; border-radius: 12px; background: #E6F6F6; color: #00A6AB; display: inline-flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4"></path></svg></span>
+        <span style="font-size: 18px; font-weight: 700">{{activeName}}</span>
+        <span style="font-size: 14px; color: #5E6873">수업진행표·업무일지 화면은 다음 시안에서 만듭니다.</span>
+      </section>
+    </sc-if>
+  </main>
+
+  <nav aria-label="시트" style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: stretch; gap: 2px; background: #FFFFFF; border-top: 1px solid #DDE2DF; padding: 0 12px; box-shadow: 0 -2px 8px rgba(23, 32, 28, 0.04); overflow-x: auto">
+    <button type="button" onClick="{{addSheet}}" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
+    <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
+    <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
+      <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
+    </sc-for>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      teacher: 0,
+      sheet: 0,
+      extra: [],
+      evByMonth: {},
+      ev: {
+        1: { 2: '보', 7: '수', 9: '보' },
+        2: { 2: '수', 3: 'V', 9: '수' },
+        3: { 2: '수', 3: 'V', 9: '수' },
+        4: { 2: '수', 9: '수', 10: 'V' },
+        5: { 3: '수', 10: '수' },
+        6: { 3: '수', 10: '결', 11: 'V' },
+        7: { 3: '수', 11: '수', 12: 'V' },
+        8: { 4: '수', 11: '수', 12: 'V' },
+        9: { 2: 'V', 4: '수', 11: '연' },
+        10: { 4: '수', 5: 'V', 11: '수' },
+        11: { 4: '수', 11: '수' },
+        12: { 5: '수' },
+        13: { 5: '수', 10: '수' },
+        14: { 5: '수', 6: 'V' },
+        15: { 5: '수' },
+        16: { 6: '수' },
+        17: { 6: '결' },
+        18: { 6: '수' },
+        19: { 1: 'V', 6: '수' },
+        20: { 7: '수' },
+        21: { 7: '수' },
+        22: { 6: '수', 10: '수' },
+        23: { 6: '수' },
+        24: { 4: '수', 5: 'V', 10: '수' },
+        25: { 2: '수' },
+        26: { 4: '연' },
+        27: {},
+        28: { 7: '연' }
+      }
+    };
+  }
+  students() {
+    const P = '#DCD3EE';
+    return [
+      { id: 1, g: '월', name: '김재윤', start: 1, since: '10/27', tickets: 12 },
+      { id: 2, g: '월', name: '손하율', start: 1, since: '10/28', rowBg: '#F9DADC' },
+      { id: 3, g: '월', name: '정다온$', start: 1, since: '11/23', nameBg: P },
+      { id: 4, g: '월', name: '변예준', start: 3, since: '11/2' },
+      { id: 5, g: '화', name: '마서윤', start: 2, unpaid: true },
+      { id: 6, g: '화', name: '이예린', start: 3, since: '11/10' },
+      { id: 7, g: '화', name: '김소윤', start: 3, since: '11/11' },
+      { id: 8, g: '수', name: '윤가람', start: 3, since: '11/11' },
+      { id: 9, g: '수', name: '김경민', start: 0, since: '11/4' },
+      { id: 10, g: '수', name: '강도윤', start: 1, since: '10/28' },
+      { id: 11, g: '수', name: '허준서', start: 1, since: '' },
+      { id: 12, g: '목', name: '오태현', start: 3, since: '' },
+      { id: 13, g: '목', name: '이은서', start: 1, unpaid: true },
+      { id: 14, g: '목', name: '천가윤', start: 1, since: '10/29' },
+      { id: 15, g: '목', name: '박상민', start: 3, since: '' },
+      { id: 16, g: '금', name: 'D)강연서', start: 3, unpaid: true },
+      { id: 17, g: '금', name: '서홍빈', start: 0, unpaid: true },
+      { id: 18, g: '금', name: '이소민', start: 1, since: '', nameBg: P },
+      { id: 19, g: '금', name: '이서준', start: 1, since: '10/30' },
+      { id: 20, g: '토', name: '전태윤', start: 3, since: '' },
+      { id: 21, g: '토', name: '김재희', start: 1, since: '' },
+      { id: 22, g: 'R', name: '장현우', start: 1, since: '' },
+      { id: 23, g: 'R', name: '이시윤', start: 2, unpaid: true },
+      { id: 24, g: 'R', name: '방예준$', start: 3, since: '11/10' },
+      { id: 25, g: 'R', name: '조민아', start: 1, since: '' },
+      { id: 26, g: 'R', name: '강준호', start: 3, since: '' },
+      { id: 27, g: '퇴휴', name: '임서윤', start: 0, sumOverride: '결3', status: '퇴원', since: '입금완료' },
+      { id: 28, g: '퇴휴', name: 'U)권은서', start: 1, status: '휴원', unpaid: true }
+    ];
+  }
+  sheetList() {
+    const base = [['26\' 11월 출석부', 11], ['26\' 11월 수업진행표,업무일지', 0], ['26\' 10월 출석부', 10], ['26\' 10월 수업진행표,업무일지', 0], ['26\' 9월 출석부', 9]];
+    return this.state.extra.map(m => ['26\' ' + m + '월 출석부', m]).concat(base);
+  }
+  monthEvents(m) {
+    if (m === 11) return this.state.ev;
+    if (this.state.evByMonth[m]) return this.state.evByMonth[m];
+    if (m === 12) return {};
+    const DOW = { '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+    const nd = new Date(2026, m, 0).getDate();
+    const out = {};
+    this.students().forEach(s => {
+      const w = DOW[s.g];
+      if (w == null) return;
+      const row = {}; let k = 0;
+      for (let d = 1; d <= nd; d++) {
+        if (new Date(2026, m - 1, d).getDay() !== w) continue;
+        k++;
+        row[d] = (s.id + k + m) % 9 === 0 ? '결' : '수';
+        if ((s.id + k) % 4 === 0 && d + 1 <= nd) row[d + 1] = 'V';
+      }
+      out[s.id] = row;
+    });
+    return out;
+  }
+  press(id, d) {
+    const m = this.sheetList()[this.state.sheet][1];
+    const evAll = Object.assign({}, this.monthEvents(m));
+    const row = Object.assign({}, evAll[id] || {});
+    const ORDER = ['', '수', '결', '보', '연', 'V'];
+    const next = ORDER[(ORDER.indexOf(row[d] || '') + 1) % ORDER.length];
+    if (next) row[d] = next; else delete row[d];
+    evAll[id] = row;
+    if (m === 11) this.setState({ ev: evAll });
+    else { const bm = Object.assign({}, this.state.evByMonth); bm[m] = evAll; this.setState({ evByMonth: bm }); }
+  }
+  renderVals() {
+    const st = this.state;
+    const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
+    const COLS = 'display: grid; grid-template-columns: 44px 118px 132px repeat(31, minmax(0, 1fr))';
+    const base = 'height: 36px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
+    const span = n => 'grid-column: span ' + n + '; ';
+    const band = 'height: 92px; display: flex; align-items: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; background-color: #16201B; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(255, 255, 255, 0.1) 27px, rgba(255, 255, 255, 0.1) 28px); background-position: 0 4px; ';
+    const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
+    const circ = (n, filled) => 'width: 24px; height: 24px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; ' +
+      (filled ? 'background: ' + INK + '; color: #FFFFFF' : 'background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A');
+    const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
+    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C'), '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#E6F6F6', '#007E82') };
+    const chipFor = t => {
+      if (!t) return 'display: none';
+      if (/^(1[0-2]|[1-9])$/.test(t)) return circ(+t, false);
+      if (/^(1[0-2]|[1-9])!$/.test(t)) return circ(parseInt(t, 10), true);
+      if (t[0] === '결') return MARK['결'];
+      return MARK[t] || 'font-size: 12px';
+    };
+
+    const c = {
+      title: base + span(13) + 'border-bottom: none; height: 76px; justify-content: flex-start; gap: 14px; padding-left: 22px',
+      logo: 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 166, 171, 0.32)',
+      titleText: 'font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: ' + INK + '; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #BFEAEB 62%, #BFEAEB 92%, transparent 92%)',
+      divider: 'width: 1px; height: 22px; background: #D5DBD8; margin: 0 2px',
+      month: 'font-size: 16px; font-weight: 600; color: #5E6873; letter-spacing: -0.01em',
+      spacer: base + span(11) + 'border-bottom: none; height: 76px',
+      countCell: base + span(4) + 'border-bottom: none; height: 76px; flex-direction: column; gap: 0; border-left: 1px solid ' + ROW,
+      teacherCell: base + span(6) + 'border-bottom: none; height: 76px; justify-content: flex-start; gap: 10px; padding-left: 16px; border-left: 1px solid ' + ROW,
+      avatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: #E2F1EA; color: #1F7A5A; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700',
+      head: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; font-size: 12px; font-weight: 600; color: ' + MUTED,
+      headName: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; font-size: 12px; font-weight: 600; color: ' + MUTED + '; border-right: 1px solid ' + SPLIT,
+      headStart: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; font-size: 12px; font-weight: 600; color: ' + MUTED + '; border-right: 1px solid ' + SPLIT,
+      headDay: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW,
+      headLast: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID
+    };
+
+    const sheets = this.sheetList();
+    const cur = sheets[Math.min(st.sheet, sheets.length - 1)];
+    const MON = cur[1] || 11;
+    const ND = new Date(2026, MON, 0).getDate();
+    const FIRST = new Date(2026, MON - 1, 1).getDay();
+    const EV = this.monthEvents(MON);
+    const fillers = [];
+    for (let i = ND; i < 31; i++) fillers.push({ i: i });
+    const TODAY = MON === 11 ? 11 : 0;
+    const days = [];
+    for (let d = 1; d <= ND; d++) {
+      const w = (d - 1 + FIRST) % 7;
+      const s = 'width: 24px; height: 24px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; ';
+      days.push({ d: d, style: s + (d === TODAY ? 'background: ' + INK + '; color: #FFFFFF' : w === 0 ? 'color: #D92D20' : w === 6 ? 'color: #2563EB' : 'color: #3A4450') });
+    }
+
+    let lessonCount = 0;
+    const calc = s => {
+      const e = EV[s.id] || {};
+      const T = s.tickets || (s.nameBg ? 8 : 4);
+      let used = s.start, carry = s.start, since = (s.since && s.since !== '입금완료') ? s.since : '', pending = !!s.unpaid, absent = 0;
+      const out = [];
+      for (let d = 1; d <= ND; d++) {
+        const v = e[d];
+        let text = '', what = '';
+        if (v === '수' || v === '보') {
+          if (used >= T) { used = 0; carry = 0; pending = true; since = ''; }
+          used++; lessonCount++;
+          text = v === '보' ? '보' : String(used) + (used === T ? '!' : '');
+          what = v === '보' ? '보강 (' + used + '회차)' : used + '회차 수업';
+        } else if (v === '결') { absent++; text = '결' + absent; what = '결석'; }
+        else if (v === '연') { text = '연'; what = '연기'; }
+        else if (v === 'V') {
+          text = '₩'; what = '입금 확인';
+          if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; }
+          since = MON + '/' + d;
+        }
+        out.push({ d: d, text: text, what: what });
+      }
+      const needPay = pending || used >= T;
+      return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay };
+    };
+
+    const all = this.students();
+    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['퇴휴', '퇴\n&\n휴']];
+    const groups = GROUPS.map((gp, gi) => {
+      const tint = '#FFFFFF', tintWe = '#FFFFFF';
+      const isTodayG = MON === 11 && gp[0] === '수';
+      const list = all.filter(s => s.g === gp[0]);
+      const rows = list.map(s => {
+        const r = calc(s);
+        const rowBg = s.rowBg ? '#FDF0F2' : tint;
+        const cell = base + 'background: ' + rowBg + '; ';
+        const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
+        const dots = [], dotGroups = [];
+        for (let i = 1; i <= r.T; i++) dots.push({ style: 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ' +
+          (i <= r.carry ? 'background: #B7C0BC' : i <= r.used ? 'background: ' + (r.needPay ? '#E07B39' : '#00A6AB') : 'border: 1.5px solid #CDD4D0') });
+        for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
+        return {
+          name: s.name.replace('$', ''),
+          cash: s.name.indexOf('$') >= 0,
+          nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
+          check: s.status || '', checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
+          ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
+          dotGroups: dotGroups,
+          subText: r.needPay ? '입금 대기' : (r.since || '—'),
+          subStyle: r.needPay ? 'font-size: 10px; font-weight: 700; color: #C25A16; letter-spacing: -0.02em' : 'font-size: 10px; color: #8A949E; letter-spacing: -0.02em',
+          lastStyle: base + 'background: ' + (s.rowBg ? rowBg : '#F7F8F8') + '; border-left: 1px solid ' + GRID,
+          cells: r.cells.map(x => {
+            const w = (x.d - 1 + FIRST) % 7;
+            const bg = s.rowBg ? rowBg : x.d === TODAY ? '#FFFBEB' : (w === 0 || w === 6) ? tintWe : tint;
+            return {
+              text: x.text.replace('!', ''), chip: chipFor(x.text),
+              label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
+              press: () => this.press(s.id, x.d),
+              style: base + 'background: ' + bg + '; border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: pointer; font-family: inherit'
+            };
+          })
+        };
+      });
+      return {
+        label: gp[1],
+        rows: rows,
+        boxStyle: COLS + '; border-top: 6px solid #EEF2F1; box-shadow: 0 -1px 0 #DDE2DF',
+        count: gp[0] === '퇴휴' ? list.length + '명' : list.length + '명',
+        dayCell: 'grid-row: span ' + rows.length + '; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid ' + ROW + '; border-right: 1px solid ' + SPLIT,
+        dayChip: (isTodayG ? 'background: #00A6AB; color: #FFFFFF; border: none; ' : 'background: #FFFFFF; color: ' + INK + '; border: 1.5px solid #17201C; ') + 'min-width: 30px; min-height: 30px; padding: 5px 0; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center' + (gp[0] === '퇴휴' ? '; border-radius: 15px' : ''),
+        countStyle: 'font-size: 11px; font-weight: 600; color: ' + (isTodayG ? '#00A6AB' : '#8A949E')
+      };
+    });
+
+    const tabs = [['수강생대장', '26명'], ['출석부', ''], ['수입·지출', ''], ['통계', ''], ['직원명부', '']].map(t => ({
+      label: t[0], cnt: t[1],
+      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
+        (t[0] === '출석부' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
+    }));
+
+    const DOTC = { '월': '#FFFFFF', '화': '#FFFFFF', '수': '#FFFFFF', '목': '#FFFFFF', '금': '#FFFFFF', '토': '#FFFFFF', 'R': '#E8B04B' };
+    const headGroups = ['월', '화', '수', '목', '금', '토', 'R'].map(g => {
+      const n = all.filter(s => s.g === g).length;
+      const dots = [];
+      for (let i = 0; i < n; i++) dots.push({ style: 'width: 8px; height: 8px; border-radius: 50%; background: ' + DOTC[g] + '; opacity: ' + (g === 'R' ? 1 : 0.85) });
+      return { label: g, dots: dots };
+    });
+
+    const sheetTabs = sheets.map((t, i) => {
+      const on = i === st.sheet, att = t[1] > 0;
+      const col = att ? '#00A6AB' : '#8FB5E0';
+      return {
+        name: t[0], on: on ? 'true' : 'false',
+        pick: () => this.setState({ sheet: i }),
+        dot: 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
+        style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? col : 'transparent') + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' +
+          (on ? 'background: #EEF8F8; color: #17201C; font-weight: 700' : 'background: transparent; color: #5E6873; font-weight: 500')
+      };
+    });
+    const nextM = this.state.extra.length ? this.state.extra[0] + 1 : 12;
+
+    const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
+    const TEACHERS = [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
+    const teacherTabs = TEACHERS.map((t, i) => {
+      const on = i === st.teacher, c = PART[t[1]];
+      return {
+        name: t[0], part: t[1], on: on ? 'true' : 'false',
+        pick: () => this.setState({ teacher: i }),
+        chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + (on ? '#FFFFFF' : c[0]) + '; color: ' + c[1],
+        style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 8px; border-radius: 999px; font-size: 14px; cursor: pointer; ' +
+          (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 700' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500')
+      };
+    });
+    const curT = TEACHERS[st.teacher], curC = PART[curT[1]];
+
+    return {
+      teacherTabs: teacherTabs,
+      teacherName: curT[0],
+      teacherPart: curT[1] === '원장' ? '원장 · 담당 강사' : curT[1] + ' 담당 강사',
+      teacherInitial: curT[0].slice(0, 1),
+      teacherAvatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: ' + curC[0] + '; color: ' + curC[1] + '; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700',
+      sheetTabs: sheetTabs,
+      addSheet: () => { if (nextM <= 12) this.setState({ extra: [nextM].concat(this.state.extra), sheet: 0 }); },
+      isSheet: cur[1] > 0,
+      isLog: cur[1] === 0,
+      activeName: cur[0],
+      monthLabel: '2026년 ' + MON + '월',
+      fillers: fillers,
+      tabs: tabs,
+      days: days,
+      groups: groups,
+      gridStyle: COLS,
+      c: c,
+      headCount: all.filter(s => !s.status).length,
+      lessonCount: lessonCount
+    };
+  }
+}
+</script>
+</body>
+</html>

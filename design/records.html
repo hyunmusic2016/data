@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>기록</title>
+<style>
+body{margin:0;background:#F3F5F4}
+a{color:#1F7A5A}a:hover{color:#165C43}
+button{font-family:inherit}
+button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+<div style="width: 440px; height: 980px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border-left: 1px solid #DDE2DF; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; font-variant-numeric: tabular-nums">
+
+  <header style="display: flex; flex-direction: column; gap: 14px; padding: 20px 20px 14px; border-bottom: 1px solid #EBEEEC">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <span style="width: 30px; height: 30px; border-radius: 9px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 3px 10px rgba(0, 166, 171, 0.3)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 7v5l3 2M21 12a9 9 0 1 1-3-6.7M21 4v4h-4"></path></svg>
+      </span>
+      <h1 style="margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.02em">기록</h1>
+      <span style="font-size: 12px; color: #8A949E">최근 3개월</span>
+      <button type="button" aria-label="기록 닫기" style="margin-left: auto; width: 32px; height: 32px; border-radius: 8px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px">×</button>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 12px; border-radius: 10px; background: #F5F7F6; border: 1px solid #E8ECEA">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
+      <label for="logSearch" style="position: absolute; left: -9999px">원생 이름이나 직원 이름으로 찾기</label>
+      <input id="logSearch" type="text" placeholder="원생·직원 이름으로 찾기" style="flex: 1; min-width: 0; border: none; background: transparent; font-family: inherit; font-size: 13px; color: #17201C; outline: none">
+      <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: #5E6873; padding-left: 10px; border-left: 1px solid #E1E6E3">모든 직원 <span style="font-size: 9px">▾</span></span>
+    </div>
+
+    <div role="tablist" aria-label="기록 종류" style="display: flex; gap: 6px; flex-wrap: wrap">
+      <sc-for list="{{filters}}" as="f" hint-placeholder-count="4">
+        <button type="button" role="tab" aria-selected="{{f.on}}" onClick="{{f.pick}}" style="{{f.style}}">{{f.label}}<span style="{{f.countStyle}}">{{f.count}}</span></button>
+      </sc-for>
+    </div>
+  </header>
+
+  <div style="flex: 1; overflow: auto; padding: 4px 0 12px">
+    <sc-for list="{{days}}" as="d" hint-placeholder-count="3">
+      <section style="display: flex; flex-direction: column">
+        <div style="display: flex; align-items: baseline; gap: 8px; padding: 16px 20px 8px">
+          <span style="font-size: 13px; font-weight: 800">{{d.label}}</span>
+          <span style="font-size: 12px; color: #8A949E">{{d.date}}</span>
+        </div>
+        <sc-for list="{{d.items}}" as="it" hint-placeholder-count="4">
+          <article style="display: flex; gap: 12px; padding: 10px 20px; position: relative">
+            <span style="{{it.avatar}}">{{it.initial}}</span>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px">
+              <p style="margin: 0; font-size: 13.5px; line-height: 1.5; color: #3A4450; word-break: keep-all">
+                <b style="color: #17201C">{{it.actor}}</b>{{it.actorSuffix}}
+                <b style="color: #17201C">{{it.student}}</b>{{it.text}}
+              </p>
+              <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+                <span style="{{it.chip}}">{{it.kind}}</span>
+                <span style="font-size: 12px; color: #5E6873">{{it.detail}}</span>
+              </div>
+              <sc-if value="{{it.hasChange}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 2px; padding: 7px 10px; border-radius: 8px; background: #F7F9F8; font-size: 12px">
+                  <span style="color: #8A949E; text-decoration: line-through">{{it.before}}</span>
+                  <span style="color: #8A949E">→</span>
+                  <span style="color: #17201C; font-weight: 700">{{it.after}}</span>
+                </div>
+              </sc-if>
+            </div>
+            <time style="font-size: 12px; color: #8A949E; white-space: nowrap; padding-top: 2px">{{it.time}}</time>
+          </article>
+        </sc-for>
+      </section>
+    </sc-for>
+  </div>
+
+  <footer style="display: flex; align-items: center; gap: 8px; padding: 12px 20px; border-top: 1px solid #EBEEEC; background: #FAFBFA; font-size: 12px; color: #5E6873">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 8v4M12 16h.01M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"></path></svg>
+    기록은 최근 3개월만 보관되고, 그 이전 기록은 자동으로 지워집니다.
+  </footer>
+</div>
+</template>
+<script>
+class DCLogic{constructor(props){this.props=props||{};this.state={}}
+  setState(p){this.state=Object.assign({},this.state,p);render()}}
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { filter: '전체' };
+  }
+  renderVals() {
+    const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'] };
+    const STAFF = { '김도윤': '원장', '이하늘': '보컬', '박서준': '드럼', '최민재': '베이스', '정우진': '피아노' };
+    const KIND = {
+      '출석': ['출결', '#E6F6F6', '#007E82'],
+      '결석': ['출결', '#FDEBE4', '#C2410C'],
+      '보강': ['출결', '#E3ECFD', '#1E4FA8'],
+      '연기': ['출결', '#EEF1F0', '#3A4450'],
+      '출결 수정': ['출결', '#EEF1F0', '#3A4450'],
+      '수납': ['수납', '#E2F1EA', '#1F7A5A'],
+      '정보 수정': ['원생 정보', '#EEF1F0', '#3A4450'],
+      '휴원': ['원생 정보', '#FFF1DC', '#9A5B00'],
+      '신규 등록': ['원생 정보', '#E6DFF5', '#5B4A8B']
+    };
+    const LOG = [
+      ['오늘', '11월 12일 목요일', [
+        ['15:05', '이하늘', '서지안', ' 재원생을 출석 처리했습니다.', '출석', '11/12 · 3회차'],
+        ['14:32', '김도윤', '손하율', ' 재원생 수납을 했습니다.', '수납', '160,000원 · 카드 · 레슨시작일 11/12'],
+        ['14:10', '박서준', '오태현', ' 재원생을 결석 처리했습니다.', '결석', '11/12 수업'],
+        ['13:48', '김도윤', '이은서', ' 재원생 정보를 수정했습니다.', '정보 수정', '레슨 요일', '목요일', '금요일'],
+        ['11:20', '최민재', '장현우', ' 재원생 보강을 등록했습니다.', '보강', '11/14 · 3회차']
+      ]],
+      ['어제', '11월 11일 수요일', [
+        ['19:42', '김도윤', '윤가람', ' 재원생을 출석 처리했습니다.', '출석', '11/11 · 1회차'],
+        ['18:05', '정우진', '김경민', ' 재원생 수업을 연기했습니다.', '연기', '11/11 → 날짜 미정'],
+        ['16:30', '김도윤', 'U)권은서', ' 재원생을 휴원 처리했습니다.', '휴원', '상태', '재원', '휴원'],
+        ['15:12', '김도윤', '김소윤', ' 재원생 출결을 수정했습니다.', '출결 수정', '11/11 수업', '결석', '출석']
+      ]],
+      ['11월 10일', '화요일', [
+        ['20:01', '이하늘', '이예린', ' 재원생을 결석 처리했습니다.', '결석', '11/10 수업'],
+        ['17:40', '김도윤', '조민아', ' 원생을 새로 등록했습니다.', '신규 등록', 'R · 기타 · 취미반']
+      ]]
+    ];
+    const f = this.state.filter;
+    const counts = { '전체': 0, '출결': 0, '수납': 0, '원생 정보': 0 };
+    LOG.forEach(d => d[2].forEach(e => { counts['전체']++; counts[KIND[e[4]][0]]++; }));
+    const days = LOG.map(d => ({
+      label: d[0], date: d[1],
+      items: d[2].filter(e => f === '전체' || KIND[e[4]][0] === f).map(e => {
+        const part = STAFF[e[1]], c = PART[part], k = KIND[e[4]];
+        return {
+          time: e[0], actor: e[1], actorSuffix: part === '원장' ? ' 원장님이 ' : ' 강사님이 ', student: e[2], text: e[3],
+          initial: e[1].slice(0, 1), kind: e[4], detail: e[5],
+          hasChange: e.length > 6, before: e[6] || '', after: e[7] || '',
+          avatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: ' + c[0] + '; color: ' + c[1] + '; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800',
+          chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; background: ' + k[1] + '; color: ' + k[2]
+        };
+      })
+    })).filter(d => d.items.length);
+    const filters = ['전체', '출결', '수납', '원생 정보'].map(x => {
+      const on = x === f;
+      return {
+        label: x, count: counts[x], on: on ? 'true' : 'false',
+        pick: () => this.setState({ filter: x }),
+        style: 'display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; cursor: pointer; ' +
+          (on ? 'background: #17201C; color: #FFFFFF; border: 1px solid #17201C; font-weight: 700' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #E1E6E3; font-weight: 500'),
+        countStyle: 'font-size: 11px; font-weight: 700; ' + (on ? 'color: #7FDDE0' : 'color: #8A949E')
+      };
+    });
+    return { filters: filters, days: days };
+  }
+}
+const comp=new Component({});
+const tpl=document.getElementById('tpl');
+function look(scope,path){path=path.trim();if(path==='true')return true;if(path==='false')return false;
+  return path.split('.').reduce((o,k)=>o==null?undefined:o[k],scope)}
+function interp(str,scope){const whole=str.match(/^\s*\{\{([^}]+)\}\}\s*$/);if(whole)return look(scope,whole[1]);
+  return str.replace(/\{\{([^}]+)\}\}/g,(_,p)=>{const v=look(scope,p);return v==null?'':v})}
+function build(node,scope,out){
+  if(node.nodeType===3){out.appendChild(document.createTextNode(interp(node.nodeValue,scope)));return}
+  if(node.nodeType!==1)return;
+  const tag=node.tagName.toLowerCase();
+  if(tag==='sc-for'){const list=look(scope,node.getAttribute('list').replace(/[{}]/g,''))||[];const as=node.getAttribute('as');
+    list.forEach((it,i)=>{const s=Object.create(scope);s[as]=it;s.$index=i;node.childNodes.forEach(ch=>build(ch,s,out))});return}
+  if(tag==='sc-if'){if(look(scope,node.getAttribute('value').replace(/[{}]/g,'')))node.childNodes.forEach(ch=>build(ch,scope,out));return}
+  const el=document.createElementNS(node.namespaceURI,node.localName);
+  for(const a of node.attributes){
+    if(/^on[A-Z]/.test(a.name)||/^on[a-z]/.test(a.name)&&a.value.includes('{{')){const fn=interp(a.value,scope);if(typeof fn==='function')el.addEventListener(a.name.slice(2).toLowerCase(),fn);continue}
+    if(a.name.startsWith('hint-'))continue;
+    el.setAttribute(a.name,interp(a.value,scope))}
+  if(tag==='textarea'){el.value=interp(node.textContent,scope);out.appendChild(el);return}
+  node.childNodes.forEach(ch=>build(ch,scope,el));out.appendChild(el)}
+function render(){const app=document.getElementById('app');const keepX=[...app.querySelectorAll('section')].map(s=>s.scrollLeft);
+  const frag=document.createDocumentFragment();const vals=comp.renderVals();
+  tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));app.replaceChildren(frag);
+  app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]})}
+render();
+</script>
+</body>
+</html>
