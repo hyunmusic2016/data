@@ -137,7 +137,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.6</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1197,9 +1197,10 @@ class Component extends DCLogic {
         rows: rows,
         boxStyle: COLS + '; border-top: 6px solid #EEF2F1; box-shadow: 0 -1px 0 #DDE2DF',
         count: gp[0] === '퇴휴' ? list.length + '명' : list.length + '명',
-        dayCell: 'grid-row: span ' + rows.length + '; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid ' + ROW + '; border-right: 1px solid ' + SPLIT,
-        dayChip: (isTodayG ? 'background: #00A6AB; color: #FFFFFF; border: none; ' : 'background: #FFFFFF; color: ' + INK + '; border: 1.5px solid #17201C; ') + 'min-width: 30px; min-height: 30px; padding: 5px 0; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center' + (gp[0] === '퇴휴' ? '; border-radius: 15px' : ''),
-        countStyle: 'font-size: 11px; font-weight: 600; color: ' + (isTodayG ? '#00A6AB' : '#8A949E')
+        // 원생이 한 명뿐인 묶음은 요일·인원을 옆으로 나란히 (줄 높이 36px 안에 들어가게, 아래 빈 줄이 생기지 않게)
+        dayCell: 'grid-row: span ' + rows.length + '; display: flex; flex-direction: ' + (rows.length === 1 ? 'row; gap: 2px !important' : 'column') + '; align-items: center; justify-content: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid ' + ROW + '; border-right: 1px solid ' + SPLIT,
+        dayChip: (isTodayG ? 'background: #00A6AB; color: #FFFFFF; border: none; ' : 'background: #FFFFFF; color: ' + INK + '; border: 1.5px solid #17201C; ') + 'min-width: 30px; min-height: 30px; padding: 5px 0; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center' + (gp[0] === '퇴휴' ? '; border-radius: 15px' : '') + (rows.length === 1 && gp[0] !== '퇴휴' ? '; min-width: 24px; min-height: 24px; padding: 1px 0; font-size: 12px' : ''),
+        countStyle: 'font-size: 11px; font-weight: 600; color: ' + (isTodayG ? '#00A6AB' : '#8A949E') + (rows.length === 1 ? '; font-size: 10px; white-space: nowrap; letter-spacing: -0.04em' : ''),
       };
     });
 
