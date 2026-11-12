@@ -121,7 +121,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.4.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.0</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -571,30 +571,37 @@ class Component extends DCLogic {
       const T = s.tickets || (s.nameBg ? 8 : 4);
       let used = s.start, carry = s.start, since = (s.since && s.since !== '입금완료') ? s.since : '', pending = !!s.unpaid, absent = 0;
       const out = [];
+      let marks = [];
       for (let d = 1; d <= ND; d++) {
         const raw = e[d];
         const pay = !!(e['p' + d] || raw === 'V');
         const v = raw === 'V' ? undefined : raw;
         let text = '', what = '', kind = v || '';
-        if (v === '수' || v === 'M') {
-          if (used >= T) { used = 0; carry = 0; pending = true; since = ''; }
-          used++; lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
-          const mt0 = st.mkTimes[MON + '-' + d + '-' + s.id] || '';
-          text = v === 'M' ? (mt0 || '보강') : String(used) + (used === T ? '!' : '');
-          what = v === 'M' ? used + '회차 보강 수업' + (mt0 ? ' ' + mt0 : '') : used + '회차 수업';
+        if (v === '수' || v === '결') {
+          if (used >= T) { used = 0; carry = 0; pending = true; since = ''; marks = []; }
+          used++;
+          marks[used - 1] = v;
+          if (v === '수') {
+            lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
+            text = String(used) + (used === T ? '!' : ''); what = used + '회차 출석';
+          } else { text = '결' + used; what = used + '회차 결석'; }
           kind = v;
-        } else if (v === '보') { text = '보'; what = '보강 예정 (결석분)'; kind = '보'; } else if (v === '결') { absent++; text = '결' + absent; what = '결석'; }
+        } else if (v === 'M') {
+          lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
+          const mt0 = st.mkTimes[MON + '-' + d + '-' + s.id] || '';
+          text = mt0 || '보강'; what = '보강 수업' + (mt0 ? ' ' + mt0 : ''); kind = 'M';
+        } else if (v === '보') { text = '보'; what = '보강 예정'; kind = '보'; }
         else if (v === '연') { text = '연'; what = '연기'; }
         if (pay) {
           if (!v) { text = '₩'; kind = 'V'; }
           what = what ? what + ' · 수납' : '수납';
-          if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; }
+          if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; marks = []; }
           since = MON + '/' + d;
         }
         out.push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v });
       }
       const needPay = pending || used >= T;
-      return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay };
+      return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay, marks: marks };
     };
 
     const all = this.students();
@@ -617,7 +624,7 @@ class Component extends DCLogic {
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
         const dots = [], dotGroups = [];
         for (let i = 1; i <= r.T; i++) dots.push({ style: 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ' +
-          (i <= r.carry ? 'background: #B7C0BC' : i <= r.used ? 'background: ' + (r.needPay ? '#E07B39' : '#00A6AB') : 'border: 1.5px solid #CDD4D0') });
+          (i <= r.carry ? 'background: #B7C0BC' : i <= r.used ? 'background: ' + (r.marks[i - 1] === '결' ? '#E0605A' : '#00A6AB') : 'border: 1.5px solid #CDD4D0') });
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
         return {
           name: s.name.replace('$', ''),
