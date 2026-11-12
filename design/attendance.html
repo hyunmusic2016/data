@@ -138,7 +138,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -192,7 +192,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       </div>
       <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="color: #17201C">{{ad.name}}</b> 원생을 {{ad.kindLabel}} 처리합니다.</span>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.dateLabel}}<input id="ad_date" type="date" defaultValue="{{ad.date}}" onChange="{{ad.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
-      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.reasonLabel}}<input id="ad_memo" type="text" defaultValue="{{ad.memo}}" onInput="{{ad.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <sc-if value="{{ad.hasReason}}" hint-placeholder-val="{{ true }}"><label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.reasonLabel}}<input id="ad_memo" type="text" defaultValue="{{ad.memo}}" onInput="{{ad.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label></sc-if>
       <div style="display: flex; gap: 10px; margin-top: 2px">
         <button type="button" onClick="{{ad.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{ad.go}}" style="{{ad.goStyle}}">{{ad.kindLabel}} 처리</button>
@@ -462,7 +462,7 @@ class Component extends DCLogic {
       const n = r.name.replace('$', '');
       const st = list.filter(e => e.name === n && e.date <= mEnd).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).pop();
       if (!st || st.kind === 'back' || r.g === '퇴휴') { out.push(r); return; }
-      if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '' }));
+      if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '', canBack: true }));
     });
     return out;
   }
@@ -473,7 +473,12 @@ class Component extends DCLogic {
     const Q = this.state.qe;
     if (!Q) return;
     const t = new Date();
-    this.setState({ qe: null, ast: { kind: kind, name: Q.name, key: Q.key, ticket: (this._tk || {})[Q.rowId] || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    this.setState({ qe: null, ast: { kind: kind, rowId: Q.rowId, name: Q.name, key: Q.key, ticket: (this._tk || {})[Q.rowId] || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
+  }
+  openBack(s) {
+    const t = new Date();
+    this.setState({ ast: { kind: 'back', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
@@ -481,7 +486,7 @@ class Component extends DCLogic {
     if (!S) return;
     const list = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: (S.memo || '').trim(), ticket: S.kind === 'rest' ? S.ticket : '' }]);
     try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (e) {}
-    this._flash = { key: S.key, tag: '' };
+    this._flash = { key: S.key, tag: S.kind === 'back' ? '복귀됨' : '' };
     clearTimeout(this._ft);
     this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
     this.setState({ statusList: list, ast: null });
@@ -1129,11 +1134,11 @@ class Component extends DCLogic {
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
         return {
           name: s.name.replace('$', ''),
-          quick: () => { if (s.g !== '퇴휴') this.openQuick(s); },
+          quick: () => { if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); },
           rowCls: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? 'aflash' : '',
           flashTag: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? this._flash.tag : '',
-          nameCls: s.g !== '퇴휴' ? 'qname' + (st.qe && st.qe.rowId === s.id ? ' qsel' : '') : '',
-          nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : '',
+          nameCls: (s.g !== '퇴휴' || s.canBack) ? 'qname' + ((st.qe && st.qe.rowId === s.id) || (st.ast && st.ast.rowId === s.id) ? ' qsel' : '') : '',
+          nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : s.canBack ? '눌러서 복귀 처리' : '',
           cash: s.name.indexOf('$') >= 0,
           hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
@@ -1377,10 +1382,10 @@ class Component extends DCLogic {
       ad: (() => {
         const S = st.ast;
         if (!S) return { open: false };
-        const K = S.kind === 'rest' ? ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'] : ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'];
+        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: ['복귀', '복귀 날짜', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
         const upd = p => this.setState({ ast: Object.assign({}, S, p) });
         return {
-          open: true, kindLabel: K[0], title: K[0] + ' 처리', name: S.name, dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
+          open: true, hasReason: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
           chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: ' + K[3] + '; color: ' + K[4],
           goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
           close: () => { this.setState({ ast: null }); this.focusSheet(); },
