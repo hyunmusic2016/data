@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>수강생대장</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -11,13 +12,18 @@ button,input{font-family:inherit}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6AB;outline-offset:1px}
 .idInp:hover{border-color:#CDD4D0 !important;background:#FFFFFF !important}.idInp:focus{border-color:#00A6AB !important;background:#FFFFFF !important}
 .colgrip:hover,.colgrip:active{background:linear-gradient(to right,transparent 3px,#00A6AB 3px,#00A6AB 5px,transparent 5px)}
+@page{size:A4 landscape;margin:8mm}
+.printonly{display:none}
+html.bwp .printonly *{color:#000!important;background-color:transparent!important}
+html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!important}
+@media print{.noprint{display:none!important}.printonly{display:block!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .srow:hover>span{background-color:#F7FAFA}
 </style>
 </head>
 <body>
 <div id="app"></div>
 <template id="tpl">
-<div style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
+<div class="noprint" style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
 
   <header style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
     <nav aria-label="주 메뉴" style="display: flex; flex-wrap: wrap; gap: 2px">
@@ -115,18 +121,18 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </section>
 
     <div style="display: flex; justify-content: flex-end; gap: 8px">
-      <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+      <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
       </button>
-      <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
+      <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
         엑셀로 내보내기
       </button>
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.15.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.16.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -262,9 +268,53 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
       </div>
     </div>
   </sc-if>
+  <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
+    <div role="dialog" aria-label="인쇄 설정" onKeyDown="{{pr.key}}" tabIndex="-1" id="printDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
+      <div style="display: flex; align-items: center; justify-content: space-between">
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">인쇄</span>
+        <button type="button" onClick="{{pr.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <span style="font-size: 13px; color: #5E6873">{{pr.what}}</span>
+      <span style="font-size: 12px; font-weight: 700; color: #5E6873">색상 · A4 가로</span>
+      <div style="display: flex; gap: 8px">
+        <sc-for list="{{pr.colors}}" as="o" hint-placeholder-count="2">
+          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; flex: 1"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 4px">
+        <button type="button" onClick="{{pr.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{pr.go}}" style="flex: 2; height: 48px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">인쇄하기</button>
+      </div>
+    </div>
+  </sc-if>
   <sc-if value="{{toast.show}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 50; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; box-shadow: 0 10px 28px rgba(23, 32, 28, 0.25)">{{toast.text}}</div>
   </sc-if>
+</div>
+<div class="printonly" style="font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; font-variant-numeric: tabular-nums">
+  <div style="display: flex; align-items: baseline; gap: 10px; padding-bottom: 8px">
+    <span style="font-size: 18px; font-weight: 800">{{pt.title}}</span>
+    <span style="font-size: 11px; font-weight: 600; color: #5E6873">{{pt.info}}</span>
+  </div>
+  <div style="display: table; width: 100%; border-collapse: collapse; font-size: 10px">
+    <div style="display: table-header-group">
+      <div style="display: table-row">
+        <sc-for list="{{pt.heads}}" as="h" hint-placeholder-count="9">
+          <span class="phead" style="{{pt.th}}">{{h.label}}</span>
+        </sc-for>
+      </div>
+    </div>
+    <div style="display: table-row-group">
+      <sc-for list="{{pt.rows}}" as="r" hint-placeholder-count="10">
+        <div style="{{r.style}}">
+          <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="9">
+            <span class="pcell" style="{{x.style}}">{{x.t}}</span>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
 </div>
 </template>
 <script>
@@ -376,6 +426,61 @@ class Component extends DCLogic {
       [335, '보컬', '진미연', '진호준', '변동', '학생', '0109-1609', '0109-1619', '25.03.24', '26.07.31', '', '', 'out', {}]
     ];
     return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13], days: r[14] }));
+  }
+  doPrint() {
+    const bw = this.state.printBW !== false;
+    this.setState({ printOpen: false });
+    setTimeout(() => {
+      const root = document.documentElement;
+      if (bw) root.classList.add('bwp');
+      const done = () => { root.classList.remove('bwp'); window.removeEventListener('afterprint', done); };
+      window.addEventListener('afterprint', done);
+      window.print();
+    }, 80);
+  }
+  async exportExcel() {
+    const X = window.XLSX, D = this._xdata;
+    if (!X || !D) { window.console && console.warn('엑셀 도구를 불러오지 못했습니다'); return; }
+    const LINE = { style: 'thin', color: { rgb: 'C9D0CC' } };
+    const BOR = { top: LINE, bottom: LINE, left: LINE, right: LINE };
+    const ws = {}, LAST = Math.max(0, D.heads.length - 1);
+    let maxR = 0;
+    const put = (r, c, v, o) => {
+      o = o || {};
+      const cell = { t: 's', v: v == null ? '' : String(v) };
+      const st = { alignment: { horizontal: o.align || 'center', vertical: 'center' }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold } };
+      if (o.border !== false) st.border = BOR;
+      if (o.fill) st.fill = { patternType: 'solid', fgColor: { rgb: o.fill } };
+      cell.s = st;
+      ws[X.utils.encode_cell({ r: r, c: c })] = cell;
+      if (r > maxR) maxR = r;
+    };
+    for (let c = 0; c <= LAST; c++) put(0, c, c === 0 ? D.title : '', { bold: true, sz: 15, fill: 'E6F6F6', border: false, align: 'left' });
+    for (let c = 0; c <= LAST; c++) put(1, c, c === 0 ? D.info : '', { bold: true, border: false, align: 'left' });
+    D.heads.forEach((h, c) => put(2, c, h, { bold: true, fill: 'EEF2EE' }));
+    D.rows.forEach((row, i) => row.cells.forEach((v, c) => put(3 + i, c, v, {
+      align: D.lefts[c] ? 'left' : 'center', bold: c === D.nameIdx,
+      fill: c === D.nameIdx && row.big ? 'E6DFF5' : row.pro ? 'FDF0F2' : undefined
+    })));
+    ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxR, c: LAST } });
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: LAST } }, { s: { r: 1, c: 0 }, e: { r: 1, c: LAST } }];
+    ws['!cols'] = D.widths.map(w => ({ wch: w }));
+    ws['!rows'] = [{ hpt: 28 }, { hpt: 20 }];
+    ws['!freeze'] = { xSplit: 0, ySplit: 3 };
+    const wb = X.utils.book_new();
+    X.utils.book_append_sheet(wb, ws, D.tab);
+    const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+    const blob = new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    try {
+      if (window.claude && window.claude.use) {
+        const dl = await window.claude.use('downloads');
+        if (dl) { await dl.save({ filename: D.fname, data: blob }); return; }
+      }
+    } catch (err) { if (err && err.code === 'declined') return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = D.fname; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
   }
   regDefaults(cls) {
     const unit = cls === 'pro' ? 62500 : 40000;
@@ -545,7 +650,10 @@ class Component extends DCLogic {
         memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
         rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
-      return { fill: C + '; padding: 0', cells: vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px'))) };
+      const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
+      // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
+      cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
+      return { fill: C + '; padding: 0', cells: cells, pro: pro, big: !!big };
     };
     const SECS = [
       ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
@@ -614,6 +722,37 @@ class Component extends DCLogic {
         style: 'display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 8px 0 10px; box-sizing: border-box; border-radius: 11px; background: #FAFBFA; border: 1px solid #E1E6E3; cursor: grab',
         arrow: 'width: 30px; height: 30px; flex: none; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 10px; cursor: pointer'
       }))
+    };
+    // 인쇄·엑셀: 지금 보이는 탭·항목·필터·검색 결과 그대로
+    const now = new Date();
+    const today = now.getFullYear() + '.' + String(now.getMonth() + 1).padStart(2, '0') + '.' + String(now.getDate()).padStart(2, '0');
+    const narrowed = !!q || fCount > 0;
+    const xInfo = curSec[1] + ' ' + curRows.length + '명' + (narrowed ? ' (전체 ' + curList.length + '명 중 필터·검색 결과)' : '') + ' · ' + today;
+    this._xdata = {
+      title: '현실용음악학원 수강생대장', info: xInfo, tab: curSec[1],
+      heads: vis.map(c => c.label), widths: vis.map(c => Math.max(6, Math.round(Wd(c) / 7))), lefts: vis.map(c => !!c.left),
+      nameIdx: vis.findIndex(c => c.k === 'name'),
+      rows: curRows.map(r => ({ pro: r.pro, big: r.big, cells: r.cells.map(x => x.ptxt) })),
+      fname: '수강생대장_' + curSec[1] + '_' + now.getFullYear() + '년' + (now.getMonth() + 1) + '월' + now.getDate() + '일.xlsx'
+    };
+    const pcell = 'display: table-cell; padding: 5px 6px; border: 1px solid #C9D0CC; vertical-align: middle; white-space: nowrap; ';
+    const pt = {
+      title: '현실용음악학원 수강생대장', info: xInfo,
+      th: pcell + 'background: #EEF2EE; font-weight: 700; text-align: center',
+      heads: vis.map(c => ({ label: c.label })),
+      rows: curRows.map(r => ({ style: 'display: table-row; break-inside: avoid; background: ' + (r.pro ? '#FDF0F2' : '#FFFFFF'),
+        cells: r.cells.map((x, i) => ({ t: x.ptxt, style: pcell + 'text-align: ' + (vis[i].left ? 'left' : 'center') + (x.isName ? '; font-weight: 700' + (r.big ? '; background: #EFEAF8' : '') : '') })) }))
+    };
+    const ropt2 = (o, on, pick) => ({ label: o[1], desc: o[2], on: on ? 'true' : 'false', pick: pick,
+      style: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; font-family: inherit; cursor: pointer; ' + (on ? 'background: #F2FBFB; border: 2px solid #00A6AB' : 'background: #FFFFFF; border: 1px solid #DDE2DF'),
+      radio: 'width: 16px; height: 16px; flex: none; box-sizing: border-box; border-radius: 50%; ' + (on ? 'border: 5px solid #00A6AB; background: #FFFFFF' : 'border: 1.5px solid #B9C2BD; background: #FFFFFF') });
+    const pr = {
+      open: !!st.printOpen,
+      what: xInfo,
+      close: () => this.setState({ printOpen: false }),
+      go: () => this.doPrint(),
+      key: e => { if (e.key === 'Escape') this.setState({ printOpen: false }); else if (e.key === 'Enter') { e.preventDefault(); this.doPrint(); } },
+      colors: [['color', '컬러', '화면 색 그대로'], ['bw', '흑백', '모든 내용을 검정으로']].map(o => ropt2(o, (st.printBW === false ? 'color' : 'bw') === o[0], () => this.setState({ printBW: o[0] === 'bw' })))
     };
     const cnt = k => all.filter(s => s.status === k).length;
     const R = st.reg;
@@ -702,6 +841,9 @@ class Component extends DCLogic {
     return {
       q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols,
       tableMin: 'min-width: ' + minW + 'px',
+      pt: pt, pr: pr,
+      printX: () => { this.setState({ printOpen: true }); setTimeout(() => { const d = document.getElementById('printDlg'); if (d) d.focus(); }, 30); },
+      exportX: () => this.exportExcel(),
       reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
       onSearch: e => this.setState({ q: e.target.value }),
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
