@@ -79,7 +79,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
-                  <button type="button" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span></button>
+                  <button type="button" data-cell="{{x.key}}" title="{{x.title}}" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span></button>
                 </sc-for>
                 <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{r.lastStyle}}"></span></sc-for>
               </div>
@@ -120,8 +120,46 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.0</span>
   </nav>
+  <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.04)"></div>
+    <div role="dialog" aria-label="출결 입력" onKeyDown="{{pop.key}}" style="{{pop.style}}">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+        <span style="font-size: 13px; font-weight: 700; color: #17201C">{{pop.title}}</span>
+        <button type="button" onClick="{{pop.close}}" aria-label="닫기" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 14px; line-height: 1">×</button>
+      </div>
+      <sc-if value="{{pop.isMain}}" hint-placeholder-val="{{ true }}">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{pop.btns}}" as="b" hint-placeholder-count="4">
+            <button type="button" onClick="{{b.pick}}" style="{{b.style}}">
+              <span style="{{b.chip}}">{{b.mark}}</span>
+              <span style="font-size: 13px; font-weight: 700">{{b.label}}</span>
+              <span style="position: absolute; top: 7px; right: 8px; font-size: 10px; font-weight: 700; opacity: 0.55">{{b.key}}</span>
+            </button>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 7px; background: #FFFFFF; font-size: 12px; font-weight: 800">₩</span>
+          결제
+          <span style="position: absolute; right: 12px; font-size: 10px; font-weight: 700; opacity: 0.55">0</span>
+        </button>
+      </sc-if>
+      <sc-if value="{{pop.isMk}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <label for="mkDate" style="font-size: 12px; font-weight: 600; color: #5E6873">보강 날짜</label>
+          <input id="mkDate" type="date" defaultValue="{{pop.mkDate}}" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid #D5DBD8; font-family: inherit; font-size: 14px; color: #17201C">
+          <label for="mkTime" style="font-size: 12px; font-weight: 600; color: #5E6873; margin-top: 4px">보강 시간</label>
+          <input id="mkTime" type="text" defaultValue="{{pop.mkTime}}" placeholder="예: 16:00" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid #D5DBD8; font-family: inherit; font-size: 14px; color: #17201C">
+          <span style="font-size: 11px; color: #8A949E">기본값은 원생의 수업 시간입니다.</span>
+          <div style="display: flex; gap: 8px; margin-top: 6px">
+            <button type="button" onClick="{{pop.back}}" style="flex: 1; height: 40px; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; cursor: pointer">뒤로</button>
+            <button type="button" onClick="{{pop.saveMk}}" style="flex: 2; height: 40px; border-radius: 10px; border: none; background: #1E4FA8; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer">보강 등록</button>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
@@ -131,6 +169,8 @@ class Component extends DCLogic {
     this.dragging = false;
     this.state = {
       sel: null,
+      pop: null,
+      mkTimes: {},
       teacher: 0,
       sheet: 0,
       extra: [],
@@ -237,35 +277,135 @@ class Component extends DCLogic {
     else { const bm = Object.assign({}, this.state.evByMonth); bm[m] = evAll; this.setState({ evByMonth: bm }); }
   }
   componentDidMount() {
-    this._up = () => { this.dragging = false; };
+    this._up = () => {
+      this.mouseIsDown = false;
+      this.dragging = false;
+      if (this.pendingOpen) { this.pendingOpen = null; this.openPop('main'); }
+    };
     window.addEventListener('mouseup', this._up);
   }
   componentWillUnmount() {
     window.removeEventListener('mouseup', this._up);
   }
+  normSel() {
+    const s = this.state.sel;
+    if (!s) return null;
+    return { r1: Math.min(s.r1, s.r2), r2: Math.max(s.r1, s.r2), c1: Math.min(s.c1, s.c2), c2: Math.max(s.c1, s.c2) };
+  }
+  selCells() {
+    const n = this.normSel(), out = [];
+    if (!n) return out;
+    for (let r = n.r1; r <= n.r2; r++) for (let c = n.c1; c <= n.c2; c++) out.push({ r: r, d: c, sid: (this._rowSids || [])[r] });
+    return out.filter(x => x.sid != null);
+  }
+  focusSheet() {
+    const sec = document.querySelector('section[aria-label="출석부"]');
+    if (sec) sec.focus({ preventScroll: true });
+  }
   selDown(e, r, c) {
     if (e && e.preventDefault) e.preventDefault();
-    const sec = e && e.currentTarget && e.currentTarget.closest ? e.currentTarget.closest('section') : null;
-    if (sec) sec.focus({ preventScroll: true });
+    this.focusSheet();
+    this.mouseIsDown = true;
+    const n = this.normSel();
+    if (n && r >= n.r1 && r <= n.r2 && c >= n.c1 && c <= n.c2) {
+      this.pendingOpen = { r: r, c: c };
+      this.dragging = false;
+      return;
+    }
+    this.pendingOpen = null;
     this.dragging = true;
-    this.setState({ sel: { r1: r, c1: c, r2: r, c2: c } });
+    this.setState({ sel: { r1: r, c1: c, r2: r, c2: c }, pop: null });
   }
   selEnter(r, c) {
+    if (this.pendingOpen && this.mouseIsDown) {
+      const p = this.pendingOpen;
+      this.pendingOpen = null;
+      this.dragging = true;
+      this.setState({ sel: { r1: p.r, c1: p.c, r2: r, c2: c } });
+      return;
+    }
     if (!this.dragging || !this.state.sel) return;
     const s = this.state.sel;
     if (s.r2 === r && s.c2 === c) return;
     this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c } });
   }
-  selKey(e) {
-    const D = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+  openPop(mode) {
     const s = this.state.sel;
-    if (!D || !s) return;
+    if (!s) return;
+    const el = document.querySelector('[data-cell="' + s.r2 + '-' + s.c2 + '"]');
+    const rc = el ? el.getBoundingClientRect() : { left: 200, right: 240, top: 200, bottom: 236 };
+    const W = 232, H = mode === 'mk' ? 330 : 300;
+    let x = rc.left, y = rc.bottom + 6;
+    if (x + W > window.innerWidth - 8) x = window.innerWidth - W - 8;
+    if (y + H > window.innerHeight - 8) y = Math.max(8, rc.top - H - 6);
+    this.setState({ pop: { x: Math.max(8, x), y: y, mode: mode } });
+  }
+  closePop() {
+    this.setState({ pop: null });
+    this.focusSheet();
+  }
+  writeCells(list, v) {
+    const byMonth = {};
+    list.forEach(it => { (byMonth[it.m] = byMonth[it.m] || []).push(it); });
+    const patch = {};
+    const bm = Object.assign({}, this.state.evByMonth);
+    Object.keys(byMonth).forEach(mk => {
+      const m = +mk;
+      const evAll = Object.assign({}, this.monthEvents(m));
+      byMonth[mk].forEach(it => {
+        const row = Object.assign({}, evAll[it.sid] || {});
+        if (v) row[it.d] = v; else delete row[it.d];
+        evAll[it.sid] = row;
+      });
+      if (m === 11) patch.ev = evAll; else bm[m] = evAll;
+    });
+    patch.evByMonth = bm;
+    return patch;
+  }
+  applyMark(v) {
+    const cells = this.selCells();
+    if (!cells.length) return;
+    const m = this.sheetList()[this.state.sheet][1] || 11;
+    const cur = this.monthEvents(m);
+    const allSame = v && cells.every(c => (cur[c.sid] || {})[c.d] === v);
+    const patch = this.writeCells(cells.map(c => ({ m: m, sid: c.sid, d: c.d })), allSame ? '' : v);
+    patch.pop = null;
+    this.setState(patch);
+    this.focusSheet();
+  }
+  saveMakeup() {
+    const dEl = document.getElementById('mkDate'), tEl = document.getElementById('mkTime');
+    const dv = dEl ? dEl.value : '', tv = tEl ? tEl.value.trim() : '';
+    const mt = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dv);
+    if (!mt) { if (dEl) dEl.focus(); return; }
+    const m = +mt[2], d = +mt[3];
+    const sids = [...new Set(this.selCells().map(c => c.sid))];
+    const patch = this.writeCells(sids.map(sid => ({ m: m, sid: sid, d: d })), '보');
+    const times = Object.assign({}, this.state.mkTimes);
+    sids.forEach(sid => { times[m + '-' + d + '-' + sid] = tv; });
+    patch.mkTimes = times;
+    patch.pop = null;
+    this.setState(patch);
+    this.focusSheet();
+  }
+  selKey(e) {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    const s = this.state.sel;
+    if (!s) return;
+    const SHORT = { ' ': '수', '1': '수', '2': '결', '4': '연', '0': 'V' };
+    if (e.key in SHORT) { e.preventDefault(); this.applyMark(SHORT[e.key]); return; }
+    if (e.key === '3') { e.preventDefault(); this.openPop('mk'); return; }
+    if (e.key === 'Enter') { e.preventDefault(); this.openPop('main'); return; }
+    if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); this.applyMark(''); return; }
+    if (e.key === 'Escape') { if (this.state.pop) { e.preventDefault(); this.closePop(); } return; }
+    const D = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
+    if (!D) return;
     e.preventDefault();
     const clampR = v => Math.max(0, Math.min((this._rows || 1) - 1, v));
     const clampC = v => Math.max(1, Math.min(this._nd || 30, v));
     const r = clampR(s.r2 + D[0]), c = clampC(s.c2 + D[1]);
-    if (e.shiftKey) this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c } });
-    else this.setState({ sel: { r1: r, c1: c, r2: r, c2: c } });
+    if (e.shiftKey) this.setState({ sel: { r1: s.r1, c1: s.c1, r2: r, c2: c }, pop: null });
+    else this.setState({ sel: { r1: r, c1: c, r2: r, c2: c }, pop: null });
   }
   renderVals() {
     const st = this.state;
@@ -354,6 +494,7 @@ class Component extends DCLogic {
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
     const BLUE = '#8AB4E8';
     let rowIdx = 0;
+    this._rowSids = [];
     this._nd = ND;
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
@@ -361,6 +502,7 @@ class Component extends DCLogic {
       const list = all.filter(s => s.g === gp[0]);
       const rows = list.map(s => {
         const R = rowIdx++;
+        this._rowSids[R] = s.id;
         const r = calc(s);
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
@@ -394,6 +536,8 @@ class Component extends DCLogic {
             return {
               text: x.text.replace('!', ''), chip: s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
+              key: R + '-' + x.d,
+              title: x.text === '보' && st.mkTimes[MON + '-' + x.d + '-' + s.id] ? '보강 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
               down: e => this.selDown(e, R, x.d),
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
@@ -429,6 +573,46 @@ class Component extends DCLogic {
     });
 
     this._rows = rowIdx;
+    const P = st.pop;
+    const popCells = P ? this.selCells() : [];
+    const sidName = {};
+    all.forEach(s0 => { sidName[s0.id] = s0.name.replace('$', ''); });
+    const first = popCells[0];
+    const firstStu = first ? all.find(s0 => s0.id === first.sid) : null;
+    const LT = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+    const sq = (bg, fg, bd) => 'position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; aspect-ratio: 1 / 1; border-radius: 16px; border: 1px solid ' + bd + '; background: ' + bg + '; color: ' + fg + '; cursor: pointer; font-family: inherit; padding: 0';
+    const popBtns = [
+      ['수', '출석', '1', circ(1, false), '1', sq('#EEF7F2', '#1F7A5A', '#D2EADB')],
+      ['결', '결석', '결', MARK['결'], '2', sq('#FEF1EC', '#C2410C', '#F8D7C9')],
+      ['보', '보강', '보', MARK['보'], '3', sq('#EEF3FD', '#1E4FA8', '#D3DFF7')],
+      ['연', '연기', '연', MARK['연'], '4', sq('#F4F6F5', '#3A4450', '#E1E6E3')]
+    ].map(b => ({
+      label: b[1], mark: b[2], chip: b[3], key: b[4], style: b[5],
+      pick: () => (b[0] === '보' ? this.openPop('mk') : this.applyMark(b[0]))
+    }));
+    const pop = {
+      open: !!P,
+      isMain: !!P && P.mode === 'main',
+      isMk: !!P && P.mode === 'mk',
+      title: !first ? '' : popCells.length === 1 ? sidName[first.sid] + ' · ' + MON + '월 ' + first.d + '일' : popCells.length + '칸 선택',
+      style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 232px; box-sizing: border-box; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.16)',
+      btns: popBtns,
+      payStyle: 'position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 14px; border: 1px solid #C7EBEC; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer',
+      close: () => this.closePop(),
+      pay: () => this.applyMark('V'),
+      back: () => this.setState({ pop: Object.assign({}, P, { mode: 'main' }) }),
+      saveMk: () => this.saveMakeup(),
+      key: e => {
+        if (e.key === 'Escape') { e.preventDefault(); this.closePop(); return; }
+        if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Enter') { e.preventDefault(); this.saveMakeup(); } return; }
+        const SH = { '1': '수', ' ': '수', '2': '결', '4': '연', '0': 'V' };
+        if (e.key in SH) { e.preventDefault(); this.applyMark(SH[e.key]); }
+        else if (e.key === '3') { e.preventDefault(); this.openPop('mk'); }
+      },
+      mkDate: first ? '2026-' + String(MON).padStart(2, '0') + '-' + String(first.d).padStart(2, '0') : '',
+      mkTime: firstStu ? (firstStu.time || LT[firstStu.id % 6]) : ''
+    };
+
     const sheetTabs = sheets.map((t, i) => {
       const on = i === st.sheet, att = t[1] > 0;
       const col = att ? '#00A6AB' : '#8FB5E0';
@@ -478,7 +662,8 @@ class Component extends DCLogic {
       lessonCount: lessonCount,
       lessonHobby: lessonHobby,
       lessonPro: lessonPro,
-      onKey: e => this.selKey(e)
+      onKey: e => this.selKey(e),
+      pop: pop
     };
   }
 }
