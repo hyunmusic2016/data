@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -478,38 +478,8 @@ class Component extends DCLogic {
       sheet: 0,
       extra: [],
       evByMonth: {},
-      ev: {
-        1: { 2: '보', 7: '수', 9: '보' },
-        2: { 2: '수', 3: 'V', 9: '수' },
-        29: { 3: '수', 10: '결', 17: '수' },
-        30: { 6: '수', 13: '수', p13: true },
-        3: { 2: '수', 3: 'V', 9: '수' },
-        4: { 2: '수', 9: '수', 10: 'V' },
-        5: { 3: '수', 10: '수' },
-        6: { 3: '수', 10: '결', 11: 'V' },
-        7: { 3: '수', 11: '수', 12: 'V' },
-        8: { 4: '수', 11: '수', 12: 'V' },
-        9: { 2: 'V', 4: '수', 11: '연' },
-        10: { 4: '수', 5: 'V', 11: '수' },
-        11: { 4: '수', 11: '수' },
-        12: { 5: '수' },
-        13: { 5: '수', 10: '수' },
-        14: { 5: '수', 6: 'V' },
-        15: { 5: '수' },
-        16: { 6: '수' },
-        17: { 6: '결' },
-        18: { 6: '수' },
-        19: { 1: 'V', 6: '수' },
-        20: { 7: '수' },
-        21: { 7: '수' },
-        22: { 6: '수', 10: '수' },
-        23: { 6: '수' },
-        24: { 4: '수', 5: 'V', 10: '수' },
-        25: { 2: '수' },
-        26: { 4: '연' },
-        27: {},
-        28: { 7: '연' }
-      }
+      // 출석은 원장님이 직접 테스트하도록 비워 둠 (샘플 출결 없음)
+      ev: {}
     };
   }
   students() {
@@ -688,23 +658,7 @@ class Component extends DCLogic {
   monthEvents(m) {
     if (m === 11) return this.state.ev;
     if (this.state.evByMonth[m]) return this.state.evByMonth[m];
-    if (m === 12) return {};
-    const DOW = { '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
-    const nd = new Date(2026, m, 0).getDate();
-    const out = {};
-    this.students().forEach(s => {
-      const w = s.newReg ? null : DOW[s.g];
-      if (w == null) return;
-      const row = {}; let k = 0;
-      for (let d = 1; d <= nd; d++) {
-        if (new Date(2026, m - 1, d).getDay() !== w) continue;
-        k++;
-        row[d] = (s.id + k + m) % 9 === 0 ? '결' : '수';
-        if ((s.id + k) % 4 === 0 && d + 1 <= nd) row[d + 1] = 'V';
-      }
-      out[s.id] = row;
-    });
-    return out;
+    return {};
   }
   press(id, d) {
     const m = this.sheetList()[this.state.sheet][1];
