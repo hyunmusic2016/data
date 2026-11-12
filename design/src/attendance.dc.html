@@ -121,7 +121,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.5</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -165,9 +165,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
         <sc-if value="{{pop.delBoth}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 10px">
-            <button type="button" class="pbtn" onClick="{{pop.delAtt}}" style="--sh: #E9B3A5; position: relative; height: 52px; border-radius: 16px; border: 1px solid #F3C8BC; background: linear-gradient(180deg, #FFFFFF 0%, #FCE3DC 55%); color: #C2410C; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 4px">출결·보강·연기만 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #F3C8BC; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">1</span></button>
-            <button type="button" class="pbtn" onClick="{{pop.delPay}}" style="--sh: #E0CB8F; position: relative; height: 52px; border-radius: 16px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 4px">수납 내역만 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #EAD9A6; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">2</span></button>
-            <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #D5DBD8; position: relative; height: 52px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #17201C; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 4px">둘 다 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #DDE2DF; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">3</span></button>
+            <button type="button" class="pbtn" onClick="{{pop.delAtt}}" style="--sh: #E9B3A5; position: relative; height: 52px; border-radius: 16px; border: 1px solid #F3C8BC; background: linear-gradient(180deg, #FFFFFF 0%, #FCE3DC 55%); color: #C2410C; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">{{pop.delAttLabel}}<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #F3C8BC; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">1</span></button>
+            <button type="button" class="pbtn" onClick="{{pop.delPay}}" style="--sh: #E0CB8F; position: relative; height: 52px; border-radius: 16px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">수납 내역만 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #EAD9A6; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">2</span></button>
+            <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #D5DBD8; position: relative; height: 52px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #17201C; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">둘 다 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #DDE2DF; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">3</span></button>
           </div>
           <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
             <span><b style="color: #5E6873">1·2·3</b> 선택</span>
@@ -468,6 +468,9 @@ class Component extends DCLogic {
     const filled = this.selCells().filter(c => { const r = cur[c.sid] || {}; return r[c.d] || r['p' + c.d]; }).length;
     if (!filled) return;
     this.delCount = filled;
+    const NAMES = { '수': '출석', '결': '결석', '보': '보강', 'M': '보강', '연': '연기' };
+    const kinds = [...new Set(this.selCells().map(c => (cur[c.sid] || {})[c.d]).filter(v => v && v !== 'V').map(v => NAMES[v] || '출결'))];
+    this.delAttLabel = (kinds.length === 1 ? kinds[0] : '출결') + '만 지우기';
     this.delBoth = this.selCells().some(c => { const r = cur[c.sid] || {}; const att = r[c.d] && r[c.d] !== 'V'; return att && (r['p' + c.d] || false); });
     this.openPop('del');
   }
@@ -772,6 +775,7 @@ class Component extends DCLogic {
       delBoth: !!P && P.mode === 'del' && !!this.delBoth,
       delOne: !!P && P.mode === 'del' && !this.delBoth,
       delAtt: () => this.clearPart('att'),
+      delAttLabel: this.delAttLabel || '출결만 지우기',
       delPay: () => this.clearPart('pay'),
       confirmDel: () => this.applyMark(''),
       title: !first ? '' : popCells.length === 1 ? sidName[first.sid] : popCells.length + '칸 선택',
