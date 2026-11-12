@@ -144,7 +144,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.20.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.20.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -229,7 +229,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         </section>
 
         <section aria-label="수업 정보" style="{{reg.card}}">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #E3ECFD; color: #2952A3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg></span>수업 정보</span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.lesson}}" hint-placeholder-val="{{ false }}"><span style="{{reg.schedStyle}}">{{reg.sched.lesson}}</span></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_lesson" type="date" defaultValue="{{reg.dates.lesson}}" onChange="{{reg.set.d_lesson}}" style="{{reg.applyInp}}"></label></sc-if></div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #E3ECFD; color: #2952A3"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0z"></path></svg></span>수업 정보</span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.lesson}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{reg.schedOpen.lesson}}" title="눌러서 예정 변경 보기·고치기·취소" style="{{reg.schedStyle}}">{{reg.sched.lesson}}<span aria-hidden="true" style="font-size: 10px">›</span></button></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_lesson" type="date" defaultValue="{{reg.dates.lesson}}" onChange="{{reg.set.d_lesson}}" style="{{reg.applyInp}}"></label></sc-if></div>
           <label style="{{reg.lbl}}">담당 강사<select disabled="{{reg.lock.lesson}}" id="r_teacher" onChange="{{reg.set.teacher}}" style="{{reg.inp}}"><sc-for list="{{reg.teacherOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}" selected="{{o.sel}}">{{o.label}}</option></sc-for></select></label>
           <div style="{{reg.lbl}}">수강 과목<div style="display: flex; flex-wrap: wrap; gap: 8px; min-height: 46px; align-items: center"><sc-for list="{{reg.partOpts}}" as="o" hint-placeholder-count="2"><button type="button" disabled="{{reg.lock.lesson}}" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for><span style="font-size: 12px; color: #8A949E">{{reg.partHint}}</span></div></div>
           <div style="{{reg.lbl}}">수업 요일<div role="group" aria-label="수업 요일" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px"><sc-for list="{{reg.days}}" as="o" hint-placeholder-count="7"><button type="button" disabled="{{reg.lock.lesson}}" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; padding: 0">{{o.label}}</button></sc-for></div></div>
@@ -248,7 +248,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         </section>
 
         <section aria-label="수강료" style="{{reg.card}}; grid-column: span 2">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #F3E6C4; color: #7A5C12"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4"></path></svg></span>수강료<span style="font-size: 12px; font-weight: 600; color: #8A949E; margin-left: 4px">{{reg.feeNote}}</span></span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.fee}}" hint-placeholder-val="{{ false }}"><span style="{{reg.schedStyle}}">{{reg.sched.fee}}</span></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_fee" type="date" defaultValue="{{reg.dates.fee}}" onChange="{{reg.set.d_fee}}" style="{{reg.applyInp}}"></label></sc-if></div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #F3E6C4; color: #7A5C12"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4"></path></svg></span>수강료<span style="font-size: 12px; font-weight: 600; color: #8A949E; margin-left: 4px">{{reg.feeNote}}</span></span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.fee}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{reg.schedOpen.fee}}" title="눌러서 예정 변경 보기·고치기·취소" style="{{reg.schedStyle}}">{{reg.sched.fee}}<span aria-hidden="true" style="font-size: 10px">›</span></button></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_fee" type="date" defaultValue="{{reg.dates.fee}}" onChange="{{reg.set.d_fee}}" style="{{reg.applyInp}}"></label></sc-if></div>
           <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
             <label style="{{reg.lbl}}">수강 횟수<span style="{{reg.unitWrap}}"><input disabled="{{reg.lock.fee}}" id="r_count" type="text" inputmode="numeric" defaultValue="{{reg.f.countTxt}}" onInput="{{reg.set.count}}" style="{{reg.numInp}}"><span>회</span></span></label>
             <label style="{{reg.lbl}}">수강 시간<span style="{{reg.unitWrap}}"><input disabled="{{reg.lock.fee}}" id="r_dur" type="text" inputmode="numeric" defaultValue="{{reg.f.durTxt}}" onInput="{{reg.set.dur}}" style="{{reg.numInp}}"><span>분</span></span></label>
@@ -259,7 +259,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         </section>
 
         <section aria-label="현금영수증" style="{{reg.card}}; grid-column: span 2">
-          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #ECE4F8; color: #5B4A8B"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span>현금영수증</span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.cash}}" hint-placeholder-val="{{ false }}"><span style="{{reg.schedStyle}}">{{reg.sched.cash}}</span></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_cash" type="date" defaultValue="{{reg.dates.cash}}" onChange="{{reg.set.d_cash}}" style="{{reg.applyInp}}"></label></sc-if></div>
+          <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #ECE4F8; color: #5B4A8B"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span>현금영수증</span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.cash}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{reg.schedOpen.cash}}" title="눌러서 예정 변경 보기·고치기·취소" style="{{reg.schedStyle}}">{{reg.sched.cash}}<span aria-hidden="true" style="font-size: 10px">›</span></button></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_cash" type="date" defaultValue="{{reg.dates.cash}}" onChange="{{reg.set.d_cash}}" style="{{reg.applyInp}}"></label></sc-if></div>
           <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
             <div role="radiogroup" aria-label="현금영수증 발급" style="display: flex; gap: 8px"><sc-for list="{{reg.cashOpts}}" as="o" hint-placeholder-count="2"><button type="button" disabled="{{reg.lock.cash}}" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; min-width: 110px">{{o.label}}</button></sc-for></div>
             <sc-if value="{{reg.cashOn}}" hint-placeholder-val="{{ false }}">
@@ -278,6 +278,34 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <button type="button" onClick="{{reg.close}}" style="height: 48px; padding: 0 26px; border-radius: 14px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{reg.save}}" style="height: 48px; padding: 0 34px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 16px rgba(0, 166, 171, 0.28)">{{reg.saveLabel}}</button>
       </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{sv.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{sv.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.2)"></div>
+    <div role="dialog" aria-label="{{sv.title}}" onKeyDown="{{sv.key}}" tabIndex="-1" id="svDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 500px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 800">예정</span>
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{sv.title}}</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{sv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <sc-for list="{{sv.items}}" as="it" hint-placeholder-count="1">
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
+          <span style="font-size: 15px; font-weight: 800; color: #9A5B00">{{it.when}}</span>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{it.diffs}}" as="d" hint-placeholder-count="2">
+              <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: baseline; gap: 10px; font-size: 14px">
+                <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{d.label}}</span>
+                <span style="color: #17201C"><span style="color: #8A949E; text-decoration: line-through">{{d.before}}</span> → <b>{{d.after}}</b></span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; gap: 8px">
+            <button type="button" onClick="{{it.edit}}" style="flex: 1; height: 42px; border-radius: 12px; border: 1px solid #A9DCDE; background: #F2FBFB; color: #007E82; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">날짜·내용 고치기</button>
+            <button type="button" onClick="{{it.cancel}}" style="{{it.cancelStyle}}">{{it.cancelLabel}}</button>
+          </div>
+        </div>
+      </sc-for>
     </div>
   </sc-if>
   <sc-if value="{{sd.open}}" hint-placeholder-val="{{ false }}">
@@ -511,6 +539,38 @@ class Component extends DCLogic {
     this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
     setTimeout(() => { const el = document.querySelector('.flashrow'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
   }
+  schedEntries(id, sec, skip) {
+    const td = this.todayYmd();
+    return ((this.state.hist || {})[id] || []).filter(h => h.sec === sec && h.from > td && (skip || []).indexOf(h.hid) < 0).sort((a, b) => a.from < b.from ? -1 : 1);
+  }
+  cancelSched(hid) {
+    const R = this.state.reg;
+    const H = Object.assign({}, this.state.hist);
+    H[R.editId] = (H[R.editId] || []).filter(h => h.hid !== hid);
+    const left = this.schedEntries(R.editId, R.schedView).filter(h => h.hid !== hid).length;
+    this.setState({ hist: H, reg: Object.assign({}, R, { schedView: left ? R.schedView : null, svConfirm: null }), toast: '예정 변경을 취소했습니다' });
+    clearTimeout(this._tt);
+    this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
+  }
+  editSched(h) {
+    // 예정 값을 그 카드에 불러오고 적용 날짜도 그 날짜로. 저장하면 이 예정을 새 내용으로 바꾼다
+    const R = this.state.reg, p = h.patch, x = p.extra || {}, fl = p.flags || {};
+    const put = {};
+    if (h.sec === 'lesson') {
+      const times = {};
+      Object.keys(x.times || {}).forEach(d => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.times[d]); if (m) times[d] = { h: m[1], m: m[2] }; });
+      Object.assign(put, { teacher: p.teacher, part: p.part, days: (p.days || []).slice(), times: times, stick: !!x.stickBox });
+    } else if (h.sec === 'fee') {
+      Object.assign(put, { cls: fl.pro ? 'pro' : 'hobby', count: x.count, dur: x.dur, unit: x.unit, pay: x.pay, total: x.total });
+    } else {
+      Object.assign(put, { cash: !!fl.cash, cashType: x.cashType || 'person', cashNo: x.cashNo || '' });
+    }
+    this.setState({ reg: Object.assign({}, R, put, {
+      dates: Object.assign({}, R.dates, { [h.sec]: h.from }),
+      replace: Object.assign({}, R.replace, { [h.sec]: h.hid }),
+      schedView: null, svConfirm: null, err: ''
+    }) });
+  }
   applyStatus() {
     const S = this.state.stat;
     if (!S) return;
@@ -642,15 +702,18 @@ class Component extends DCLogic {
       const now = this.formParts(r), was = this.formParts(r.orig || r);
       const SECN = { lesson: '수업 정보', fee: '수강료', cash: '현금영수증' };
       const changed = ['lesson', 'fee', 'cash'].filter(k => JSON.stringify(now[k]) !== JSON.stringify(was[k]));
+      const dropped = Object.keys(r.replace || {}).filter(k => changed.indexOf(k) < 0);
       const miss = changed.filter(k => !(r.dates || {})[k]);
       if (miss.length) { this.setReg({ err: SECN[miss[0]] + '의 적용 날짜를 골라 주세요.' }); return; }
       // 기본 정보는 바로, 나머지는 지금 값을 그대로 두고 적용 날짜부터 바뀌게 기록
       const base = this.mergeRec(this.mergeRec(this.mergeRec(now.basic, was.lesson), was.fee), was.cash);
       base.flags = Object.assign({}, (this.students().find(x => x.id === r.editId) || {}).flags, base.flags);
       const H = Object.assign({}, this.state.hist);
-      H[r.editId] = (H[r.editId] || []).concat(changed.map(k => ({ sec: k, from: r.dates[k], patch: now[k] })));
+      // '고치기'로 불러온 예정은 지우고 새로 저장 (바꾼 게 없으면 그대로 취소됨)
+      const drop = Object.values(r.replace || {});
+      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(changed.map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], patch: now[k] })));
       const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); return m ? (+m[2]) + '.' + (+m[3]) : d; };
-      const note = changed.length ? ' (' + changed.map(k => SECN[k] + ' ' + fmt(r.dates[k]) + '부터').join(', ') + ')' : '';
+      const note = (changed.length ? ' (' + changed.map(k => SECN[k] + ' ' + fmt(r.dates[k]) + '부터').join(', ') + ')' : '') + (dropped.length ? ' · ' + dropped.map(k => SECN[k]).join(', ') + ' 예정 취소' : '');
       this.flashRow(r.editId, 'edit');
       this.setState({ changes: this.patchStudent(r.editId, base), hist: H, reg: null, toast: now.basic.name + ' 원생 정보를 수정했습니다' + note });
       clearTimeout(this._tt);
@@ -947,10 +1010,17 @@ class Component extends DCLogic {
           const out = { lesson: '', fee: '', cash: '' };
           if (R.editId == null) return out;
           const td = this.todayYmd();
-          ((st.hist || {})[R.editId] || []).filter(h => h.from > td).forEach(h => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(h.from); out[h.sec] = (m ? (+m[2]) + '.' + (+m[3]) : h.from) + '부터 바뀔 예정'; });
+          const skip = Object.values(R.replace || {});
+          ['lesson', 'fee', 'cash'].forEach(k => {
+            const list = this.schedEntries(R.editId, k, skip);
+            if (!list.length) return;
+            const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(list[0].from);
+            out[k] = (m ? (+m[2]) + '.' + (+m[3]) : list[0].from) + '부터 바뀔 예정' + (list.length > 1 ? ' 외 ' + (list.length - 1) + '건' : '');
+          });
           return out;
         })(),
-        schedStyle: 'display: inline-flex; align-items: center; height: 26px; padding: 0 9px; border-radius: 8px; background: #FFF4E0; color: #9A5B00; font-size: 12px; font-weight: 700',
+        schedStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
+        schedOpen: ['lesson', 'fee', 'cash'].reduce((o, k) => { o[k] = () => { this.setReg({ schedView: k, svConfirm: null }); setTimeout(() => { const d = document.getElementById('svDlg'); if (d) d.focus(); }, 30); }; return o; }, {}),
         applyLbl: 'display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 6px 0 12px; border-radius: 12px; background: #EEF1F0; color: #3A4450; font-size: 13px; font-weight: 700; cursor: pointer',
         applyInp: 'width: 132px; height: 30px; padding: 0 6px; box-sizing: border-box; border: none; border-radius: 8px; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 700; color: #17201C; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.12); cursor: pointer',
         idTxt: R.editId != null ? String(R.editId) : R.idVal != null ? R.idVal : String(this.nextId()), idLock: R.editId != null ? 'true' : 'false', title: R.editId != null ? '원생 정보 수정' : '원생 등록', saveLabel: R.editId != null ? '저장하기' : '등록하기', err: R.err || '',
@@ -1039,6 +1109,39 @@ class Component extends DCLogic {
         rest: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer',
         out: 'height: 28px; padding: 0 11px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer'
       },
+      sv: (() => {
+        if (!R || !R.schedView || R.editId == null) return { open: false };
+        const sec = R.schedView;
+        const SECN = { lesson: '수업 정보', fee: '수강료', cash: '현금영수증' };
+        const was = this.formParts(R.orig || R)[sec];
+        const won = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') + '원' : '';
+        const tTxt = t => Object.keys(t || {}).map(d => (d === '변동' ? 'R' : d[0]) + ' ' + t[d]).join(', ') || '없음';
+        const F = [
+          ['teacher', '담당 강사', p => p.teacher], ['part', '수강 과목', p => p.part], ['day', '수업 요일', p => p.day],
+          ['times', '수업 시간', p => tTxt((p.extra || {}).times)], ['stick', '드럼스틱 보관함', p => (p.extra || {}).stickBox ? '사용' : '사용 안 함'],
+          ['pro', '반 구분', p => (p.flags || {}).pro ? '전문반' : '취미반'], ['count', '수강 횟수', p => (p.extra || {}).count + '회'], ['dur', '수강 시간', p => (p.extra || {}).dur + '분'],
+          ['unit', '회당 수업료', p => won((p.extra || {}).unit)], ['total', '수강료 합계', p => won((p.extra || {}).total)], ['pay', '강사 수당', p => won((p.extra || {}).pay)],
+          ['cash', '현금영수증', p => (p.flags || {}).cash ? '발급' : '발급 안 함'], ['cashType', '용도', p => (p.flags || {}).cash ? ((p.extra || {}).cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') : '—'], ['cashNo', '발급 번호', p => (p.extra || {}).cashNo || '—']
+        ];
+        const items = this.schedEntries(R.editId, sec).map(h => {
+          const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(h.from);
+          const diffs = F.map(f => ({ label: f[1], before: String(f[2](was)), after: String(f[2](h.patch)) })).filter(d => d.before !== d.after);
+          const conf = R.svConfirm === h.hid;
+          return {
+            when: (m ? (+m[1]) + '년 ' + (+m[2]) + '월 ' + (+m[3]) + '일부터' : h.from),
+            diffs: diffs.length ? diffs : [{ label: '내용', before: '', after: '바뀌는 내용 없음' }],
+            edit: () => this.editSched(h),
+            cancel: () => conf ? this.cancelSched(h.hid) : this.setReg({ svConfirm: h.hid }),
+            cancelLabel: conf ? '한 번 더 누르면 취소' : '예정 취소',
+            cancelStyle: 'flex: 1; height: 42px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (conf ? 'border: none; background: #D9746C; color: #FFFFFF' : 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B')
+          };
+        });
+        return {
+          open: true, title: SECN[sec] + ' 예정 변경', items: items,
+          close: () => this.setReg({ schedView: null, svConfirm: null }),
+          key: e => { if (e.key === 'Escape') { e.stopPropagation(); this.setReg({ schedView: null, svConfirm: null }); } }
+        };
+      })(),
       sd: (() => {
         const S = st.stat;
         if (!S) return { open: false };
