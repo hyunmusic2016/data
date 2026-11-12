@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.28.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.28.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1121,7 +1121,7 @@ class Component extends DCLogic {
     };
 
     const all = this.students();
-    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['퇴휴', '외']];
+    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['퇴휴', '']];
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
     const BLUE = '#8AB4E8';
     let rowIdx = 0;
@@ -1205,6 +1205,7 @@ class Component extends DCLogic {
         dayChip: (() => {
           const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '퇴휴': ['#F3F5F4', '#5E6873'] }[gp[0]] || ['#EEF1F0', '#3A4450'];
           const one = rows.length === 1 && gp[0] !== '퇴휴';
+          if (gp[0] === '퇴휴') return 'display: none';
           return 'background: ' + DC[0] + '; color: ' + DC[1] + '; border: none; ' + (isTodayG ? 'box-shadow: inset 0 0 0 2px ' + DC[1] + '; ' : '') +
             'min-width: ' + (one ? 30 : 36) + 'px; min-height: ' + (one ? 30 : 36) + 'px; padding: 0; box-sizing: border-box; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (one ? 14 : 16) + 'px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center';
         })(),
