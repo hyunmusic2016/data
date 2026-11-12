@@ -139,9 +139,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <button type="button" onClick="{{sm.toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
-      <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
+      <button type="button" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.35.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1555,17 +1555,41 @@ class Component extends DCLogic {
     };
 
     const hidden = st.hiddenSheets || [];
-    const sheetTabs = sheets.map((t, i) => ({ t: t, i: i })).filter(o => hidden.indexOf(o.t[0]) < 0).map(o => {
+    // 맨 아래 시트 탭: 마우스로 끌어서 순서를 바꾼다 (이 컴퓨터 브라우저에 순서 저장)
+    let tabOrder = st.tabOrder;
+    if (!tabOrder) { try { tabOrder = JSON.parse(localStorage.getItem('attendance.tabOrder') || '[]') || []; } catch (e) { tabOrder = []; } }
+    const ordIdx = o => { const k = tabOrder.indexOf(o.t[0]); return k < 0 ? 1000 + o.i : k; };
+    const shown = sheets.map((t, i) => ({ t: t, i: i })).filter(o => hidden.indexOf(o.t[0]) < 0);
+    // 순서에 없는 새 시트(새 달 추가 등)는 원래 자리 기준으로 끼워 넣는다
+    const natural = shown.slice();
+    const tabsOrd = shown.filter(o => tabOrder.indexOf(o.t[0]) >= 0).sort((a, b) => ordIdx(a) - ordIdx(b));
+    natural.forEach((o, k) => { if (tabOrder.indexOf(o.t[0]) < 0) tabsOrd.splice(Math.min(k, tabsOrd.length), 0, o); });
+    const moveTab = (from, to) => {
+      const names = tabsOrd.map(o => o.t[0]);
+      const a = names.indexOf(from), b = names.indexOf(to);
+      if (a < 0 || b < 0 || a === b) return;
+      names.splice(a, 1); names.splice(b, 0, from);
+      const full = names.concat(tabOrder.filter(n => names.indexOf(n) < 0));
+      try { localStorage.setItem('attendance.tabOrder', JSON.stringify(full)); } catch (e) {}
+      this.setState({ tabOrder: full, sheetCtx: null });
+    };
+    const sheetTabs = tabsOrd.map(o => {
       const t = o.t, i = o.i;
       const on = i === st.sheet, att = t[1] > 0;
-      const col = att ? '#00A6AB' : '#8FB5E0';
+      // 출석부 = 파스텔 빨강, 수업진행표·업무일지 = 파스텔 파랑
+      const col = att ? '#F2A3A3' : '#9CC3EE';
       return {
+        // 끄는 동안에는 화면을 다시 그리지 않는다 (다시 그리면 끌기가 끊김)
+        dragStart: e => { try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', t[0]); } catch (x) {} this._tabDrag = t[0]; if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; },
+        dragOver: e => { if (this._tabDrag) { e.preventDefault(); try { e.dataTransfer.dropEffect = 'move'; } catch (x) {} } },
+        drop: e => { e.preventDefault(); const from = this._tabDrag; this._tabDrag = null; if (from) moveTab(from, t[0]); },
+        dragEnd: e => { this._tabDrag = null; if (e.currentTarget) e.currentTarget.style.opacity = ''; },
         name: t[0], on: on ? 'true' : 'false',
         pick: () => this.setState({ sheet: i, sheetCtx: null, sheetList: false }),
         ctx: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ sheetCtx: { i: i, x: e.clientX, y: e.clientY }, sheetList: false }); },
         dot: 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
         style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? col : 'transparent') + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' +
-          (on ? 'background: #EEF8F8; color: #17201C; font-weight: 700' : 'background: transparent; color: #5E6873; font-weight: 500')
+          (on ? 'background: ' + (att ? '#FDF1F1' : '#EEF4FC') + '; color: #17201C; font-weight: 700' : 'background: transparent; color: #5E6873; font-weight: 500')
       };
     });
     const nextM = this.state.extra.length ? this.state.extra[0] + 1 : 12;
