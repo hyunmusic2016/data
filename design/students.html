@@ -152,7 +152,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.29.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.30.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1158,6 +1158,11 @@ class Component extends DCLogic {
       key: e => { if (e.key === 'Escape') this.setState({ printOpen: false }); else if (e.key === 'Enter') { e.preventDefault(); this.doPrint(); } },
       colors: [['color', '컬러', '화면 색 그대로'], ['bw', '흑백', '모든 내용을 검정으로']].map(o => ropt2(o, (st.printBW === false ? 'color' : 'bw') === o[0], () => this.setState({ printBW: o[0] === 'bw' })))
     };
+    // 출석부 수납 창에서 쓸 원생 정보 (이 컴퓨터 브라우저에 저장, 원생은 이름으로 맞춤)
+    try {
+      const snap = JSON.stringify(all.map(s => ({ id: s.id, name: s.name, cls: s.cls, part: s.part, teacher: s.teacher, day: s.day, timeTxt: s.timeTxt, count: s.count, dur: s.dur, unit: s.unit, total: s.total, pay: s.pay, cashOn: s.cashOn, cashType: (s.extra || {}).cashType || 'person', cashNo: (s.extra || {}).cashNo || '', phone: s.phone, guardian: s.guardian, gphone: s.gphone, status: s.status })));
+      if (snap !== this._snap) { this._snap = snap; localStorage.setItem('academy.students', snap); }
+    } catch (e) {}
     const cnt = k => all.filter(s => s.status === k).length;
     const R = st.reg;
     const TEACH = { '김도윤': ['기타', '우쿨렐레'], '이하늘': ['보컬'], '박서준': ['드럼'], '최민재': ['베이스'], '정우진': ['피아노'] };

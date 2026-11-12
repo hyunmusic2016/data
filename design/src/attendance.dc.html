@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.29.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.30.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -179,6 +179,54 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장하기</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{pv.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{pv.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
+    <div class="noprint" role="dialog" aria-label="수납" onKeyDown="{{pv.key}}" tabIndex="-1" id="payDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 560px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F3E6C4; color: #7A5C12; font-size: 18px; font-weight: 800">₩</span>
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 800; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 800">수납 완료</span></sc-if></span>
+          <span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span>
+        </span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{pv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #3A4450">수강생대장 정보<span style="font-size: 11px; font-weight: 600; color: #8A949E">{{pv.src}}</span></span>
+        <sc-for list="{{pv.info}}" as="x" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 14px">
+            <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{x.label}}</span>
+            <span style="font-weight: 700; color: #17201C">{{x.value}}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수납 금액
+          <span style="display: flex; align-items: center; gap: 6px; height: 54px; padding: 0 16px; box-sizing: border-box; border-radius: 14px; border: 1.5px solid #E2C35E; background: #FBF6E8; font-size: 15px; color: #7A5C12">
+            <input id="pay_amt" type="text" inputmode="numeric" defaultValue="{{pv.amtTxt}}" disabled="{{pv.paidTxt}}" onInput="{{pv.setAmt}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: 22px; font-weight: 800; color: #7A5C12; text-align: right">원
+          </span>
+        </label>
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">결제 방법
+          <div role="radiogroup" aria-label="결제 방법" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{pv.methods}}" as="o" hint-placeholder-count="3"><button type="button" role="radio" aria-checked="{{o.on}}" disabled="{{pv.paidTxt}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+          </div>
+        </div>
+        <sc-if value="{{pv.cashOn}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: #E6F6F6; border: 1px solid #A9DCDE; font-size: 13px; color: #007E82">
+            <b style="font-size: 14px">현금영수증 발급 대상자</b>
+            <span>{{pv.cashLine}}</span>
+          </div>
+        </sc-if>
+      </div>
+
+      <div style="display: flex; gap: 10px">
+        <button type="button" onClick="{{pv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.closeLabel}}</button>
+        <button type="button" onClick="{{pv.go}}" style="{{pv.goStyle}}">{{pv.goLabel}}</button>
       </div>
     </div>
   </sc-if>
@@ -387,6 +435,7 @@ class Component extends DCLogic {
       shared: this.readShared(),
       statusList: this.readStatus(),
       ast: null,
+      pay: null,
       tinfo: null,
       cashNotice: null,
       printOpen: false,
@@ -783,7 +832,46 @@ class Component extends DCLogic {
     patch.evByMonth = bm;
     return patch;
   }
-  applyMark(v) {
+  // 수납: 수강생대장에 등록된 정보를 불러와 보여 주고, '수납하기'를 누르면 수납 표시 + 수납 기록 저장
+  stuInfo(name) {
+    try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); return (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) { return null; }
+  }
+  openPay() {
+    const cells = this.selCells();
+    if (!cells.length) return;
+    const m = this.sheetList()[this.state.sheet][1] || 11;
+    const cur = this.monthEvents(m);
+    const c0 = cells[0];
+    const s0 = this.students().find(x => x.id === c0.sid);
+    if (!s0) return;
+    const name = s0.name.replace('$', '');
+    const info = this.stuInfo(name);
+    const pro = info ? info.cls === 'pro' : !!s0.rowBg;
+    const count = info ? info.count : (s0.tickets || (s0.nameBg ? 8 : 4));
+    const unit = info ? info.unit : (pro ? 62500 : 40000);
+    const total = info ? info.total : unit * count;
+    const paid = cells.every(c => { const r = cur[c.sid] || {}; return !!(r['p' + c.d] || r[c.d] === 'V'); });
+    // 이미 수납된 칸이면 그때 저장한 금액·결제 방법을 보여 준다
+    let rec = null;
+    try { rec = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).find(x => x.name === name && x.date === '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0')); } catch (e) {}
+    this.setState({ pop: null, pay: { name: name, d: c0.d, m: m, paid: paid, pro: pro, count: count, unit: unit, total: total, amount: paid && rec ? rec.amount : total, method: paid && rec ? rec.method : 'card', info: info,
+      cash: info ? !!info.cashOn : s0.name.indexOf('$') >= 0, cashType: info ? info.cashType : 'person', cashNo: (info && info.cashNo) || s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4),
+      teacher: info ? info.teacher : '', part: info ? info.part : '', sched: info ? (info.day + (info.timeTxt ? ' ' + info.timeTxt : '')) : (s0.g + (s0.time ? ' ' + s0.time : '')), dur: info ? info.dur : 60, phone: info ? (info.gphone || info.phone) : '' } });
+    setTimeout(() => { const d = document.getElementById('payDlg'); if (d) d.focus(); }, 30);
+  }
+  savePay() {
+    const P = this.state.pay;
+    if (!P) return;
+    const date = '2026-' + String(P.m).padStart(2, '0') + '-' + String(P.d).padStart(2, '0');
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('academy.payments') || '[]'); if (!Array.isArray(list)) list = []; } catch (e) {}
+    if (P.paid) list = list.filter(x => !(x.name === P.name && x.date === date));
+    else list = list.concat([{ id: 'P' + Date.now(), at: Date.now(), name: P.name, date: date, amount: P.amount, method: P.method, count: P.count, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher }]);
+    try { localStorage.setItem('academy.payments', JSON.stringify(list)); } catch (e) {}
+    this.setState({ pay: null });
+    this.applyMark('V', { noNotice: true });
+  }
+  applyMark(v, opt) {
     const cells = this.selCells();
     if (!cells.length) return;
     const m = this.sheetList()[this.state.sheet][1] || 11;
@@ -814,6 +902,7 @@ class Component extends DCLogic {
     }
     const patch = this.writeCells(items, '');
     patch.pop = null;
+    if (opt && opt.noNotice) cashList = [];
     if (cashList.length) patch.cashNotice = cashList;
     this.commit(patch);
     if (cashList.length) setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
@@ -918,7 +1007,8 @@ class Component extends DCLogic {
     if (this.state.pop && this.state.pop.mode === 'del') { this.delKey(e); return; }
     const s = this.state.sel;
     if (!s) return;
-    const SHORT = { '1': '수', '2': '결', '4': '연', '0': 'V' };
+    const SHORT = { '1': '수', '2': '결', '4': '연' };
+    if (e.key === '0') { e.preventDefault(); this.openPay(); return; }
     if (e.key in SHORT) { e.preventDefault(); this.applyMark(SHORT[e.key]); return; }
     if (e.key === '3') { e.preventDefault(); this.openPop('mk'); return; }
     if (e.key === 'Enter') { e.preventDefault(); const pm = this.state.pop && this.state.pop.mode; if (pm === 'mk') this.saveMakeup(); else if (pm === 'del') this.applyMark(''); else this.openPop('main'); return; }
@@ -1288,7 +1378,7 @@ class Component extends DCLogic {
       payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: #7A5C12; padding: 2px 6px; border-radius: 6px' : 'display: none',
       payKey: keycap('#7A5C12', '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
-      pay: () => this.applyMark('V'),
+      pay: () => this.openPay(),
       back: () => this.setState({ pop: Object.assign({}, P, { mode: 'main' }) }),
       saveMk: () => this.saveMakeup(),
       mkOnStr: P && P.mkOn ? 'true' : 'false',
@@ -1305,8 +1395,9 @@ class Component extends DCLogic {
         if (e.key === 'Enter' && P && P.mode === 'mk') { e.preventDefault(); this.saveMakeup(); return; }
         if (P && P.mode === 'del') { this.delKey(e); return; }
         if (e.target && e.target.tagName === 'INPUT') return;
-        const SH = { '1': '수', '2': '결', '4': '연', '0': 'V' };
-        if (e.key in SH) { e.preventDefault(); this.applyMark(SH[e.key]); }
+        const SH = { '1': '수', '2': '결', '4': '연' };
+        if (e.key === '0') { e.preventDefault(); this.openPay(); }
+        else if (e.key in SH) { e.preventDefault(); this.applyMark(SH[e.key]); }
         else if (e.key === '3') { e.preventDefault(); this.openPop('mk'); }
       },
       mkDate: first ? '2026-' + String(MON).padStart(2, '0') + '-' + String(first.d).padStart(2, '0') : '',
@@ -1413,6 +1504,41 @@ class Component extends DCLogic {
       headCount: Object.keys(all.filter(s => !s.status).reduce((o, s) => { o[s.sid || s.id] = 1; return o; }, {})).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
+      pv: (() => {
+        const P = st.pay;
+        if (!P) return { open: false };
+        const won = n => Number(n || 0).toLocaleString('ko-KR');
+        const close = () => { this.setState({ pay: null }); this.focusSheet(); };
+        const upd = p => this.setState({ pay: Object.assign({}, P, p) });
+        const t12 = t => t;
+        return {
+          open: true, name: P.name, paid: P.paid, paidTxt: P.paid ? 'true' : 'false',
+          clsLabel: P.pro ? '전문반' : '취미반',
+          clsChip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 800; ' + (P.pro ? 'background: #FBE3E6; color: #C8323C' : 'background: #E6F6F6; color: #007E82'),
+          dateLabel: P.m + '월 ' + P.d + '일',
+          src: P.info ? '' : '(수강생대장에 없는 원생이라 출석부 정보로 채움)',
+          info: [
+            { label: '담당 강사', value: P.teacher || '—' },
+            { label: '수강 과목', value: P.part || '—' },
+            { label: '수업 일정', value: P.sched || '—' },
+            { label: '수강권', value: P.count + '회 · 1회 ' + P.dur + '분' },
+            { label: '회당 수업료', value: won(P.unit) + '원' },
+            { label: '수강료 합계', value: won(P.total) + '원' }
+          ].concat(P.phone ? [{ label: '연락처', value: P.phone }] : []),
+          amtTxt: won(P.amount),
+          setAmt: e => upd({ amount: parseInt(String(e.target.value).replace(/[^0-9]/g, ''), 10) || 0 }),
+          methods: [['card', '카드'], ['cash', '현금'], ['bank', '계좌이체']].map(o => { const on = P.method === o[0]; return { label: o[1], on: on ? 'true' : 'false', pick: () => upd({ method: o[0] }),
+            style: 'height: 44px; border-radius: 12px; font-family: inherit; font-size: 15px; cursor: pointer; ' + (on ? 'background: #FBF6E8; color: #7A5C12; border: 2px solid #E2C35E; font-weight: 800' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500') }; }),
+          cashOn: P.cash,
+          cashLine: (P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') + ' · 발급 번호 ' + (P.cashNo || '—') + (P.method === 'card' ? '' : ' · 학원 단말기로 ' + won(P.amount) + '원 발급'),
+          closeLabel: P.paid ? '닫기' : '취소',
+          goLabel: P.paid ? '수납 취소' : '수납하기',
+          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + (P.paid ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B' : 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)'),
+          close: close,
+          go: () => this.savePay(),
+          key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.savePay(); } }
+        };
+      })(),
       ti: (() => {
         const T = st.tinfo;
         if (!T) return { open: false };
