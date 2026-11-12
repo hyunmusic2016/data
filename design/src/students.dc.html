@@ -151,7 +151,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.25.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.26.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -433,7 +433,7 @@ class Component extends DCLogic {
     try { const w = JSON.parse(localStorage.getItem('students.widths') || 'null'); if (w && typeof w === 'object') widths = w; } catch (e) {}
     let fltList = [];
     try { const v = JSON.parse(localStorage.getItem('students.filters') || 'null'); if (Array.isArray(v)) fltList = v; } catch (e) {}
-    this.state = { shared: this.readShared(), log: {}, histView: null, hist: {}, changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+    this.state = { statusShared: this.readStatus(), shared: this.readShared(), log: {}, histView: null, hist: {}, changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
   // 원생 항목 목록 (한 곳에서만 정의). 새 항목을 여기에 넣으면 설정의 '표시할 항목'과 '필터 항목'에 자동으로 들어간다.
   //   g: 설정 창 묶음 (null이면 설정에 안 나옴), w: 열 폭, left: 왼쪽 정렬
@@ -518,10 +518,21 @@ class Component extends DCLogic {
     return this.baseStudents().concat(this.state.added || []).map(s => {
       let x = ch[s.id] ? this.mergeRec(s, ch[s.id]) : s;
       this.allHist(s.id, x.name).filter(h => h.from <= today).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : 0).forEach(h => { x = this.mergeRec(x, h.patch); });
+      // 휴원·퇴원·복귀 (출석부와 같이 쓰는 기록): 가장 나중에 처리한 것
+      const st = (this.state.statusShared || []).filter(e => e.name === x.name).sort((a, b) => (a.at || 0) - (b.at || 0)).pop();
+      if (st) {
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(st.date || ''); const ymd = m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : '';
+        x = Object.assign({}, x, st.kind === 'rest' ? { status: 'rest', rest: '', restDate: ymd, restReason: st.reason || '', restTicket: st.ticket || '' }
+          : st.kind === 'out' ? { status: 'out', leave: ymd, leaveReason: st.reason || '' }
+          : { status: 'act', backDate: ymd, rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' });
+      }
       return x;
     });
   }
   // 수업 요일·시간·드럼스틱 변경은 출석부와 같이 쓰는 기록(이 컴퓨터 브라우저에 저장)에 둔다. 원생은 이름으로 맞춘다
+  readStatus() {
+    try { const v = JSON.parse(localStorage.getItem('academy.statusChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
   readShared() {
     try { const v = JSON.parse(localStorage.getItem('academy.lessonChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
   }
@@ -530,7 +541,7 @@ class Component extends DCLogic {
     return list;
   }
   componentDidMount() {
-    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); };
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusShared: this.readStatus() }); };
     window.addEventListener('storage', this._st);
   }
   componentWillUnmount() { window.removeEventListener('storage', this._st); }
@@ -711,7 +722,9 @@ class Component extends DCLogic {
     const word = { rest: '휴원', out: '퇴원', back: '재원으로 복귀' }[S.kind];
     this.flashRow(S.id, S.kind);
     const L = this.addLog(S.id, { d: S.date, kind: S.kind, title: { rest: '휴원', out: '퇴원', back: '복귀' }[S.kind], lines: S.kind === 'rest' ? [why ? '사유: ' + why : '', S.ticket ? '그 당시 수강권: ' + S.ticket : ''].filter(Boolean) : S.kind === 'out' ? [why ? '사유: ' + why : ''].filter(Boolean) : [] });
-    this.setState({ log: L, changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
+    const SS = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: why, ticket: S.kind === 'rest' ? S.ticket : '' }]);
+    try { localStorage.setItem('academy.statusChanges', JSON.stringify(SS)); } catch (e) {}
+    this.setState({ statusShared: SS, log: L, changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }

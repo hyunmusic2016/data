@@ -137,7 +137,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.25.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -167,10 +167,34 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
       </sc-if>
       <button type="button" role="checkbox" aria-checked="{{qe.stickOn}}" disabled="{{qe.lock}}" onClick="{{qe.stickToggle}}" style="{{qe.stickStyle}}"><span style="{{qe.stickBox}}">✓</span>드럼스틱 보관함 사용</button>
+      <div style="display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed #E1E6E3">
+        <span style="font-size: 13px; font-weight: 600; color: #5E6873">원생 상태</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{qe.rest}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">휴원</button>
+        <button type="button" onClick="{{qe.out}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">퇴원</button>
+      </div>
       <span style="font-size: 13px; font-weight: 600; color: #C2410C">{{qe.err}}</span>
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장하기</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ad.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{ad.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="{{ad.title}}" onKeyDown="{{ad.key}}" tabIndex="-1" id="astDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 420px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="{{ad.chip}}">{{ad.kindLabel}}</span>
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{ad.title}}</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{ad.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="color: #17201C">{{ad.name}}</b> 원생을 {{ad.kindLabel}} 처리합니다.</span>
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.dateLabel}}<input id="ad_date" type="date" defaultValue="{{ad.date}}" onChange="{{ad.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.reasonLabel}}<input id="ad_memo" type="text" defaultValue="{{ad.memo}}" onInput="{{ad.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <div style="display: flex; gap: 10px; margin-top: 2px">
+        <button type="button" onClick="{{ad.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{ad.go}}" style="{{ad.goStyle}}">{{ad.kindLabel}} 처리</button>
       </div>
     </div>
   </sc-if>
@@ -339,6 +363,8 @@ class Component extends DCLogic {
     this.state = {
       qe: null,
       shared: this.readShared(),
+      statusList: this.readStatus(),
+      ast: null,
       cashNotice: null,
       printOpen: false,
       printLayout: 'fit',
@@ -396,7 +422,7 @@ class Component extends DCLogic {
     // 그 달은 처음부터 새 요일로 옮기고(이미 입력한 출결은 그대로 따라감), 그 전 달은 예전 요일 그대로.
     const base = this.baseRows();
     const shared = this.state.shared || [];
-    if (!shared.length) return base;
+    if (!shared.length && !(this.state.statusList || []).length) return base;
     const MON = (this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [])[1] || 11;
     const p2 = n => String(n).padStart(2, '0');
     const mEnd = '2026-' + p2(MON) + '-' + p2(new Date(2026, MON, 0).getDate());
@@ -421,7 +447,43 @@ class Component extends DCLogic {
       spare.forEach(x => { if (Object.keys(ev[x.id] || {}).length) list.push(Object.assign({}, x)); });
       list.forEach(x => { x.sid = list.length > 1 ? 'K' + key : undefined; if (list.length === 1 && first.sid) x.sid = first.sid; out.push(x); });
     });
-    return this.applyTransfers(out, shared, MON, mEnd);
+    return this.applyStatusList(this.applyTransfers(out, shared, MON, mEnd), MON, mEnd);
+  }
+  applyStatusList(rows, MON, mEnd) {
+    // 휴원·퇴원: 처리한 달에는 맨 아래 '퇴&휴'로 옮기고(수강권·출결 그대로), 다음 달부터 계속 휴원·퇴원이면 출석부에서 뺀다.
+    // 지난 달 출석부는 그대로 (처리 날짜가 이 달보다 뒤면 반영하지 않음)
+    const list = this.state.statusList || [];
+    if (!list.length) return rows;
+    const out = [];
+    rows.forEach(r => {
+      const n = r.name.replace('$', '');
+      const st = list.filter(e => e.name === n && e.date <= mEnd).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).pop();
+      if (!st || st.kind === 'back' || r.g === '퇴휴') { out.push(r); return; }
+      if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '' }));
+    });
+    return out;
+  }
+  readStatus() {
+    try { const v = JSON.parse(localStorage.getItem('academy.statusChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  openAStatus(kind) {
+    const Q = this.state.qe;
+    if (!Q) return;
+    const t = new Date();
+    this.setState({ qe: null, ast: { kind: kind, name: Q.name, key: Q.key, ticket: (this._tk || {})[Q.rowId] || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
+  }
+  applyAStatus() {
+    const S = this.state.ast;
+    if (!S) return;
+    const list = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: (S.memo || '').trim(), ticket: S.kind === 'rest' ? S.ticket : '' }]);
+    try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (e) {}
+    this._flash = { key: S.key, tag: '' };
+    clearTimeout(this._ft);
+    this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
+    this.setState({ statusList: list, ast: null });
+    setTimeout(() => { const el = document.querySelector('.aflash > span'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
+    this.focusSheet();
   }
   applyTransfers(rows, shared, MON, mEnd) {
     // 담당 강사가 바뀐 원생: 바뀐 달에는 예전 강사 출석부 맨 아래 '퇴&휴'로 옮기고(수강권·출결 그대로),
@@ -601,7 +663,7 @@ class Component extends DCLogic {
     }, 80);
   }
   componentDidMount() {
-    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); };
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); };
     window.addEventListener('storage', this._st);
     this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
     this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
@@ -1049,6 +1111,8 @@ class Component extends DCLogic {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
         const r0 = calc(s);
+        this._tk = this._tk || {};
+        this._tk[s.id] = Math.min(r0.used, r0.T) + '/' + r0.T + '회 (남은 ' + Math.max(0, r0.T - r0.used) + '회)';
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
         const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
         const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
@@ -1307,6 +1371,22 @@ class Component extends DCLogic {
       headCount: Object.keys(all.filter(s => !s.status).reduce((o, s) => { o[s.sid || s.id] = 1; return o; }, {})).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
+      ad: (() => {
+        const S = st.ast;
+        if (!S) return { open: false };
+        const K = S.kind === 'rest' ? ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'] : ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'];
+        const upd = p => this.setState({ ast: Object.assign({}, S, p) });
+        return {
+          open: true, kindLabel: K[0], title: K[0] + ' 처리', name: S.name, dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
+          chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: ' + K[3] + '; color: ' + K[4],
+          goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
+          close: () => { this.setState({ ast: null }); this.focusSheet(); },
+          go: () => this.applyAStatus(),
+          key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ ast: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyAStatus(); } },
+          setDate: e => upd({ date: e.target.value }),
+          setMemo: e => upd({ memo: e.target.value })
+        };
+      })(),
       qe: (() => {
         const Q = st.qe;
         if (!Q) return { open: false };
@@ -1318,6 +1398,8 @@ class Component extends DCLogic {
           open: true, name: Q.name, date: Q.date, err: Q.err || '', lock: lock ? 'true' : 'false',
           close: () => { this.setState({ qe: null }); this.focusSheet(); },
           save: () => this.saveQuick(),
+          rest: () => this.openAStatus('rest'),
+          out: () => this.openAStatus('out'),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
           setDate: e => upd({ date: e.target.value }),
           dayOpts: ORD.map(d => { const on = Q.days.indexOf(d) >= 0; return { label: d, on: on ? 'true' : 'false', pick: () => upd({ days: on ? Q.days.filter(x => x !== d) : (Q.multi ? Q.days.concat([d]) : [d]) }),
