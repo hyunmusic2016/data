@@ -85,7 +85,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span><span style="{{g.countStyle}}">{{g.count}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div class="{{r.rowCls}}" style="display: contents">
-                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
+                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span style="{{r.ticketCell}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span>
@@ -114,12 +114,12 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; align-items: center; gap: 8px">
       </div>
       <div class="noprint" style="display: flex; align-items: center; gap: 8px">
-      <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
+      <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
       </button>
-      <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
+      <button type="button" onClick="{{exportX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
         엑셀로 내보내기
       </button>
       </div>
@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.27.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.28.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1020,7 +1020,7 @@ class Component extends DCLogic {
     const st = this.state;
     const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
     const COLS = 'display: grid; grid-template-columns: 44px 118px 132px repeat(31, minmax(0, 1fr))';
-    const base = 'height: 36px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
+    const base = 'height: 44px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
     const span = n => 'grid-column: span ' + n + '; ';
     const band = 'height: 92px; display: flex; align-items: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; background-color: #16201B; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(255, 255, 255, 0.1) 27px, rgba(255, 255, 255, 0.1) 28px); background-position: 0 4px; ';
     const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
@@ -1192,7 +1192,7 @@ class Component extends DCLogic {
               down: e => this.selDown(e, R, x.d),
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
-              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: cell; font-family: inherit; ' +
+              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
                 ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px #E2C35E'] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
@@ -1205,8 +1205,14 @@ class Component extends DCLogic {
         count: gp[0] === '퇴휴' ? list.length + '명' : list.length + '명',
         // 원생이 한 명뿐인 묶음은 요일·인원을 옆으로 나란히 (줄 높이 36px 안에 들어가게, 아래 빈 줄이 생기지 않게)
         dayCell: 'grid-row: span ' + rows.length + '; display: flex; flex-direction: ' + (rows.length === 1 ? 'row; gap: 2px !important' : 'column') + '; align-items: center; justify-content: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid ' + ROW + '; border-right: 1px solid ' + SPLIT,
-        dayChip: (isTodayG ? 'background: #00A6AB; color: #FFFFFF; border: none; ' : 'background: #FFFFFF; color: ' + INK + '; border: 1.5px solid #17201C; ') + 'min-width: 30px; min-height: 30px; padding: 5px 0; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center' + (gp[0] === '퇴휴' ? '; border-radius: 15px' : '') + (rows.length === 1 && gp[0] !== '퇴휴' ? '; min-width: 24px; min-height: 24px; padding: 1px 0; font-size: 12px' : ''),
-        countStyle: 'font-size: 11px; font-weight: 600; color: ' + (isTodayG ? '#00A6AB' : '#8A949E') + (rows.length === 1 ? '; font-size: 10px; white-space: nowrap; letter-spacing: -0.04em' : ''),
+        // 요일 표시: 수강생대장과 같은 요일 색(파스텔 바탕 + 진한 글씨), 오늘 요일은 같은 색 테두리를 한 번 더
+        dayChip: (() => {
+          const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '퇴휴': ['#F3F5F4', '#5E6873'] }[gp[0]] || ['#EEF1F0', '#3A4450'];
+          const one = rows.length === 1 && gp[0] !== '퇴휴';
+          return 'background: ' + DC[0] + '; color: ' + DC[1] + '; border: none; ' + (isTodayG ? 'box-shadow: inset 0 0 0 2px ' + DC[1] + '; ' : '') +
+            'min-width: ' + (one ? 30 : 36) + 'px; min-height: ' + (one ? 30 : 36) + 'px; padding: ' + (gp[0] === '퇴휴' ? '6px 0' : '0') + '; box-sizing: border-box; border-radius: ' + (gp[0] === '퇴휴' ? '12px' : '11px') + '; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (one ? 14 : 16) + 'px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center';
+        })(),
+        countStyle: 'font-size: 11px; font-weight: 700; color: #8A949E' + (rows.length === 1 ? '; font-size: 10px; white-space: nowrap; letter-spacing: -0.04em' : ''),
       };
     });
 
