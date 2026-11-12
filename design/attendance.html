@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.2</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1241,7 +1241,7 @@ class Component extends DCLogic {
           const raw = e[d];
           const pay = !!(e['p' + d] || raw === 'V');
           const v = raw === 'V' ? undefined : raw;
-          const o = { d: d, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
+          const o = { d: d, m: Mm, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
           if (v === '수' || v === '결') {
             if (paid && used >= T) nextTicket();
             used++;
@@ -1268,8 +1268,20 @@ class Component extends DCLogic {
             const c = (pr && pr.count) || T0;
             if (!paid) {
               // 미납(또는 신규) 상태에서 입금: 이미 받은 수업이 새 수강권 회차로 채워진다
-              paid = true; newReg = false; T = c; prevT = 0; prevMarks = []; payDate = new Date(2026, Mm - 1, d);
-              tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
+              // 단, 입금한 횟수만큼만 채운다. 미납 수업이 더 많으면 남은 수업은 다시 1회부터 미납으로 이어진다 (수업 전에 입금한 것과 같은 결과)
+              newReg = false;
+              if (used <= c) {
+                paid = true; T = c; prevT = 0; prevMarks = []; payDate = new Date(2026, Mm - 1, d);
+                tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
+              } else {
+                const covered = tCells.slice(0, c), rest = tCells.slice(c);
+                covered.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
+                prevT = c; prevMarks = marks.slice(0, c);
+                marks = marks.slice(c); used = used - c; T = T0; paid = false; payDate = null;
+                rest.forEach((t, i) => { const n = i + 1; if (t.kind === '결') { t.text = '결' + n; t.what = n + '회차 결석 · 미납 수업'; } else { t.text = String(n); t.what = n + '회차 출석 · 미납 수업'; } });
+                tCells = rest;
+                firstDate = rest.length ? rest[0].m + '/' + rest[0].d : '';
+              }
             } else if (used < T) { queue.push(c); queueD.push(new Date(2026, Mm - 1, d)); }
             else { payDate = after(new Date(2026, Mm - 1, d)); T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
           }
