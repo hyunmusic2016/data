@@ -120,42 +120,55 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.5</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
-    <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.18)"></div>
+    <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div role="dialog" aria-label="출결 입력" onKeyDown="{{pop.key}}" style="{{pop.style}}">
-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
-        <span style="font-size: 13px; font-weight: 700; color: #17201C">{{pop.title}}</span>
-        <button type="button" onClick="{{pop.close}}" aria-label="닫기" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 14px; line-height: 1">×</button>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <div style="width: 56px; height: 60px; flex: none; border-radius: 14px; overflow: hidden; border: 1px solid #E1E6E3; display: flex; flex-direction: column; text-align: center; background: #FFFFFF">
+          <span style="height: 20px; line-height: 20px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 700">{{pop.monLabel}}</span>
+          <span style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: 800; color: #17201C">{{pop.dayLabel}}</span>
+        </div>
+        <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
+          <span style="font-size: 18px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">{{pop.title}}</span>
+          <span style="font-size: 12px; color: #5E6873">{{pop.sub}}</span>
+        </div>
+        <button type="button" onClick="{{pop.close}}" aria-label="닫기" style="align-self: flex-start; width: 32px; height: 32px; flex: none; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
       <sc-if value="{{pop.isMain}}" hint-placeholder-val="{{ true }}">
-        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
           <sc-for list="{{pop.btns}}" as="b" hint-placeholder-count="4">
             <button type="button" onClick="{{b.pick}}" style="{{b.style}}">
-              <span style="{{b.chip}}">{{b.mark}}</span>
-              <span style="font-size: 13px; font-weight: 700">{{b.label}}</span>
-              <span style="position: absolute; top: 7px; right: 8px; font-size: 10px; font-weight: 700; opacity: 0.55">{{b.key}}</span>
+              <span style="{{b.tile}}"><span style="{{b.chip}}">{{b.mark}}</span></span>
+              <span style="font-size: 15px; font-weight: 700">{{b.label}}</span>
+              <span style="{{b.keyStyle}}">{{b.key}}</span>
+              <span style="{{b.curStyle}}">현재</span>
             </button>
           </sc-for>
         </div>
         <button type="button" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
-          <span style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 7px; background: #FFFFFF; font-size: 12px; font-weight: 800">₩</span>
-          결제
-          <span style="position: absolute; right: 12px; font-size: 10px; font-weight: 700; opacity: 0.55">0</span>
+          <span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 10px; background: #FFFFFF; font-size: 15px; font-weight: 800; box-shadow: 0 1px 2px rgba(0, 126, 130, 0.15)">₩</span>
+          <span style="font-size: 15px; font-weight: 700">결제</span>
+          <span style="{{pop.payKey}}">0</span>
         </button>
+        <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
+          <span><b style="color: #5E6873">Delete</b> 지우기</span>
+          <span><b style="color: #5E6873">Esc</b> 닫기</span>
+        </div>
       </sc-if>
       <sc-if value="{{pop.isMk}}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 6px">
-          <label for="mkDate" style="font-size: 12px; font-weight: 600; color: #5E6873">보강 날짜</label>
-          <input id="mkDate" type="date" defaultValue="{{pop.mkDate}}" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid #D5DBD8; font-family: inherit; font-size: 14px; color: #17201C">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F4F7FD; border: 1px solid #DCE5F7">
+          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #1E4FA8"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #E3ECFD; font-size: 12px">보</span>보강 일정</span>
+          <label for="mkDate" style="font-size: 12px; font-weight: 600; color: #5E6873; margin-top: 4px">보강 날짜</label>
+          <input id="mkDate" type="date" defaultValue="{{pop.mkDate}}" style="height: 44px; padding: 0 12px; border-radius: 11px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; color: #17201C">
           <label for="mkTime" style="font-size: 12px; font-weight: 600; color: #5E6873; margin-top: 4px">보강 시간</label>
-          <input id="mkTime" type="text" defaultValue="{{pop.mkTime}}" placeholder="예: 16:00" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid #D5DBD8; font-family: inherit; font-size: 14px; color: #17201C">
+          <input id="mkTime" type="text" defaultValue="{{pop.mkTime}}" placeholder="예: 16:00" style="height: 44px; padding: 0 12px; border-radius: 11px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; color: #17201C">
           <span style="font-size: 11px; color: #8A949E">기본값은 원생의 수업 시간입니다.</span>
-          <div style="display: flex; gap: 8px; margin-top: 6px">
-            <button type="button" onClick="{{pop.back}}" style="flex: 1; height: 40px; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; cursor: pointer">뒤로</button>
-            <button type="button" onClick="{{pop.saveMk}}" style="flex: 2; height: 40px; border-radius: 10px; border: none; background: #1E4FA8; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer">보강 등록</button>
-          </div>
+        </div>
+        <div style="display: flex; gap: 10px">
+          <button type="button" onClick="{{pop.back}}" style="flex: 1; height: 48px; border-radius: 13px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">뒤로</button>
+          <button type="button" onClick="{{pop.saveMk}}" style="flex: 2; height: 48px; border-radius: 13px; border: none; background: #4A78C9; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">보강 등록</button>
         </div>
       </sc-if>
     </div>
@@ -334,7 +347,7 @@ class Component extends DCLogic {
   openPop(mode) {
     const s = this.state.sel;
     if (!s) return;
-    const W = 232, H = mode === 'mk' ? 330 : 300;
+    const W = 360, H = mode === 'mk' ? 470 : 470;
     const x = Math.round((window.innerWidth - W) / 2), y = Math.max(8, Math.round((window.innerHeight - H) / 2));
     this.setState({ pop: { x: Math.max(8, x), y: y, mode: mode } });
   }
@@ -605,24 +618,38 @@ class Component extends DCLogic {
     const first = popCells[0];
     const firstStu = first ? all.find(s0 => s0.id === first.sid) : null;
     const LT = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
-    const sq = (bg, fg, bd) => 'position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; aspect-ratio: 1 / 1; border-radius: 16px; border: 1px solid ' + bd + '; background: ' + bg + '; color: ' + fg + '; cursor: pointer; font-family: inherit; padding: 0';
+    const WD = ['일', '월', '화', '수', '목', '금', '토'];
+    const curV = popCells.length === 1 ? ((this.monthEvents(MON)[first.sid] || {})[first.d] || '') : '';
+    const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
+    const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center';
     const popBtns = [
-      ['수', '출석', '1', circ(1, false), '1', sq('#EEF7F2', '#1F7A5A', '#D2EADB')],
-      ['결', '결석', '결', MARK['결'], '2', sq('#FEF1EC', '#C2410C', '#F8D7C9')],
-      ['보', '보강', '보', MARK['보'], '3', sq('#EEF3FD', '#1E4FA8', '#D3DFF7')],
-      ['연', '연기', '연', MARK['연'], '4', sq('#F4F6F5', '#3A4450', '#E1E6E3')]
-    ].map(b => ({
-      label: b[1], mark: b[2], chip: b[3], key: b[4], style: b[5],
-      pick: () => (b[0] === '보' ? this.openPop('mk') : this.applyMark(b[0]))
-    }));
+      ['수', '출석', '1', circ(1, false), '1', '#EEF7F2', '#1F7A5A', '#D2EADB'],
+      ['결', '결석', '결', MARK['결'], '2', '#FEF1EC', '#C2410C', '#F8D7C9'],
+      ['보', '보강', '보', MARK['보'], '3', '#EEF3FD', '#1E4FA8', '#D3DFF7'],
+      ['연', '연기', '연', MARK['연'], '4', '#F4F6F5', '#3A4450', '#DDE2DF']
+    ].map(b => {
+      const on = curV === b[0];
+      return {
+        label: b[1], mark: b[2], chip: big(b[3]), key: b[4],
+        style: 'position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; height: 118px; border-radius: 18px; border: ' + (on ? '2px solid ' + b[6] : '1px solid ' + b[7]) + '; background: ' + b[5] + '; color: ' + b[6] + '; cursor: pointer; font-family: inherit; padding: 0',
+        tile: 'width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.08)',
+        keyStyle: keycap(b[6], b[7]),
+        curStyle: on ? 'position: absolute; top: 9px; left: 10px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: ' + b[6] + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
+        pick: () => (b[0] === '보' ? this.openPop('mk') : this.applyMark(b[0]))
+      };
+    });
     const pop = {
       open: !!P,
       isMain: !!P && P.mode === 'main',
       isMk: !!P && P.mode === 'mk',
-      title: !first ? '' : popCells.length === 1 ? sidName[first.sid] + ' · ' + MON + '월 ' + first.d + '일' : popCells.length + '칸 선택',
-      style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 232px; box-sizing: border-box; padding: 14px; display: flex; flex-direction: column; gap: 10px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.16)',
+      title: !first ? '' : popCells.length === 1 ? sidName[first.sid] : popCells.length + '칸 선택',
+      monLabel: MON + '월',
+      dayLabel: first ? String(first.d) : '',
+      sub: !first ? '' : popCells.length === 1 ? MON + '월 ' + first.d + '일 ' + WD[(first.d - 1 + FIRST) % 7] + '요일' + (firstStu ? ' · ' + (firstStu.rowBg ? '전문반' : '취미반') : '') : '같은 표시가 한 번에 들어갑니다',
+      style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
-      payStyle: 'position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; height: 48px; border-radius: 14px; border: 1px solid #C7EBEC; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer',
+      payStyle: 'position: relative; display: flex; align-items: center; justify-content: center; gap: 10px; height: 60px; border-radius: 18px; border: ' + (curV === 'V' ? '2px solid #007E82' : '1px solid #C7EBEC') + '; background: #E6F6F6; color: #007E82; font-family: inherit; cursor: pointer',
+      payKey: keycap('#007E82', '#C7EBEC').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
       pay: () => this.applyMark('V'),
       back: () => this.setState({ pop: Object.assign({}, P, { mode: 'main' }) }),
