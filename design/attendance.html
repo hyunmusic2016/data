@@ -120,7 +120,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.4.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.4.2</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -587,11 +587,12 @@ class Component extends DCLogic {
         } else if (v === '보') { text = '보'; what = '보강 예정 (결석분)'; kind = '보'; } else if (v === '결') { absent++; text = '결' + absent; what = '결석'; }
         else if (v === '연') { text = '연'; what = '연기'; }
         if (pay) {
+          if (!v) { text = '₩'; kind = 'V'; }
           what = what ? what + ' · 수납' : '수납';
           if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; }
           since = MON + '/' + d;
         }
-        out.push({ d: d, text: text, what: what, kind: kind, pay: pay });
+        out.push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v });
       }
       const needPay = pending || used >= T;
       return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay };
