@@ -137,7 +137,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.26.2</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -178,6 +178,26 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장하기</button>
       </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ti.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{ti.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="강사 변경 정보" onKeyDown="{{ti.key}}" tabIndex="-1" id="tiDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 420px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: #E3ECFD; color: #2952A3">강사 변경</span>
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{ti.name}}</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{ti.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
+        <sc-for list="{{ti.rows}}" as="x" hint-placeholder-count="4">
+          <div style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 14px">
+            <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{x.label}}</span>
+            <span style="font-weight: 700; color: #17201C">{{x.value}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <button type="button" onClick="{{ti.close}}" style="height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">닫기</button>
     </div>
   </sc-if>
   <sc-if value="{{ad.open}}" hint-placeholder-val="{{ false }}">
@@ -365,6 +385,7 @@ class Component extends DCLogic {
       shared: this.readShared(),
       statusList: this.readStatus(),
       ast: null,
+      tinfo: null,
       cashNotice: null,
       printOpen: false,
       printLayout: 'fit',
@@ -506,7 +527,7 @@ class Component extends DCLogic {
       if (!t || r.g === '퇴휴') { out.push(r); return; }
       const sameMon = +t.from.slice(5, 7) === MON, day = +t.from.slice(8, 10);
       if (me === t.teacher) out.push(Object.assign({}, r, { dimBefore: sameMon ? day : 0 }));
-      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', status: '강사 변경', moveTo: t.teacher, dimFrom: day }));
+      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', status: '강사 변경', moveTo: t.teacher, dimFrom: day, canInfo: true, tInfo: { from: t.prev.teacher, to: t.teacher, date: t.from, days: t.days || [], times: t.times || {} } }));
     });
     return out;
   }
@@ -1131,11 +1152,11 @@ class Component extends DCLogic {
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
         return {
           name: s.name.replace('$', ''),
-          quick: () => { if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); },
+          quick: () => { if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); else if (s.canInfo) this.setState({ tinfo: Object.assign({ rowId: s.id, name: s.name.replace('$', ''), ticket: (this._tk || {})[s.id] || '' }, s.tInfo) }); setTimeout(() => { const d = document.getElementById('tiDlg'); if (d) d.focus(); }, 30); },
           rowCls: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? 'aflash' : '',
           flashTag: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? this._flash.tag : '',
-          nameCls: (s.g !== '퇴휴' || s.canBack) ? 'qname' + ((st.qe && st.qe.rowId === s.id) || (st.ast && st.ast.rowId === s.id) ? ' qsel' : '') : '',
-          nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : s.canBack ? '눌러서 복귀 처리' : '',
+          nameCls: (s.g !== '퇴휴' || s.canBack || s.canInfo) ? 'qname' + ((st.qe && st.qe.rowId === s.id) || (st.ast && st.ast.rowId === s.id) || (st.tinfo && st.tinfo.rowId === s.id) ? ' qsel' : '') : '',
+          nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : s.canBack ? '눌러서 복귀 처리' : s.canInfo ? '눌러서 강사 변경 정보 보기' : '',
           cash: s.name.indexOf('$') >= 0,
           hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
@@ -1376,6 +1397,24 @@ class Component extends DCLogic {
       headCount: Object.keys(all.filter(s => !s.status).reduce((o, s) => { o[s.sid || s.id] = 1; return o; }, {})).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
+      ti: (() => {
+        const T = st.tinfo;
+        if (!T) return { open: false };
+        const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(T.date || '');
+        const t12 = v => { const mm = /^(\d{1,2}):(\d{2})$/.exec(v || ''); return mm ? ((+mm[1] % 12) || 12) + ':' + mm[2] : ''; };
+        const sched = (T.days || []).map(d => d + (T.times[d] ? ' ' + t12(T.times[d]) : '')).join(' · ');
+        const close = () => { this.setState({ tinfo: null }); this.focusSheet(); };
+        return {
+          open: true, name: T.name, close: close,
+          key: e => { e.stopPropagation(); if (e.key === 'Escape' || e.key === 'Enter') { e.preventDefault(); close(); } },
+          rows: [
+            { label: '담당 강사', value: T.from + ' → ' + T.to },
+            { label: '바뀐 날짜', value: m ? (+m[1]) + '년 ' + (+m[2]) + '월 ' + (+m[3]) + '일부터' : T.date },
+            { label: '새 수업 일정', value: sched || '—' },
+            { label: '수강권', value: (T.ticket || '—') + ' · 새 강사 출석부로 이어짐' }
+          ]
+        };
+      })(),
       ad: (() => {
         const S = st.ast;
         if (!S) return { open: false };
