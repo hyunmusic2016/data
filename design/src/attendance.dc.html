@@ -98,7 +98,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     </section>
     <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
       <div style="display: flex; align-items: center; gap: 8px">
-              </div>
+        <button type="button" onClick="{{undo.go}}" aria-label="되돌리기 (Ctrl+Z)" title="되돌리기 (Ctrl+Z)" style="{{undo.style}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3"></path></svg>되돌리기</button>
+        <button type="button" onClick="{{redo.go}}" aria-label="다시 실행 (Ctrl+Shift+Z)" title="다시 실행 (Ctrl+Shift+Z)" style="{{redo.style}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 0 0 0 12h3"></path></svg>다시 실행</button>
+      </div>
       <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 14px; font-weight: 600; cursor: pointer">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path></svg>
         엑셀로 내보내기
@@ -120,7 +122,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.1</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.04)"></div>
@@ -169,6 +171,8 @@ class Component extends DCLogic {
     this.dragging = false;
     this.state = {
       sel: null,
+      past: [],
+      future: [],
       pop: null,
       mkTimes: {},
       teacher: 0,
@@ -370,7 +374,7 @@ class Component extends DCLogic {
     const allSame = v && cells.every(c => (cur[c.sid] || {})[c.d] === v);
     const patch = this.writeCells(cells.map(c => ({ m: m, sid: c.sid, d: c.d })), allSame ? '' : v);
     patch.pop = null;
-    this.setState(patch);
+    this.commit(patch);
     this.focusSheet();
   }
   saveMakeup() {
@@ -385,10 +389,37 @@ class Component extends DCLogic {
     sids.forEach(sid => { times[m + '-' + d + '-' + sid] = tv; });
     patch.mkTimes = times;
     patch.pop = null;
+    this.commit(patch);
+    this.focusSheet();
+  }
+  snap() {
+    return { ev: this.state.ev, evByMonth: this.state.evByMonth, mkTimes: this.state.mkTimes };
+  }
+  commit(patch) {
+    patch.past = (this.state.past || []).concat([this.snap()]).slice(-100);
+    patch.future = [];
     this.setState(patch);
+  }
+  undo() {
+    const past = this.state.past || [];
+    if (!past.length) return;
+    const prev = past[past.length - 1];
+    this.setState(Object.assign({}, prev, { past: past.slice(0, -1), future: (this.state.future || []).concat([this.snap()]), pop: null }));
+    this.focusSheet();
+  }
+  redo() {
+    const fut = this.state.future || [];
+    if (!fut.length) return;
+    const next = fut[fut.length - 1];
+    this.setState(Object.assign({}, next, { future: fut.slice(0, -1), past: (this.state.past || []).concat([this.snap()]), pop: null }));
     this.focusSheet();
   }
   selKey(e) {
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'z' || e.key === 'Z' || e.key === 'y' || e.key === 'Y')) {
+      e.preventDefault();
+      if (e.key === 'y' || e.key === 'Y' || e.shiftKey) this.redo(); else this.undo();
+      return;
+    }
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
     const s = this.state.sel;
     if (!s) return;
@@ -573,6 +604,7 @@ class Component extends DCLogic {
     });
 
     this._rows = rowIdx;
+    const hbtn = on => 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; ' + (on ? 'color: #17201C; cursor: pointer' : 'color: #B7C0BC; cursor: default');
     const P = st.pop;
     const popCells = P ? this.selCells() : [];
     const sidName = {};
@@ -663,7 +695,9 @@ class Component extends DCLogic {
       lessonHobby: lessonHobby,
       lessonPro: lessonPro,
       onKey: e => this.selKey(e),
-      pop: pop
+      pop: pop,
+      undo: { go: () => this.undo(), style: hbtn((st.past || []).length > 0) },
+      redo: { go: () => this.redo(), style: hbtn((st.future || []).length > 0) }
     };
   }
 }
