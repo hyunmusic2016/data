@@ -28,7 +28,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
 
   <main style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 18px 28px 40px; box-sizing: border-box">
 
-    <section aria-label="수강생대장" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow: hidden; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+    <section aria-label="수강생대장" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
         <span style="display: inline-flex; align-items: center; gap: 14px">
           <span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 166, 171, 0.32)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg></span>
@@ -42,59 +42,64 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
         </div>
       </div>
 
-      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 22px; border-bottom: 1px solid #EBEEEC; background: #FAFBFA">
+      <div id="{{cur.id}}" style="{{cur.bandStyle}}">
+        <span style="{{cur.dotStyle}}"></span>
+        <span style="font-size: 15px; font-weight: 800">{{cur.title}}</span>
+        <span style="{{cur.countStyle}}">{{cur.count}}명</span>
+        <span style="font-size: 12px; color: #8A949E">{{cur.note}}</span>
+        <span style="flex: 1"></span>
+        <div style="position: relative">
+          <button type="button" onClick="{{flt.toggle}}" aria-expanded="{{flt.openTxt}}" aria-haspopup="dialog" style="{{flt.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{flt.hasActive}}" hint-placeholder-val="{{ false }}"><span style="{{flt.badge}}">{{flt.count}}</span></sc-if></button>
+          <sc-if value="{{flt.open}}" hint-placeholder-val="{{ false }}">
+            <div onMouseDown="{{flt.close}}" style="position: fixed; inset: 0; z-index: 30"></div>
+            <div role="dialog" aria-label="필터" style="position: absolute; right: 0; top: calc(100% + 8px); z-index: 31; width: 600px; box-sizing: border-box; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 18px 48px rgba(23, 32, 28, 0.18)">
+              <div style="display: flex; align-items: center; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid #EEF1F0">
+                <span style="font-size: 16px; font-weight: 800">필터</span>
+                <span style="font-size: 12px; color: #8A949E">{{flt.summary}}</span>
+                <span style="flex: 1"></span>
+                <button type="button" onClick="{{flt.reset}}" style="height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; cursor: pointer">초기화</button>
+              </div>
+              <sc-for list="{{flt.groups}}" as="g" hint-placeholder-count="8">
+                <div role="group" aria-label="{{g.label}}" style="display: grid; grid-template-columns: 112px minmax(0, 1fr); align-items: center; gap: 10px">
+                  <span style="font-size: 13px; font-weight: 700; color: #5E6873">{{g.label}}</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 6px">
+                    <sc-for list="{{g.opts}}" as="o" hint-placeholder-count="4">
+                      <button type="button" aria-pressed="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
         <label for="q" style="position: absolute; left: -9999px">이름, 보호자, 전화번호, 등록번호로 찾기</label>
-        <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 280px; max-width: 100%; box-sizing: border-box">
+        <span style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 260px; box-sizing: border-box">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
           <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
         </span>
-        <span style="flex: 1"></span>
-        <button type="button" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
+        <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}">
+          <button type="button" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
+        </sc-if>
+        <button type="button" onClick="{{colsCfg.open}}" aria-label="표시할 항목 설정" title="표시할 항목 설정" style="width: 36px; height: 36px; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
       </div>
 
-      <div style="overflow-x: auto">
-        <div style="min-width: 1180px">
-          <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
-            <div id="{{sec.id}}" style="{{sec.bandStyle}}">
-              <span style="{{sec.dotStyle}}"></span>
-              <span style="font-size: 15px; font-weight: 800">{{sec.title}}</span>
-              <span style="{{sec.countStyle}}">{{sec.count}}명</span>
-              <span style="font-size: 12px; color: #8A949E">{{sec.note}}</span>
-            </div>
-            <div style="{{gridHead}}">
-              <span style="{{c.h}}">등록번호</span>
-              <span style="{{c.h}}">파트</span>
-              <span style="{{c.hl}}">이름 / 보호자</span>
-              <span style="{{c.h}}">강사</span>
-              <span style="{{c.h}}">레슨요일</span>
-              <span style="{{c.h}}">연령</span>
-              <span style="{{c.h}}">원생 전화번호</span>
-              <span style="{{c.h}}">보호자 전화번호</span>
-              <span style="{{c.h}}">입원 연월일</span>
-              <span style="{{c.h}}">퇴원 연월일</span>
-              <span style="{{c.hl}}">비고</span>
-              <span style="{{c.hl}}">휴원정보</span>
-            </div>
-            <sc-for list="{{sec.rows}}" as="r" hint-placeholder-count="6">
-              <div class="srow" style="{{gridRow}}">
-                <span style="{{r.cell}}; color: #5E6873; font-size: 12px">{{r.id}}</span>
-                <span style="{{r.cell}}"><span style="{{r.partChip}}">{{r.part}}</span></span>
-                <span style="{{r.cellL}}"><span style="{{r.nameStyle}}">{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{r.guardian}}</span></span>
-                <span style="{{r.cell}}"><span style="{{r.teacherChip}}">{{r.teacher}}</span></span>
-                <span style="{{r.cell}}"><span style="{{r.dayChip}}">{{r.day}}</span></span>
-                <span style="{{r.cell}}"><span style="{{r.ageChip}}">{{r.age}}</span></span>
-                <span style="{{r.cell}}; font-size: 13px">{{r.phone}}</span>
-                <span style="{{r.cell}}; font-size: 13px; color: #3A4450">{{r.gphone}}</span>
-                <span style="{{r.cell}}; font-size: 13px">{{r.join}}</span>
-                <span style="{{r.cell}}; font-size: 13px; color: #C2410C">{{r.leave}}</span>
-                <span style="{{r.cellL}}; font-size: 12px; color: #3A4450">{{r.memo}}</span>
-                <span style="{{r.cellL}}"><span style="{{r.restChip}}">{{r.rest}}</span></span>
-              </div>
+      <div id="tableScroll" style="overflow-x: auto; border-radius: 0 0 16px 16px">
+        <div style="{{tableMin}}">
+          <div style="{{gridHead}}">
+            <sc-for list="{{headCols}}" as="h" hint-placeholder-count="12">
+              <span style="{{h.style}}">{{h.label}}</span>
             </sc-for>
-            <sc-if value="{{sec.empty}}" hint-placeholder-val="{{ false }}">
-              <div style="padding: 22px; text-align: center; font-size: 13px; color: #8A949E; border-bottom: 1px solid #EBEEEC">찾는 원생이 없습니다.</div>
-            </sc-if>
+          </div>
+          <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
+            <div class="srow" style="{{gridRow}}">
+              <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
+                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
+              </sc-for>
+            </div>
           </sc-for>
+          <sc-if value="{{cur.empty}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 22px; text-align: center; font-size: 13px; color: #8A949E; border-bottom: 1px solid #EBEEEC">찾는 원생이 없습니다.</div>
+          </sc-if>
         </div>
       </div>
     </section>
@@ -111,7 +116,48 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.11.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.12.0</div>
+  <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
+    <div role="dialog" aria-label="표시할 항목" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 14px; padding: 18px 26px; background: #FFFFFF; border-bottom: 1px solid #E8ECEA">
+        <span style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #EEF1F0; color: #3A4450; display: inline-flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></span>
+        <span style="font-size: 20px; font-weight: 800; letter-spacing: -0.02em">표시할 항목</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{colsCfg.reset}}" style="height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; cursor: pointer">기본값으로</button>
+        <button type="button" onClick="{{colsCfg.close}}" aria-label="닫기" style="width: 38px; height: 38px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 18px; line-height: 1">×</button>
+      </div>
+      <div id="colsBody" style="flex: 1; overflow: auto; padding: 22px 26px; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <sc-for list="{{colsCfg.cats}}" as="cat" hint-placeholder-count="5">
+            <div role="group" aria-label="{{cat.label}}" style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
+              <span style="font-size: 14px; font-weight: 800; color: #17201C">{{cat.label}}</span>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                <sc-for list="{{cat.items}}" as="it" hint-placeholder-count="4">
+                  <button type="button" role="checkbox" aria-checked="{{it.on}}" onClick="{{it.toggle}}" style="{{it.style}}"><span style="{{it.box}}">✓</span>{{it.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
+          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 800">보이는 순서</span><span style="font-size: 12px; color: #8A949E">{{colsCfg.count}}개 · 끌어서 옮기기</span></span>
+          <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
+            <sc-for list="{{colsCfg.order}}" as="o" hint-placeholder-count="12">
+              <li draggable="true" onDragStart="{{o.dragStart}}" onDragOver="{{o.dragOver}}" onDrop="{{o.drop}}" style="{{o.style}}">
+                <span aria-hidden="true" style="color: #B9C2BD; font-size: 14px; letter-spacing: -2px; cursor: grab">⋮⋮</span>
+                <span style="width: 22px; font-size: 12px; font-weight: 700; color: #8A949E; text-align: right">{{o.n}}</span>
+                <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #17201C">{{o.label}}</span>
+                <button type="button" onClick="{{o.up}}" disabled="{{o.first}}" aria-label="{{o.upLabel}}" style="{{o.arrow}}">▲</button>
+                <button type="button" onClick="{{o.down}}" disabled="{{o.last}}" aria-label="{{o.downLabel}}" style="{{o.arrow}}">▼</button>
+              </li>
+            </sc-for>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{reg.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{reg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="원생 등록" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 1120px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -210,7 +256,65 @@ class DCLogic{constructor(props){this.props=props||{};this.state={}}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { q: '', tab: 'act', reg: null, added: [], toast: '' };
+    let cols = null;
+    try { const v = JSON.parse(localStorage.getItem('students.cols') || 'null'); if (Array.isArray(v)) cols = v; } catch (e) {}
+    this.state = { q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+  }
+  colCatalog() {
+    return [
+      { k: 'id', label: '등록번호', w: '76px' },
+      { k: 'cls', label: '반 구분', w: '84px' },
+      { k: 'part', label: '파트', w: '92px' },
+      { k: 'name', label: '이름 / 보호자', w: 'minmax(150px, 1.4fr)', min: 150, left: true },
+      { k: 'teacher', label: '강사', w: '92px' },
+      { k: 'day', label: '레슨요일', w: '92px' },
+      { k: 'time', label: '수업 시간', w: '120px' },
+      { k: 'age', label: '연령', w: '70px' },
+      { k: 'gender', label: '성별', w: '60px' },
+      { k: 'phone', label: '원생 전화번호', w: '128px' },
+      { k: 'gphone', label: '보호자 전화번호', w: '128px' },
+      { k: 'birth', label: '생년월일', w: '104px' },
+      { k: 'addr', label: '주소', w: 'minmax(160px, 1.4fr)', min: 160, left: true },
+      { k: 'join', label: '입원 연월일', w: '96px' },
+      { k: 'leave', label: '퇴원 연월일', w: '96px' },
+      { k: 'count', label: '수강 횟수', w: '80px' },
+      { k: 'dur', label: '수강 시간', w: '80px' },
+      { k: 'unit', label: '회당 수업료', w: '104px' },
+      { k: 'total', label: '수강료 합계', w: '110px' },
+      { k: 'pay', label: '강사 수당', w: '96px' },
+      { k: 'cash', label: '현금영수증', w: '90px' },
+      { k: 'stick', label: '드럼스틱 보관함', w: '110px' },
+      { k: 'memo', label: '비고', w: 'minmax(110px, 1fr)', min: 110, left: true },
+      { k: 'rest', label: '휴원정보', w: 'minmax(120px, 1fr)', min: 120, left: true }
+    ];
+  }
+  visibleCols() {
+    const DEF = ['id', 'part', 'name', 'teacher', 'day', 'age', 'phone', 'gphone', 'join', 'leave', 'memo', 'rest'];
+    const keys = this.colCatalog().map(c => c.k);
+    const v = (this.state.cols || DEF).filter(k => keys.indexOf(k) >= 0);
+    return v.indexOf('name') >= 0 ? v : ['name'].concat(v);
+  }
+  enrich(s) {
+    const ex = s.extra || {};
+    const fl = s.flags || {};
+    const pro = !!fl.pro;
+    const days = s.days || [s.day];
+    const to12 = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return m ? ((+m[1] % 12) || 12) + ':' + m[2] : ''; };
+    const TL = ['2:00', '3:30', '4:00', '5:00', '6:30', '7:00'];
+    const timeTxt = s.extra
+      ? days.map(d => { const t = (ex.times || {})[d]; return t ? (days.length > 1 ? (d === '변동' ? 'R' : d[0]) + ' ' : '') + to12(t) : ''; }).filter(Boolean).join(' · ')
+      : (days[0] === '변동' ? '' : days.length > 1 ? days.map((d, i) => d[0] + ' ' + TL[(s.id + i * 2) % 6]).join(' · ') : TL[s.id % 6]);
+    const count = ex.count || (fl.t12 ? 12 : fl.t8 ? 8 : 4);
+    const unit = ex.unit || (pro ? 62500 : 40000);
+    const p2 = n => String(n).padStart(2, '0');
+    const birth = s.extra ? (ex.birth || '').replace(/-/g, '.') : (s.age === '학생' ? 2010 + s.id % 7 : 1986 + s.id % 13) + '.' + p2(s.id % 12 + 1) + '.' + p2(s.id % 27 + 1);
+    return Object.assign({}, s, {
+      cls: pro ? 'pro' : 'hobby', days: days, timeTxt: timeTxt,
+      gender: s.extra ? (ex.gender || '') : (s.id % 2 ? '남' : '여'),
+      birth: birth, addr: s.extra ? (ex.addr || '') : '샘플구 음악로 ' + (s.id % 90 + 1),
+      count: count, dur: ex.dur || 60, unit: unit, total: ex.total || unit * count, pay: ex.pay || Math.round(unit * 0.5),
+      cashOn: !!fl.cash, stick: s.extra ? !!ex.stickBox : (s.part === '드럼' && (s.id % 3 === 0 || (s.memo || '').indexOf('스틱') >= 0))
+    });
   }
   students() {
     return this.baseStudents().concat(this.state.added || []);
@@ -291,46 +395,138 @@ class Component extends DCLogic {
     const DAY = { '월요일': ['#FDE8E7', '#B4332B'], '화요일': ['#E3ECFD', '#2952A3'], '수요일': ['#FCF1C2', '#7A6200'], '목요일': ['#DFF2E4', '#2F6B43'], '금요일': ['#FDEBDC', '#9A4A12'], '토요일': ['#ECE4F8', '#5B4A8B'], '변동': ['#EEF1F0', '#3A4450'] };
     const AGE = { '학생': ['#E3F3EC', '#2F6B43'], '성인': ['#FBE6E4', '#9A3A31'] };
     const chip = (c, w) => 'display: inline-flex; align-items: center; justify-content: center; height: 24px; padding: 0 10px; min-width: ' + (w || 52) + 'px; box-sizing: border-box; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1];
-    const COLS = 'display: grid; grid-template-columns: 76px 92px minmax(150px, 1.4fr) 92px 92px 70px 128px 128px 96px 96px minmax(110px, 1fr) minmax(120px, 1fr); align-items: center';
     const cell = 'height: 46px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
-    const all = this.students();
+    const all = this.students().map(s => this.enrich(s));
     const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
     const match = s => (!q || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
     const PORDER = ['드럼', '보컬', '기타', '베이스', '피아노', '우쿨렐레'];
     const DORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'];
-    const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf((a.days || [a.day])[0]) - DORDER.indexOf((b.days || [b.day])[0]) || a.name.localeCompare(b.name, 'ko'));
+    const TEACHERS = ['김도윤', '이하늘', '박서준', '최민재', '정우진'];
+    // 필터: 같은 항목 안에서는 하나라도 맞으면, 항목끼리는 모두 맞아야 보인다
+    const F = st.filt || {};
+    const FG = [
+      ['cls', '취미 / 전문', [['hobby', '취미반'], ['pro', '전문반']], s => s.cls],
+      ['part', '파트', PORDER.map(p => [p, p]), s => s.part],
+      ['teacher', '강사', TEACHERS.map(t => [t, t]), s => s.teacher],
+      ['day', '요일', DORDER.map(d => [d, d === '변동' ? 'R' : d[0]]), s => s.days],
+      ['gender', '성별', [['남', '남'], ['여', '여']], s => s.gender],
+      ['age', '연령', [['학생', '학생'], ['성인', '성인']], s => s.age],
+      ['stick', '드럼스틱 보관함', [['y', '사용'], ['n', '사용 안 함']], s => s.stick ? 'y' : 'n'],
+      ['cash', '현금영수증', [['y', '발급'], ['n', '발급 안 함']], s => s.cashOn ? 'y' : 'n']
+    ];
+    const pass = s => FG.every(g => {
+      const sel = F[g[0]] || [];
+      if (!sel.length) return true;
+      const v = g[3](s);
+      return Array.isArray(v) ? v.some(x => sel.indexOf(x) >= 0) : sel.indexOf(v) >= 0;
+    });
+    const fCount = FG.reduce((n, g) => n + ((F[g[0]] || []).length ? 1 : 0), 0);
+    const pillS = on => 'height: 32px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #E6F6F6; color: #007E82; border: 1.5px solid #00A6AB; font-weight: 700' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500');
+    const setF = (k, v) => { const cur0 = F[k] || []; const nx = cur0.indexOf(v) >= 0 ? cur0.filter(x => x !== v) : cur0.concat([v]); this.setState({ filt: Object.assign({}, F, { [k]: nx }) }); };
+    const flt = {
+      open: !!st.fltOpen, openTxt: st.fltOpen ? 'true' : 'false',
+      toggle: () => this.setState({ fltOpen: !st.fltOpen }),
+      close: () => this.setState({ fltOpen: false }),
+      reset: () => this.setState({ filt: {} }),
+      hasActive: fCount > 0, count: fCount,
+      summary: fCount ? fCount + '개 항목 적용 중' : '',
+      btnStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; ' + (fCount || st.fltOpen ? 'background: #E6F6F6; color: #007E82; border: 1.5px solid #00A6AB' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF'),
+      badge: 'display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 800',
+      groups: FG.map(g => ({ label: g[1], opts: g[2].map(o => { const on = (F[g[0]] || []).indexOf(o[0]) >= 0; return { label: o[1], on: on ? 'true' : 'false', pick: () => setF(g[0], o[0]), style: pillS(on) }; }) }))
+    };
+    const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf(a.days[0]) - DORDER.indexOf(b.days[0]) || a.name.localeCompare(b.name, 'ko'));
+    // 표시할 항목 (열)
+    const CAT = this.colCatalog();
+    const visible = this.visibleCols();
+    const colDef = k => CAT.find(c => c.k === k);
+    const vis = visible.map(colDef).filter(Boolean);
+    const COLS = 'display: grid; grid-template-columns: ' + vis.map(c => c.w).join(' ') + '; align-items: center';
+    const minW = vis.reduce((n, c) => n + (c.min || parseInt(c.w, 10) || 100), 0);
+    const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
+    const headCols = vis.map(c => ({ label: c.label, style: hBase + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center') }));
+    const won = n => n ? Number(n).toLocaleString('ko-KR') + '원' : '';
     const row = s => {
-      const pro = !!s.flags.pro, big = s.flags.t8 || s.flags.t12;
+      const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
       const bg = pro ? '#FDF0F2' : '#FFFFFF';
+      const C = cell + '; background: ' + bg;
+      const CL = C + '; justify-content: flex-start; gap: 6px';
       const tp = PART[TPART[s.teacher]] || PART['원장'];
-      return {
-        id: s.id, part: s.part, name: s.name, guardian: s.guardian ? '/ ' + s.guardian : '', cash: !!s.flags.cash,
-        teacher: s.teacher, day: s.day === '변동' ? '변동' : s.day, age: s.age, phone: s.phone, gphone: s.gphone, join: s.join, leave: s.leave, memo: s.memo, rest: s.rest,
-        cell: cell + '; background: ' + bg,
-        cellL: cell + '; justify-content: flex-start; gap: 6px; background: ' + bg,
-        nameStyle: 'font-size: 14px; font-weight: 700; color: #17201C' + (big ? '; background: #EFEAF8; padding: 2px 6px; border-radius: 6px; color: #4C2E83' : ''),
-        partChip: chip(PART[s.part] || PART['원장'], 60),
-        teacherChip: chip(tp, 64),
-        dayChip: chip(DAY[(s.days || [s.day])[0]] || DAY['변동'], 60),
-        ageChip: chip(AGE[s.age] || AGE['성인'], 44),
-        restChip: s.rest ? 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00' : 'display: none'
+      const T = (t, extra) => ({ isText: true, text: t, cell: C + (extra ? '; ' + extra : '') });
+      const TL = (t, extra) => ({ isText: true, text: t, cell: CL + (extra ? '; ' + extra : '') });
+      const CH = (t, c, w) => ({ isChip: true, text: t, chip: chip(c, w), cell: C });
+      const make = {
+        id: () => T(s.id, 'color: #5E6873; font-size: 12px'),
+        cls: () => CH(pro ? '전문반' : '취미반', pro ? ['#FBE3E6', '#C8323C'] : ['#E6F6F6', '#007E82'], 56),
+        part: () => CH(s.part, PART[s.part] || PART['원장'], 60),
+        name: () => ({ isName: true, text: s.name, cash: s.cashOn, sub: s.guardian ? '/ ' + s.guardian : '', cell: CL, nameStyle: 'font-size: 14px; font-weight: 700; color: #17201C' + (big ? '; background: #EFEAF8; padding: 2px 6px; border-radius: 6px; color: #4C2E83' : '') }),
+        teacher: () => CH(s.teacher, tp, 64),
+        day: () => CH(s.day, DAY[s.days[0]] || DAY['변동'], 60),
+        time: () => T(s.timeTxt, 'font-size: 13px'),
+        age: () => CH(s.age, AGE[s.age] || AGE['성인'], 44),
+        gender: () => T(s.gender, 'font-size: 13px'),
+        phone: () => T(s.phone, 'font-size: 13px'),
+        gphone: () => T(s.gphone, 'font-size: 13px; color: #3A4450'),
+        birth: () => T(s.birth, 'font-size: 13px'),
+        addr: () => TL(s.addr, 'font-size: 12px; color: #3A4450'),
+        join: () => T(s.join, 'font-size: 13px'),
+        leave: () => T(s.leave, 'font-size: 13px; color: #C2410C'),
+        count: () => T(s.count + '회', 'font-size: 13px'),
+        dur: () => T(s.dur + '분', 'font-size: 13px'),
+        unit: () => T(won(s.unit), 'font-size: 13px; justify-content: flex-end'),
+        total: () => T(won(s.total), 'font-size: 13px; font-weight: 700; justify-content: flex-end'),
+        pay: () => T(won(s.pay), 'font-size: 13px; justify-content: flex-end'),
+        cash: () => s.cashOn ? CH('발급', ['#E6F6F6', '#007E82'], 44) : T(''),
+        stick: () => s.stick ? CH('사용', ['#D7EFDD', '#2F6B43'], 44) : T(''),
+        memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
+        rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
+      return { cells: vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k]())) };
     };
     const SECS = [
       ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
       ['rest', '휴원생', 'sec-rest', '#E0A23B', '#FFF4E0', '#9A5B00', '휴원정보에 휴원 날짜와 남은 수업을 적습니다'],
       ['out', '퇴원생', 'sec-out', '#D9746C', '#FCEBEA', '#B4332B', '']
     ];
-    const sections = SECS.filter(x => x[0] === (st.tab || 'act')).map(x => {
-      const list = sorted.filter(s => s.status === x[0]);
-      const rows = list.filter(match).map(row);
-      return {
-        id: x[2], title: x[1], count: list.length, note: x[6], rows: rows, empty: rows.length === 0,
-        bandStyle: 'display: flex; align-items: center; gap: 10px; padding: 14px 22px; background: ' + x[4] + '; border-bottom: 1px solid #E1E6E3; border-top: 1px solid #E1E6E3',
-        dotStyle: 'width: 10px; height: 10px; border-radius: 50%; background: ' + x[3],
-        countStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 800; color: ' + x[5]
-      };
-    });
+    const curSec = SECS.find(x => x[0] === (st.tab || 'act'));
+    const curList = sorted.filter(s => s.status === curSec[0]);
+    const curRows = curList.filter(match).filter(pass).map(row);
+    const cur = {
+      id: curSec[2], title: curSec[1], count: curList.length, note: curSec[6], rows: curRows, empty: curRows.length === 0, canReg: curSec[0] === 'act',
+      bandStyle: 'display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 22px; background: ' + curSec[4] + '; border-bottom: 1px solid #E1E6E3',
+      dotStyle: 'width: 10px; height: 10px; border-radius: 50%; background: ' + curSec[3],
+      countStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border-radius: 999px; background: #FFFFFF; font-size: 12px; font-weight: 800; color: ' + curSec[5]
+    };
+    // 표시할 항목 설정 창
+    const GROUPS = [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join', 'leave']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']], ['기타', ['memo', 'rest']]];
+    const saveCols = list => { try { localStorage.setItem('students.cols', JSON.stringify(list)); } catch (e) {} this.setState({ cols: list }); };
+    const move = (k, to) => { const l = visible.filter(x => x !== k); l.splice(Math.max(0, Math.min(to, l.length)), 0, k); saveCols(l); };
+    const boxS = on => 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD');
+    const colsCfg = {
+      isOpen: !!st.colsOpen,
+      open: () => this.setState({ colsOpen: true }),
+      close: () => this.setState({ colsOpen: false }),
+      key: e => { if (e.key === 'Escape') this.setState({ colsOpen: false }); },
+      reset: () => { try { localStorage.removeItem('students.cols'); } catch (e) {} this.setState({ cols: null }); },
+      count: visible.length,
+      cats: GROUPS.map(g => ({ label: g[0], items: g[1].map(k => {
+        const on = visible.indexOf(k) >= 0, lock = k === 'name';
+        return { label: colDef(k).label + (lock ? ' (항상)' : ''), on: on ? 'true' : 'false',
+          toggle: () => { if (lock) return; saveCols(on ? visible.filter(x => x !== k) : visible.concat([k])); },
+          box: boxS(on),
+          style: 'display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 12px; border-radius: 11px; font-family: inherit; font-size: 14px; text-align: left; white-space: nowrap; cursor: ' + (lock ? 'default' : 'pointer') + '; ' + (on ? 'background: #F2FBFB; color: #17201C; border: 1px solid #A9DCDE; font-weight: 700' : 'background: #FAFBFA; color: #5E6873; border: 1px solid #E1E6E3; font-weight: 500') };
+      }) })),
+      order: visible.map((k, i) => ({
+        n: i + 1, label: colDef(k).label,
+        first: i === 0 ? 'true' : 'false', last: i === visible.length - 1 ? 'true' : 'false',
+        upLabel: colDef(k).label + ' 위로', downLabel: colDef(k).label + ' 아래로',
+        up: () => move(k, i - 1), down: () => move(k, i + 1),
+        dragStart: e => { this._dragCol = k; try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k); } catch (er) {} },
+        dragOver: e => { e.preventDefault(); },
+        drop: e => { e.preventDefault(); const from = this._dragCol; this._dragCol = null; if (!from || from === k) return; const l = visible.filter(x => x !== from); l.splice(l.indexOf(k) + (visible.indexOf(from) < i ? 1 : 0), 0, from); saveCols(l); },
+        style: 'display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 8px 0 10px; box-sizing: border-box; border-radius: 11px; background: #FAFBFA; border: 1px solid #E1E6E3; cursor: grab',
+        arrow: 'width: 30px; height: 30px; flex: none; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 10px; cursor: pointer'
+      }))
+    };
     const cnt = k => all.filter(s => s.status === k).length;
     const R = st.reg;
     const TEACH = { '김도윤': ['기타', '우쿨렐레'], '이하늘': ['보컬'], '박서준': ['드럼'], '최민재': ['베이스'], '정우진': ['피아노'] };
@@ -416,7 +612,8 @@ class Component extends DCLogic {
         (t[0] === '수강생대장' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));
     return {
-      q: st.q, tabs: tabs, stats: stats, sections: sections,
+      q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols,
+      tableMin: 'min-width: ' + minW + 'px',
       reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
       onSearch: e => this.setState({ q: e.target.value }),
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
