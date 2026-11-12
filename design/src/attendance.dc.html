@@ -121,7 +121,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.10</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.11</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -148,7 +148,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </sc-for>
         </div>
         <button type="button" class="pbtn" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
-          <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">결제</span>
+          <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">수납</span>
           <span style="{{pop.payKey}}">0</span>
         </button>
         <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
@@ -506,7 +506,7 @@ class Component extends DCLogic {
     const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
     const circ = (n, filled) => 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A';
     const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
-    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#E6F6F6', '#007E82'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em' };
+    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em' };
     const chipFor = t => {
       if (!t) return 'display: none';
       if (/^(1[0-2]|[1-9])$/.test(t)) return circ(+t, false);
@@ -570,7 +570,7 @@ class Component extends DCLogic {
         } else if (v === '보') { text = '보'; what = '보강 예정 (결석분)'; kind = '보'; } else if (v === '결') { absent++; text = '결' + absent; what = '결석'; }
         else if (v === '연') { text = '연'; what = '연기'; }
         else if (v === 'V') {
-          text = '₩'; what = '입금 확인';
+          text = '₩'; what = '수납';
           if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; }
           since = MON + '/' + d;
         }
@@ -707,8 +707,8 @@ class Component extends DCLogic {
       sub: !first ? '' : popCells.length === 1 ? '수업 시간 ' + lt12 : '같은 표시가 한 번에 들어갑니다',
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
       btns: popBtns,
-      payStyle: '--sh: #A9DCDE; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curV === 'V' ? '2px solid #007E82' : '1px solid #C7EBEC') + '; background: linear-gradient(180deg, #FFFFFF 0%, #E6F6F6 55%); color: #007E82; font-family: inherit; cursor: pointer; margin-bottom: 4px',
-      payKey: keycap('#007E82', '#C7EBEC').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
+      payStyle: '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curV === 'V' ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
+      payKey: keycap('#7A5C12', '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
       pay: () => this.applyMark('V'),
       back: () => this.setState({ pop: Object.assign({}, P, { mode: 'main' }) }),
