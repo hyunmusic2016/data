@@ -130,7 +130,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.23.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -332,7 +332,7 @@ class Component extends DCLogic {
     this.dragging = false;
     this.state = {
       qe: null,
-      plans: {},
+      shared: this.readShared(),
       cashNotice: null,
       printOpen: false,
       printLayout: 'fit',
@@ -386,35 +386,39 @@ class Component extends DCLogic {
     };
   }
   students() {
-    // 간단 수정(수업 요일·시간·드럼스틱)으로 바뀐 내용을 보고 있는 달에 맞춰 반영
+    // 수업 요일·시간·드럼스틱 변경(수강생대장과 같이 쓰는 기록)을 적용 날짜가 들어 있는 달부터 반영한다.
+    // 그 달은 처음부터 새 요일로 옮기고(이미 입력한 출결은 그대로 따라감), 그 전 달은 예전 요일 그대로.
     const base = this.baseRows();
-    const plans = this.state.plans || {};
-    if (!Object.keys(plans).length) return base;
+    const shared = this.state.shared || [];
+    if (!shared.length) return base;
     const MON = (this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [])[1] || 11;
     const p2 = n => String(n).padStart(2, '0');
-    const mStart = '2026-' + p2(MON) + '-01', mEnd = '2026-' + p2(MON) + '-' + p2(new Date(2026, MON, 0).getDate());
-    const today = this.todayYmd();
+    const mEnd = '2026-' + p2(MON) + '-' + p2(new Date(2026, MON, 0).getDate());
+    const nm = r => r.name.replace('$', '');
     const done = {}, out = [];
     base.forEach(r => {
       const key = String(r.sid || r.id);
-      const P = (plans[key] || []).filter(p => p.from <= mEnd).sort((a, b) => a.from < b.from ? -1 : 1);
+      const P = shared.filter(e => e.name === nm(r) && e.from <= mEnd).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : (a.at || 0) - (b.at || 0));
       if (!P.length || r.g === '퇴휴') { out.push(r); return; }
       if (done[key]) return;
       done[key] = 1;
       const act = P[P.length - 1];
       const rows = base.filter(x => String(x.sid || x.id) === key && x.g !== '퇴휴');
       const first = rows[0];
-      const list = [];
-      // 바뀌기 전 요일 줄은 그 달 안에 예전 일정이 있었으면 남겨 둔다
-      rows.forEach(x => { if (act.days.indexOf(x.g) < 0 && act.from > mStart) list.push(Object.assign({}, x)); });
-      act.days.forEach(d => {
-        const ex = rows.find(x => x.g === d);
-        const t = act.times[d] || '';
-        list.push(Object.assign({}, ex || first, { id: ex ? ex.id : key + '-' + d, g: d, time: (act.from <= today || !ex) ? (t || undefined) : ex.time, stick: act.stick }));
+      const spare = rows.filter(x => act.days.indexOf(x.g) < 0);
+      const ev = MON === 11 ? (this.state.ev || {}) : (this.state.evByMonth[MON] || {});
+      const list = act.days.map(d => {
+        const ex = rows.find(x => x.g === d) || spare.shift();
+        return Object.assign({}, ex || first, { id: ex ? ex.id : key + '-' + d, g: d, time: act.times[d] || undefined, stick: !!act.stick });
       });
-      list.forEach(x => { if (list.length > 1) x.sid = 'K' + key; out.push(x); });
+      // 요일 수가 줄었는데 남은 줄에 이번 달 출결이 있으면 지우지 않고 둔다
+      spare.forEach(x => { if (Object.keys(ev[x.id] || {}).length) list.push(Object.assign({}, x)); });
+      list.forEach(x => { x.sid = list.length > 1 ? 'K' + key : undefined; if (list.length === 1 && first.sid) x.sid = first.sid; out.push(x); });
     });
     return out;
+  }
+  readShared() {
+    try { const v = JSON.parse(localStorage.getItem('academy.lessonChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
   }
   todayYmd() {
     const t = new Date();
@@ -437,9 +441,11 @@ class Component extends DCLogic {
     const days = Q.days.slice().sort((a, b) => ORD.indexOf(a) - ORD.indexOf(b));
     const times = {};
     days.forEach(d => { const t = Q.times[d] || {}; const h = parseInt(t.h, 10); if (h) times[d] = String(h < 9 ? h + 12 : h).padStart(2, '0') + ':' + String(t.m || '0').padStart(2, '0'); });
-    const plans = Object.assign({}, this.state.plans);
-    plans[Q.key] = (plans[Q.key] || []).concat([{ from: Q.date, days: days, times: times, stick: !!Q.stick }]);
-    this.setState({ plans: plans, qe: null });
+    const cur = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === Q.key && x.g !== '퇴휴');
+    const prev = { days: cur.map(x => x.g), times: cur.reduce((o, x) => { if (x.time) o[x.g] = x.time; return o; }, {}), stick: !!(cur[0] || {}).stick };
+    const list = this.readShared().concat([{ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, stick: !!Q.stick, prev: prev }]);
+    try { localStorage.setItem('academy.lessonChanges', JSON.stringify(list)); } catch (e) {}
+    this.setState({ shared: list, qe: null });
     this.focusSheet();
   }
   baseRows() {
@@ -560,6 +566,8 @@ class Component extends DCLogic {
     }, 80);
   }
   componentDidMount() {
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); };
+    window.addEventListener('storage', this._st);
     this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
     this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
     window.addEventListener('beforeprint', this._bp);
@@ -572,6 +580,7 @@ class Component extends DCLogic {
     window.addEventListener('mouseup', this._up);
   }
   componentWillUnmount() {
+    window.removeEventListener('storage', this._st);
     window.removeEventListener('mouseup', this._up);
   }
   normSel() {

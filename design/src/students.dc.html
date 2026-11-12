@@ -151,7 +151,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.23.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.24.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -433,7 +433,7 @@ class Component extends DCLogic {
     try { const w = JSON.parse(localStorage.getItem('students.widths') || 'null'); if (w && typeof w === 'object') widths = w; } catch (e) {}
     let fltList = [];
     try { const v = JSON.parse(localStorage.getItem('students.filters') || 'null'); if (Array.isArray(v)) fltList = v; } catch (e) {}
-    this.state = { log: {}, histView: null, hist: {}, changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
+    this.state = { shared: this.readShared(), log: {}, histView: null, hist: {}, changes: {}, stat: null, fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
   // 원생 항목 목록 (한 곳에서만 정의). 새 항목을 여기에 넣으면 설정의 '표시할 항목'과 '필터 항목'에 자동으로 들어간다.
   //   g: 설정 창 묶음 (null이면 설정에 안 나옴), w: 열 폭, left: 왼쪽 정렬
@@ -514,12 +514,51 @@ class Component extends DCLogic {
   }
   students() {
     // changes: 수정·휴원·퇴원으로 바로 바뀐 내용 / hist: 적용 날짜가 있는 변경 (오늘까지 시작된 것만 반영)
-    const ch = this.state.changes || {}, H = this.state.hist || {}, today = this.todayYmd();
+    const ch = this.state.changes || {}, today = this.todayYmd();
     return this.baseStudents().concat(this.state.added || []).map(s => {
       let x = ch[s.id] ? this.mergeRec(s, ch[s.id]) : s;
-      (H[s.id] || []).filter(h => h.from <= today).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : 0).forEach(h => { x = this.mergeRec(x, h.patch); });
+      this.allHist(s.id, x.name).filter(h => h.from <= today).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : 0).forEach(h => { x = this.mergeRec(x, h.patch); });
       return x;
     });
+  }
+  // 수업 요일·시간·드럼스틱 변경은 출석부와 같이 쓰는 기록(이 컴퓨터 브라우저에 저장)에 둔다. 원생은 이름으로 맞춘다
+  readShared() {
+    try { const v = JSON.parse(localStorage.getItem('academy.lessonChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  writeShared(list) {
+    try { localStorage.setItem('academy.lessonChanges', JSON.stringify(list)); } catch (e) {}
+    return list;
+  }
+  componentDidMount() {
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); };
+    window.addEventListener('storage', this._st);
+  }
+  componentWillUnmount() { window.removeEventListener('storage', this._st); }
+  sharedToPatch(e) {
+    const L = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
+    const days = (e.days || []).map(d => L[d]).filter(Boolean);
+    const times = {};
+    Object.keys(e.times || {}).forEach(d => { const m = /^(\d{1,2}):(\d{2})$/.exec(e.times[d]); if (m && L[d]) times[L[d]] = ((+m[1] % 12) || 12) + ':' + m[2]; });
+    const p = { day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], extra: { times: times, stickBox: !!e.stick } };
+    if (e.teacher) p.teacher = e.teacher;
+    if (e.part) p.part = e.part;
+    return p;
+  }
+  patchToShared(p) {
+    const S = { '월요일': '월', '화요일': '화', '수요일': '수', '목요일': '목', '금요일': '금', '토요일': '토', '변동': 'R' };
+    const times = {};
+    const tt = (p.extra || {}).times || {};
+    Object.keys(tt).forEach(d => { const m = /^(\d{1,2}):(\d{2})$/.exec(tt[d]); if (m && S[d]) { const h = +m[1]; times[S[d]] = String(h < 9 ? h + 12 : h).padStart(2, '0') + ':' + m[2]; } });
+    return { days: (p.days || []).map(d => S[d]).filter(Boolean), times: times, stick: !!(p.extra || {}).stickBox, teacher: p.teacher, part: p.part };
+  }
+  allHist(id, name) {
+    if (name == null) {
+      const b = this.baseStudents().concat(this.state.added || []).find(x => x.id === id);
+      const c = (this.state.changes || {})[id];
+      name = (c && c.name) || (b && b.name);
+    }
+    const sh = (this.state.shared || []).filter(e => e.name === name).map(e => ({ hid: e.id, sec: 'lesson', from: e.from, patch: this.sharedToPatch(e), prev: e.prev ? this.sharedToPatch(e.prev) : {} }));
+    return ((this.state.hist || {})[id] || []).concat(sh);
   }
   patchStudent(id, patch) {
     const ch = Object.assign({}, this.state.changes);
@@ -620,19 +659,20 @@ class Component extends DCLogic {
     if (s.status === 'rest' && !has('rest') && s.restDate) ev.push({ d: ymd(s.restDate), kind: 'rest', title: '휴원', lines: [s.restReason ? '사유: ' + s.restReason : '', s.restTicket ? '그 당시 수강권: ' + s.restTicket : ''].filter(Boolean) });
     if (s.status === 'out' && !has('out') && s.leave) ev.push({ d: ymd(s.leave), kind: 'out', title: '퇴원', lines: [s.leaveReason ? '사유: ' + s.leaveReason : ''].filter(Boolean) });
     logs.forEach(l => ev.push(l));
-    ((this.state.hist || {})[s.id] || []).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
+    this.allHist(s.id, s.name).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
     return ev.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : (b.at || 0) - (a.at || 0));
   }
   schedEntries(id, sec, skip) {
     const td = this.todayYmd();
-    return ((this.state.hist || {})[id] || []).filter(h => h.sec === sec && h.from > td && (skip || []).indexOf(h.hid) < 0).sort((a, b) => a.from < b.from ? -1 : 1);
+    return this.allHist(id).filter(h => h.sec === sec && h.from > td && (skip || []).indexOf(h.hid) < 0).sort((a, b) => a.from < b.from ? -1 : 1);
   }
   cancelSched(hid) {
     const R = this.state.reg;
     const H = Object.assign({}, this.state.hist);
     H[R.editId] = (H[R.editId] || []).filter(h => h.hid !== hid);
+    const SH = this.writeShared((this.state.shared || []).filter(e => e.id !== hid));
     const left = this.schedEntries(R.editId, R.schedView).filter(h => h.hid !== hid).length;
-    this.setState({ hist: H, reg: Object.assign({}, R, { schedView: left ? R.schedView : null, svConfirm: null }), toast: '예정 변경을 취소했습니다' });
+    this.setState({ hist: H, shared: SH, reg: Object.assign({}, R, { schedView: left ? R.schedView : null, svConfirm: null }), toast: '예정 변경을 취소했습니다' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
@@ -643,7 +683,7 @@ class Component extends DCLogic {
     if (h.sec === 'lesson') {
       const times = {};
       Object.keys(x.times || {}).forEach(d => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.times[d]); if (m) times[d] = { h: m[1], m: m[2] }; });
-      Object.assign(put, { teacher: p.teacher, part: p.part, days: (p.days || []).slice(), times: times, stick: !!x.stickBox });
+      Object.assign(put, { teacher: p.teacher || R.teacher, part: p.part || R.part, days: (p.days || []).slice(), times: times, stick: !!x.stickBox });
     } else if (h.sec === 'fee') {
       Object.assign(put, { cls: fl.pro ? 'pro' : 'hobby', count: x.count, dur: x.dur, unit: x.unit, pay: x.pay, total: x.total });
     } else {
@@ -800,13 +840,17 @@ class Component extends DCLogic {
       const H = Object.assign({}, this.state.hist);
       // '고치기'로 불러온 예정은 지우고 새로 저장 (바꾼 게 없으면 그대로 취소됨)
       const drop = Object.values(r.replace || {});
-      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(changed.map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], prev: was[k], patch: now[k] })));
+      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(changed.filter(k => k !== 'lesson').map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], prev: was[k], patch: now[k] })));
+      // 수업 정보는 출석부와 같이 쓰는 기록으로
+      let SH = (this.state.shared || []).filter(e => drop.indexOf(e.id) < 0);
+      if (changed.indexOf('lesson') >= 0) SH = SH.concat([Object.assign({ id: 'L' + Date.now(), name: now.basic.name, from: r.dates.lesson, at: Date.now() }, this.patchToShared(now.lesson), { prev: this.patchToShared(was.lesson) })]);
+      this.writeShared(SH);
       const basicDiff = this.diffFields(was.basic, now.basic);
       const L = basicDiff.length ? this.addLog(r.editId, { d: this.todayYmd(), kind: 'edit', title: '기본 정보 수정', diffs: basicDiff }) : this.state.log;
       const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d); return m ? (+m[2]) + '.' + (+m[3]) : d; };
       const note = (changed.length ? ' (' + changed.map(k => SECN[k] + ' ' + fmt(r.dates[k]) + '부터').join(', ') + ')' : '') + (dropped.length ? ' · ' + dropped.map(k => SECN[k]).join(', ') + ' 예정 취소' : '');
       this.flashRow(r.editId, 'edit');
-      this.setState({ changes: this.patchStudent(r.editId, base), hist: H, log: L, reg: null, toast: now.basic.name + ' 원생 정보를 수정했습니다' + note });
+      this.setState({ changes: this.patchStudent(r.editId, base), hist: H, shared: SH, log: L, reg: null, toast: now.basic.name + ' 원생 정보를 수정했습니다' + note });
       clearTimeout(this._tt);
       this._tt = setTimeout(() => this.setState({ toast: '' }), 3600);
       return;
