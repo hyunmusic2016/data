@@ -151,7 +151,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.21.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.22.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -276,6 +276,12 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
               <input disabled="{{reg.lock.cash}}" id="r_cashno" type="text" inputmode="numeric" defaultValue="{{reg.f.cashNo}}" onInput="{{reg.set.cashNo}}" style="{{reg.inp}}; flex: 1; min-width: 260px">
             </sc-if>
           </div>
+        </section>
+
+        <section aria-label="원생 메모" style="{{reg.card}}; grid-column: span 2">
+          <span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #EEF1F0; color: #3A4450"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16zM14 6l4 4"></path></svg></span>원생 메모</span>
+          <label for="r_note" style="position: absolute; left: -9999px">원생 메모</label>
+          <textarea id="r_note" rows="3" onInput="{{reg.set.note}}" style="width: 100%; min-height: 96px; padding: 12px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; line-height: 1.6; color: #17201C; resize: vertical">{{reg.f.note}}</textarea>
         </section>
       </div>
 
@@ -462,7 +468,8 @@ class Component extends DCLogic {
       { k: 'leave', label: '퇴원 날짜', w: '96px', g: null },
       { k: 'leaveReason', label: '퇴원 사유', w: '200px', left: true, g: null },
       { k: 'memo', label: '비고', w: '140px', left: true, g: null },
-      { k: 'rest', label: '휴원정보', w: '150px', left: true, g: null }
+      { k: 'rest', label: '휴원정보', w: '150px', left: true, g: null },
+      { k: 'note', label: '원생 메모', w: '240px', left: true, g: '메모' }
     ];
   }
   visibleCols() {
@@ -537,7 +544,7 @@ class Component extends DCLogic {
     days.forEach(dd => { const t = (r.times || {})[dd] || {}; if (t.h) times[dd] = t.h + ':' + String(t.m || '0').padStart(2, '0'); });
     const jm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(r.join || '');
     return {
-      basic: { name: (r.name || '').trim(), guardian: (r.guardian || '').trim(), age: r.age, phone: (r.phone || '').trim(), gphone: (r.gphone || '').trim(), join: jm ? jm[1].slice(2) + '.' + jm[2] + '.' + jm[3] : '', extra: { birth: r.birth, addr: r.addr, gender: r.gender } },
+      basic: { note: (r.note || '').trim(), name: (r.name || '').trim(), guardian: (r.guardian || '').trim(), age: r.age, phone: (r.phone || '').trim(), gphone: (r.gphone || '').trim(), join: jm ? jm[1].slice(2) + '.' + jm[2] + '.' + jm[3] : '', extra: { birth: r.birth, addr: r.addr, gender: r.gender } },
       lesson: { part: r.part, teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], extra: { times: times, stickBox: !!r.stick } },
       fee: { flags: { pro: r.cls === 'pro' ? 1 : 0 }, extra: { count: r.count, dur: r.dur, unit: r.unit, pay: r.pay, total: r.total } },
       cash: { flags: { cash: r.cash ? 1 : 0 }, extra: { cashType: r.cashType, cashNo: r.cash ? r.cashNo : '' } }
@@ -558,7 +565,7 @@ class Component extends DCLogic {
     const ymd = v => { const m = /^(\d{2,4})\.(\d{2})\.(\d{2})$/.exec(v || ''); return m ? (m[1].length === 2 ? '20' + m[1] : m[1]) + '-' + m[2] + '-' + m[3] : ''; };
     const digits = v => String(v || '').replace(/[^0-9]/g, '');
     const regObj = {
-      editId: s.id, cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
+      editId: s.id, note: s.note || '', cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
       gender: s.gender || '', age: s.age, teacher: s.teacher, part: s.part, days: days[0] === '변동' && !s.extra ? ['변동'] : days, times: times, idVal: null,
       stick: !!s.stick, join: ymd(s.join), cash: !!s.cashOn, cashType: ex.cashType || 'person', cashNo: ex.cashNo || '', err: '',
       count: s.count, dur: s.dur, unit: s.unit, pay: s.pay, total: s.total
@@ -583,7 +590,7 @@ class Component extends DCLogic {
     const tTxt = t => Object.keys(t || {}).map(d => (d === '변동' ? 'R' : d[0]) + ' ' + t[d]).join(', ') || '없음';
     const X = p => p.extra || {}, FL = p => p.flags || {};
     const F = [
-      ['이름', p => p.name], ['보호자 이름', p => p.guardian], ['연령', p => p.age], ['성별', p => X(p).gender], ['원생 연락처', p => p.phone], ['보호자 연락처', p => p.gphone],
+      ['원생 메모', p => p.note], ['이름', p => p.name], ['보호자 이름', p => p.guardian], ['연령', p => p.age], ['성별', p => X(p).gender], ['원생 연락처', p => p.phone], ['보호자 연락처', p => p.gphone],
       ['생년월일', p => X(p).birth], ['주소', p => X(p).addr], ['입원 연월일', p => p.join],
       ['담당 강사', p => p.teacher], ['수강 과목', p => p.part], ['수업 요일', p => p.day],
       ['수업 시간', p => X(p).times && tTxt(X(p).times)], ['드럼스틱 보관함', p => X(p).stickBox == null ? undefined : X(p).stickBox ? '사용' : '사용 안 함'],
@@ -762,7 +769,7 @@ class Component extends DCLogic {
   }
   openReg() {
     const fee = this.regDefaults('hobby');
-    this.setState({ reg: Object.assign({ cls: 'hobby', name: '', guardian: '', phone: '', gphone: '', birth: '', addr: '', gender: '', age: '학생', teacher: '', part: '', days: [], times: {}, idVal: null, stick: false, join: (() => { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); })(), cash: false, cashType: 'person', cashNo: '', err: '' }, fee) });
+    this.setState({ reg: Object.assign({ cls: 'hobby', name: '', guardian: '', phone: '', gphone: '', birth: '', addr: '', gender: '', age: '학생', teacher: '', part: '', days: [], times: {}, idVal: null, stick: false, join: (() => { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); })(), cash: false, cashType: 'person', cashNo: '', note: '', err: '' }, fee) });
   }
   setReg(patch) {
     this.setState({ reg: Object.assign({}, this.state.reg, patch) });
@@ -804,7 +811,7 @@ class Component extends DCLogic {
       this._tt = setTimeout(() => this.setState({ toast: '' }), 3600);
       return;
     }
-    const rec = { id: manual || this.nextId(), manualId: !!manual, part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, leave: '', memo: r.stick ? '스틱 보관함' : '', rest: '', status: 'act', flags: { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }, extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
+    const rec = { note: (r.note || '').trim(), id: manual || this.nextId(), manualId: !!manual, part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, leave: '', memo: r.stick ? '스틱 보관함' : '', rest: '', status: 'act', flags: { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }, extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
     this.flashRow(rec.id, 'new');
     this.setState({ added: (this.state.added || []).concat([rec]), reg: null, tab: 'act', q: '', filt: {}, toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
     clearTimeout(this._tt);
@@ -965,6 +972,7 @@ class Component extends DCLogic {
         cash: () => s.cashOn ? CH('발급', ['#E6F6F6', '#007E82'], 44) : T(''),
         stick: () => s.stick ? CH('사용', ['#D7EFDD', '#2F6B43'], 44) : T(''),
         memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
+        note: () => TL(s.note, 'font-size: 13px; color: #3A4450'),
         restDate: () => T(s.restDate, 'font-size: 13px; color: #9A5B00; font-weight: 700'),
         restReason: () => TL(s.restReason, 'font-size: 13px; color: #3A4450'),
         restTicket: () => T(s.restTicket, 'font-size: 12px; color: #3A4450'),
@@ -1115,7 +1123,7 @@ class Component extends DCLogic {
         applyLbl: 'display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 6px 0 12px; border-radius: 12px; background: #EEF1F0; color: #3A4450; font-size: 13px; font-weight: 700; cursor: pointer',
         applyInp: 'width: 132px; height: 30px; padding: 0 6px; box-sizing: border-box; border: none; border-radius: 8px; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 700; color: #17201C; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.12); cursor: pointer',
         idTxt: R.editId != null ? String(R.editId) : R.idVal != null ? R.idVal : String(this.nextId()), idLock: R.editId != null ? 'true' : 'false', title: R.editId != null ? '원생 정보 수정' : '원생 등록', saveLabel: R.editId != null ? '저장하기' : '등록하기', err: R.err || '',
-        f: { name: R.name, guardian: R.guardian, phone: R.phone, gphone: R.gphone, birth: R.birth, addr: R.addr, countTxt: fmtN(R.count), durTxt: fmtN(R.dur), unitTxt: fmtN(R.unit), payTxt: fmtN(R.pay), totalTxt: fmtN(R.total), cashNo: R.cashNo, join: R.join },
+        f: { note: R.note || '', name: R.name, guardian: R.guardian, phone: R.phone, gphone: R.gphone, birth: R.birth, addr: R.addr, countTxt: fmtN(R.count), durTxt: fmtN(R.dur), unitTxt: fmtN(R.unit), payTxt: fmtN(R.pay), totalTxt: fmtN(R.total), cashNo: R.cashNo, join: R.join },
         close: () => this.setState({ reg: null }),
         save: () => this.saveReg(),
         classes: [['hobby', '취미반'], ['pro', '전문반']].map(o => ({ label: o[1], on: R.cls === o[0] ? 'true' : 'false', pick: () => this.setReg(Object.assign({ cls: o[0] }, this.regDefaults(o[0]))),
@@ -1153,6 +1161,7 @@ class Component extends DCLogic {
           name: e => this.setReg({ name: e.target.value, err: '' }),
           guardian: e => this.setReg({ guardian: e.target.value }),
           join: e => this.setReg({ join: e.target.value }),
+          note: e => this.setReg({ note: e.target.value }),
           d_lesson: e => this.setReg({ dates: Object.assign({}, R.dates, { lesson: e.target.value }), err: '' }),
           d_fee: e => this.setReg({ dates: Object.assign({}, R.dates, { fee: e.target.value }), err: '' }),
           d_cash: e => this.setReg({ dates: Object.assign({}, R.dates, { cash: e.target.value }), err: '' }),
