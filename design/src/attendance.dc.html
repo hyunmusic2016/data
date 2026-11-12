@@ -9,7 +9,8 @@
 <body>
 <x-dc>
 <helmet>
-<style>.aflash>*{animation:aflash 3.6s ease-out}
+<style>.phead{position:sticky;top:-77px;z-index:6;background:#FFFFFF;box-shadow:0 6px 10px -8px rgba(23,32,28,.25)}@media print{.phead{position:static!important;box-shadow:none!important}}
+.aflash>*{animation:aflash 3.6s ease-out}
 @keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
 .flashtag{animation:tagfade 4s ease-out forwards}
 @keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
@@ -45,7 +46,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 
 
     <sc-if value="{{isSheet}}" hint-placeholder-val="{{ true }}">
-    <section aria-label="출석부" tabIndex="0" onKeyDown="{{onKey}}" style="outline: none; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow-x: auto; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+    <section aria-label="출석부" tabIndex="0" onKeyDown="{{onKey}}" style="outline: none; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow: clip; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
       <div style="min-width: 1080px; font-size: 13px">
 
         <div class="phead" style="{{gridStyle}}">
@@ -136,7 +137,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.6</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
