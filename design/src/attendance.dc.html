@@ -87,7 +87,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                 <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
-                    <span style="{{r.subStyle}}">{{r.subText}}</span>
+                    <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span>
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.4</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1224,7 +1224,11 @@ class Component extends DCLogic {
       sibs.forEach(x => { outs[x.id] = []; });
       let marks = [];
       for (let i = 0; i < used; i++) marks.push('수');
+      // 이번 달에 쓴 수강권들의 레슨시작일 (끝난 수강권도 남겨 둠)
+      let doneStarts = [];
+      const keepStart = (fd, last) => { if (fd && last && last.getMonth() === MON - 1 && doneStarts.indexOf(fd) < 0) doneStarts.push(fd); };
       const nextTicket = () => {
+        keepStart(firstDate, lastLesson);
         if (queue.length) { T = queue.shift(); payDate = after(queueD.shift()); paid = true; prevT = 0; prevMarks = []; }
         else { prevT = T; prevMarks = marks.slice(); T = T0; paid = false; payDate = null; }
         used = 0; marks = []; firstDate = ''; tCells = [];
@@ -1273,6 +1277,7 @@ class Component extends DCLogic {
                 tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
               } else {
                 const covered = tCells.slice(0, c), rest = tCells.slice(c);
+                if (covered.length) { const lc = covered[covered.length - 1]; keepStart(covered[0].m + '/' + covered[0].d, new Date(2026, lc.m - 1, lc.d)); }
                 covered.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
                 prevT = c; prevMarks = marks.slice(0, c);
                 marks = marks.slice(c); used = used - c; T = T0; paid = false; payDate = null;
@@ -1281,17 +1286,18 @@ class Component extends DCLogic {
                 firstDate = rest.length ? rest[0].m + '/' + rest[0].d : '';
               }
             } else if (used < T) { queue.push(c); queueD.push(new Date(2026, Mm - 1, d)); }
-            else { payDate = after(new Date(2026, Mm - 1, d)); T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
+            else { keepStart(firstDate, lastLesson); payDate = after(new Date(2026, Mm - 1, d)); T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
           }
           if (cur) outs[x.id].push(o);
         });
       };
       for (let m = M0; m < MON; m++) runMonth(m, false);
       const startUsed = used, startPaid = paid;
+      doneStarts = [];
       runMonth(MON, true);
       // 지금 수강권을 다 썼고 대기 중인 수강권이 있으면 바로 다음 수강권을 보여 준다
       if (paid && used >= T && queue.length) nextTicket();
-      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, payDate: payDate, marks: marks,
+      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, payDate: payDate, doneStarts: doneStarts.slice(), marks: marks,
         done: paid && used >= T, needPay: !paid, since: firstDate, startUsed: startUsed, startPaid: startPaid };
       calcCache[k] = {};
       sibs.forEach(x => { calcCache[k][x.id] = Object.assign({ cells: outs[x.id] }, res); });
@@ -1342,7 +1348,8 @@ class Component extends DCLogic {
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
         const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
         const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
-        this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: r.startUsed || '', since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells });
+        const expRow = { g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: r.startUsed || '', since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells };
+        this._exp.push(expRow);
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
@@ -1362,13 +1369,19 @@ class Component extends DCLogic {
         // 수강권 아래 줄
         const canPlan = !r.firstDate && r.paid && !r.done && r.used === 0 && s.g !== '퇴휴';
         const plan = canPlan ? planOf(s, r) : null;
-        const tk = !r.paid && r.newReg && r.used === 0 ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 700']
+        // 레슨시작일은 무조건 남긴다: 이번 달에 쓴 수강권들의 시작일을 쉼표로 이어 쓰고, 그 오른쪽에 지금 상태(수업완료·미납·예정)
+        const starts = r.doneStarts.concat(r.paid && r.firstDate && r.doneStarts.indexOf(r.firstDate) < 0 ? [r.firstDate] : []);
+        const tk = !r.paid && r.newReg && r.used === 0 && !starts.length ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 700']
           : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 800']
           : r.done ? ['수업완료', 'color: #007E82; font-weight: 800']
-          : r.firstDate ? [r.firstDate, 'color: #8A949E']
+          : r.firstDate ? ['', '']
           : r.used > 0 ? ['—', 'color: #8A949E']
           : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
           : ['예정일 입력', 'color: #5B7FB8; font-weight: 600; text-decoration: underline'];
+        const subParts = [];
+        if (starts.length) subParts.push({ t: starts.join(', ') + (tk[0] ? (/\(예정\)$/.test(tk[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
+        if (tk[0]) subParts.push({ t: tk[0], style: tk[1] });
+        expRow.since = subParts.map(x => x.t).join('');
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
           name: s.name.replace('$', ''),
@@ -1387,7 +1400,7 @@ class Component extends DCLogic {
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
           dotGroups: dotGroups, dotLines: dotLines,
-          subText: tk[0],
+          subText: tk[0], subParts: subParts,
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
           queueTxt: qn ? '+' + qn + ' 대기' : '',
           tkClick: () => { if (canPlan) this.openTkPlan(s, plan); },
