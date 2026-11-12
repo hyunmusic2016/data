@@ -121,7 +121,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.4</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -160,9 +160,21 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <sc-if value="{{pop.isDel}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 6px; padding: 18px 16px; border-radius: 16px; background: #FEF3F1; border: 1px solid #F6D5CD; text-align: center">
           <span style="font-size: 20px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">삭제하시겠습니까?</span>
-          <span style="font-size: 13px; color: #5E6873">{{pop.delText}}</span>
+          <span style="font-size: 13px; color: #5E6873; word-break: keep-all">{{pop.delText}}</span>
           <span style="font-size: 12px; color: #8A949E">삭제한 뒤에도 Ctrl+Z로 되돌릴 수 있습니다.</span>
         </div>
+        <sc-if value="{{pop.delBoth}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <button type="button" class="pbtn" onClick="{{pop.delAtt}}" style="--sh: #E9B3A5; position: relative; height: 52px; border-radius: 16px; border: 1px solid #F3C8BC; background: linear-gradient(180deg, #FFFFFF 0%, #FCE3DC 55%); color: #C2410C; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 4px">출결·보강·연기만 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #F3C8BC; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">1</span></button>
+            <button type="button" class="pbtn" onClick="{{pop.delPay}}" style="--sh: #E0CB8F; position: relative; height: 52px; border-radius: 16px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 4px">수납 내역만 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #EAD9A6; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">2</span></button>
+            <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #D5DBD8; position: relative; height: 52px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #17201C; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; margin-bottom: 4px">둘 다 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #DDE2DF; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">3</span></button>
+          </div>
+          <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
+            <span><b style="color: #5E6873">1·2·3</b> 선택</span>
+            <span><b style="color: #5E6873">Esc</b> 취소</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{pop.delOne}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; gap: 10px">
           <button type="button" class="pbtn" onClick="{{pop.close}}" style="--sh: #D5DBD8; flex: 1; height: 54px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #3A4450; font-family: inherit; font-size: 17px; font-weight: 700; cursor: pointer; margin-bottom: 4px">취소</button>
           <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #E9B3A5; flex: 1; height: 54px; border-radius: 16px; border: 1px solid #F3C8BC; background: linear-gradient(180deg, #FFFFFF 0%, #FCE3DC 55%); color: #C2410C; font-family: inherit; font-size: 17px; font-weight: 800; cursor: pointer; margin-bottom: 4px">삭제</button>
@@ -171,6 +183,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span><b style="color: #5E6873">Enter</b> 삭제</span>
           <span><b style="color: #5E6873">Esc</b> 취소</span>
         </div>
+        </sc-if>
       </sc-if>
       <sc-if value="{{pop.isMk}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F4F7FD; border: 1px solid #DCE5F7">
@@ -374,7 +387,7 @@ class Component extends DCLogic {
   openPop(mode) {
     const s = this.state.sel;
     if (!s) return;
-    const W = 360, H = mode === 'del' ? 330 : 470;
+    const W = 360, H = mode === 'del' ? (this.delBoth ? 470 : 330) : 470;
     const x = Math.round((window.innerWidth - W) / 2), y = Math.max(8, Math.round((window.innerHeight - H) / 2));
     this.setState({ pop: { x: Math.max(8, x), y: y, mode: mode } });
   }
@@ -425,12 +438,37 @@ class Component extends DCLogic {
     this.commit(patch);
     this.focusSheet();
   }
+  clearPart(which) {
+    const cells = this.selCells();
+    if (!cells.length) return;
+    const m = this.sheetList()[this.state.sheet][1] || 11;
+    const cur = this.monthEvents(m);
+    const items = which === 'pay'
+      ? cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' }))
+      : cells.filter(c => (cur[c.sid] || {})[c.d] !== 'V').map(c => ({ m: m, sid: c.sid, d: c.d, v: '' }));
+    const patch = this.writeCells(items, '');
+    patch.pop = null;
+    this.commit(patch);
+    this.focusSheet();
+  }
+  delKey(e) {
+    const k = e.key;
+    if (k === 'Escape') { e.preventDefault(); this.closePop(); return true; }
+    if (this.delBoth) {
+      if (k === '1') { e.preventDefault(); this.clearPart('att'); return true; }
+      if (k === '2') { e.preventDefault(); this.clearPart('pay'); return true; }
+      if (k === '3' || k === 'Enter') { e.preventDefault(); this.applyMark(''); return true; }
+    } else if (k === 'Enter') { e.preventDefault(); this.applyMark(''); return true; }
+    e.preventDefault();
+    return true;
+  }
   askDelete() {
     const m = this.sheetList()[this.state.sheet][1] || 11;
     const cur = this.monthEvents(m);
     const filled = this.selCells().filter(c => { const r = cur[c.sid] || {}; return r[c.d] || r['p' + c.d]; }).length;
     if (!filled) return;
     this.delCount = filled;
+    this.delBoth = this.selCells().some(c => { const r = cur[c.sid] || {}; const att = r[c.d] && r[c.d] !== 'V'; return att && (r['p' + c.d] || false); });
     this.openPop('del');
   }
   saveMakeup() {
@@ -493,6 +531,7 @@ class Component extends DCLogic {
       return;
     }
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    if (this.state.pop && this.state.pop.mode === 'del') { this.delKey(e); return; }
     const s = this.state.sel;
     if (!s) return;
     const SHORT = { '1': '수', '2': '결', '4': '연', '0': 'V' };
@@ -729,7 +768,11 @@ class Component extends DCLogic {
       isMain: !!P && P.mode === 'main',
       isMk: !!P && P.mode === 'mk',
       isDel: !!P && P.mode === 'del',
-      delText: '입력된 ' + (this.delCount || 0) + '칸의 표시가 지워집니다.',
+      delText: this.delBoth ? '출결과 수납이 함께 있는 칸입니다. 무엇을 지울까요?' : '입력된 ' + (this.delCount || 0) + '칸의 표시가 지워집니다.',
+      delBoth: !!P && P.mode === 'del' && !!this.delBoth,
+      delOne: !!P && P.mode === 'del' && !this.delBoth,
+      delAtt: () => this.clearPart('att'),
+      delPay: () => this.clearPart('pay'),
       confirmDel: () => this.applyMark(''),
       title: !first ? '' : popCells.length === 1 ? sidName[first.sid] : popCells.length + '칸 선택',
       monLabel: MON + '월',
@@ -757,7 +800,7 @@ class Component extends DCLogic {
       key: e => {
         if (e.key === 'Escape') { e.preventDefault(); this.closePop(); return; }
         if (e.key === 'Enter' && P && P.mode === 'mk') { e.preventDefault(); this.saveMakeup(); return; }
-        if (e.key === 'Enter' && P && P.mode === 'del') { e.preventDefault(); this.applyMark(''); return; }
+        if (P && P.mode === 'del') { this.delKey(e); return; }
         if (e.target && e.target.tagName === 'INPUT') return;
         const SH = { '1': '수', '2': '결', '4': '연', '0': 'V' };
         if (e.key in SH) { e.preventDefault(); this.applyMark(SH[e.key]); }
