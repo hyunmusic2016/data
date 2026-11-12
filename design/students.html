@@ -138,7 +138,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.18.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.18.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -284,8 +284,8 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <button type="button" onClick="{{sd.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
       <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="color: #17201C">{{sd.name}}</b> 원생 (등록번호 {{sd.id}})을 {{sd.kindLabel}} 처리합니다.</span>
-      <sc-if value="{{sd.dated}}" hint-placeholder-val="{{ true }}">
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{sd.dateLabel}}<input id="sd_date" type="date" defaultValue="{{sd.date}}" onChange="{{sd.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <sc-if value="{{sd.hasReason}}" hint-placeholder-val="{{ true }}">
         <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{sd.reasonLabel}}<input id="sd_memo" type="text" defaultValue="{{sd.memo}}" onInput="{{sd.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       </sc-if>
       <div style="display: flex; gap: 10px; margin-top: 2px">
@@ -476,7 +476,7 @@ class Component extends DCLogic {
     const why = S.memo.trim();
     const patch = S.kind === 'rest' ? { status: 'rest', rest: '', restDate: ymd, restReason: why, restTicket: S.ticket }
       : S.kind === 'out' ? { status: 'out', leave: ymd, leaveReason: why }
-      : { status: 'act', rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' };
+      : { status: 'act', backDate: ymd, rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' };
     const word = { rest: '휴원', out: '퇴원', back: '재원으로 복귀' }[S.kind];
     this.setState({ changes: this.patchStudent(S.id, patch), stat: null, tab: S.kind === 'back' ? 'act' : this.state.tab, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
     clearTimeout(this._tt);
@@ -965,9 +965,9 @@ class Component extends DCLogic {
       sd: (() => {
         const S = st.stat;
         if (!S) return { open: false };
-        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: ['복귀', '', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
+        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: ['복귀', '복귀 날짜', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
         return {
-          open: true, dated: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, id: S.id,
+          open: true, hasReason: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, id: S.id,
           dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
           chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: ' + K[3] + '; color: ' + K[4],
           goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
