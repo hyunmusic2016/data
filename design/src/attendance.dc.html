@@ -125,12 +125,32 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 
   <nav aria-label="시트" class="noprint" style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: stretch; gap: 2px; background: #FFFFFF; border-top: 1px solid #DDE2DF; padding: 0 12px; box-shadow: 0 -2px 8px rgba(23, 32, 28, 0.04); overflow-x: auto">
     <button type="button" onClick="{{addSheet}}" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
+    <button type="button" onClick="{{sm.toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
-      <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
+      <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.6.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.7.0</span>
   </nav>
+  <sc-if value="{{sm.anyOpen}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{sm.closeAll}}" onContextMenu="{{sm.closeAll}}" style="position: fixed; inset: 0; z-index: 30"></div>
+  </sc-if>
+  <sc-if value="{{sm.ctxOpen}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" role="menu" style="{{sm.ctxStyle}}">
+      <button type="button" role="menuitem" onClick="{{sm.hide}}" disabled="{{sm.hideDis}}" style="{{sm.hideStyle}}">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4 10 7a11 11 0 0 1-2.7 3.9M6.1 6.1A11 11 0 0 0 2 12c1 3 5 7 10 7a9.8 9.8 0 0 0 4.1-.9"></path></svg>
+        시트 숨기기
+      </button>
+    </div>
+  </sc-if>
+  <sc-if value="{{sm.listOpen}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" role="menu" aria-label="모든 시트" style="position: fixed; left: 12px; bottom: 44px; z-index: 31; width: 300px; max-height: 60vh; overflow: auto; padding: 6px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.16)">
+      <div style="padding: 6px 10px 8px; font-size: 11px; font-weight: 700; color: #8A949E">모든 시트 · 최신순</div>
+      <sc-for list="{{sm.items}}" as="it" hint-placeholder-count="5">
+        <button type="button" role="menuitem" onClick="{{it.pick}}" style="{{it.style}}"><span style="{{it.dot}}"></span><span style="flex: 1; text-align: left; white-space: nowrap">{{it.name}}</span><span style="{{it.tagStyle}}">숨김</span></button>
+      </sc-for>
+    </div>
+  </sc-if>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div role="dialog" aria-label="출결 입력" onKeyDown="{{pop.key}}" style="{{pop.style}}">
@@ -228,6 +248,9 @@ class Component extends DCLogic {
     super(props);
     this.dragging = false;
     this.state = {
+      hiddenSheets: [],
+      sheetCtx: null,
+      sheetList: false,
       sel: null,
       past: [],
       future: [],
@@ -927,18 +950,52 @@ class Component extends DCLogic {
       unitStyle: 'font-size: 14px; font-weight: 600; color: ' + (P && P.mkOn ? '#5E6873' : '#B7C0BC')
     };
 
-    const sheetTabs = sheets.map((t, i) => {
+    const hidden = st.hiddenSheets || [];
+    const sheetTabs = sheets.map((t, i) => ({ t: t, i: i })).filter(o => hidden.indexOf(o.t[0]) < 0).map(o => {
+      const t = o.t, i = o.i;
       const on = i === st.sheet, att = t[1] > 0;
       const col = att ? '#00A6AB' : '#8FB5E0';
       return {
         name: t[0], on: on ? 'true' : 'false',
-        pick: () => this.setState({ sheet: i }),
+        pick: () => this.setState({ sheet: i, sheetCtx: null, sheetList: false }),
+        ctx: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ sheetCtx: { i: i, x: e.clientX, y: e.clientY }, sheetList: false }); },
         dot: 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
         style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? col : 'transparent') + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' +
           (on ? 'background: #EEF8F8; color: #17201C; font-weight: 700' : 'background: transparent; color: #5E6873; font-weight: 500')
       };
     });
     const nextM = this.state.extra.length ? this.state.extra[0] + 1 : 12;
+    const visibleCount = sheets.length - hidden.filter(h => sheets.some(t => t[0] === h)).length;
+    const ctx = st.sheetCtx;
+    const ordered = sheets.map((t, i) => ({ t: t, i: i })).sort((a, b) => (b.t[0].match(/(\d+)월/) ? +b.t[0].match(/(\d+)월/)[1] : 0) - (a.t[0].match(/(\d+)월/) ? +a.t[0].match(/(\d+)월/)[1] : 0) || (b.t[1] > 0) - (a.t[1] > 0));
+    const sm = {
+      anyOpen: !!ctx || !!st.sheetList,
+      ctxOpen: !!ctx,
+      listOpen: !!st.sheetList,
+      closeAll: e => { if (e && e.preventDefault && e.type === 'contextmenu') e.preventDefault(); this.setState({ sheetCtx: null, sheetList: false }); },
+      toggleList: () => this.setState({ sheetList: !st.sheetList, sheetCtx: null }),
+      ctxStyle: 'position: fixed; left: ' + (ctx ? Math.min(ctx.x, window.innerWidth - 180) : 0) + 'px; top: ' + (ctx ? Math.max(8, ctx.y - 52) : 0) + 'px; z-index: 31; width: 168px; padding: 4px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 10px; box-shadow: 0 10px 28px rgba(23, 32, 28, 0.16)',
+      hideDis: visibleCount <= 1,
+      hideStyle: 'display: flex; align-items: center; gap: 8px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; background: #FFFFFF; font-family: inherit; font-size: 13px; text-align: left; cursor: ' + (visibleCount <= 1 ? 'not-allowed; color: #B7C0BC' : 'pointer; color: #17201C'),
+      hide: () => {
+        if (!ctx || visibleCount <= 1) return;
+        const name = sheets[ctx.i][0];
+        const nh = hidden.concat([name]);
+        let ns = st.sheet;
+        if (ns === ctx.i) { const nx = sheets.findIndex(t => nh.indexOf(t[0]) < 0); ns = nx < 0 ? 0 : nx; }
+        this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null });
+      },
+      items: ordered.map(o => {
+        const isH = hidden.indexOf(o.t[0]) >= 0, on = o.i === st.sheet;
+        return {
+          name: o.t[0],
+          pick: () => this.setState({ hiddenSheets: hidden.filter(h => h !== o.t[0]), sheet: o.i, sheetList: false }),
+          dot: 'width: 7px; height: 7px; border-radius: 50%; flex: none; background: ' + (o.t[1] > 0 ? '#00A6AB' : '#8FB5E0') + (isH ? '; opacity: 0.4' : ''),
+          style: 'display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; font-family: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'background: #EEF8F8; color: #17201C; font-weight: 700' : 'background: #FFFFFF; font-weight: 500; color: ' + (isH ? '#8A949E' : '#17201C')),
+          tagStyle: isH ? 'font-size: 10px; font-weight: 700; color: #5E6873; background: #EEF1F0; padding: 2px 6px; border-radius: 5px' : 'display: none'
+        };
+      })
+    };
 
     const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
     const TEACHERS = [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
@@ -961,6 +1018,7 @@ class Component extends DCLogic {
       teacherPart: curT[1] === '원장' ? '원장 · 담당 강사' : curT[1] + ' 담당 강사',
       teacherInitial: curT[0].slice(0, 1),
       teacherAvatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: ' + curC[0] + '; color: ' + curC[1] + '; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700',
+      sm: sm,
       sheetTabs: sheetTabs,
       addSheet: () => { if (nextM <= 12) this.setState({ extra: [nextM].concat(this.state.extra), sheet: 0 }); },
       isSheet: cur[1] > 0,
