@@ -121,7 +121,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.2</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -417,12 +417,8 @@ class Component extends DCLogic {
     } else if (!v) {
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })), cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: '' })));
     } else {
-      const isMk = c => (cur[c.sid] || {})[c.d] === 'M';
-      const stOf = c => isMk(c) ? (cur[c.sid] || {})['s' + c.d] : (cur[c.sid] || {})[c.d];
-      const allSame = cells.every(c => stOf(c) === v);
-      items = cells.map(c => (isMk(c) && (v === '수' || v === '결'))
-        ? { m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: allSame ? '' : v }
-        : { m: m, sid: c.sid, d: c.d, v: allSame ? '' : v });
+      const allSame = cells.every(c => (cur[c.sid] || {})[c.d] === v);
+      items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: allSame ? '' : v }));
     }
     const patch = this.writeCells(items, '');
     patch.pop = null;
@@ -661,7 +657,7 @@ class Component extends DCLogic {
               text: x.text.replace('!', ''), chip: x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
-              title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : '',
+              title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
               down: e => this.selDown(e, R, x.d),
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
@@ -706,7 +702,7 @@ class Component extends DCLogic {
     const LT = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const WD = ['일', '월', '화', '수', '목', '금', '토'];
     const curRow = popCells.length === 1 ? (this.monthEvents(MON)[first.sid] || {}) : {};
-    const curV = popCells.length === 1 ? (curRow[first.d] === 'V' ? '' : curRow[first.d] === 'M' ? (curRow['s' + first.d] || '') : (curRow[first.d] || '')) : '';
+    const curV = popCells.length === 1 ? (curRow[first.d] === 'V' ? '' : (curRow[first.d] || '')) : '';
     const curPay = popCells.length === 1 && !!(curRow['p' + first.d] || curRow[first.d] === 'V');
     const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
     const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center';
