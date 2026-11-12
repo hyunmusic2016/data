@@ -120,7 +120,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.7</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -186,6 +186,7 @@ class Component extends DCLogic {
       future: [],
       pop: null,
       mkTimes: {},
+      mkLinks: {},
       teacher: 0,
       sheet: 0,
       extra: [],
@@ -365,7 +366,8 @@ class Component extends DCLogic {
       const evAll = Object.assign({}, this.monthEvents(m));
       byMonth[mk].forEach(it => {
         const row = Object.assign({}, evAll[it.sid] || {});
-        if (v) row[it.d] = v; else delete row[it.d];
+        const val = it.v !== undefined ? it.v : v;
+        if (val) row[it.d] = val; else delete row[it.d];
         evAll[it.sid] = row;
       });
       if (m === 11) patch.ev = evAll; else bm[m] = evAll;
@@ -390,11 +392,17 @@ class Component extends DCLogic {
     const mt = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dv);
     if (!mt) { if (dEl) dEl.focus(); return; }
     const m = +mt[2], d = +mt[3];
-    const sids = [...new Set(this.selCells().map(c => c.sid))];
-    const patch = this.writeCells(sids.map(sid => ({ m: m, sid: sid, d: d })), '보');
+    const curM = this.sheetList()[this.state.sheet][1] || 11;
+    const cells = this.selCells();
+    const sids = [...new Set(cells.map(c => c.sid))];
+    const items = cells.map(c => ({ m: curM, sid: c.sid, d: c.d, v: '보' })).concat(sids.map(sid => ({ m: m, sid: sid, d: d, v: 'M' })));
+    const patch = this.writeCells(items, '');
     const times = Object.assign({}, this.state.mkTimes);
+    const links = Object.assign({}, this.state.mkLinks);
     sids.forEach(sid => { times[m + '-' + d + '-' + sid] = tv; });
+    cells.forEach(c => { links[curM + '-' + c.d + '-' + c.sid] = m + '/' + d + (tv ? ' ' + tv : ''); });
     patch.mkTimes = times;
+    patch.mkLinks = links;
     patch.pop = null;
     this.commit(patch);
     this.focusSheet();
@@ -455,7 +463,7 @@ class Component extends DCLogic {
     const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
     const circ = (n, filled) => 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A';
     const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
-    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#E6F6F6', '#007E82') };
+    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#E6F6F6', '#007E82'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em' };
     const chipFor = t => {
       if (!t) return 'display: none';
       if (/^(1[0-2]|[1-9])$/.test(t)) return circ(+t, false);
@@ -508,20 +516,22 @@ class Component extends DCLogic {
       const out = [];
       for (let d = 1; d <= ND; d++) {
         const v = e[d];
-        let text = '', what = '';
-        if (v === '수' || v === '보') {
+        let text = '', what = '', kind = v || '';
+        if (v === '수' || v === 'M') {
           if (used >= T) { used = 0; carry = 0; pending = true; since = ''; }
           used++; lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
-          text = v === '보' ? '보' : String(used) + (used === T ? '!' : '');
-          what = v === '보' ? '보강 (' + used + '회차)' : used + '회차 수업';
-        } else if (v === '결') { absent++; text = '결' + absent; what = '결석'; }
+          const mt0 = st.mkTimes[MON + '-' + d + '-' + s.id] || '';
+          text = v === 'M' ? (mt0 || '보강') : String(used) + (used === T ? '!' : '');
+          what = v === 'M' ? used + '회차 보강 수업' + (mt0 ? ' ' + mt0 : '') : used + '회차 수업';
+          kind = v;
+        } else if (v === '보') { text = '보'; what = '보강 예정 (결석분)'; kind = '보'; } else if (v === '결') { absent++; text = '결' + absent; what = '결석'; }
         else if (v === '연') { text = '연'; what = '연기'; }
         else if (v === 'V') {
           text = '₩'; what = '입금 확인';
           if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; }
           since = MON + '/' + d;
         }
-        out.push({ d: d, text: text, what: what });
+        out.push({ d: d, text: text, what: what, kind: kind });
       }
       const needPay = pending || used >= T;
       return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay };
@@ -572,10 +582,10 @@ class Component extends DCLogic {
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const bg = s.rowBg ? rowBg : x.d === TODAY ? '#FFFBEB' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
+              text: x.text.replace('!', ''), chip: x.kind === 'M' ? MARK['M'] : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
-              title: x.text === '보' && st.mkTimes[MON + '-' + x.d + '-' + s.id] ? '보강 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
+              title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : '',
               down: e => this.selDown(e, R, x.d),
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
