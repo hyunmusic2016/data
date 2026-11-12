@@ -6,6 +6,7 @@
 <title>학원 출석부</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <style>
+.qedlg [disabled]{opacity:.42;cursor:not-allowed!important}
 body{margin:0;background:#F3F5F4}
 a{color:#1F7A5A}a:hover{color:#165C43}
 button{font-family:inherit}
@@ -73,7 +74,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span><span style="{{g.countStyle}}">{{g.count}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div style="display: contents">
-                <span style="{{r.nameStyle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
+                <span style="{{r.nameStyle}}" onDblClick="{{r.quick}}" title="두 번 누르면 수업 요일·시간·드럼스틱 보관함 간단 수정"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span style="{{r.ticketCell}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span>
@@ -129,8 +130,42 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.22.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.23.0</span>
   </nav>
+  <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint qedlg" role="dialog" aria-label="수업 정보 간단 수정" onKeyDown="{{qe.key}}" tabIndex="-1" id="qeDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 480px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{qe.name}}</span>
+        <span style="font-size: 14px; color: #5E6873">수업 정보 간단 수정</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{qe.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #EEF1F0; font-size: 14px; font-weight: 700; color: #3A4450"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="qe_date" type="date" defaultValue="{{qe.date}}" onChange="{{qe.setDate}}" style="margin-left: auto; width: 150px; height: 34px; padding: 0 8px; box-sizing: border-box; border: none; border-radius: 9px; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; color: #17201C; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.12)"></label>
+      <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수업 요일
+        <div role="group" aria-label="수업 요일" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{qe.dayOpts}}" as="o" hint-placeholder-count="7"><button type="button" aria-pressed="{{o.on}}" disabled="{{qe.lock}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+        </div>
+      </div>
+      <sc-if value="{{qe.hasTimes}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수업 시간
+          <sc-for list="{{qe.timeRows}}" as="t" hint-placeholder-count="1">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span style="{{t.chip}}">{{t.label}}</span>
+              <label for="{{t.hid}}" style="position: absolute; left: -9999px">{{t.label}} 시</label><input id="{{t.hid}}" type="number" min="1" max="12" defaultValue="{{t.h}}" disabled="{{qe.lock}}" onInput="{{t.setH}}" style="{{qe.numInp}}"><span style="font-size: 14px; color: #5E6873">시</span>
+              <label for="{{t.mid}}" style="position: absolute; left: -9999px">{{t.label}} 분</label><input id="{{t.mid}}" type="number" min="0" max="59" step="10" defaultValue="{{t.m}}" disabled="{{qe.lock}}" onInput="{{t.setM}}" style="{{qe.numInp}}"><span style="font-size: 14px; color: #5E6873">분</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+      <button type="button" role="checkbox" aria-checked="{{qe.stickOn}}" disabled="{{qe.lock}}" onClick="{{qe.stickToggle}}" style="{{qe.stickStyle}}"><span style="{{qe.stickBox}}">✓</span>드럼스틱 보관함 사용</button>
+      <span style="font-size: 13px; font-weight: 600; color: #C2410C">{{qe.err}}</span>
+      <div style="display: flex; gap: 10px">
+        <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장하기</button>
+      </div>
+    </div>
+  </sc-if>
   <sc-if value="{{cn.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{cn.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="alertdialog" aria-label="현금영수증 발급 안내" onKeyDown="{{cn.key}}" tabIndex="-1" id="cashNotice" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
@@ -296,6 +331,8 @@ class Component extends DCLogic {
     super(props);
     this.dragging = false;
     this.state = {
+      qe: null,
+      plans: {},
       cashNotice: null,
       printOpen: false,
       printLayout: 'fit',
@@ -349,6 +386,63 @@ class Component extends DCLogic {
     };
   }
   students() {
+    // 간단 수정(수업 요일·시간·드럼스틱)으로 바뀐 내용을 보고 있는 달에 맞춰 반영
+    const base = this.baseRows();
+    const plans = this.state.plans || {};
+    if (!Object.keys(plans).length) return base;
+    const MON = (this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [])[1] || 11;
+    const p2 = n => String(n).padStart(2, '0');
+    const mStart = '2026-' + p2(MON) + '-01', mEnd = '2026-' + p2(MON) + '-' + p2(new Date(2026, MON, 0).getDate());
+    const today = this.todayYmd();
+    const done = {}, out = [];
+    base.forEach(r => {
+      const key = String(r.sid || r.id);
+      const P = (plans[key] || []).filter(p => p.from <= mEnd).sort((a, b) => a.from < b.from ? -1 : 1);
+      if (!P.length || r.g === '퇴휴') { out.push(r); return; }
+      if (done[key]) return;
+      done[key] = 1;
+      const act = P[P.length - 1];
+      const rows = base.filter(x => String(x.sid || x.id) === key && x.g !== '퇴휴');
+      const first = rows[0];
+      const list = [];
+      // 바뀌기 전 요일 줄은 그 달 안에 예전 일정이 있었으면 남겨 둔다
+      rows.forEach(x => { if (act.days.indexOf(x.g) < 0 && act.from > mStart) list.push(Object.assign({}, x)); });
+      act.days.forEach(d => {
+        const ex = rows.find(x => x.g === d);
+        const t = act.times[d] || '';
+        list.push(Object.assign({}, ex || first, { id: ex ? ex.id : key + '-' + d, g: d, time: (act.from <= today || !ex) ? (t || undefined) : ex.time, stick: act.stick }));
+      });
+      list.forEach(x => { if (list.length > 1) x.sid = 'K' + key; out.push(x); });
+    });
+    return out;
+  }
+  todayYmd() {
+    const t = new Date();
+    return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+  }
+  openQuick(s) {
+    const key = String(s.sid || s.id).replace(/^K/, '');
+    const rows = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === key && x.g !== '퇴휴');
+    const times = {};
+    rows.forEach(x => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.time || ''); if (m) times[x.g] = { h: String((+m[1] % 12) || 12), m: m[2] }; });
+    this.setState({ qe: { key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), times: times, stick: !!s.stick, date: '', err: '' } });
+    setTimeout(() => { const d = document.getElementById('qeDlg'); if (d) d.focus(); }, 30);
+  }
+  saveQuick() {
+    const Q = this.state.qe;
+    if (!Q) return;
+    if (!Q.date) { this.setState({ qe: Object.assign({}, Q, { err: '적용 날짜를 골라 주세요.' }) }); return; }
+    if (!Q.days.length) { this.setState({ qe: Object.assign({}, Q, { err: '수업 요일을 하나 이상 골라 주세요.' }) }); return; }
+    const ORD = ['월', '화', '수', '목', '금', '토', 'R'];
+    const days = Q.days.slice().sort((a, b) => ORD.indexOf(a) - ORD.indexOf(b));
+    const times = {};
+    days.forEach(d => { const t = Q.times[d] || {}; const h = parseInt(t.h, 10); if (h) times[d] = String(h < 9 ? h + 12 : h).padStart(2, '0') + ':' + String(t.m || '0').padStart(2, '0'); });
+    const plans = Object.assign({}, this.state.plans);
+    plans[Q.key] = (plans[Q.key] || []).concat([{ from: Q.date, days: days, times: times, stick: !!Q.stick }]);
+    this.setState({ plans: plans, qe: null });
+    this.focusSheet();
+  }
+  baseRows() {
     const P = '#DCD3EE';
     return [
       { id: 1, g: '월', name: '김재윤', start: 1, since: '10/27', tickets: 12 },
@@ -921,6 +1015,7 @@ class Component extends DCLogic {
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
         return {
           name: s.name.replace('$', ''),
+          quick: () => { if (s.g !== '퇴휴') this.openQuick(s); },
           cash: s.name.indexOf('$') >= 0,
           hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
@@ -1161,6 +1256,35 @@ class Component extends DCLogic {
       headCount: Object.keys(all.filter(s => !s.status).reduce((o, s) => { o[s.sid || s.id] = 1; return o; }, {})).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
+      qe: (() => {
+        const Q = st.qe;
+        if (!Q) return { open: false };
+        const lock = !Q.date;
+        const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'] };
+        const upd = p => this.setState({ qe: Object.assign({}, Q, p, { err: '' }) });
+        const ORD = ['월', '화', '수', '목', '금', '토', 'R'];
+        return {
+          open: true, name: Q.name, date: Q.date, err: Q.err || '', lock: lock ? 'true' : 'false',
+          close: () => { this.setState({ qe: null }); this.focusSheet(); },
+          save: () => this.saveQuick(),
+          key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
+          setDate: e => upd({ date: e.target.value }),
+          dayOpts: ORD.map(d => { const on = Q.days.indexOf(d) >= 0; return { label: d, on: on ? 'true' : 'false', pick: () => upd({ days: on ? Q.days.filter(x => x !== d) : Q.days.concat([d]) }),
+            style: 'height: 42px; padding: 0; border-radius: 11px; font-family: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'background: ' + DC[d][0] + '; color: ' + DC[d][1] + '; border: 2px solid ' + DC[d][1] + '; font-weight: 800' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500') }; }),
+          hasTimes: Q.days.length > 0,
+          timeRows: ORD.filter(d => Q.days.indexOf(d) >= 0).map((d, i) => {
+            const t = Q.times[d] || { h: '', m: '00' };
+            const put = p => upd({ times: Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, p) }) });
+            return { label: d, hid: 'qe_h' + i, mid: 'qe_m' + i, h: t.h, m: t.m, setH: e => put({ h: e.target.value }), setM: e => put({ m: e.target.value }),
+              chip: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 11px; font-size: 14px; font-weight: 800; background: ' + DC[d][0] + '; color: ' + DC[d][1] };
+          }),
+          numInp: 'width: 76px; height: 40px; padding: 0 8px; box-sizing: border-box; border-radius: 11px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; text-align: center; color: #17201C',
+          stickOn: Q.stick ? 'true' : 'false',
+          stickToggle: () => upd({ stick: !Q.stick }),
+          stickStyle: 'display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; ' + (Q.stick ? 'background: #D7EFDD; color: #2F6B43; border: 2px solid #2F6B43' : 'background: #FAFBFA; color: #3A4450; border: 1px solid #D5DBD8'),
+          stickBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (Q.stick ? 'background: #2F6B43; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD')
+        };
+      })(),
       cn: {
         open: !!(st.cashNotice && st.cashNotice.length),
         items: st.cashNotice || [],
