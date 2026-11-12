@@ -126,7 +126,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.15.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.15.2</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -281,38 +281,41 @@ class Component extends DCLogic {
     try { const v = JSON.parse(localStorage.getItem('students.filters') || 'null'); if (Array.isArray(v)) fltList = v; } catch (e) {}
     this.state = { fltList: fltList, cfgTab: 'cols', widths: widths, q: '', tab: 'act', reg: null, added: [], toast: '', filt: {}, fltOpen: false, colsOpen: false, cols: cols };
   }
+  // 원생 항목 목록 (한 곳에서만 정의). 새 항목을 여기에 넣으면 설정의 '표시할 항목'과 '필터 항목'에 자동으로 들어간다.
+  //   g: 설정 창 묶음 (null이면 설정에 안 나옴), w: 열 폭, left: 왼쪽 정렬
+  //   f: 필터 — 'auto'(실제 값으로 선택지 자동 생성), 필터 이름 목록, 또는 없음(원생마다 값이 다 다른 항목)
   colCatalog() {
     return [
-      { k: 'id', label: '등록번호', w: '76px' },
-      { k: 'cls', label: '반 구분', w: '84px' },
-      { k: 'part', label: '파트', w: '92px' },
-      { k: 'name', label: '이름 / 보호자', w: '150px', left: true },
-      { k: 'teacher', label: '강사', w: '92px' },
-      { k: 'day', label: '레슨요일', w: '92px' },
-      { k: 'time', label: '수업 시간', w: '120px' },
-      { k: 'age', label: '연령', w: '70px' },
-      { k: 'gender', label: '성별', w: '60px' },
-      { k: 'phone', label: '원생 전화번호', w: '128px' },
-      { k: 'gphone', label: '보호자 전화번호', w: '128px' },
-      { k: 'birth', label: '생년월일', w: '104px' },
-      { k: 'addr', label: '주소', w: '200px', left: true },
-      { k: 'join', label: '입원 연월일', w: '96px' },
-      { k: 'leave', label: '퇴원 연월일', w: '96px' },
-      { k: 'count', label: '수강 횟수', w: '80px' },
-      { k: 'dur', label: '수강 시간', w: '80px' },
-      { k: 'unit', label: '회당 수업료', w: '104px' },
-      { k: 'total', label: '수강료 합계', w: '110px' },
-      { k: 'pay', label: '강사 수당', w: '96px' },
-      { k: 'cash', label: '현금영수증', w: '90px' },
-      { k: 'stick', label: '드럼스틱 보관함', w: '110px' },
-      { k: 'memo', label: '비고', w: '140px', left: true },
-      { k: 'rest', label: '휴원정보', w: '150px', left: true }
+      { k: 'id', label: '등록번호', w: '76px', g: '기본 정보' },
+      { k: 'cls', label: '반 구분', w: '84px', g: '기본 정보', f: ['cls'] },
+      { k: 'name', label: '이름 / 보호자', w: '150px', left: true, g: '기본 정보' },
+      { k: 'age', label: '연령', w: '70px', g: '기본 정보', f: ['age'] },
+      { k: 'gender', label: '성별', w: '60px', g: '기본 정보', f: ['gender'] },
+      { k: 'phone', label: '원생 전화번호', w: '128px', g: '기본 정보' },
+      { k: 'gphone', label: '보호자 전화번호', w: '128px', g: '기본 정보' },
+      { k: 'birth', label: '생년월일', w: '104px', g: '기본 정보', f: ['birthY'] },
+      { k: 'addr', label: '주소', w: '200px', left: true, g: '기본 정보' },
+      { k: 'join', label: '입원 연월일', w: '96px', g: '기본 정보', f: ['joinY'] },
+      { k: 'part', label: '파트', w: '92px', g: '수업 정보', f: ['part'] },
+      { k: 'teacher', label: '강사', w: '92px', g: '수업 정보', f: ['teacher'] },
+      { k: 'day', label: '레슨요일', w: '92px', g: '수업 정보', f: ['day'] },
+      { k: 'time', label: '수업 시간', w: '120px', g: '수업 정보', f: ['time'] },
+      { k: 'stick', label: '드럼스틱 보관함', w: '110px', g: '수업 정보', f: ['stick'] },
+      { k: 'count', label: '수강 횟수', w: '80px', g: '수강료', f: ['count'] },
+      { k: 'dur', label: '수강 시간', w: '80px', g: '수강료', f: ['dur'] },
+      { k: 'unit', label: '회당 수업료', w: '104px', g: '수강료', f: ['unit'] },
+      { k: 'total', label: '수강료 합계', w: '110px', g: '수강료', f: ['total'] },
+      { k: 'pay', label: '강사 수당', w: '96px', g: '수강료', f: ['pay'] },
+      { k: 'cash', label: '현금영수증', w: '90px', g: '현금영수증', f: ['cash', 'cashType'] },
+      { k: 'leave', label: '퇴원 연월일', w: '96px', g: null },
+      { k: 'memo', label: '비고', w: '140px', left: true, g: null },
+      { k: 'rest', label: '휴원정보', w: '150px', left: true, g: null }
     ];
   }
   visibleCols() {
     const DEF = ['id', 'part', 'name', 'teacher', 'day', 'age', 'phone', 'gphone', 'join'];
     // 휴원정보·퇴원 연월일·비고는 설정에 넣지 않고 휴원·퇴원 탭에서만 붙인다
-    const keys = this.colCatalog().map(c => c.k).filter(k => ['leave', 'memo', 'rest'].indexOf(k) < 0);
+    const keys = this.colCatalog().filter(c => c.g).map(c => c.k);
     const v = (this.state.cols || DEF).filter(k => keys.indexOf(k) >= 0);
     return v.indexOf('name') >= 0 ? v : ['name'].concat(v);
   }
@@ -453,6 +456,12 @@ class Component extends DCLogic {
       pay: ['강사 수당', uniq(s => s.pay).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.pay],
       time: ['수업 시간', tSlots.map(t => [t, t]).concat(all.some(s => !tOf(s).length) ? [['none', '시간 없음']] : []), s => tOf(s).length ? tOf(s) : ['none']]
     };
+    // f: 'auto' 항목은 원생 데이터에 실제로 있는 값으로 선택지를 만든다
+    this.colCatalog().forEach(c => {
+      if (c.f !== 'auto') return;
+      const vals = all.map(s => s[c.k]).filter(v => v !== '' && v != null).filter((v, i, a) => a.indexOf(v) === i).sort((x, y) => String(x).localeCompare(String(y), 'ko', { numeric: true }));
+      FCAT[c.k] = [c.label, vals.map(v => [v, typeof v === 'boolean' ? (v ? '예' : '아니오') : String(v)]), s => s[c.k]];
+    });
     const fltKeys = (st.fltList || []).filter(k => FCAT[k]);
     const FG = fltKeys.map(k => [k].concat(FCAT[k]));
     const pass = s => FG.every(g => {
@@ -536,7 +545,7 @@ class Component extends DCLogic {
         memo: () => TL(s.memo, 'font-size: 12px; color: #3A4450'),
         rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
-      return { fill: C + '; padding: 0', cells: vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k]())) };
+      return { fill: C + '; padding: 0', cells: vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px'))) };
     };
     const SECS = [
       ['act', '재원생', 'sec-act', '#00A6AB', '#E6F6F6', '#007E82', ''],
@@ -555,9 +564,15 @@ class Component extends DCLogic {
     // 표시할 항목 설정 창
     // 설정 창: 표시할 항목 / 필터 항목 두 탭. 둘 다 체크해서 고르고 순서를 바꾼다
     const isFlt = st.cfgTab === 'flt';
-    const GROUPS = isFlt
-      ? [['기본 정보', ['cls', 'age', 'gender', 'birthY', 'joinY']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash', 'cashType']]]
-      : [['기본 정보', ['id', 'cls', 'name', 'age', 'gender', 'phone', 'gphone', 'birth', 'addr', 'join']], ['수업 정보', ['part', 'teacher', 'day', 'time', 'stick']], ['수강료', ['count', 'dur', 'unit', 'total', 'pay']], ['현금영수증', ['cash']]];
+    // 묶음과 항목은 colCatalog()에서 자동으로 만든다
+    const GROUPS = [];
+    CAT.filter(c => c.g).forEach(c => {
+      const items = isFlt ? (c.f === 'auto' ? [c.k] : (c.f || [])).filter(k => FCAT[k]) : [c.k];
+      if (!items.length) return;
+      let g = GROUPS.find(x => x[0] === c.g);
+      if (!g) { g = [c.g, []]; GROUPS.push(g); }
+      g[1] = g[1].concat(items);
+    });
     const list = isFlt ? fltKeys : visible;
     const labelOf = k => isFlt ? FCAT[k][0] : colDef(k).label;
     const saveList = l => {
