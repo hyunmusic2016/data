@@ -60,7 +60,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
       <div id="{{cur.id}}" style="{{cur.bandStyle}}">
         <span style="{{cur.dotStyle}}"></span>
         <span style="font-size: 15px; font-weight: 800">{{cur.title}}</span>
-        <span style="{{cur.countStyle}}">{{cur.count}}명</span>
+        <span id="secCount" style="{{cur.countStyle}}">{{cur.count}}명</span>
         <span style="font-size: 12px; color: #8A949E">{{cur.note}}</span>
         <span style="flex: 1"></span>
         <div class="noexp" style="position: relative">
@@ -97,7 +97,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <label for="q" style="position: absolute; left: -9999px">이름, 보호자, 전화번호, 등록번호로 찾기</label>
         <span class="noexp" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 260px; box-sizing: border-box">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
-          <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" onCompositionEnd="{{onSearchEnd}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
+          <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" onFocus="{{onSearchFocus}}" onBlur="{{onSearchBlur}}" onKeyDown="{{onSearchKey}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
         </span>
         <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}">
           <button type="button" class="noexp" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
@@ -118,7 +118,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
             <span class="noexp" style="{{actHead}}">관리</span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
-            <div class="{{r.rowCls}}" style="{{gridRow}}">
+            <div class="{{r.rowCls}}" data-s="{{r.sKey}}" style="{{gridRow}}">
               <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
                 <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if></span>
               </sc-for>
@@ -136,6 +136,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           <sc-if value="{{cur.empty}}" hint-placeholder-val="{{ false }}">
             <div style="padding: 22px; text-align: center; font-size: 13px; color: #8A949E; border-bottom: 1px solid #EBEEEC">찾는 원생이 없습니다.</div>
           </sc-if>
+          <div id="qEmpty" style="display: none; padding: 22px; text-align: center; font-size: 13px; color: #8A949E; border-bottom: 1px solid #EBEEEC">찾는 원생이 없습니다.</div>
         </div>
       </div>
     </section>
@@ -163,7 +164,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.4</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -943,6 +944,14 @@ class Component extends DCLogic {
       try { const p = Math.max(0, (n.value || '').length - fromEnd); n.setSelectionRange(p, p); } catch (x) {}
     }, 0);
   }
+  // 검색 중에는 화면을 다시 그리지 않고 표의 줄만 숨기거나 보인다
+  liveSearch(v) {
+    const q = String(v || '').replace(/[-\s]/g, '').toLowerCase();
+    const rows = [].slice.call(document.querySelectorAll('.srow[data-s]'));
+    let n = 0;
+    rows.forEach(r => { const ok = !q || (r.getAttribute('data-s') || '').indexOf(q) >= 0; r.style.display = ok ? '' : 'none'; if (ok) n++; });
+    const em = document.getElementById('qEmpty'); if (em) em.style.display = rows.length && !n ? '' : 'none';
+  }
   setReg(patch) {
     this.setState({ reg: Object.assign({}, this.state.reg, patch) });
   }
@@ -1010,7 +1019,7 @@ class Component extends DCLogic {
     const cell = 'min-height: 46px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
     const all = this.students().map(s => this.enrich(s));
     const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
-    const match = s => (!q || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
+    const match = s => (!q || st.qEdit || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
     const PORDER = ['드럼', '보컬', '기타', '베이스', '피아노', '우쿨렐레'];
     const DORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'];
     const TEACHERS = ['김도윤', '이하늘', '박서준', '최민재', '정우진'];
@@ -1163,7 +1172,7 @@ class Component extends DCLogic {
       // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
       const xcells = cells.slice(nMain).map((x, i) => Object.assign({}, x, { notTk: !x.isTk, cell: x.cell + '; position: sticky; z-index: 1; right: ' + xRight[i] + 'px' + (i === 0 ? '; ' + SHADOW : '') }));
-      return { rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', allCells: cells, cells: cells.slice(0, nMain), xcells: xcells, pro: pro, big: !!big,
+      return { sKey: [s.name, s.guardian, s.phone, s.gphone, String(s.id)].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|'), rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', allCells: cells, cells: cells.slice(0, nMain), xcells: xcells, pro: pro, big: !!big,
         actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; z-index: 1; right: 0' + (visX.length ? '' : '; ' + SHADOW),
         acts: ({ act: ['edit', 'log'], rest: ['edit', 'back', 'out', 'log'], out: ['edit', 'back', 'log'] }[s.status] || []).map(k => ({
           label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀', log: '기록' }[k],
@@ -1477,9 +1486,12 @@ class Component extends DCLogic {
         xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
       },
       reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
-      // 검색: 한글 조합 중에는 기다렸다가 조합이 끝나면 찾는다
-      onSearch: e => { if (e.isComposing) { this.state.q = e.target.value; return; } this.keepCaret(e); this.setState({ q: e.target.value }); },
-      onSearchEnd: e => { this.keepCaret(e); this.setState({ q: e.target.value }); },
+      // 검색: 치는 동안에는 화면을 다시 그리지 않고 표의 줄만 바로 숨기거나 보인다 (한글 조합이 깨지지 않음, 맥·윈도우 공통).
+      // 검색칸에서 나가거나 Enter를 누르면 그때 검색어를 저장해 인쇄·내보내기·인원수에 반영한다.
+      onSearch: e => this.liveSearch(e.target.value),
+      onSearchFocus: e => { if (this.state.q && !this.state.qEdit) { this.keepCaret(e); this.setState({ qEdit: true }); setTimeout(() => { const n = document.getElementById('q'); if (n) this.liveSearch(n.value); }, 0); } },
+      onSearchBlur: e => { const v = e.target.value; setTimeout(() => { const a = document.activeElement; if (a && a.id === 'q') return; if (v !== (this.state.q || '') || this.state.qEdit) this.setState({ q: v, qEdit: false }); }, 0); },
+      onSearchKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } },
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
       gridRow: COLS,
       c: {
