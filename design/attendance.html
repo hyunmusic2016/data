@@ -88,7 +88,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                 <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 5px; background: #E3ECFD; color: #2952A3; font-size: 10px; font-weight: 800">신규</span></sc-if><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
-                    <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
+                    <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
                     <span style="{{r.subStyle}}">{{r.subText}}</span>
                   </span>
                 </span>
@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.34.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1078,7 +1078,8 @@ class Component extends DCLogic {
       if (r > maxR) maxR = r;
     };
     const LAST = 4 + 31 - 1;
-    const circ = n => (n >= 1 && n <= 20) ? String.fromCharCode(0x245F + n) : String(n);
+    // 엑셀 동그라미 숫자: ①~⑳, ㉑~㉟, ㊱~㊿ (그 이상은 숫자 그대로)
+    const circ = n => (n >= 1 && n <= 20) ? String.fromCharCode(0x245F + n) : (n >= 21 && n <= 35) ? String.fromCharCode(0x3251 + n - 21) : (n >= 36 && n <= 50) ? String.fromCharCode(0x32B1 + n - 36) : String(n);
     const dayText = c => {
       const t = (c.text || '').replace('!', '');
       let b = c.kind === '수' ? circ(+t) : c.kind === '결' ? t : c.kind === '보' ? '보' : c.kind === 'M' ? '보강 ' + t : c.kind === '연' ? '연' : c.kind === 'V' ? 'V' : '';
@@ -1140,7 +1141,7 @@ class Component extends DCLogic {
     const st = this.state;
     const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
     const COLS = 'display: grid; grid-template-columns: 44px 118px 132px repeat(31, minmax(0, 1fr))';
-    const base = 'height: 44px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
+    const base = 'min-height: 44px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
     const span = n => 'grid-column: span ' + n + '; ';
     const band = 'height: 92px; display: flex; align-items: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; background-color: #16201B; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(255, 255, 255, 0.1) 27px, rgba(255, 255, 255, 0.1) 28px); background-position: 0 4px; ';
     const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
@@ -1149,8 +1150,9 @@ class Component extends DCLogic {
     const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em', 'Mo': tag('#E2F1EA', '#1F7A5A') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #9FD3B4', 'Mx': tag('#FDEBE4', '#C2410C') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #F0B9A6' };
     const chipFor = t => {
       if (!t) return 'display: none';
-      if (/^(1[0-2]|[1-9])$/.test(t)) return circ(+t, false);
-      if (/^(1[0-2]|[1-9])!$/.test(t)) return circ(parseInt(t, 10), true);
+      // 회차 숫자는 몇 회든 동그라미 (미납 13회 이상도)
+      if (/^[1-9]\d*$/.test(t)) return circ(+t, false);
+      if (/^[1-9]\d*!$/.test(t)) return circ(parseInt(t, 10), true);
       if (t[0] === '결') return MARK['결'];
       return MARK[t] || 'font-size: 12px';
     };
@@ -1358,6 +1360,9 @@ class Component extends DCLogic {
           for (let i = 1; i <= r.used; i++) dots.push({ style: DOT + 'border: 1.5px dashed #E0605A; background: #FFF5F4' });
         }
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
+        // 한 줄에 8개(4개씩 2묶음)까지, 넘으면 아래 줄로 8개씩 이어서 (줄 높이가 그만큼 늘어남)
+        const dotLines = [];
+        for (let i = 0; i < dotGroups.length; i += 2) dotLines.push({ groups: dotGroups.slice(i, i + 2) });
         // 수강권 아래 줄
         const canPlan = !r.firstDate && r.paid && !r.done && r.used === 0 && s.g !== '퇴휴';
         const plan = canPlan ? planOf(s, r) : null;
@@ -1385,7 +1390,7 @@ class Component extends DCLogic {
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
-          dotGroups: dotGroups,
+          dotGroups: dotGroups, dotLines: dotLines,
           subText: tk[0],
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
           queueTxt: qn ? '+' + qn + ' 대기' : '',
