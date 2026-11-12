@@ -83,7 +83,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div class="{{r.rowCls}}" style="display: contents">
-                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
+                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 5px; background: #E3ECFD; color: #2952A3; font-size: 10px; font-weight: 800">신규</span></sc-if><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.32.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -554,7 +554,7 @@ class Component extends DCLogic {
       const n = r.name.replace('$', '');
       const st = list.filter(e => e.name === n && e.date <= mEnd).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).pop();
       if (!st || st.kind === 'back' || r.g === '퇴휴') { out.push(r); return; }
-      if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '', canBack: true, outDate: st.date }));
+      if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '', canBack: true, outDate: st.date }));
     });
     return out;
   }
@@ -601,7 +601,7 @@ class Component extends DCLogic {
       if (!t || r.g === '퇴휴') { out.push(r); return; }
       const sameMon = +t.from.slice(5, 7) === MON, day = +t.from.slice(8, 10);
       if (me === t.teacher) out.push(Object.assign({}, r, { dimBefore: sameMon ? day : 0 }));
-      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', status: '강사 변경', outDate: t.from, moveTo: t.teacher, dimFrom: day, canInfo: true, tInfo: { from: t.prev.teacher, to: t.teacher, date: t.from, days: t.days || [], times: t.times || {} } }));
+      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: '강사 변경', outDate: t.from, moveTo: t.teacher, dimFrom: day, canInfo: true, tInfo: { from: t.prev.teacher, to: t.teacher, date: t.from, days: t.days || [], times: t.times || {} } }));
     });
     return out;
   }
@@ -1315,6 +1315,7 @@ class Component extends DCLogic {
       return calcCache[k][s.id];
     };
     // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 오늘부터 가장 가까운 수업 요일 (R은 직접 넣어야 함)
+    const NEWI = (() => { const o = {}; try { (JSON.parse(localStorage.getItem('academy.students') || '[]') || []).forEach(x => { o[x.name] = x; }); } catch (e) {} return o; })();
     const TKP = (() => { try { return JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {}; } catch (e) { return {}; } })();
     const planOf = s => {
       const nm = s.name.replace('$', '');
@@ -1390,7 +1391,10 @@ class Component extends DCLogic {
           nameCls: (s.g !== '퇴휴' || s.canBack || s.canInfo) ? 'qname' + ((st.qe && st.qe.rowId === s.id) || (st.ast && st.ast.rowId === s.id) || (st.tinfo && st.tinfo.rowId === s.id) ? ' qsel' : '') : '',
           nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : s.canBack ? '눌러서 복귀 처리' : s.canInfo ? '눌러서 강사 변경 정보 보기' : '',
           cash: s.name.indexOf('$') >= 0,
-          hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
+          // 휴원·퇴원·이동으로 내려간 원생은 시간 왼쪽에 직전 요일
+          hasTime: !!s.time || !!s.origG, time: ((s.origG ? s.origG + ' ' : '') + (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12))).trim(),
+          // 신규: 등록한 달 동안 이름 옆 파란 '신규' (수강생대장 입원 연월일이 이 달이거나, 아직 입금 전 신규)
+          isNew: (() => { if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')]; const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && 2000 + +m[1] === 2026 && +m[2] === MON; })(),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
