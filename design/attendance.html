@@ -336,7 +336,7 @@ class Component extends DCLogic {
             const w = (x.d - 1 + FIRST) % 7;
             const bg = s.rowBg ? rowBg : x.d === TODAY ? '#FFFBEB' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: chipFor(x.text),
+              text: x.text.replace('!', ''), chip: s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               press: () => this.press(s.id, x.d),
               style: base + 'background: ' + bg + '; border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: pointer; font-family: inherit'
