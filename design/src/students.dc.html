@@ -121,11 +121,11 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
             <div class="{{r.rowCls}}" style="{{gridRow}}">
               <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
-                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
+                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if></span>
               </sc-for>
               <span style="{{r.fill}}"></span>
               <sc-for list="{{r.xcells}}" as="x" hint-placeholder-count="0">
-                <span style="{{x.cell}}">{{x.text}}</span>
+                <span style="{{x.cell}}"><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if><sc-if value="{{x.notTk}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if></span>
               </sc-for>
               <span style="{{r.actCell}}">
                 <sc-for list="{{r.acts}}" as="a" hint-placeholder-count="3">
@@ -153,7 +153,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.37.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.37.3</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -533,7 +533,8 @@ class Component extends DCLogic {
       }
       // 수강권: 출석부(academy.tickets)에서 이름으로 맞춰 지금 상태를 가져온다. 출석부에 없는 원생은 휴원 당시 수강권(샘플)
       const live = TK[x.name];
-      x = Object.assign({}, x, { ticket: live || x.restTicket || '', ticketNow: live || x.ticketNow });
+      const liveTxt = live && typeof live === 'object' ? live.text : live;
+      x = Object.assign({}, x, { ticket: liveTxt || x.restTicket || '', ticketNow: liveTxt || x.ticketNow, ticketView: live && typeof live === 'object' ? live : null });
       return x;
     });
   }
@@ -1042,14 +1043,16 @@ class Component extends DCLogic {
         restDate: () => T(s.restDate, 'font-size: 13px; color: #9A5B00; font-weight: 700'),
         restReason: () => TL(s.restReason, 'font-size: 13px; color: #3A4450'),
         restTicket: () => T(s.restTicket, 'font-size: 12px; color: #3A4450'),
-        ticket: () => T(s.ticket, 'font-size: 12px; font-weight: 600; color: ' + (/^미납/.test(s.ticket || '') ? '#C2410C' : /^미입금/.test(s.ticket || '') ? '#9A5B00' : '#3A4450')),
+        // 출석부 수강권 칸과 같은 모양 (동그라미 + 레슨시작일·상태 + 미납금액 수납완료). 엑셀·인쇄 글자는 같은 내용을 글로
+        ticket: () => s.ticketView ? { isTk: true, isText: false, text: s.ticketView.line ? s.ticket + ' · ' + s.ticketView.line : s.ticket, dotLines: s.ticketView.dotLines, subParts: s.ticketView.subParts, lateLine: s.ticketView.lateLine, queueTxt: s.ticketView.queueTxt, cell: CL }
+          : T(s.ticket, 'font-size: 12px; font-weight: 600; color: ' + (/^미납/.test(s.ticket || '') ? '#C2410C' : /^미입금/.test(s.ticket || '') ? '#9A5B00' : '#3A4450')),
         leaveReason: () => TL(s.leaveReason, 'font-size: 13px; color: #3A4450'),
         rest: () => s.rest ? Object.assign(CH(s.rest, ['#FFF1DC', '#9A5B00']), { chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: #FFF1DC; color: #9A5B00', cell: CL }) : TL('')
       };
-      const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
+      const cells = vis.map(c => Object.assign({ isName: false, isChip: false, isText: false, isTk: false, cash: false }, make[c.k] ? make[c.k]() : T(s[c.k] == null ? '' : typeof s[c.k] === 'boolean' ? (s[c.k] ? '예' : '') : String(s[c.k]), 'font-size: 13px')));
       // 인쇄·엑셀용 글자 (현금영수증 대상은 이름 뒤 $)
       cells.forEach(x => { x.ptxt = x.isName ? x.text + (x.cash ? ' $' : '') + (x.sub ? ' ' + x.sub : '') : (x.text == null ? '' : String(x.text)); });
-      const xcells = cells.slice(nMain).map((x, i) => Object.assign({}, x, { cell: x.cell + '; position: sticky; z-index: 1; right: ' + xRight[i] + 'px' + (i === 0 ? '; ' + SHADOW : '') }));
+      const xcells = cells.slice(nMain).map((x, i) => Object.assign({}, x, { notTk: !x.isTk, cell: x.cell + '; position: sticky; z-index: 1; right: ' + xRight[i] + 'px' + (i === 0 ? '; ' + SHADOW : '') }));
       return { rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', allCells: cells, cells: cells.slice(0, nMain), xcells: xcells, pro: pro, big: !!big,
         actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; z-index: 1; right: 0' + (visX.length ? '' : '; ' + SHADOW),
         acts: ({ act: ['edit', 'log'], rest: ['edit', 'back', 'out', 'log'], out: ['edit', 'back', 'log'] }[s.status] || []).map(k => ({

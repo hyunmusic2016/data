@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.37.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.37.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1382,6 +1382,41 @@ class Component extends DCLogic {
       return null;
     };
 
+    // 수강권 칸 모양 (동그라미 + 레슨시작일·상태 줄 + 미납금액 수납완료 줄). 출석부 화면과 수강생대장 휴원·퇴원 탭이 같이 쓴다
+    const tkView = (s, r) => {
+    const dots = [], dotGroups = [];
+    const DOT = 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ';
+    const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
+    if (r.paid) {
+      for (let i = 1; i <= r.T; i++) dots.push({ style: DOT + (i <= r.used ? fill(r.marks[i - 1]) : 'border: 1.5px solid #CDD4D0') });
+    } else {
+      for (let i = 1; i <= r.prevT; i++) dots.push({ style: DOT + fill(r.prevMarks[i - 1]) });
+      for (let i = 1; i <= r.used; i++) dots.push({ style: DOT + 'border: 1.5px dashed #E0605A; background: #FFF5F4' });
+    }
+    for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
+    // 한 줄에 8개(4개씩 2묶음)까지, 넘으면 아래 줄로 8개씩 이어서 (줄 높이가 그만큼 늘어남)
+    const dotLines = [];
+    for (let i = 0; i < dotGroups.length; i += 2) dotLines.push({ groups: dotGroups.slice(i, i + 2) });
+    // 수강권 아래 줄
+    const canPlan = !r.firstDate && r.paid && !r.done && r.used === 0 && s.g !== '퇴휴';
+    const plan = canPlan ? planOf(s, r) : null;
+    // 레슨시작일은 무조건 남긴다: 이번 달에 쓴 수강권들의 시작일을 쉼표로 이어 쓰고, 그 오른쪽에 지금 상태(수업완료·미납·예정)
+    const starts = r.doneStarts.concat(r.paid && r.firstDate && r.doneStarts.indexOf(r.firstDate) < 0 ? [r.firstDate] : []);
+    const tk = !r.paid && r.newReg && r.used === 0 && !starts.length ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 700']
+      : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 800']
+      : r.done ? ['수업완료', 'color: #007E82; font-weight: 800']
+      : r.firstDate ? ['', '']
+      : r.used > 0 ? ['—', 'color: #8A949E']
+      : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
+      : ['예정일 입력', 'color: #5B7FB8; font-weight: 600; text-decoration: underline'];
+    const tkUse = tk;
+    const lateLine = r.latePaid ? '미납금액 수납완료 (' + r.latePaid.txt + ')' : '';
+    const subParts = [];
+    if (starts.length) subParts.push({ t: starts.join(', ') + (tkUse[0] ? (/\(예정\)$/.test(tkUse[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
+    if (tkUse[0]) subParts.push({ t: tkUse[0], style: tkUse[1] });
+    const qn = r.queue.reduce((n, c) => n + c, 0);
+    return { dots: dots, dotGroups: dotGroups, dotLines: dotLines, canPlan: canPlan, plan: plan, tk: tk, subParts: subParts, lateLine: lateLine, queueTxt: qn ? '+' + qn + ' 대기' : '' };
+    };
     const all = this.students();
     const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['휴원', '휴원'], ['퇴원', '퇴원'], ['이동', '이동']];
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
@@ -1418,36 +1453,8 @@ class Component extends DCLogic {
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
-        const dots = [], dotGroups = [];
-        const DOT = 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ';
-        const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
-        if (r.paid) {
-          for (let i = 1; i <= r.T; i++) dots.push({ style: DOT + (i <= r.used ? fill(r.marks[i - 1]) : 'border: 1.5px solid #CDD4D0') });
-        } else {
-          for (let i = 1; i <= r.prevT; i++) dots.push({ style: DOT + fill(r.prevMarks[i - 1]) });
-          for (let i = 1; i <= r.used; i++) dots.push({ style: DOT + 'border: 1.5px dashed #E0605A; background: #FFF5F4' });
-        }
-        for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
-        // 한 줄에 8개(4개씩 2묶음)까지, 넘으면 아래 줄로 8개씩 이어서 (줄 높이가 그만큼 늘어남)
-        const dotLines = [];
-        for (let i = 0; i < dotGroups.length; i += 2) dotLines.push({ groups: dotGroups.slice(i, i + 2) });
-        // 수강권 아래 줄
-        const canPlan = !r.firstDate && r.paid && !r.done && r.used === 0 && s.g !== '퇴휴';
-        const plan = canPlan ? planOf(s, r) : null;
-        // 레슨시작일은 무조건 남긴다: 이번 달에 쓴 수강권들의 시작일을 쉼표로 이어 쓰고, 그 오른쪽에 지금 상태(수업완료·미납·예정)
-        const starts = r.doneStarts.concat(r.paid && r.firstDate && r.doneStarts.indexOf(r.firstDate) < 0 ? [r.firstDate] : []);
-        const tk = !r.paid && r.newReg && r.used === 0 && !starts.length ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 700']
-          : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 800']
-          : r.done ? ['수업완료', 'color: #007E82; font-weight: 800']
-          : r.firstDate ? ['', '']
-          : r.used > 0 ? ['—', 'color: #8A949E']
-          : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
-          : ['예정일 입력', 'color: #5B7FB8; font-weight: 600; text-decoration: underline'];
-        const tkUse = tk;
-        const lateLine = r.latePaid ? '미납금액 수납완료 (' + r.latePaid.txt + ')' : '';
-        const subParts = [];
-        if (starts.length) subParts.push({ t: starts.join(', ') + (tkUse[0] ? (/\(예정\)$/.test(tkUse[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
-        if (tkUse[0]) subParts.push({ t: tkUse[0], style: tkUse[1] });
+        const V = tkView(s, r);
+        const dotGroups = V.dotGroups, dotLines = V.dotLines, canPlan = V.canPlan, plan = V.plan, tk = V.tk, subParts = V.subParts, lateLine = V.lateLine;
         expRow.since = subParts.map(x => x.t).join('') + (lateLine ? ' · ' + lateLine : '');
         // 미납 횟수 (미납금액 수납 기본 횟수, 없으면 미납금액 수납 버튼을 숨김)
         this._unpaid[s.id] = !r.paid ? r.used : 0;
@@ -1738,12 +1745,23 @@ class Component extends DCLogic {
     try {
       const Mx = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));
       const baseAll = this.baseRows();
-      const calcX = mkCalc(Mx, this.monthEvents(Mx), baseAll, false);
+      const calcs = {};
+      const calcOf = mm => (calcs[mm] = calcs[mm] || mkCalc(mm, this.monthEvents(mm), baseAll, false));
+      const stList = this.readStatus();
       const tks = {};
       baseAll.forEach(s0 => {
         const nm = s0.name.replace('$', ''); if (tks[nm]) return;
-        const x = calcX(s0); const qn = x.queue.reduce((n, c) => n + c, 0);
-        tks[nm] = (!x.paid ? (x.newReg && x.used === 0 ? '미입금' : '미납 ' + x.used + '회') : Math.min(x.used, x.T) + '/' + x.T + '회 (남은 ' + Math.max(0, x.T - x.used) + '회)') + (qn ? ' +' + qn + ' 대기' : '');
+        // 휴원·퇴원 원생은 처리한 달(출석부에 마지막으로 나오는 달)의 수강권 칸을 그대로 보여 준다
+        const stx = stList.filter(e => e.name === nm).sort((p, q) => (p.at || 0) - (q.at || 0)).pop();
+        const sm = stx && (stx.kind === 'rest' || stx.kind === 'out') ? +String(stx.date || '').slice(5, 7) : 0;
+        const mm = sm && sm <= Mx && sm >= M0 ? sm : Mx;
+        const x = calcOf(mm)(s0);
+        const v = tkView(sm ? Object.assign({}, s0, { g: '퇴휴' }) : s0, x);
+        const qn = x.queue.reduce((n, c) => n + c, 0);
+        const text = (!x.paid ? (x.newReg && x.used === 0 ? '미입금' : '미납 ' + x.used + '회') : Math.min(x.used, x.T) + '/' + x.T + '회 (남은 ' + Math.max(0, x.T - x.used) + '회)') + (qn ? ' +' + qn + ' 대기' : '');
+        tks[nm] = { text: text, line: v.subParts.map(p => p.t).join('') + (v.lateLine ? ' · ' + v.lateLine : ''),
+          dotLines: v.dotLines.map(l => ({ groups: l.groups.map(g => ({ dots: g.dots.map(d => ({ style: d.style })) })) })),
+          subParts: v.subParts, lateLine: v.lateLine, queueTxt: v.queueTxt };
       });
       const js = JSON.stringify(tks);
       if (js !== this._tkSnap) { this._tkSnap = js; localStorage.setItem('academy.tickets', js); }
