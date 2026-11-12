@@ -120,10 +120,10 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.3.4</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
-    <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.04)"></div>
+    <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.18)"></div>
     <div role="dialog" aria-label="출결 입력" onKeyDown="{{pop.key}}" style="{{pop.style}}">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
         <span style="font-size: 13px; font-weight: 700; color: #17201C">{{pop.title}}</span>
@@ -334,12 +334,8 @@ class Component extends DCLogic {
   openPop(mode) {
     const s = this.state.sel;
     if (!s) return;
-    const el = document.querySelector('[data-cell="' + s.r2 + '-' + s.c2 + '"]');
-    const rc = el ? el.getBoundingClientRect() : { left: 200, right: 240, top: 200, bottom: 236 };
     const W = 232, H = mode === 'mk' ? 330 : 300;
-    let x = rc.left, y = rc.bottom + 6;
-    if (x + W > window.innerWidth - 8) x = window.innerWidth - W - 8;
-    if (y + H > window.innerHeight - 8) y = Math.max(8, rc.top - H - 6);
+    const x = Math.round((window.innerWidth - W) / 2), y = Math.max(8, Math.round((window.innerHeight - H) / 2));
     this.setState({ pop: { x: Math.max(8, x), y: y, mode: mode } });
   }
   closePop() {
