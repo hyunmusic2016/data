@@ -130,8 +130,25 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.8.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.9.0</span>
   </nav>
+  <sc-if value="{{cn.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{cn.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="alertdialog" aria-label="현금영수증 발급 안내" onKeyDown="{{cn.key}}" tabIndex="-1" id="cashNotice" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
+      <div style="display: flex; align-items: center; gap: 12px">
+        <span style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F3E6C4; color: #7A5C12; display: inline-flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 18px; font-weight: 800; color: #17201C">현금영수증 발급 대상자입니다</span><span style="font-size: 13px; color: #5E6873">학원 단말기로 현금영수증을 발급해 주세요.</span></span>
+      </div>
+      <sc-for list="{{cn.items}}" as="it" hint-placeholder-count="1">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 14px; background: #FBF6E8; border: 1px solid #EAD9A6">
+          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 16px; font-weight: 800; color: #17201C">{{it.name}}</span><span style="font-size: 12px; color: #7A5C12">{{it.type}}</span></span>
+          <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 금액</span><b style="color: #17201C; font-size: 16px">{{it.amount}}</b></span>
+          <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 번호</span><b style="color: #17201C; font-size: 16px; letter-spacing: 0.02em">{{it.no}}</b></span>
+        </div>
+      </sc-for>
+      <button type="button" class="pbtn" onClick="{{cn.close}}" style="--sh: #E0CB8F; height: 50px; border-radius: 15px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 4px">확인</button>
+    </div>
+  </sc-if>
   <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div class="noprint" role="dialog" aria-label="인쇄 설정" onKeyDown="{{pr.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
@@ -278,6 +295,7 @@ class Component extends DCLogic {
     super(props);
     this.dragging = false;
     this.state = {
+      cashNotice: null,
       printOpen: false,
       printLayout: 'fit',
       printBW: true,
@@ -539,8 +557,21 @@ class Component extends DCLogic {
     const cur = this.monthEvents(m);
     const hasPay = c => { const r = cur[c.sid] || {}; return !!(r['p' + c.d] || r[c.d] === 'V'); };
     let items;
+    let cashList = [];
     if (v === 'V') {
       const allPaid = cells.every(hasPay);
+      if (!allPaid) {
+        const stu = this.students();
+        const seen = {};
+        cells.forEach(c => {
+          const s0 = stu.find(x => x.id === c.sid);
+          if (!s0 || s0.name.indexOf('$') < 0 || seen[c.sid] || hasPay(c)) return;
+          seen[c.sid] = 1;
+          const T0 = s0.tickets || (s0.nameBg ? 8 : 4);
+          const amt = (s0.rowBg ? 62500 : 40000) * T0;
+          cashList.push({ name: s0.name.replace('$', ''), type: (s0.rowBg ? '전문반' : '취미반') + ' · ' + T0 + '회 · 개인(소득공제)', amount: amt.toLocaleString('ko-KR') + '원', no: s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4) });
+        });
+      }
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: allPaid ? '' : true }));
     } else if (!v) {
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })), cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: '' })));
@@ -550,8 +581,10 @@ class Component extends DCLogic {
     }
     const patch = this.writeCells(items, '');
     patch.pop = null;
+    if (cashList.length) patch.cashNotice = cashList;
     this.commit(patch);
-    this.focusSheet();
+    if (cashList.length) setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
+    else this.focusSheet();
   }
   clearPart(which) {
     const cells = this.selCells();
@@ -1110,6 +1143,12 @@ class Component extends DCLogic {
       headCount: all.filter(s => !s.status).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
+      cn: {
+        open: !!(st.cashNotice && st.cashNotice.length),
+        items: st.cashNotice || [],
+        close: () => { this.setState({ cashNotice: null }); this.focusSheet(); },
+        key: e => { if (e.key === 'Enter' || e.key === 'Escape') { e.preventDefault(); this.setState({ cashNotice: null }); this.focusSheet(); } }
+      },
       pr: {
         open: !!st.printOpen,
         close: () => this.setState({ printOpen: false }),

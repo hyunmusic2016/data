@@ -48,7 +48,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
           <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
         </span>
         <span style="flex: 1"></span>
-        <button type="button" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
+        <button type="button" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
       </div>
 
       <div style="overflow-x: auto">
@@ -110,7 +110,85 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.1.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.2.0</div>
+  <sc-if value="{{reg.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{reg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.28)"></div>
+    <div role="dialog" aria-label="원생 등록" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 760px; max-width: calc(100vw - 32px); max-height: calc(100vh - 40px); box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
+        <span style="font-size: 19px; font-weight: 800; color: #17201C">원생 등록</span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; background: #F3F5F4; font-size: 12px; color: #5E6873">등록번호 <b style="color: #17201C; font-size: 14px">{{reg.id}}</b><span style="font-size: 11px; color: #8A949E">자동 부여</span></span>
+        <span style="flex: 1"></span>
+        <div role="radiogroup" aria-label="반 구분" style="display: inline-flex; padding: 3px; border-radius: 11px; background: #F1F3F2; gap: 2px">
+          <sc-for list="{{reg.classes}}" as="o" hint-placeholder-count="2">
+            <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button>
+          </sc-for>
+        </div>
+        <button type="button" onClick="{{reg.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+
+      <div style="flex: 1; overflow: auto; padding: 18px 22px; display: flex; flex-direction: column; gap: 18px">
+        <section aria-label="기본 정보" style="display: flex; flex-direction: column; gap: 10px">
+          <span style="{{reg.secTitle}}">기본 정보</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px">
+            <label style="{{reg.lbl}}"><span>원생 이름 <b style="color: #C2410C">*</b></span><input id="r_name" type="text" defaultValue="{{reg.f.name}}" onInput="{{reg.set.name}}" placeholder="홍길동" style="{{reg.inp}}"></label>
+            <label style="{{reg.lbl}}">보호자 이름<input id="r_guardian" type="text" defaultValue="{{reg.f.guardian}}" onInput="{{reg.set.guardian}}" placeholder="학생인 경우" style="{{reg.inp}}"></label>
+            <label style="{{reg.lbl}}">원생 연락처<input id="r_phone" type="tel" defaultValue="{{reg.f.phone}}" onInput="{{reg.set.phone}}" placeholder="010-0000-0000" style="{{reg.inp}}"></label>
+            <label style="{{reg.lbl}}">보호자 연락처<input id="r_gphone" type="tel" defaultValue="{{reg.f.gphone}}" onInput="{{reg.set.gphone}}" placeholder="010-0000-0000" style="{{reg.inp}}"></label>
+            <label style="{{reg.lbl}}">생년월일<input id="r_birth" type="date" defaultValue="{{reg.f.birth}}" onChange="{{reg.set.birth}}" style="{{reg.inp}}"></label>
+            <div style="display: flex; gap: 14px">
+              <div style="{{reg.lbl}}; flex: 1">성별<div role="radiogroup" aria-label="성별" style="display: flex; gap: 6px"><sc-for list="{{reg.genders}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div></div>
+              <div style="{{reg.lbl}}; flex: 1">연령 구분<div role="radiogroup" aria-label="연령 구분" style="display: flex; gap: 6px"><sc-for list="{{reg.ages}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div></div>
+            </div>
+            <label style="{{reg.lbl}}; grid-column: span 2">주소<input id="r_addr" type="text" defaultValue="{{reg.f.addr}}" onInput="{{reg.set.addr}}" placeholder="도로명 주소" style="{{reg.inp}}"></label>
+          </div>
+        </section>
+
+        <section aria-label="수업 정보" style="display: flex; flex-direction: column; gap: 10px">
+          <span style="{{reg.secTitle}}">수업 정보</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px">
+            <label style="{{reg.lbl}}"><span>담당 강사 <b style="color: #C2410C">*</b></span><select id="r_teacher" onChange="{{reg.set.teacher}}" style="{{reg.inp}}"><sc-for list="{{reg.teacherOpts}}" as="o" hint-placeholder-count="5"><option value="{{o.v}}" selected="{{o.sel}}">{{o.label}}</option></sc-for></select></label>
+            <div style="{{reg.lbl}}">수강 과목<div style="display: flex; flex-wrap: wrap; gap: 6px; min-height: 42px; align-items: center"><sc-for list="{{reg.partOpts}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for><span style="font-size: 12px; color: #8A949E">{{reg.partHint}}</span></div></div>
+            <div style="{{reg.lbl}}">수업 요일<div role="radiogroup" aria-label="수업 요일" style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{reg.days}}" as="o" hint-placeholder-count="7"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div></div>
+            <div style="{{reg.lbl}}">수업 시간<div style="display: flex; align-items: center; gap: 6px"><label for="r_hour" style="position: absolute; left: -9999px">시</label><input id="r_hour" type="number" min="1" max="12" defaultValue="{{reg.f.hour}}" onInput="{{reg.set.hour}}" style="{{reg.inp}}; width: 72px; text-align: center"><span style="font-size: 14px; color: #5E6873">시</span><label for="r_min" style="position: absolute; left: -9999px">분</label><input id="r_min" type="number" min="0" max="59" step="10" defaultValue="{{reg.f.min}}" onInput="{{reg.set.min}}" style="{{reg.inp}}; width: 72px; text-align: center"><span style="font-size: 14px; color: #5E6873">분</span></div></div>
+          </div>
+        </section>
+
+        <section aria-label="수강료" style="display: flex; flex-direction: column; gap: 10px">
+          <span style="{{reg.secTitle}}">수강료 <span style="font-size: 12px; font-weight: 600; color: #8A949E">{{reg.feeNote}}</span></span>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px">
+            <label style="{{reg.lbl}}">수강 횟수<span style="{{reg.unitWrap}}"><input id="r_count" type="text" inputmode="numeric" defaultValue="{{reg.f.countTxt}}" onInput="{{reg.set.count}}" style="{{reg.numInp}}"><span>회</span></span></label>
+            <label style="{{reg.lbl}}">회당 수업료<span style="{{reg.unitWrap}}"><input id="r_unit" type="text" inputmode="numeric" defaultValue="{{reg.f.unitTxt}}" onInput="{{reg.set.unit}}" style="{{reg.numInp}}"><span>원</span></span></label>
+            <label style="{{reg.lbl}}">강사 수당 (회당)<span style="{{reg.unitWrap}}"><input id="r_pay" type="text" inputmode="numeric" defaultValue="{{reg.f.payTxt}}" onInput="{{reg.set.pay}}" style="{{reg.numInp}}"><span>원</span></span></label>
+            <label style="{{reg.lbl}}">수강료 합계<span style="{{reg.unitWrap}}; background: #F2FBFB; border-color: #A9DCDE"><input id="r_total" type="text" inputmode="numeric" defaultValue="{{reg.f.totalTxt}}" onInput="{{reg.set.total}}" style="{{reg.numInp}}; font-weight: 800; color: #007E82"><span>원</span></span></label>
+          </div>
+          <span style="font-size: 11px; color: #8A949E">반에 맞춰 기본값이 들어갑니다. 회당 수업료를 바꾸면 강사 수당(50%)과 합계가 같이 바뀌고, 합계를 직접 고치면 회당 수업료가 다시 계산됩니다.</span>
+        </section>
+
+        <section aria-label="현금영수증" style="display: flex; flex-direction: column; gap: 10px">
+          <span style="{{reg.secTitle}}">현금영수증</span>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <div role="radiogroup" aria-label="현금영수증 발급" style="display: flex; gap: 6px"><sc-for list="{{reg.cashOpts}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+            <sc-if value="{{reg.cashOn}}" hint-placeholder-val="{{ false }}">
+              <span style="width: 1px; height: 24px; background: #DDE2DF; margin: 0 4px"></span>
+              <div role="radiogroup" aria-label="발급 용도" style="display: flex; gap: 6px"><sc-for list="{{reg.cashTypes}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+              <label for="r_cashno" style="position: absolute; left: -9999px">{{reg.cashNoLabel}}</label>
+              <input id="r_cashno" type="text" inputmode="numeric" defaultValue="{{reg.f.cashNo}}" onInput="{{reg.set.cashNo}}" placeholder="{{reg.cashNoLabel}}" style="{{reg.inp}}; flex: 1; min-width: 200px">
+            </sc-if>
+          </div>
+        </section>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 10px; padding: 14px 22px; border-top: 1px solid #EBEEEC; background: #FAFBFA">
+        <span style="font-size: 13px; font-weight: 600; color: #C2410C">{{reg.err}}</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{reg.close}}" style="height: 44px; padding: 0 20px; border-radius: 12px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{reg.save}}" style="height: 44px; padding: 0 26px; border-radius: 12px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">등록하기</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{toast.show}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 40px; transform: translateX(-50%); z-index: 50; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; box-shadow: 0 10px 28px rgba(23, 32, 28, 0.25)">{{toast.text}}</div>
+  </sc-if>
 </div>
 </template>
 <script>
@@ -119,9 +197,12 @@ class DCLogic{constructor(props){this.props=props||{};this.state={}}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { q: '', tab: 'act' };
+    this.state = { q: '', tab: 'act', reg: null, added: [], toast: '' };
   }
   students() {
+    return this.baseStudents().concat(this.state.added || []);
+  }
+  baseStudents() {
     const T = { '드럼': '박서준', '보컬': '이하늘', '기타': '김도윤', '베이스': '최민재', '피아노': '정우진', '우쿨렐레': '김도윤' };
     const raw = [
       [507, '드럼', '김재윤', '', '월요일', '성인', '0102-6870', '', '26.11.02', '', '', '', 'act', { t12: 1 }],
@@ -152,6 +233,34 @@ class Component extends DCLogic {
       [335, '보컬', '진미연', '진호준', '변동', '학생', '0109-1609', '0109-1619', '25.03.24', '26.07.31', '', '', 'out', {}]
     ];
     return raw.map(r => ({ id: r[0], part: r[1], name: r[2], guardian: r[3], teacher: T[r[1]], day: r[4], age: r[5], phone: '010-' + r[6], gphone: r[7] ? '010-' + r[7] : '', join: r[8], leave: r[9], memo: r[10], rest: r[11], status: r[12], flags: r[13] }));
+  }
+  regDefaults(cls) {
+    const unit = cls === 'pro' ? 62500 : 40000;
+    return { count: 4, unit: unit, pay: Math.round(unit * 0.5), total: unit * 4 };
+  }
+  openReg() {
+    const fee = this.regDefaults('hobby');
+    this.setState({ reg: Object.assign({ cls: 'hobby', name: '', guardian: '', phone: '', gphone: '', birth: '', addr: '', gender: '', age: '학생', teacher: '', part: '', day: '', hour: '', min: '00', cash: false, cashType: 'person', cashNo: '', err: '' }, fee) });
+  }
+  setReg(patch) {
+    this.setState({ reg: Object.assign({}, this.state.reg, patch) });
+  }
+  saveReg() {
+    const r = this.state.reg;
+    if (!r.name.trim()) { this.setReg({ err: '원생 이름을 입력해 주세요.' }); return; }
+    if (!r.teacher) { this.setReg({ err: '담당 강사를 선택해 주세요.' }); return; }
+    if (!r.part) { this.setReg({ err: '수강 과목을 선택해 주세요.' }); return; }
+    if (r.cash && !r.cashNo.trim()) { this.setReg({ err: '현금영수증 발급 번호를 입력해 주세요.' }); return; }
+    const d = new Date();
+    const join = String(d.getFullYear()).slice(2) + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+    const rec = { id: this.nextId(), part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: r.day || '변동', age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, leave: '', memo: '', rest: '', status: 'act', flags: { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }, extra: { birth: r.birth, addr: r.addr, gender: r.gender, time: r.hour ? r.hour + ':' + String(r.min || '0').padStart(2, '0') : '', count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo } };
+    this.setState({ added: (this.state.added || []).concat([rec]), reg: null, tab: 'act', toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
+    clearTimeout(this._tt);
+    this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
+  }
+  nextId() {
+    const base = this.baseStudents().concat(this.state.added || []);
+    return Math.max.apply(null, base.map(s => s.id)) + 1;
   }
   renderVals() {
     const st = this.state;
@@ -201,6 +310,56 @@ class Component extends DCLogic {
       };
     });
     const cnt = k => all.filter(s => s.status === k).length;
+    const R = st.reg;
+    const TEACH = { '김도윤': ['기타', '우쿨렐레'], '이하늘': ['보컬'], '박서준': ['드럼'], '최민재': ['베이스'], '정우진': ['피아노'] };
+    const fmtN = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') : '';
+    const numV = v => parseInt(String(v).replace(/[^0-9]/g, ''), 10) || 0;
+    const segS = (on, c) => 'height: 38px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: ' + (c ? c[0] : '#E6F6F6') + '; color: ' + (c ? c[1] : '#007E82') + '; border: 2px solid ' + (c ? c[1] : '#00A6AB') + '; font-weight: 700' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500');
+    const ropt = (label, on, pick, c) => ({ label: label, on: on ? 'true' : 'false', pick: pick, style: segS(on, c) });
+    let reg = { open: false };
+    if (R) {
+      const parts = TEACH[R.teacher] || [];
+      reg = {
+        open: true, id: this.nextId(), err: R.err || '',
+        f: { name: R.name, guardian: R.guardian, phone: R.phone, gphone: R.gphone, birth: R.birth, addr: R.addr, hour: R.hour, min: R.min, countTxt: fmtN(R.count), unitTxt: fmtN(R.unit), payTxt: fmtN(R.pay), totalTxt: fmtN(R.total), cashNo: R.cashNo },
+        close: () => this.setState({ reg: null }),
+        save: () => this.saveReg(),
+        classes: [['hobby', '취미반'], ['pro', '전문반']].map(o => ({ label: o[1], on: R.cls === o[0] ? 'true' : 'false', pick: () => this.setReg(Object.assign({ cls: o[0] }, this.regDefaults(o[0]))),
+          style: 'height: 32px; padding: 0 16px; border: none; border-radius: 8px; font-family: inherit; font-size: 14px; cursor: pointer; ' + (R.cls === o[0] ? (o[0] === 'pro' ? 'background: #FFFFFF; color: #C8323C; font-weight: 800; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)' : 'background: #FFFFFF; color: #007E82; font-weight: 800; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)') : 'background: transparent; color: #5E6873; font-weight: 500') })),
+        genders: ['남', '여'].map(g => ropt(g, R.gender === g, () => this.setReg({ gender: g }))),
+        ages: ['학생', '성인'].map(g => ropt(g, R.age === g, () => this.setReg({ age: g }), AGE[g])),
+        teacherOpts: [{ v: '', label: '강사 선택', sel: !R.teacher }].concat(Object.keys(TEACH).map(t => ({ v: t, label: t + (t === '김도윤' ? ' 원장님' : ' 강사') + ' · ' + TEACH[t].join('·'), sel: R.teacher === t }))),
+        partOpts: parts.map(p => ropt(p, R.part === p, () => this.setReg({ part: p }), PART[p])),
+        partHint: !R.teacher ? '강사를 먼저 선택하세요' : parts.length === 1 ? '자동 선택됨' : '가르치는 과목 중 선택',
+        days: [['월요일', '월'], ['화요일', '화'], ['수요일', '수'], ['목요일', '목'], ['금요일', '금'], ['토요일', '토'], ['변동', 'R (변동)']].map(d => ropt(d[1], R.day === d[0], () => this.setReg({ day: d[0] }), DAY[d[0]])),
+        feeNote: (R.cls === 'pro' ? '전문반' : '취미반') + ' 기준',
+        cashOn: !!R.cash,
+        cashOpts: [[false, '발급 안 함'], [true, '발급']].map(o => ropt(o[1], !!R.cash === o[0], () => this.setReg({ cash: o[0] }))),
+        cashTypes: [['person', '개인 (소득공제)'], ['biz', '사업자 (지출증빙)']].map(o => ropt(o[1], R.cashType === o[0], () => this.setReg({ cashType: o[0] }))),
+        cashNoLabel: R.cashType === 'biz' ? '사업자등록번호 (000-00-00000)' : '휴대폰 번호 또는 현금영수증 카드번호',
+        set: {
+          name: e => this.setReg({ name: e.target.value, err: '' }),
+          guardian: e => this.setReg({ guardian: e.target.value }),
+          phone: e => this.setReg({ phone: e.target.value }),
+          gphone: e => this.setReg({ gphone: e.target.value }),
+          birth: e => this.setReg({ birth: e.target.value }),
+          addr: e => this.setReg({ addr: e.target.value }),
+          hour: e => this.setReg({ hour: e.target.value }),
+          min: e => this.setReg({ min: e.target.value }),
+          teacher: e => { const t = e.target.value, ps = TEACH[t] || []; this.setReg({ teacher: t, part: ps.length === 1 ? ps[0] : '', err: '' }); },
+          count: e => { const c = numV(e.target.value); this.setReg({ count: c, total: c * R.unit }); },
+          unit: e => { const u = numV(e.target.value); this.setReg({ unit: u, pay: Math.round(u * 0.5), total: u * R.count }); },
+          pay: e => this.setReg({ pay: numV(e.target.value) }),
+          total: e => { const t = numV(e.target.value); const u = R.count ? Math.round(t / R.count) : R.unit; this.setReg({ total: t, unit: u, pay: Math.round(u * 0.5) }); },
+          cashNo: e => this.setReg({ cashNo: e.target.value, err: '' })
+        },
+        secTitle: 'display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 1px solid #EEF1F0; font-size: 14px; font-weight: 800; color: #17201C',
+        lbl: 'display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873',
+        inp: 'height: 42px; width: 100%; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 14px; color: #17201C',
+        unitWrap: 'display: flex; align-items: center; gap: 6px; height: 42px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; font-size: 13px; color: #5E6873',
+        numInp: 'flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: 15px; font-weight: 700; color: #17201C; text-align: right'
+      };
+    }
     const stats = [['act', '재원', '#00A6AB', '#E6F6F6', '#007E82'], ['rest', '휴원', '#E0A23B', '#FFF4E0', '#9A5B00'], ['out', '퇴원', '#D9746C', '#FCEBEA', '#B4332B']].map(x => {
       const on = (st.tab || 'act') === x[0];
       return {
@@ -217,6 +376,7 @@ class Component extends DCLogic {
     }));
     return {
       q: st.q, tabs: tabs, stats: stats, sections: sections,
+      reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
       onSearch: e => this.setState({ q: e.target.value }),
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
       gridRow: COLS,
@@ -244,6 +404,7 @@ function build(node,scope,out){
   for(const a of node.attributes){
     if(/^on[A-Z]/.test(a.name)||/^on[a-z]/.test(a.name)&&a.value.includes('{{')){const fn=interp(a.value,scope);if(typeof fn==='function')el.addEventListener(a.name.slice(2).toLowerCase(),fn);continue}
     if(a.name.startsWith('hint-'))continue;
+    if(a.name==='selected'){const sv=interp(a.value,scope);if(sv===true||sv==='true')el.setAttribute('selected','');continue;}
     if(a.name==='disabled'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('disabled','');continue;}
     if(a.name==='defaultvalue'){el.setAttribute('value',interp(a.value,scope));continue;}
     el.setAttribute(a.name,interp(a.value,scope))}
