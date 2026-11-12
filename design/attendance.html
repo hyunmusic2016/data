@@ -120,7 +120,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.5.1</span>
   </nav>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{pop.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
@@ -416,10 +416,14 @@ class Component extends DCLogic {
       const allPaid = cells.every(hasPay);
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: allPaid ? '' : true }));
     } else if (!v) {
-      items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })));
+      items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })), cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: '' })));
     } else {
-      const allSame = cells.every(c => (cur[c.sid] || {})[c.d] === v);
-      items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: allSame ? '' : v }));
+      const isMk = c => (cur[c.sid] || {})[c.d] === 'M';
+      const stOf = c => isMk(c) ? (cur[c.sid] || {})['s' + c.d] : (cur[c.sid] || {})[c.d];
+      const allSame = cells.every(c => stOf(c) === v);
+      items = cells.map(c => (isMk(c) && (v === '수' || v === '결'))
+        ? { m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: allSame ? '' : v }
+        : { m: m, sid: c.sid, d: c.d, v: allSame ? '' : v });
     }
     const patch = this.writeCells(items, '');
     patch.pop = null;
@@ -521,7 +525,7 @@ class Component extends DCLogic {
     const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
     const circ = (n, filled) => 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A';
     const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
-    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em' };
+    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em', 'Mo': tag('#E2F1EA', '#1F7A5A') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #9FD3B4', 'Mx': tag('#FDEBE4', '#C2410C') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #F0B9A6' };
     const chipFor = t => {
       if (!t) return 'display: none';
       if (/^(1[0-2]|[1-9])$/.test(t)) return circ(+t, false);
@@ -556,6 +560,7 @@ class Component extends DCLogic {
     const ND = new Date(2026, MON, 0).getDate();
     const FIRST = new Date(2026, MON - 1, 1).getDay();
     const EV = this.monthEvents(MON);
+    const PREV = MON - 1 >= 9 ? this.monthEvents(MON - 1) : null;
     const fillers = [];
     for (let i = ND; i < 31; i++) fillers.push({ i: i });
     const TODAY = MON === 11 ? 11 : 0;
@@ -572,25 +577,29 @@ class Component extends DCLogic {
       const T = s.tickets || (s.nameBg ? 8 : 4);
       let used = s.start, carry = s.start, since = (s.since && s.since !== '입금완료') ? s.since : '', pending = !!s.unpaid, absent = 0;
       const out = [];
+      const prevRow = PREV ? (PREV[s.id] || {}) : {};
+      const prevSeq = [];
+      for (let pd = 1; pd <= 31; pd++) { const pv = prevRow[pd]; if (pv === '수' || pv === '결') prevSeq.push(pv); }
       let marks = [];
+      for (let i = 0; i < s.start; i++) marks.push(prevSeq[prevSeq.length - s.start + i] || '수');
       for (let d = 1; d <= ND; d++) {
         const raw = e[d];
         const pay = !!(e['p' + d] || raw === 'V');
         const v = raw === 'V' ? undefined : raw;
-        let text = '', what = '', kind = v || '';
+        let text = '', what = '', kind = v || '', mstat = '';
         if (v === '수' || v === '결') {
           if (used >= T) { used = 0; carry = 0; pending = true; since = ''; marks = []; }
           used++;
           marks[used - 1] = v;
+          lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
           if (v === '수') {
-            lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
             text = String(used) + (used === T ? '!' : ''); what = used + '회차 출석';
           } else { text = '결' + used; what = used + '회차 결석'; }
           kind = v;
         } else if (v === 'M') {
-          lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
           const mt0 = st.mkTimes[MON + '-' + d + '-' + s.id] || '';
-          text = mt0 || '보강'; what = '보강 수업' + (mt0 ? ' ' + mt0 : ''); kind = 'M';
+          mstat = e['s' + d] || '';
+          text = mt0 || '보강'; what = '보강 수업' + (mt0 ? ' ' + mt0 : '') + (mstat === '수' ? ' · 출석' : mstat === '결' ? ' · 결석' : ''); kind = 'M';
         } else if (v === '보') { text = '보'; what = '보강 예정'; kind = '보'; }
         else if (v === '연') { text = '연'; what = '연기'; }
         if (pay) {
@@ -599,7 +608,7 @@ class Component extends DCLogic {
           if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; marks = []; }
           since = MON + '/' + d;
         }
-        out.push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v });
+        out.push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v, mstat: mstat });
       }
       const needPay = pending || used >= T;
       return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay, marks: marks };
@@ -625,7 +634,7 @@ class Component extends DCLogic {
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
         const dots = [], dotGroups = [];
         for (let i = 1; i <= r.T; i++) dots.push({ style: 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ' +
-          (i <= r.carry ? 'background: #B7C0BC' : i <= r.used ? 'background: ' + (r.marks[i - 1] === '결' ? '#E0605A' : '#00A6AB') : 'border: 1.5px solid #CDD4D0') });
+          (i <= r.used ? 'background: ' + (r.marks[i - 1] === '결' ? '#E0605A' : '#00A6AB') : 'border: 1.5px solid #CDD4D0') });
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
         return {
           name: s.name.replace('$', ''),
@@ -650,7 +659,7 @@ class Component extends DCLogic {
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const bg = s.rowBg ? rowBg : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: x.kind === 'M' ? MARK['M'] : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
+              text: x.text.replace('!', ''), chip: x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : '',
@@ -698,7 +707,7 @@ class Component extends DCLogic {
     const LT = ['14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
     const WD = ['일', '월', '화', '수', '목', '금', '토'];
     const curRow = popCells.length === 1 ? (this.monthEvents(MON)[first.sid] || {}) : {};
-    const curV = popCells.length === 1 ? (curRow[first.d] === 'V' ? '' : (curRow[first.d] || '')) : '';
+    const curV = popCells.length === 1 ? (curRow[first.d] === 'V' ? '' : curRow[first.d] === 'M' ? (curRow['s' + first.d] || '') : (curRow[first.d] || '')) : '';
     const curPay = popCells.length === 1 && !!(curRow['p' + first.d] || curRow[first.d] === 'V');
     const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
     const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center';
