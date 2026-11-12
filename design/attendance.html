@@ -119,7 +119,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.2.1</span>
   </nav>
 </div>
 </template>
@@ -340,7 +340,7 @@ class Component extends DCLogic {
     const all = this.students();
     const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['퇴휴', '퇴\n&\n휴']];
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
-    const BLUE = '#1A73E8';
+    const BLUE = '#8AB4E8';
     let rowIdx = 0;
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
@@ -385,7 +385,7 @@ class Component extends DCLogic {
               enter: () => this.selEnter(R, x.d),
               selected: inSel ? 'true' : 'false',
               handle: corner ? 'position: absolute; right: -5px; bottom: -5px; width: 9px; height: 9px; border-radius: 50%; background: ' + BLUE + '; border: 1.5px solid #FFFFFF; z-index: 3; pointer-events: none' : 'display: none',
-              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(26, 115, 232, 0.12), rgba(26, 115, 232, 0.12)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: cell; font-family: inherit; ' +
+              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: cell; font-family: inherit; ' +
                 (edges.length ? 'box-shadow: ' + edges.join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
