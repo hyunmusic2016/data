@@ -130,7 +130,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.9.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.10.0</span>
   </nav>
   <sc-if value="{{cn.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{cn.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -316,6 +316,8 @@ class Component extends DCLogic {
       ev: {
         1: { 2: '보', 7: '수', 9: '보' },
         2: { 2: '수', 3: 'V', 9: '수' },
+        29: { 3: '수', 10: '결', 17: '수' },
+        30: { 6: '수', 13: '수', p13: true },
         3: { 2: '수', 3: 'V', 9: '수' },
         4: { 2: '수', 9: '수', 10: 'V' },
         5: { 3: '수', 10: '수' },
@@ -355,6 +357,7 @@ class Component extends DCLogic {
       { id: 5, g: '화', name: '마서윤', start: 2, unpaid: true },
       { id: 6, g: '화', name: '이예린', start: 3, since: '11/10' },
       { id: 7, g: '화', name: '김소윤', start: 3, since: '11/11' },
+      { id: 29, sid: 'S29', g: '화', name: '한지우', start: 1, since: '10/20', time: '16:00' },
       { id: 8, g: '수', name: '윤가람', start: 3, since: '11/11' },
       { id: 9, g: '수', name: '김경민', start: 0, since: '11/4' },
       { id: 10, g: '수', name: '강도윤', start: 1, since: '10/28' },
@@ -367,6 +370,7 @@ class Component extends DCLogic {
       { id: 17, g: '금', name: '서홍빈', start: 0, unpaid: true },
       { id: 18, g: '금', name: '이소민', start: 1, since: '', nameBg: P },
       { id: 19, g: '금', name: '이서준', start: 1, since: '10/30' },
+      { id: 30, sid: 'S29', g: '금', name: '한지우', start: 1, since: '10/20', time: '18:30' },
       { id: 20, g: '토', name: '전태윤', start: 3, since: '' },
       { id: 21, g: '토', name: '김재희', start: 1, since: '' },
       { id: 22, g: 'R', name: '장현우', start: 1, since: '' },
@@ -836,17 +840,24 @@ class Component extends DCLogic {
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0;
+    const keyOf = s => s.sid || s.id;
+    const calcCache = {};
+    // 요일이 여러 개인 원생은 줄(요일)이 나뉘어 있어도 회차를 날짜 순서대로 이어서 센다
     const calc = s => {
-      const e = EV[s.id] || {};
-      const T = s.tickets || (s.nameBg ? 8 : 4);
-      let used = s.start, carry = s.start, since = (s.since && s.since !== '입금완료') ? s.since : '', pending = !!s.unpaid, absent = 0;
-      const out = [];
-      const prevRow = PREV ? (PREV[s.id] || {}) : {};
+      const k = keyOf(s);
+      if (calcCache[k]) return calcCache[k][s.id];
+      const sibs = all.filter(x => keyOf(x) === k);
+      const s0 = sibs[0];
+      const T = s0.tickets || (s0.nameBg ? 8 : 4);
+      let used = s0.start, carry = s0.start, since = (s0.since && s0.since !== '입금완료') ? s0.since : '', pending = !!s0.unpaid;
+      const outs = {};
+      sibs.forEach(x => { outs[x.id] = []; });
       const prevSeq = [];
-      for (let pd = 1; pd <= 31; pd++) { const pv = prevRow[pd]; if (pv === '수' || pv === '결') prevSeq.push(pv); }
+      for (let pd = 1; pd <= 31; pd++) sibs.forEach(x => { const pv = PREV ? (PREV[x.id] || {})[pd] : null; if (pv === '수' || pv === '결') prevSeq.push(pv); });
       let marks = [];
-      for (let i = 0; i < s.start; i++) marks.push(prevSeq[prevSeq.length - s.start + i] || '수');
-      for (let d = 1; d <= ND; d++) {
+      for (let i = 0; i < s0.start; i++) marks.push(prevSeq[prevSeq.length - s0.start + i] || '수');
+      for (let d = 1; d <= ND; d++) sibs.forEach(x => {
+        const e = EV[x.id] || {};
         const raw = e[d];
         const pay = !!(e['p' + d] || raw === 'V');
         const v = raw === 'V' ? undefined : raw;
@@ -855,13 +866,13 @@ class Component extends DCLogic {
           if (used >= T) { used = 0; carry = 0; pending = true; since = ''; marks = []; }
           used++;
           marks[used - 1] = v;
-          lessonCount++; if (s.rowBg) lessonPro++; else lessonHobby++;
+          lessonCount++; if (s0.rowBg) lessonPro++; else lessonHobby++;
           if (v === '수') {
             text = String(used) + (used === T ? '!' : ''); what = used + '회차 출석';
           } else { text = '결' + used; what = used + '회차 결석'; }
           kind = v;
         } else if (v === 'M') {
-          const mt0 = st.mkTimes[MON + '-' + d + '-' + s.id] || '';
+          const mt0 = st.mkTimes[MON + '-' + d + '-' + x.id] || '';
           mstat = e['s' + d] || '';
           text = mt0 || '보강'; what = '보강 수업' + (mt0 ? ' ' + mt0 : '') + (mstat === '수' ? ' · 출석' : mstat === '결' ? ' · 결석' : ''); kind = 'M';
         } else if (v === '보') { text = '보'; what = '보강 예정'; kind = '보'; }
@@ -872,10 +883,12 @@ class Component extends DCLogic {
           if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; marks = []; }
           since = MON + '/' + d;
         }
-        out.push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v, mstat: mstat });
-      }
+        outs[x.id].push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v, mstat: mstat });
+      });
       const needPay = pending || used >= T;
-      return { cells: out, T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay, marks: marks };
+      calcCache[k] = {};
+      sibs.forEach(x => { calcCache[k][x.id] = { cells: outs[x.id], T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay, marks: marks }; });
+      return calcCache[k][s.id];
     };
 
     const all = this.students();
@@ -1119,7 +1132,7 @@ class Component extends DCLogic {
       };
     });
     const curT = TEACHERS[st.teacher], curC = PART[curT[1]];
-    this._meta = { mon: MON, nd: ND, first: FIRST, teacher: curT[0], lessons: lessonCount, hobby: lessonHobby, pro: lessonPro, count: all.filter(s0 => !s0.status).length };
+    this._meta = { mon: MON, nd: ND, first: FIRST, teacher: curT[0], lessons: lessonCount, hobby: lessonHobby, pro: lessonPro, count: Object.keys(all.filter(s0 => !s0.status).reduce((o, s0) => { o[s0.sid || s0.id] = 1; return o; }, {})).length };
 
     return {
       teacherTabs: teacherTabs,
@@ -1140,7 +1153,7 @@ class Component extends DCLogic {
       groups: groups.filter(g => g.rows.length),
       gridStyle: COLS,
       c: c,
-      headCount: all.filter(s => !s.status).length,
+      headCount: Object.keys(all.filter(s => !s.status).reduce((o, s) => { o[s.sid || s.id] = 1; return o; }, {})).length,
       exportX: () => this.exportExcel(),
       printX: () => this.printSheet(),
       cn: {
