@@ -9,7 +9,7 @@
 <body>
 <x-dc>
 <helmet>
-<style>.qname{cursor:pointer}.qname:hover>span:first-child>span:first-child>span:first-child{text-decoration:underline;text-decoration-color:#A9DCDE;text-underline-offset:3px;text-decoration-thickness:2px}
+<style>.qname{cursor:pointer}.qname:hover{background-image:linear-gradient(rgba(138,180,232,.16),rgba(138,180,232,.16))!important}.qname.qsel{box-shadow:inset 0 0 0 2px #8AB4E8;background-image:linear-gradient(rgba(138,180,232,.2),rgba(138,180,232,.2))!important}
 .qedlg [disabled]{opacity:.42;cursor:not-allowed!important}
 
 body{margin:0;background:#F3F5F4}
@@ -132,7 +132,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.24.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -430,7 +430,7 @@ class Component extends DCLogic {
     const rows = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === key && x.g !== '퇴휴');
     const times = {};
     rows.forEach(x => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.time || ''); if (m) times[x.g] = { h: String((+m[1] % 12) || 12), m: m[2] }; });
-    this.setState({ qe: { key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: '', err: '' } });
+    this.setState({ qe: { rowId: s.id, key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: '', err: '' } });
     setTimeout(() => { const d = document.getElementById('qeDlg'); if (d) d.focus(); }, 30);
   }
   saveQuick() {
@@ -1026,7 +1026,7 @@ class Component extends DCLogic {
         return {
           name: s.name.replace('$', ''),
           quick: () => { if (s.g !== '퇴휴') this.openQuick(s); },
-          nameCls: s.g !== '퇴휴' ? 'qname' : '',
+          nameCls: s.g !== '퇴휴' ? 'qname' + (st.qe && st.qe.rowId === s.id ? ' qsel' : '') : '',
           nameTitle: s.g !== '퇴휴' ? '눌러서 수업 요일·시간·드럼스틱 보관함 수정' : '',
           cash: s.name.indexOf('$') >= 0,
           hasTime: !!s.time, time: (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12)),
