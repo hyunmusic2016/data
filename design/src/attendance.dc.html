@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.38.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.38.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -822,6 +822,18 @@ class Component extends DCLogic {
     return patch;
   }
   // 수납: 수강생대장에 등록된 정보를 불러와 보여 주고, '수납하기'를 누르면 수납 표시 + 수납 기록 저장
+  // 입력칸 도우미: 글자를 칠 때마다 화면을 새로 그리면 커서가 풀리고 한글이 자음·모음으로 따로 들어간다 (맥·윈도우 모두).
+  // 그래서 글자 칸은 화면을 다시 그리지 않고 값만 기억하고(quiet), 다른 칸이 같이 바뀌어야 하는 숫자 칸만 다시 그린 뒤 커서 자리를 되살린다(keepCaret).
+  keepCaret(e) {
+    const el = e && e.target; if (!el || !el.id) return;
+    const v = el.value || '', id = el.id;
+    let fromEnd = 0; try { fromEnd = v.length - (el.selectionEnd == null ? v.length : el.selectionEnd); } catch (x) {}
+    setTimeout(() => {
+      const n = document.getElementById(id); if (!n) return;
+      if (document.activeElement !== n) { try { n.focus({ preventScroll: true }); } catch (x) { n.focus(); } }
+      try { const p = Math.max(0, (n.value || '').length - fromEnd); n.setSelectionRange(p, p); } catch (x) {}
+    }, 0);
+  }
   stuInfo(name) {
     try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); return (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) { return null; }
   }
@@ -1932,11 +1944,11 @@ class Component extends DCLogic {
             const W = 'display: flex; align-items: center; gap: 4px; height: 48px; padding: 0 10px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-size: 13px; color: #5E6873';
             const I = 'flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: transparent; font-family: inherit; font-size: 17px; font-weight: 700; color: #17201C; text-align: right';
             return [
-              { label: '수강 횟수', id: 'pay_count', val: won(P.count), unit: '회', wrap: W, inp: I, set: e => { const c = num(e.target.value); upd({ count: c, total: c * P.unit }); } },
-              { label: '수강 시간', id: 'pay_dur', val: won(P.dur), unit: '분', wrap: W, inp: I, set: e => upd({ dur: num(e.target.value) }) },
-              { label: '회당 수업료', id: 'pay_unit', val: won(P.unit), unit: '원', wrap: W, inp: I, set: e => { const u = num(e.target.value); upd({ unit: u, pay: Math.round(u * 0.5), total: u * P.count }); } },
-              { label: '수강료 합계', id: 'pay_total', val: won(P.total), unit: '원', wrap: W + '; background: #F2FBFB; border-color: #A9DCDE', inp: I + '; font-weight: 800; color: #007E82', set: e => { const t = num(e.target.value); const u = P.count ? Math.round(t / P.count) : P.unit; upd({ total: t, unit: u, pay: Math.round(u * 0.5) }); } },
-              { label: '강사 수당 (회당)', id: 'pay_pay', val: won(P.pay), unit: '원', wrap: W + '; background: #FBF6E8; border-color: #EAD9A6', inp: I + '; color: #7A5C12', set: e => upd({ pay: num(e.target.value) }) }
+              { label: '수강 횟수', id: 'pay_count', val: won(P.count), unit: '회', wrap: W, inp: I, set: e => { this.keepCaret(e); const c = num(e.target.value); upd({ count: c, total: c * P.unit }); } },
+              { label: '수강 시간', id: 'pay_dur', val: won(P.dur), unit: '분', wrap: W, inp: I, set: e => { Object.assign(P, { dur: num(e.target.value) }); } },
+              { label: '회당 수업료', id: 'pay_unit', val: won(P.unit), unit: '원', wrap: W, inp: I, set: e => { this.keepCaret(e); const u = num(e.target.value); upd({ unit: u, pay: Math.round(u * 0.5), total: u * P.count }); } },
+              { label: '수강료 합계', id: 'pay_total', val: won(P.total), unit: '원', wrap: W + '; background: #F2FBFB; border-color: #A9DCDE', inp: I + '; font-weight: 800; color: #007E82', set: e => { this.keepCaret(e); const t = num(e.target.value); const u = P.count ? Math.round(t / P.count) : P.unit; upd({ total: t, unit: u, pay: Math.round(u * 0.5) }); } },
+              { label: '강사 수당 (회당)', id: 'pay_pay', val: won(P.pay), unit: '원', wrap: W + '; background: #FBF6E8; border-color: #EAD9A6', inp: I + '; color: #7A5C12', set: e => { Object.assign(P, { pay: num(e.target.value) }); } }
             ];
           })(),
           cashOn: P.cash,
@@ -1992,7 +2004,7 @@ class Component extends DCLogic {
           go: () => this.applyAStatus(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ ast: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyAStatus(); } },
           setDate: e => upd({ date: e.target.value }),
-          setMemo: e => upd({ memo: e.target.value })
+          setMemo: e => { Object.assign(S, { memo: e.target.value }); }
         };
       })(),
       qe: (() => {
@@ -2019,7 +2031,7 @@ class Component extends DCLogic {
           timeRows: ORD.filter(d => Q.days.indexOf(d) >= 0).map((d, i) => {
             const t = Q.times[d] || { h: '', m: '00' };
             const put = p => upd({ times: Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, p) }) });
-            return { label: d, hid: 'qe_h' + i, mid: 'qe_m' + i, h: t.h, m: t.m, setH: e => put({ h: e.target.value }), setM: e => put({ m: e.target.value }),
+            return { label: d, hid: 'qe_h' + i, mid: 'qe_m' + i, h: t.h, m: t.m, setH: e => { Q.times = Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, { h: e.target.value }) }); }, setM: e => { Q.times = Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, { m: e.target.value }) }); },
               chip: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 11px; font-size: 14px; font-weight: 800; background: ' + DC[d][0] + '; color: ' + DC[d][1] };
           }),
           numInp: 'width: 76px; height: 40px; padding: 0 8px; box-sizing: border-box; border-radius: 11px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; text-align: center; color: #17201C',

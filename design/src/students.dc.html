@@ -98,7 +98,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <label for="q" style="position: absolute; left: -9999px">이름, 보호자, 전화번호, 등록번호로 찾기</label>
         <span class="noexp" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 260px; box-sizing: border-box">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M11 18a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM20 20l-4-4"></path></svg>
-          <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
+          <input id="q" type="text" defaultValue="{{q}}" placeholder="이름, 보호자, 전화번호, 등록번호" onInput="{{onSearch}}" onCompositionEnd="{{onSearchEnd}}" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-size: 13px; color: #17201C">
         </span>
         <sc-if value="{{cur.canReg}}" hint-placeholder-val="{{ true }}">
           <button type="button" class="noexp" onClick="{{regOpen}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 700; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>원생 등록</button>
@@ -164,7 +164,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.3</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -930,6 +930,18 @@ class Component extends DCLogic {
     const fee = this.regDefaults('hobby');
     this.setState({ reg: Object.assign({ cls: 'hobby', name: '', guardian: '', phone: '', gphone: '', birth: '', addr: '', gender: '', age: '학생', teacher: '', part: '', days: [], multiDay: false, times: {}, idVal: null, stick: false, join: (() => { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); })(), cash: false, cashType: 'person', cashNo: '', note: '', err: '' }, fee) });
   }
+  // 입력칸 도우미: 글자를 칠 때마다 화면을 새로 그리면 커서가 풀리고 한글이 자음·모음으로 따로 들어간다 (맥·윈도우 모두).
+  // 그래서 글자 칸은 화면을 다시 그리지 않고 값만 기억하고(quiet), 다른 칸이 같이 바뀌어야 하는 숫자 칸만 다시 그린 뒤 커서 자리를 되살린다(keepCaret).
+  keepCaret(e) {
+    const el = e && e.target; if (!el || !el.id) return;
+    const v = el.value || '', id = el.id;
+    let fromEnd = 0; try { fromEnd = v.length - (el.selectionEnd == null ? v.length : el.selectionEnd); } catch (x) {}
+    setTimeout(() => {
+      const n = document.getElementById(id); if (!n) return;
+      if (document.activeElement !== n) { try { n.focus({ preventScroll: true }); } catch (x) { n.focus(); } }
+      try { const p = Math.max(0, (n.value || '').length - fromEnd); n.setSelectionRange(p, p); } catch (x) {}
+    }, 0);
+  }
   setReg(patch) {
     this.setState({ reg: Object.assign({}, this.state.reg, patch) });
   }
@@ -1328,7 +1340,7 @@ class Component extends DCLogic {
           const t = R.times[x] || { h: '', m: '00' };
           const put = p => this.setReg({ times: Object.assign({}, R.times, { [x]: Object.assign({ h: '', m: '00' }, R.times[x] || {}, p) }) });
           return { label: x === '변동' ? 'R' : x[0], hid: 'r_h' + i + '_' + x[0].charCodeAt(0), mid: 'r_m' + i + '_' + x[0].charCodeAt(0), h: t.h, m: t.m,
-            setH: e => put({ h: e.target.value }), setM: e => put({ m: e.target.value }),
+            setH: e => { const r0 = this.state.reg; r0.times = Object.assign({}, r0.times, { [x]: Object.assign({ h: '', m: '00' }, r0.times[x] || {}, { h: e.target.value }) }); }, setM: e => { const r0 = this.state.reg; r0.times = Object.assign({}, r0.times, { [x]: Object.assign({ h: '', m: '00' }, r0.times[x] || {}, { m: e.target.value }) }); },
             chip: 'display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; flex: none; border-radius: 12px; font-size: 15px; font-weight: 800; background: ' + DAY[x][0] + '; color: ' + DAY[x][1] };
         }),
         feeNote: (R.cls === 'pro' ? '전문반' : '취미반') + ' 기준 기본값',
@@ -1340,25 +1352,25 @@ class Component extends DCLogic {
         cashTypes: [['person', '개인 (소득공제)'], ['biz', '사업자 (지출증빙)']].map(o => ropt(o[1], R.cashType === o[0], () => this.setReg({ cashType: o[0] }))),
         cashNoLabel: R.cashType === 'biz' ? '사업자등록번호 (000-00-00000)' : '휴대폰 번호 또는 현금영수증 카드번호',
         set: {
-          name: e => this.setReg({ name: e.target.value, err: '' }),
-          guardian: e => this.setReg({ guardian: e.target.value }),
+          name: e => { const v = e.target.value; if (this.state.reg.err && !e.isComposing) { this.keepCaret(e); this.setReg({ name: v, err: '' }); } else Object.assign(this.state.reg, { name: v }); },
+          guardian: e => { Object.assign(this.state.reg, { guardian: e.target.value }); },
           join: e => this.setReg({ join: e.target.value }),
-          note: e => this.setReg({ note: e.target.value }),
+          note: e => { Object.assign(this.state.reg, { note: e.target.value }); },
           d_lesson: e => this.setReg({ dates: Object.assign({}, R.dates, { lesson: e.target.value }), err: '' }),
           d_fee: e => this.setReg({ dates: Object.assign({}, R.dates, { fee: e.target.value }), err: '' }),
           d_cash: e => this.setReg({ dates: Object.assign({}, R.dates, { cash: e.target.value }), err: '' }),
-          id: e => this.setReg({ idVal: e.target.value.replace(/[^0-9]/g, ''), err: '' }),
-          phone: e => this.setReg({ phone: e.target.value.replace(/[^0-9]/g, '') }),
-          gphone: e => this.setReg({ gphone: e.target.value.replace(/[^0-9]/g, '') }),
+          id: e => { const v = e.target.value.replace(/[^0-9]/g, ''); if (v !== e.target.value) e.target.value = v; if (this.state.reg.err) { this.keepCaret(e); this.setReg({ idVal: v, err: '' }); } else Object.assign(this.state.reg, { idVal: v }); },
+          phone: e => { const v = e.target.value.replace(/[^0-9]/g, ''); if (v !== e.target.value) e.target.value = v; Object.assign(this.state.reg, { phone: v }); },
+          gphone: e => { const v = e.target.value.replace(/[^0-9]/g, ''); if (v !== e.target.value) e.target.value = v; Object.assign(this.state.reg, { gphone: v }); },
           birth: e => this.setReg({ birth: e.target.value }),
-          addr: e => this.setReg({ addr: e.target.value }),
+          addr: e => { Object.assign(this.state.reg, { addr: e.target.value }); },
           teacher: e => { const t = e.target.value, ps = TEACH[t] || []; this.setReg({ teacher: t, part: ps.length === 1 ? ps[0] : '', err: '' }); },
-          dur: e => this.setReg({ dur: numV(e.target.value) }),
-          count: e => { const c = numV(e.target.value); this.setReg({ count: c, total: c * R.unit }); },
-          unit: e => { const u = numV(e.target.value); this.setReg({ unit: u, pay: Math.round(u * 0.5), total: u * R.count }); },
-          pay: e => this.setReg({ pay: numV(e.target.value) }),
-          total: e => { const t = numV(e.target.value); const u = R.count ? Math.round(t / R.count) : R.unit; this.setReg({ total: t, unit: u, pay: Math.round(u * 0.5) }); },
-          cashNo: e => this.setReg({ cashNo: e.target.value, err: '' })
+          dur: e => { Object.assign(this.state.reg, { dur: numV(e.target.value) }); },
+          count: e => { this.keepCaret(e); const c = numV(e.target.value); this.setReg({ count: c, total: c * R.unit }); },
+          unit: e => { this.keepCaret(e); const u = numV(e.target.value); this.setReg({ unit: u, pay: Math.round(u * 0.5), total: u * R.count }); },
+          pay: e => { Object.assign(this.state.reg, { pay: numV(e.target.value) }); },
+          total: e => { this.keepCaret(e); const t = numV(e.target.value); const u = R.count ? Math.round(t / R.count) : R.unit; this.setReg({ total: t, unit: u, pay: Math.round(u * 0.5) }); },
+          cashNo: e => { Object.assign(this.state.reg, { cashNo: e.target.value }); }
         },
         secTitle: 'display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 800; color: #17201C',
         lbl: 'display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873',
@@ -1449,7 +1461,7 @@ class Component extends DCLogic {
           go: () => this.applyStatus(),
           key: e => { if (e.key === 'Escape') this.setState({ stat: null }); else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyStatus(); } },
           setDate: e => this.setState({ stat: Object.assign({}, S, { date: e.target.value }) }),
-          setMemo: e => this.setState({ stat: Object.assign({}, S, { memo: e.target.value }) })
+          setMemo: e => { Object.assign(S, { memo: e.target.value }); }
         };
       })(),
       printX: () => { this.setState({ printOpen: true }); setTimeout(() => { const d = document.getElementById('printDlg'); if (d) d.focus(); }, 30); },
@@ -1464,7 +1476,9 @@ class Component extends DCLogic {
         xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
       },
       reg: reg, regOpen: () => this.openReg(), toast: { show: !!st.toast, text: st.toast || '' },
-      onSearch: e => this.setState({ q: e.target.value }),
+      // 검색: 한글 조합 중에는 기다렸다가 조합이 끝나면 찾는다
+      onSearch: e => { if (e.isComposing) { this.state.q = e.target.value; return; } this.keepCaret(e); this.setState({ q: e.target.value }); },
+      onSearchEnd: e => { this.keepCaret(e); this.setState({ q: e.target.value }); },
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
       gridRow: COLS,
       c: {
