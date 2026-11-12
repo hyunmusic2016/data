@@ -84,9 +84,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div class="{{r.rowCls}}" style="display: contents">
                 <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}" title="{{r.nameTitle}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
-                <span style="{{r.ticketCell}}">
+                <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
-                    <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span>
+                    <span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{r.dotGroups}}" as="dg" hint-placeholder-count="1"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
                     <span style="{{r.subStyle}}">{{r.subText}}</span>
                   </span>
                 </span>
@@ -139,7 +139,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.31.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.32.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -229,6 +229,25 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
         <button type="button" onClick="{{pv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.closeLabel}}</button>
         <button type="button" onClick="{{pv.go}}" style="{{pv.goStyle}}">{{pv.goLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{tp.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{tp.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="레슨시작일 예정" onKeyDown="{{tp.key}}" tabIndex="-1" id="tkpDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: #E3ECFD; color: #2952A3">예정</span>
+        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{tp.name}}</span>
+        <span style="font-size: 14px; color: #5E6873">레슨시작일</span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{tp.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">첫 수업 예정일<input id="tkp_date" type="date" defaultValue="{{tp.date}}" onChange="{{tp.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <span style="font-size: 12px; color: #8A949E">{{tp.note}}</span>
+      <div style="display: flex; gap: 10px">
+        <button type="button" onClick="{{tp.clear}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">자동으로</button>
+        <button type="button" onClick="{{tp.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{tp.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장</button>
       </div>
     </div>
   </sc-if>
@@ -439,6 +458,7 @@ class Component extends DCLogic {
       statusList: this.readStatus(),
       ast: null,
       pay: null,
+      tkp: null,
       tinfo: null,
       cashNotice: null,
       printOpen: false,
@@ -629,25 +649,25 @@ class Component extends DCLogic {
     const P = '#DCD3EE';
     return [
       { id: 1, g: '월', name: '김재윤', start: 1, since: '10/27', tickets: 12 },
-      { id: 2, g: '월', name: '손하율', start: 1, since: '10/28', rowBg: '#F9DADC' },
-      { id: 3, g: '월', name: '정다온$', start: 1, since: '11/23', nameBg: P },
+      { id: 2, g: '월', name: '손하율', start: 3, since: '10/28', rowBg: '#F9DADC' },
+      { id: 3, g: '월', name: '정다온$', start: 7, since: '11/23', nameBg: P },
       { id: 4, g: '월', name: '변예준', start: 3, since: '11/2' },
       { id: 5, g: '화', name: '마서윤', start: 2, unpaid: true },
       { id: 6, g: '화', name: '이예린', start: 3, since: '11/10' },
       { id: 7, g: '화', name: '김소윤', start: 3, since: '11/11' },
       { id: 29, sid: 'S29', g: '화', name: '한지우', start: 1, since: '10/20', time: '16:00' },
       { id: 8, g: '수', name: '윤가람', start: 3, since: '11/11' },
-      { id: 9, g: '수', name: '김경민', start: 0, since: '11/4' },
-      { id: 10, g: '수', name: '강도윤', start: 1, since: '10/28' },
+      { id: 9, g: '수', name: '김경민', start: 4, since: '11/4' },
+      { id: 10, g: '수', name: '강도윤', start: 3, since: '10/28' },
       { id: 11, g: '수', name: '허준서', start: 1, since: '' },
       { id: 12, g: '목', name: '오태현', start: 3, since: '' },
       { id: 13, g: '목', name: '이은서', start: 1, unpaid: true },
-      { id: 14, g: '목', name: '천가윤', start: 1, since: '10/29' },
+      { id: 14, g: '목', name: '천가윤', start: 3, since: '10/29' },
       { id: 15, g: '목', name: '박상민', start: 3, since: '' },
       { id: 16, g: '금', name: 'D)강연서', start: 3, unpaid: true },
       { id: 17, g: '금', name: '서홍빈', start: 0, unpaid: true },
       { id: 18, g: '금', name: '이소민', start: 1, since: '', nameBg: P },
-      { id: 19, g: '금', name: '이서준', start: 1, since: '10/30' },
+      { id: 19, g: '금', name: '이서준', start: 4, since: '10/30' },
       { id: 30, sid: 'S29', g: '금', name: '한지우', start: 1, since: '10/20', time: '18:30' },
       { id: 20, g: '토', name: '전태윤', start: 3, since: '' },
       { id: 21, g: '토', name: '김재희', start: 1, since: '' },
@@ -657,7 +677,8 @@ class Component extends DCLogic {
       { id: 25, g: 'R', name: '조민아', start: 1, since: '' },
       { id: 26, g: 'R', name: '강준호', start: 3, since: '' },
       { id: 27, g: '퇴휴', name: '임서윤', start: 0, sumOverride: '결3', status: '퇴원', since: '입금완료' },
-      { id: 28, g: '퇴휴', name: 'U)권은서', start: 1, status: '휴원', unpaid: true }
+      { id: 28, g: '퇴휴', name: 'U)권은서', start: 1, status: '휴원', unpaid: true },
+      { id: 31, g: '목', name: '박하늘', start: 0, newReg: true, time: '16:30' }
     ].map(s => (s.time !== undefined || s.g === 'R' || s.g === '퇴휴' || s.id % 5 === 0) ? s : Object.assign({}, s, { time: ['14:00', '15:30', '16:00', '17:00', '18:30', '19:00'][s.id % 6] }));
   }
   sheetList() {
@@ -672,7 +693,7 @@ class Component extends DCLogic {
     const nd = new Date(2026, m, 0).getDate();
     const out = {};
     this.students().forEach(s => {
-      const w = DOW[s.g];
+      const w = s.newReg ? null : DOW[s.g];
       if (w == null) return;
       const row = {}; let k = 0;
       for (let d = 1; d <= nd; d++) {
@@ -908,6 +929,24 @@ class Component extends DCLogic {
     this.commit(patch);
     this.focusSheet();
   }
+  openTkPlan(s, plan) {
+    const nm = s.name.replace('$', '');
+    let cur = '';
+    try { cur = (JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {})[nm] || ''; } catch (e) {}
+    if (!cur && plan) { const m = /^(\d{1,2})\/(\d{1,2})$/.exec(plan.txt); if (m) cur = '2026-' + String(m[1]).padStart(2, '0') + '-' + String(m[2]).padStart(2, '0'); }
+    this.setState({ tkp: { name: nm, rowId: s.id, date: cur, r: s.g === 'R' } });
+    setTimeout(() => { const d = document.getElementById('tkpDlg'); if (d) d.focus(); }, 30);
+  }
+  saveTkPlan(clear) {
+    const Q = this.state.tkp;
+    if (!Q) return;
+    let all = {};
+    try { all = JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {}; } catch (e) {}
+    if (clear || !Q.date) delete all[Q.name]; else all[Q.name] = Q.date;
+    try { localStorage.setItem('academy.ticketPlans', JSON.stringify(all)); } catch (e) {}
+    this.setState({ tkp: null });
+    this.focusSheet();
+  }
   applyMark(v, opt) {
     const cells = this.selCells();
     if (!cells.length) return;
@@ -1107,7 +1146,7 @@ class Component extends DCLogic {
         put(r, 0, r === start ? g.label : '', { bold: true, sz: 12 });
         put(r, 1, x.name + (x.cash ? ' $' : ''), { bold: true, fill: x.t8 ? 'E6DFF5' : fill });
         put(r, 2, x.sum ? circ(x.sum) : '', { fill: fill, sz: 11 });
-        put(r, 3, x.needPay ? '미납' : (x.since || ''), { fill: fill, color: x.needPay ? 'C2410C' : undefined });
+        put(r, 3, x.since || '', { fill: fill, color: x.needPay ? 'C2410C' : undefined });
         for (let d = 1; d <= 31; d++) {
           const c = x.cells[d - 1];
           const txt = c ? dayText(c) : '';
@@ -1201,55 +1240,91 @@ class Component extends DCLogic {
     const keyOf = s => s.sid || s.id;
     const calcCache = {};
     // 요일이 여러 개인 원생은 줄(요일)이 나뉘어 있어도 회차를 날짜 순서대로 이어서 센다
+    // 수강권 계산 (날짜 순서대로)
+    //  - 신규 등록 후 입금 전: '신규 (미입금)', 동그라미 없음
+    //  - 입금하면 그 횟수만큼 동그라미 (수납 창에서 횟수를 바꿨으면 그 횟수)
+    //  - 다 쓰고 입금 없이 수업하면 미납 수업(빨간 점선) → 나중에 입금하면 그 수업이 새 수강권 1, 2회로 채워짐
+    //  - 남은 회차가 있는데 또 입금하면 다음 수강권으로 대기(+4 대기), 지금 것을 다 쓰면 넘어감
+    //  - 레슨시작일 = 그 수강권의 첫 수업(1 또는 결1) 날짜. 아직이면 예정일
     const calc = s => {
       const k = keyOf(s);
       if (calcCache[k]) return calcCache[k][s.id];
       const sibs = all.filter(x => keyOf(x) === k);
       const s0 = sibs[0];
-      let T = s0.tickets || (s0.nameBg ? 8 : 4);
-      let used = s0.start, carry = s0.start, since = (s0.since && s0.since !== '입금완료') ? s0.since : '', pending = !!s0.unpaid;
+      const T0 = s0.tickets || (s0.nameBg ? 8 : 4);
+      let T = T0, used = s0.start || 0, paid = !s0.unpaid && !s0.newReg, newReg = !!s0.newReg;
+      let prevT = (!paid && !newReg) ? T0 : 0, prevMarks = (!paid && !newReg) ? Array(T0).fill('수') : [];
+      let firstDate = paid && (s0.since && s0.since !== '입금완료') ? s0.since : '';
+      const queue = [];
+      let tCells = [];
       const outs = {};
       sibs.forEach(x => { outs[x.id] = []; });
       const prevSeq = [];
       for (let pd = 1; pd <= 31; pd++) sibs.forEach(x => { const pv = PREV ? (PREV[x.id] || {})[pd] : null; if (pv === '수' || pv === '결') prevSeq.push(pv); });
       let marks = [];
-      for (let i = 0; i < s0.start; i++) marks.push(prevSeq[prevSeq.length - s0.start + i] || '수');
+      for (let i = 0; i < used; i++) marks.push(prevSeq[prevSeq.length - used + i] || '수');
+      const nextTicket = () => {
+        if (queue.length) { T = queue.shift(); paid = true; prevT = 0; prevMarks = []; }
+        else { prevT = T; prevMarks = marks.slice(); T = T0; paid = false; }
+        used = 0; marks = []; firstDate = ''; tCells = [];
+      };
       for (let d = 1; d <= ND; d++) sibs.forEach(x => {
         const e = EV[x.id] || {};
         const raw = e[d];
         const pay = !!(e['p' + d] || raw === 'V');
         const v = raw === 'V' ? undefined : raw;
-        let text = '', what = '', kind = v || '', mstat = '';
+        const o = { d: d, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
         if (v === '수' || v === '결') {
-          if (used >= T) { used = 0; carry = 0; pending = true; since = ''; marks = []; }
+          if (paid && used >= T) nextTicket();
           used++;
           marks[used - 1] = v;
+          if (used === 1) firstDate = MON + '/' + d;
           lessonCount++; if (s0.rowBg) lessonPro++; else lessonHobby++;
-          if (v === '수') {
-            text = String(used) + (used === T ? '!' : ''); what = used + '회차 출석';
-          } else { text = '결' + used; what = used + '회차 결석'; }
-          kind = v;
+          if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
+          else { o.text = '결' + used; o.what = used + '회차 결석'; }
+          o.kind = v;
+          if (!paid) { o.over = true; o.what += ' · 미납 수업'; }
+          tCells.push(o);
         } else if (v === 'M') {
           const mt0 = st.mkTimes[MON + '-' + d + '-' + x.id] || '';
-          mstat = e['s' + d] || '';
-          text = mt0 || '보강'; what = '보강 수업' + (mt0 ? ' ' + mt0 : '') + (mstat === '수' ? ' · 출석' : mstat === '결' ? ' · 결석' : ''); kind = 'M';
-        } else if (v === '보') { text = '보'; what = '보강 예정'; kind = '보'; }
-        else if (v === '연') { text = '연'; what = '연기'; }
+          o.mstat = e['s' + d] || '';
+          o.text = mt0 || '보강'; o.what = '보강 수업' + (mt0 ? ' ' + mt0 : '') + (o.mstat === '수' ? ' · 출석' : o.mstat === '결' ? ' · 결석' : ''); o.kind = 'M';
+        } else if (v === '보') { o.text = '보'; o.what = '보강 예정'; o.kind = '보'; }
+        else if (v === '연') { o.text = '연'; o.what = '연기'; }
         if (pay) {
-          if (!v) { text = '₩'; kind = 'V'; }
-          what = what ? what + ' · 수납' : '수납';
-          if (pending) pending = false; else if (used >= T) { used = 0; carry = 0; marks = []; }
-          // 수납 창에서 횟수를 바꿔 수납했으면 그 수강권만 그 횟수
+          if (!v) { o.text = '₩'; o.kind = 'V'; }
+          o.what = o.what ? o.what + ' · 수납' : '수납';
+          o.pay = !!v;
           const pr = PAYS[s0.name.replace('$', '') + '|2026-' + String(MON).padStart(2, '0') + '-' + String(d).padStart(2, '0')];
-          if (pr && pr.count) T = pr.count;
-          since = MON + '/' + d;
+          const c = (pr && pr.count) || T0;
+          if (!paid) {
+            // 미납(또는 신규) 상태에서 입금: 이미 받은 수업이 새 수강권 회차로 채워진다
+            paid = true; newReg = false; T = c; prevT = 0; prevMarks = [];
+            tCells.forEach(t => { t.over = false; t.what = t.what.replace(' · 미납 수업', ''); });
+          } else if (used < T) queue.push(c);
+          else { T = c; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; }
         }
-        outs[x.id].push({ d: d, text: text, what: what, kind: kind, pay: pay && !!v, mstat: mstat });
+        outs[x.id].push(o);
       });
-      const needPay = pending || used >= T;
+      // 지금 수강권을 다 썼고 대기 중인 수강권이 있으면 바로 다음 수강권을 보여 준다
+      if (paid && used >= T && queue.length) nextTicket();
+      const res = { T: T, used: used, paid: paid, newReg: newReg, queue: queue.slice(), prevT: prevT, prevMarks: prevMarks, firstDate: firstDate, marks: marks,
+        done: paid && used >= T, needPay: !paid, since: firstDate };
       calcCache[k] = {};
-      sibs.forEach(x => { calcCache[k][x.id] = { cells: outs[x.id], T: T, used: used, carry: Math.min(carry, used), since: since, needPay: needPay, marks: marks }; });
+      sibs.forEach(x => { calcCache[k][x.id] = Object.assign({ cells: outs[x.id] }, res); });
       return calcCache[k][s.id];
+    };
+    // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 오늘부터 가장 가까운 수업 요일 (R은 직접 넣어야 함)
+    const TKP = (() => { try { return JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {}; } catch (e) { return {}; } })();
+    const planOf = s => {
+      const nm = s.name.replace('$', '');
+      if (TKP[nm]) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(TKP[nm]); if (m) return { txt: (+m[2]) + '/' + (+m[3]), manual: true }; }
+      const WD = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+      const ws = all.filter(x => keyOf(x) === keyOf(s)).map(x => WD[x.g]).filter(w => w != null);
+      if (!ws.length) return null;
+      const t = new Date();
+      for (let i = 0; i < 8; i++) { const dt = new Date(t.getFullYear(), t.getMonth(), t.getDate() + i); if (ws.indexOf(dt.getDay()) >= 0) return { txt: (dt.getMonth() + 1) + '/' + dt.getDate(), manual: false }; }
+      return null;
     };
 
     const all = this.students();
@@ -1282,14 +1357,31 @@ class Component extends DCLogic {
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
         const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
         const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
-        this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: s.start, since: r.since, needPay: r.needPay, cells: r.cells });
+        this._exp.push({ g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: s.start, since: !r.paid ? (r.newReg && r.used === 0 ? '신규 (미입금)' : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells });
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
         const dots = [], dotGroups = [];
-        for (let i = 1; i <= r.T; i++) dots.push({ style: 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ' +
-          (i <= r.used ? 'background: ' + (r.marks[i - 1] === '결' ? '#E0605A' : '#00A6AB') : 'border: 1.5px solid #CDD4D0') });
+        const DOT = 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ';
+        const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
+        if (r.paid) {
+          for (let i = 1; i <= r.T; i++) dots.push({ style: DOT + (i <= r.used ? fill(r.marks[i - 1]) : 'border: 1.5px solid #CDD4D0') });
+        } else {
+          for (let i = 1; i <= r.prevT; i++) dots.push({ style: DOT + fill(r.prevMarks[i - 1]) });
+          for (let i = 1; i <= r.used; i++) dots.push({ style: DOT + 'border: 1.5px dashed #E0605A; background: #FFF5F4' });
+        }
         for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
+        // 수강권 아래 줄
+        const canPlan = !r.firstDate && r.paid && !r.done && r.used === 0 && s.g !== '퇴휴';
+        const plan = canPlan ? planOf(s) : null;
+        const tk = !r.paid && r.newReg && r.used === 0 ? ['신규 (미입금)', 'color: #9A5B00; font-weight: 700']
+          : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 800']
+          : r.done ? ['수업완료', 'color: #007E82; font-weight: 800']
+          : r.firstDate ? [r.firstDate, 'color: #8A949E']
+          : r.used > 0 ? ['—', 'color: #8A949E']
+          : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
+          : ['예정일 입력', 'color: #5B7FB8; font-weight: 600; text-decoration: underline'];
+        const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
           name: s.name.replace('$', ''),
           quick: () => { if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); else if (s.canInfo) this.setState({ tinfo: Object.assign({ rowId: s.id, name: s.name.replace('$', ''), ticket: (this._tk || {})[s.id] || '' }, s.tInfo) }); setTimeout(() => { const d = document.getElementById('tiDlg'); if (d) d.focus(); }, 30); },
@@ -1303,8 +1395,12 @@ class Component extends DCLogic {
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
           dotGroups: dotGroups,
-          subText: r.needPay ? '입금 대기' : (r.since || '—'),
-          subStyle: r.needPay ? 'font-size: 10px; font-weight: 700; color: #C25A16; letter-spacing: -0.02em' : 'font-size: 10px; color: #8A949E; letter-spacing: -0.02em',
+          subText: tk[0],
+          subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
+          queueTxt: qn ? '+' + qn + ' 대기' : '',
+          tkClick: () => { if (canPlan) this.openTkPlan(s, plan); },
+          tkTitle: canPlan ? '눌러서 레슨시작일(예정) 직접 넣기' : '',
+          tkCls: canPlan ? 'qname' : '',
           lastStyle: base + 'background: ' + (s.rowBg ? rowBg : '#F7F8F8') + '; border-left: 1px solid ' + GRID,
           cells: r.cells.map(x => {
             const w = (x.d - 1 + FIRST) % 7;
@@ -1319,7 +1415,7 @@ class Component extends DCLogic {
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const bg = x.pay ? '#FAEFD2' : s.rowBg ? rowBg : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)),
+              text: x.text.replace('!', ''), chip: (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : s.rowBg ? chipFor(x.text).replace(/#1F7A5A/g, '#C8323C') : chipFor(x.text)) + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
@@ -1589,6 +1685,18 @@ class Component extends DCLogic {
           close: close,
           go: () => this.savePay(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.savePay(); } }
+        };
+      })(),
+      tp: (() => {
+        const Q = st.tkp;
+        if (!Q) return { open: false };
+        const close = () => { this.setState({ tkp: null }); this.focusSheet(); };
+        return {
+          open: true, name: Q.name, date: Q.date,
+          note: Q.r ? 'R 원생은 요일이 없어서 직접 넣어야 합니다. 실제로 첫 출결(1 또는 결1)을 넣으면 그 날짜로 바뀝니다.' : '실제로 첫 출결(1 또는 결1)을 넣으면 예정은 없어지고 그 날짜로 바뀝니다.',
+          setDate: e => this.setState({ tkp: Object.assign({}, Q, { date: e.target.value }) }),
+          save: () => this.saveTkPlan(false), clear: () => this.saveTkPlan(true), close: close,
+          key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveTkPlan(false); } }
         };
       })(),
       ti: (() => {
