@@ -141,7 +141,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.33.5</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -652,7 +652,7 @@ class Component extends DCLogic {
       { id: 26, g: 'R', name: '강준호', start: 0, fresh: true },
       { id: 27, g: '퇴휴', name: '임서윤', start: 0, fresh: true, status: '퇴원' },
       { id: 28, g: '퇴휴', name: 'U)권은서', start: 0, fresh: true, status: '휴원' },
-      { id: 31, g: '목', name: '박하늘', start: 0, newReg: true, time: '16:30' }
+      { id: 31, g: '목', name: '박하늘', start: 0, fresh: true, time: '16:30' }
     ].map(s => (s.time !== undefined || s.g === 'R' || s.g === '퇴휴' || s.id % 5 === 0) ? s : Object.assign({}, s, { time: ['14:00', '15:30', '16:00', '17:00', '18:30', '19:00'][s.id % 6] }));
   }
   sheetList() {
