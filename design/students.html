@@ -167,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.3</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1168,7 +1168,11 @@ class Component extends DCLogic {
       openCfg: () => { this.setState({ fltOpen: false, colsOpen: true, cfgTab: 'flt' }); setTimeout(() => { const d = document.getElementById('cfgDlg'); if (d) d.focus(); }, 30); },
       groups: FG.map(g => ({ label: g[1], opts: g[2].map(o => { const on = (F[g[0]] || []).indexOf(o[0]) >= 0; return { label: o[1], on: on ? 'true' : 'false', pick: () => setF(g[0], o[0]), style: pillS(on) }; }) }))
     };
-    const sorted = all.slice().sort((a, b) => PORDER.indexOf(a.part) - PORDER.indexOf(b.part) || DORDER.indexOf(a.days[0]) - DORDER.indexOf(b.days[0]) || a.name.localeCompare(b.name, 'ko'));
+    // 재원 탭 줄 순서: 강사(설정 '직원 순서', 목록에 없는 강사는 맨 뒤 가나다) → 레슨요일 → 수업 시간(시간 없으면 뒤) → 이름
+    const ordT = this.staffOrdered().map(e => e.name);
+    const ordTi = n => { const i = ordT.indexOf(n); return i < 0 ? 999 : i; };
+    const ordTm = s => { const t = ((s.extra || {}).times || {})[s.days[0]]; const m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m) return 9999; const h = +m[1]; return (h < 9 ? h + 12 : h) * 60 + +m[2]; };
+    const sorted = all.slice().sort((a, b) => ordTi(a.teacher) - ordTi(b.teacher) || (ordTi(a.teacher) === 999 ? String(a.teacher || '').localeCompare(String(b.teacher || ''), 'ko') : 0) || DORDER.indexOf(a.days[0]) - DORDER.indexOf(b.days[0]) || ordTm(a) - ordTm(b) || a.name.localeCompare(b.name, 'ko'));
     // 표시할 항목 (열)
     const CAT = this.colCatalog();
     const visible = this.visibleCols();
