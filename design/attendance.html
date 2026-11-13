@@ -106,10 +106,10 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 
         <div class="pnote" style="display: grid; grid-template-columns: 132px 304px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
           <span style="display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #3A4450">비고</span>
-          <span style="padding: 22px 0 0 8px; font-size: 12px; line-height: 1.5; white-space: pre-line; color: #3A4450">* 김재윤(월) (11월9일 기준) 6/8
+          <sc-if value="{{sampleNote}}" hint-placeholder-val="{{ true }}"><span style="padding: 22px 0 0 8px; font-size: 12px; line-height: 1.5; white-space: pre-line; color: #3A4450">* 김재윤(월) (11월9일 기준) 6/8
 * 정다온(월) (11월9일 기준) 3/8
 * 소율,소민(금) (11월6일 기준) 9/8</span>
-          <span style="padding: 40px 0 0 8px; font-size: 12px; color: #3A4450">* 김예나 2회 수업 (11/2 : 결석, 11/9 : 수업)</span>
+          <span style="padding: 40px 0 0 8px; font-size: 12px; color: #3A4450">* 김예나 2회 수업 (11/2 : 결석, 11/9 : 수업)</span></sc-if>
         </div>
       </div></div>
     </section>
@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.49.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.50.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -502,12 +502,12 @@ class Component extends DCLogic {
   students() {
     // 수업 요일·시간·드럼스틱 변경(수강생대장과 같이 쓰는 기록)을 적용 날짜가 들어 있는 달부터 반영한다.
     // 그 달은 처음부터 새 요일로 옮기고(이미 입력한 출결은 그대로 따라감), 그 전 달은 예전 요일 그대로.
-    const base = this.baseRows();
     const shared = this.state.shared || [];
-    if (!shared.length && !(this.state.statusList || []).length) return base;
     const MON = (this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [])[1] || 11;
     const p2 = n => String(n).padStart(2, '0');
     const mEnd = '2026-' + p2(MON) + '-' + p2(new Date(2026, MON, 0).getDate());
+    const base = this.monthRows(this.baseRows(), MON, mEnd);
+    if (!shared.length && !(this.state.statusList || []).length) return base;
     const nm = r => r.name.replace('$', '');
     const done = {}, out = [];
     base.forEach(r => {
@@ -527,7 +527,7 @@ class Component extends DCLogic {
       });
       // 요일 수가 줄었는데 남은 줄에 이번 달 출결이 있으면 지우지 않고 둔다
       spare.forEach(x => { if (Object.keys(ev[x.id] || {}).length) list.push(Object.assign({}, x)); });
-      list.forEach(x => { x.sid = list.length > 1 ? 'K' + key : undefined; if (list.length === 1 && first.sid) x.sid = first.sid; out.push(x); });
+      list.forEach(x => { x.sid = list.length > 1 ? (first.dbId ? first.sid : 'K' + key) : undefined; if (list.length === 1 && first.sid) x.sid = first.sid; out.push(x); });
     });
     return this.applyStatusList(this.applyTransfers(out, shared, MON, mEnd), MON, mEnd);
   }
@@ -685,7 +685,48 @@ class Component extends DCLogic {
     setTimeout(() => { const el = document.querySelector('.aflash > span'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
     this.focusSheet();
   }
+  // 로그인 사이트: 출석부 원생 줄 = 수강생대장(DB) 원생. 요일마다 한 줄, 출결·수납은 원생별 키 'D'+원생번호로 묶음
+  dbRows() {
+    const A = window.academy;
+    const SH = { '월요일': '월', '화요일': '화', '수요일': '수', '목요일': '목', '금요일': '금', '토요일': '토', '변동': 'R' };
+    const LG = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
+    const out = [];
+    (A.data.students || []).forEach(r => {
+      if (!r || !r.dbId) return;
+      const db = (A.data.byId || {})[r.dbId] || {};
+      const ex = r.extra || {}, fl = r.flags || {};
+      const days = (r.days && r.days.length ? r.days : ['변동']).map(d => SH[d] || (LG[d] ? d : null)).filter(Boolean);
+      const cnt = +ex.count || 4;
+      days.forEach(g => {
+        const m = /^(\d{1,2}):(\d{2})$/.exec((ex.times || {})[LG[g]] || '');
+        const time = m ? String(+m[1] < 9 ? +m[1] + 12 : +m[1]).padStart(2, '0') + ':' + m[2] : undefined;
+        out.push({ id: 'D' + r.dbId + '-' + g, sid: 'D' + r.dbId, dbId: r.dbId, g: g, name: r.name + (fl.cash ? '$' : ''), start: 0, fresh: true, time: time,
+          stick: !!ex.stickBox, teacher: r.teacher || '', join: db.join_date || '', dbStatus: db.status || 'act', tickets: cnt,
+          rowBg: fl.pro ? '#F9DADC' : undefined, nameBg: cnt > 4 ? '#DCD3EE' : undefined, cashNo: ex.cashNo || '' });
+      });
+    });
+    return out;
+  }
+  // 이 강사 탭·이 달에 나올 원생만: 그 달 담당 강사가 이 강사(그 달에 이 강사에게서 다른 강사로 옮긴 원생 포함), 입원 날짜가 이 달 끝 이전
+  monthRows(base, MON, mEnd) {
+    if (!base.length || !base[0].dbId) return base;
+    const TL0 = this.teacherList(); const me = TL0[Math.min(this.state.teacher || 0, TL0.length - 1)][0].replace(' 원장님', '');
+    const shared = this.state.shared || [], stl = this.state.statusList || [];
+    const nm = r => r.name.replace('$', '');
+    return base.filter(r => {
+      if (r.join && r.join > mEnd) return false;
+      const ch = shared.filter(e => e.name === nm(r) && e.teacher && e.from <= mEnd).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : (a.at || 0) - (b.at || 0));
+      const t = ch.length ? ch[ch.length - 1].teacher : r.teacher;
+      const movedOut = ch.some(e => e.prev && e.prev.teacher === me && +e.from.slice(5, 7) === MON);
+      if (t !== me && !movedOut) return false;
+      // 휴원·퇴원 기록 없이 DB 상태만 휴원·퇴원인 원생은 빼기
+      if (r.dbStatus && r.dbStatus !== 'act' && !stl.some(e => e.name === nm(r))) return false;
+      return true;
+    });
+  }
   baseRows() {
+    const A0 = window.academy;
+    if (A0 && A0.data && Array.isArray(A0.data.students)) return this.dbRows();
     const P = '#DCD3EE';
     return [
       { id: 1, g: '월', name: '김재윤', start: 0, fresh: true },
@@ -964,7 +1005,18 @@ class Component extends DCLogic {
     }));
   }
   stuInfo(name) {
-    try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); return (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) { return null; }
+    let hit = null;
+    try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); hit = (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) {}
+    const A = window.academy;
+    if (hit || !(A && A.data && Array.isArray(A.data.students))) return hit;
+    const r = A.data.students.find(x => x.name === name);
+    if (!r) return null;
+    const ex = r.extra || {}, fl = r.flags || {};
+    const to12 = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return m ? ((+m[1] % 12) || 12) + ':' + m[2] : ''; };
+    const days = r.days || ['변동'];
+    return { id: r.id, join: r.join, name: r.name, cls: fl.pro ? 'pro' : 'hobby', part: r.part || '', teacher: r.teacher || '', day: r.day || days.join('·'),
+      timeTxt: days.map(d => to12((ex.times || {})[d])).filter(Boolean).join(' · '), count: +ex.count || 4, dur: +ex.dur || 60, unit: +ex.unit || (fl.pro ? 62500 : 40000), total: +ex.total || 0,
+      cashOn: !!fl.cash, cashType: ex.cashType || 'person', cashNo: ex.cashNo || '', phone: r.phone || '', guardian: r.guardian || '', gphone: r.gphone || '', status: r.status || 'act' };
   }
   openPay(late) {
     // late: 휴원·퇴원 원생이 다음 달 이후에 낸 미납금액 수납 (출석부 칸 없음, 수강권 칸에서 열어 고침)
@@ -1707,7 +1759,7 @@ class Component extends DCLogic {
           // 휴원·퇴원·이동으로 내려간 원생은 시간 왼쪽에 직전 요일
           hasTime: !!s.time || !!s.origG, time: ((s.origG ? s.origG + ' ' : '') + (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12))).trim(),
           // 신규: 등록한 달 동안 이름 옆 파란 '신규' (수강생대장 입원 연월일이 이 달이거나, 아직 입금 전 신규)
-          isNew: (() => { if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')]; const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && 2000 + +m[1] === 2026 && +m[2] === MON; })(),
+          isNew: (() => { if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && 2000 + +m[1] === 2026 && +m[2] === MON; })(),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.status || ''), checkChip: (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : s.status === '강사 변경' ? pill('#E3ECFD', '#2952A3') : 'display: none') + '; height: 18px; padding: 0 6px; font-size: 10px',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
@@ -2004,6 +2056,7 @@ class Component extends DCLogic {
 
     return {
       teacherTabs: teacherTabs,
+      sampleNote: !(window.academy && window.academy.data),
       teacherName: curT[0],
       teacherPart: curT[1] === '원장' ? '원장 · 담당 강사' : curT[1] + ' 담당 강사',
       teacherInitial: curT[0].slice(0, 1),
