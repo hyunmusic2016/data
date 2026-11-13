@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.51.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.51.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -553,6 +553,8 @@ class Component extends DCLogic {
     const base = this.monthRows(this.baseRows(), MON, mEnd);
     if (!shared.length && !(this.state.statusList || []).length) return base;
     const nm = r => r.name.replace('$', '');
+    // 학원 수업 시간은 오후 1시~밤 10시: 예전에 '09:00'처럼 저장된 1~11시도 오후로 본다
+    const pmT = v => { const m = /^(\d{1,2}):(\d{2})$/.exec(v || ''); if (!m) return undefined; const h = +m[1]; return String(h >= 1 && h < 12 ? h + 12 : h).padStart(2, '0') + ':' + m[2]; };
     const done = {}, out = [];
     base.forEach(r => {
       const key = String(r.sid || r.id);
@@ -567,7 +569,7 @@ class Component extends DCLogic {
       const ev = MON === 11 ? (this.state.ev || {}) : (this.state.evByMonth[MON] || {});
       const list = act.days.map(d => {
         const ex = rows.find(x => x.g === d) || spare.shift();
-        return Object.assign({}, ex || first, { id: ex ? ex.id : key + '-' + d, g: d, time: act.times[d] || undefined, stick: !!act.stick });
+        return Object.assign({}, ex || first, { id: ex ? ex.id : key + '-' + d, g: d, time: pmT(act.times[d]), stick: !!act.stick });
       });
       // 요일 수가 줄었는데 남은 줄에 이번 달 출결이 있으면 지우지 않고 둔다
       spare.forEach(x => { if (Object.keys(ev[x.id] || {}).length) list.push(Object.assign({}, x)); });
@@ -715,7 +717,7 @@ class Component extends DCLogic {
     const ORD = ['월', '화', '수', '목', '금', '토', 'R'];
     const days = Q.days.slice().sort((a, b) => ORD.indexOf(a) - ORD.indexOf(b));
     const times = {};
-    days.forEach(d => { const t = Q.times[d] || {}; const h = parseInt(t.h, 10); if (h) times[d] = String(h < 9 ? h + 12 : h).padStart(2, '0') + ':' + String(t.m || '0').padStart(2, '0'); });
+    days.forEach(d => { const t = Q.times[d] || {}; const h = parseInt(t.h, 10); if (h) times[d] = String(h < 12 ? h + 12 : h).padStart(2, '0') + ':' + String(t.m || '0').padStart(2, '0'); });
     const cur = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === Q.key && x.g !== '퇴휴');
     const prev = { days: cur.map(x => x.g), times: cur.reduce((o, x) => { if (x.time) o[x.g] = x.time; return o; }, {}), stick: !!(cur[0] || {}).stick };
     const list = this.readShared().concat([{ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, prev: prev }]);
@@ -743,7 +745,7 @@ class Component extends DCLogic {
       const cnt = +ex.count || 4;
       days.forEach(g => {
         const m = /^(\d{1,2}):(\d{2})$/.exec((ex.times || {})[LG[g]] || '');
-        const time = m ? String(+m[1] < 9 ? +m[1] + 12 : +m[1]).padStart(2, '0') + ':' + m[2] : undefined;
+        const time = m ? String(+m[1] < 12 ? +m[1] + 12 : +m[1]).padStart(2, '0') + ':' + m[2] : undefined;
         out.push({ id: 'D' + r.dbId + '-' + g, sid: 'D' + r.dbId, dbId: r.dbId, g: g, name: r.name + (fl.cash ? '$' : ''), start: 0, fresh: true, time: time,
           stick: !!ex.stickBox, teacher: r.teacher || '', join: db.join_date || '', dbStatus: db.status || 'act', tickets: cnt,
           rowBg: fl.pro ? '#F9DADC' : undefined, cashNo: ex.cashNo || '' });

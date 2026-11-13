@@ -351,7 +351,7 @@
   function termsOf(rec) {
     var ex = rec.extra || {}, fl = rec.flags || {};
     var times = {};
-    Object.keys(ex.times || {}).forEach(function (d) { var m = /^(\d{1,2}):(\d{2})$/.exec(ex.times[d]); if (m && SHORT[d]) { var h = +m[1]; times[SHORT[d]] = ('0' + (h < 9 ? h + 12 : h)).slice(-2) + ':' + m[2]; } });
+    Object.keys(ex.times || {}).forEach(function (d) { var m = /^(\d{1,2}):(\d{2})$/.exec(ex.times[d]); if (m && SHORT[d]) { var h = +m[1]; times[SHORT[d]] = ('0' + (h < 12 ? h + 12 : h)).slice(-2) + ':' + m[2]; } });
     return {
       lesson: { days: (rec.days || []).map(function (d) { return SHORT[d]; }).filter(Boolean), times: times, stick: !!ex.stickBox, teacher: rec.teacher || '', part: rec.part || '' },
       fee: { flags: { pro: fl.pro ? 1 : 0 }, extra: { count: ex.count, dur: ex.dur, unit: ex.unit, pay: ex.pay, total: ex.total } },
