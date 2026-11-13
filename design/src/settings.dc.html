@@ -257,7 +257,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.48.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.49.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -351,7 +351,49 @@ class Component extends DCLogic {
     super(props);
     this.state = { tick: 0, err: '', resetAsk: false, printOpen: false, bw: true, expOpen: false, view: this.viewOfHash() };
   }
+  // 모든 팝업(role=dialog/alertdialog)을 마우스로 끌어 옮기기. 입력칸·버튼 위에서는 끌지 않음.
+  // 화면을 다시 그려도 옮긴 자리를 유지하고(aria-label별), 팝업이 닫히면 다음에 다시 가운데서 열림.
+  installPopupDrag() {
+    if (window.__popDrag) return; window.__popDrag = 1;
+    const off = {}; let drag = null;
+    const st = document.createElement('style');
+    st.textContent = '[role="dialog"],[role="alertdialog"]{cursor:move}[role="dialog"] input,[role="dialog"] textarea,[role="dialog"] select,[role="alertdialog"] input,[role="alertdialog"] textarea,[role="alertdialog"] select{cursor:auto}[role="dialog"] button,[role="alertdialog"] button,[role="dialog"] label,[role="alertdialog"] label{cursor:pointer}';
+    document.head.appendChild(st);
+    const SEL = '[role="dialog"],[role="alertdialog"]';
+    const keyOf = el => el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || 'popup';
+    const find = k => [].slice.call(document.querySelectorAll(SEL)).filter(el => keyOf(el) === k)[0];
+    const put = (el, o) => { const v = o ? o[0] + 'px ' + o[1] + 'px' : ''; if (el.style.translate !== v) el.style.translate = v; };
+    const sync = () => {
+      const seen = {};
+      [].slice.call(document.querySelectorAll(SEL)).forEach(el => { const k = keyOf(el); seen[k] = 1; put(el, off[k]); });
+      Object.keys(off).forEach(k => { if (!seen[k] && !(drag && drag.k === k)) delete off[k]; });
+    };
+    new MutationObserver(sync).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    document.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      const el = e.target.closest && e.target.closest(SEL); if (!el) return;
+      if (e.target.closest('input,textarea,select,button,a,label,option,[contenteditable="true"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[draggable="true"]')) return;
+      const k = keyOf(el), o = off[k] || [0, 0];
+      drag = { k: k, x: e.clientX, y: e.clientY, ox: o[0], oy: o[1] };
+      e.preventDefault();
+    }, true);
+    document.addEventListener('mousemove', e => {
+      if (!drag) return;
+      const el = find(drag.k); if (!el) return;
+      let nx = drag.ox + e.clientX - drag.x, ny = drag.oy + e.clientY - drag.y;
+      off[drag.k] = [nx, ny]; put(el, off[drag.k]);
+      // 화면 밖으로 다 나가지 않게: 위쪽은 화면 안, 좌우·아래는 80px 이상 보이게
+      const r = el.getBoundingClientRect();
+      if (r.top < 0) ny -= r.top;
+      if (r.top > window.innerHeight - 60) ny -= r.top - (window.innerHeight - 60);
+      if (r.left > window.innerWidth - 80) nx -= r.left - (window.innerWidth - 80);
+      if (r.right < 80) nx += 80 - r.right;
+      off[drag.k] = [nx, ny]; put(el, off[drag.k]);
+    });
+    document.addEventListener('mouseup', () => { drag = null; });
+  }
   componentDidMount() {
+    this.installPopupDrag();
     this._st = e => { if (e.key === 'academy.menu') this.setState({ tick: Date.now() }); };
     window.addEventListener('storage', this._st);
     this._dbl = () => this.setState({ tick: Date.now() });
