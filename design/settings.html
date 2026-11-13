@@ -19,6 +19,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
 @media print{.noprint{display:none!important}.printonly{display:block!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .menurow:last-child{border-bottom:none!important}.menurow:hover{background-color:#F7FAFA!important}
 .menurow button[disabled]{cursor:default!important}
+.hubitem:hover{background:#F7FAFA!important}
 @keyframes rowflash2{0%,55%{background-color:#E6F6F6}100%{background-color:#FFFFFF}}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
@@ -48,6 +49,30 @@ html.bwp .printonly .pcell{border-color:#000!important}
       </div>
 
       <div class="shellscroll" style="padding: 22px; display: flex; flex-direction: column; gap: 16px">
+        <sc-if value="{{viewHub}}" hint-placeholder-val="{{ true }}">
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; align-items: start; max-width: 1100px">
+            <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
+              <div style="display: flex; flex-direction: column; padding: 16px 18px 6px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.04)">
+                <span style="padding-bottom: 10px; border-bottom: 2px solid #00A6AB; font-size: 14px; font-weight: 800; color: #3A4450">{{g.title}}</span>
+                <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
+                  <button type="button" class="hubitem" onClick="{{it.open}}" style="{{it.style}}"><span>{{it.label}}</span><span style="flex: 1"></span><sc-if value="{{it.soon}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 6px; background: #EEF1F0; color: #8A949E; font-size: 11px; font-weight: 700">준비 중</span></sc-if><span aria-hidden="true" style="color: #B7C0BC; font-size: 16px">›</span></button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{viewSub}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <button type="button" class="noexp" onClick="{{goHub}}" style="display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">‹ 설정</button>
+            <span style="font-size: 13px; color: #8A949E">{{subGroup}}</span>
+            <span style="font-size: 13px; color: #B7C0BC">›</span>
+            <span style="font-size: 15px; font-weight: 800; color: #17201C">{{subTitle}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{viewSoon}}" hint-placeholder-val="{{ false }}">
+          <div style="max-width: 760px; padding: 40px 22px; border-radius: 18px; background: #FAFBFA; border: 1px dashed #CDD4D0; text-align: center; font-size: 15px; font-weight: 600; color: #8A949E">{{subTitle}} 기능은 준비 중입니다.</div>
+        </sc-if>
+        <sc-if value="{{viewMenu}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 14px; max-width: 760px; padding: 20px 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
           <div style="display: flex; align-items: center; gap: 10px">
             <span style="width: 30px; height: 30px; flex: none; border-radius: 9px; background: #E6F6F6; color: #007E82; display: inline-flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h12"></path></svg></span>
@@ -79,6 +104,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             </div>
           </sc-if>
         </div>
+        </sc-if>
       </div>
     </section>
 
@@ -105,7 +131,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.40.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.41.0</div>
 
   <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -139,18 +165,20 @@ class DCLogic{constructor(props){this.props=props||{};this.state={}}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { tick: 0, err: '', resetAsk: false, printOpen: false, bw: true, expOpen: false };
+    this.state = { tick: 0, err: '', resetAsk: false, printOpen: false, bw: true, expOpen: false, view: this.viewOfHash() };
   }
   componentDidMount() {
     this._st = e => { if (e.key === 'academy.menu') this.setState({ tick: Date.now() }); };
     window.addEventListener('storage', this._st);
     this._dbl = () => this.setState({ tick: Date.now() });
     document.addEventListener('academy:data', this._dbl);
+    this._hc = () => this.setState({ view: this.viewOfHash() });
+    window.addEventListener('hashchange', this._hc);
   }
   // 맨 위 메뉴 탭 (모든 페이지 공통): 설정 > 메뉴 탭에서 순서·이름·숨기기·추가·삭제를 정한다.
   // 이 브라우저에 'academy.menu'로 저장하고, 로그인한 사이트에서는 Supabase(app_settings)와 같이 쓴다.
   menuItems() {
-    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['staff', '직원명부', '#'], ['settings', '설정', 'settings.html']];
+    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
     let cfg = null;
     try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
     const base = {};
@@ -170,6 +198,21 @@ class Component extends DCLogic {
       style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
         (t.id === cur ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));
+  }
+  // 설정 안의 기능 목록 (카드 = 묶음, 줄 = 기능). 새 기능은 여기에 넣는다. ready: false 이면 '준비 중'
+  features() {
+    return [
+      { title: '화면·메뉴', items: [{ id: 'menu', label: '메뉴 탭', ready: true }] },
+      { title: '직원', items: [{ id: 'staff', label: '직원명부', ready: false }] }
+    ];
+  }
+  viewOfHash() {
+    const h = (location.hash || '').replace('#', '');
+    return this.features().some(g => g.items.some(i => i.id === h)) ? h : 'hub';
+  }
+  openView(id) {
+    try { if (id === 'hub') history.replaceState(null, '', location.pathname + location.search); else location.hash = id; } catch (e) {}
+    this.setState({ view: id, err: '', resetAsk: false });
   }
   // 메뉴 탭 편집은 원장님만 (로그인 안 한 시안에서는 누구나)
   canEdit() {
@@ -295,10 +338,12 @@ class Component extends DCLogic {
       await this.saveBlob(this.expName('pdf'), pdf.output('blob'));
     } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
   }
+  featureOf(id) { let f = null; this.features().forEach(g => g.items.forEach(i => { if (i.id === id) f = Object.assign({ group: g.title }, i); })); return f; }
   async exportExcel() {
     const X = window.XLSX;
     if (!X) { window.console && console.warn('엑셀 도구를 불러오지 못했습니다'); return; }
     const items = this.menuItems();
+    const hub = this.state.view !== 'menu';
     const LINE = { style: 'thin', color: { rgb: 'C9D0CC' } };
     const BOR = { top: LINE, bottom: LINE, left: LINE, right: LINE };
     const ws = {};
@@ -306,6 +351,19 @@ class Component extends DCLogic {
       o = o || {};
       ws[X.utils.encode_cell({ r: r, c: c })] = { t: typeof v === 'number' ? 'n' : 's', v: v == null ? '' : v, s: { alignment: { horizontal: o.align || 'center', vertical: 'center' }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold }, fill: o.fill ? { fgColor: { rgb: o.fill } } : undefined, border: o.border === false ? undefined : BOR } };
     };
+    if (hub) {
+      const rows = []; this.features().forEach(g => g.items.forEach(i => rows.push([g.title, i.label, i.ready ? '사용 중' : '준비 중'])));
+      put(0, 0, '현실용음악학원 설정', { bold: true, sz: 15, fill: 'E6F6F6', border: false, align: 'left' });
+      ['묶음', '기능', '상태'].forEach((h, i) => put(2, i, h, { bold: true, fill: 'EEF2EE' }));
+      rows.forEach((r, i) => r.forEach((v, k) => put(3 + i, k, v, { align: k === 1 ? 'left' : 'center' })));
+      ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 2 + rows.length, c: 2 } });
+      ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }];
+      ws['!cols'] = [{ wch: 16 }, { wch: 24 }, { wch: 12 }];
+      const wb0 = X.utils.book_new(); X.utils.book_append_sheet(wb0, ws, '설정');
+      const out0 = X.write(wb0, { bookType: 'xlsx', type: 'array', cellStyles: true });
+      await this.saveBlob(this.xlsName(), new Blob([out0], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+      return;
+    }
     put(0, 0, '현실용음악학원 설정 · 메뉴 탭', { bold: true, sz: 15, fill: 'E6F6F6', border: false, align: 'left' });
     ['순서', '탭 이름', '종류', '보이기'].forEach((h, i) => put(2, i, h, { bold: true, fill: 'EEF2EE' }));
     items.forEach((t, i) => { put(3 + i, 0, i + 1); put(3 + i, 1, t.label, { align: 'left' }); put(3 + i, 2, t.custom ? '추가한 탭' : '기본 탭'); put(3 + i, 3, t.hidden ? '숨김' : '보임'); });
@@ -317,7 +375,7 @@ class Component extends DCLogic {
     const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     await this.saveBlob(this.xlsName(), new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   }
-  xlsName() { const d = new Date(); return '설정_메뉴탭_' + d.getFullYear() + '년' + (d.getMonth() + 1) + '월' + d.getDate() + '일.xlsx'; }
+  xlsName() { const d = new Date(); return '설정_' + (this.state.view === 'menu' ? '메뉴탭' : this.state.view === 'hub' ? '목록' : (this.featureOf(this.state.view) || {}).label || '') + '_' + d.getFullYear() + '년' + (d.getMonth() + 1) + '월' + d.getDate() + '일.xlsx'; }
   renderVals() {
     const st = this.state;
     const can = this.canEdit();
@@ -359,8 +417,13 @@ class Component extends DCLogic {
       };
     });
     const d = new Date();
+    const V = st.view || 'hub', F = this.featureOf(V);
+    const groups = this.features().map(g => ({ title: g.title, items: g.items.map((it, k) => ({ label: it.label, soon: !it.ready, open: () => this.openView(it.id),
+      style: 'display: flex; align-items: center; gap: 8px; width: 100%; min-height: 58px; padding: 0 2px; border: none; ' + (k < g.items.length - 1 ? 'border-bottom: 1px solid #E6E9E7; ' : '') + 'background: transparent; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; text-align: left; cursor: pointer' })) }));
     return {
       tabs: this.menuTabs('settings'),
+      groups: groups, viewHub: V === 'hub', viewSub: V !== 'hub', viewMenu: V === 'menu', viewSoon: !!(F && !F.ready),
+      subTitle: F ? F.label : '', subGroup: F ? F.group : '', goHub: () => this.openView('hub'),
       items: rows, canEdit: can, readOnly: !can, err: st.err,
       resetLabel: st.resetAsk ? '한 번 더 누르면 기본값으로' : '기본값으로',
       resetMenu: () => { if (!st.resetAsk) { this.setState({ resetAsk: true }); return; } try { localStorage.setItem('academy.menu', 'null'); } catch (e) {} this.setState({ resetAsk: false, tick: Date.now() }); },
