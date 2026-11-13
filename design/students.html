@@ -167,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.53.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.53.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1153,7 +1153,7 @@ class Component extends DCLogic {
     const DAY = { '월요일': ['#FDE8E7', '#B4332B'], '화요일': ['#E3ECFD', '#2952A3'], '수요일': ['#FCF1C2', '#7A6200'], '목요일': ['#DFF2E4', '#2F6B43'], '금요일': ['#FDEBDC', '#9A4A12'], '토요일': ['#ECE4F8', '#5B4A8B'], '변동': ['#EEF1F0', '#3A4450'] };
     const AGE = { '학생': ['#E3F3EC', '#2F6B43'], '성인': ['#FBE6E4', '#9A3A31'] };
     const chip = (c, w) => 'display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 9px; min-width: ' + (w || 52) + 'px; box-sizing: border-box; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1];
-    // 줄 높이: 한 화면에 15~20명 보이게 (v0.53.0, 예전 46px)
+    // 줄 높이: 한 화면에 15~20명 보이게 (v0.53.1, 예전 46px)
     const cell = 'min-height: 30px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
     const all = this.students().map(s => this.enrich(s));
     const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
