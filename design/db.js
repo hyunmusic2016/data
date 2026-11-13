@@ -232,8 +232,8 @@
   }
   // 직원명부·수강과목: 새 줄은 insert(번호를 받아 id를 바꿔 둠), 바뀐 줄은 update, 빠진 줄은 delete
   function idxList(list) { var o = {}; (list || []).forEach(function (e) { o[e.id] = JSON.stringify(e); }); return o; }
-  function empFromRow(r) { return { id: 'E' + r.id, seq: r.seq, role: r.role, name: r.name, phone: r.phone || '', addr: r.addr || '', duty: r.duty || '', email: r.email || '', subjects: r.subjects || [], tab: r.tab !== false, hire: r.hire_date || '', leave: r.leave_date || '', leaveReason: r.leave_reason || '', memo: r.memo || '', linked: !!r.user_id }; }
-  function empToRow(e) { return { seq: e.seq, role: e.role, name: e.name, phone: e.phone || null, addr: e.addr || null, duty: e.duty || null, email: e.email || null, subjects: e.subjects || [], tab: e.tab !== false, hire_date: e.hire || null, leave_date: e.leave || null, leave_reason: e.leaveReason || null, memo: e.memo || null }; }
+  function empFromRow(r) { return { id: 'E' + r.id, seq: r.seq, role: r.role, titles: r.titles && r.titles.length ? r.titles : [r.role], name: r.name, phone: r.phone || '', addr: r.addr || '', duty: r.duty || '', email: r.email || '', subjects: r.subjects || [], tab: r.tab !== false, hire: r.hire_date || '', leave: r.leave_date || '', leaveReason: r.leave_reason || '', memo: r.memo || '', linked: !!r.user_id }; }
+  function empToRow(e) { return { seq: e.seq, role: e.role, titles: e.titles || [e.role], name: e.name, phone: e.phone || null, addr: e.addr || null, duty: e.duty || null, email: e.email || null, subjects: e.subjects || [], tab: e.tab !== false, hire_date: e.hire || null, leave_date: e.leave || null, leave_reason: e.leaveReason || null, memo: e.memo || null }; }
   var pending = {};
   function syncRows(list, kind, table, P, toRow, key) {
     if (!A.staff || A.staff.role !== 'owner') { toast('원장님만 바꿀 수 있습니다'); return; }
