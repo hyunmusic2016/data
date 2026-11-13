@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.51.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.52.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1726,7 +1726,8 @@ class Component extends DCLogic {
     // 수강권 칸 모양 (동그라미 + 레슨시작일·상태 줄 + 미납금액 수납완료 줄). 출석부 화면과 수강생대장 휴원·퇴원 탭이 같이 쓴다
     const tkView = (s, r) => {
     const dots = [], dotGroups = [];
-    const DOT = 'width: 7px; height: 7px; border-radius: 50%; box-sizing: border-box; ';
+    // 동그라미 크기 10px (v0.52.0, 예전 7px)
+    const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
     const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
     if (r.paid) {
       for (let i = 1; i <= r.T; i++) dots.push({ style: DOT + (i <= r.used ? fill(r.marks[i - 1]) : 'border: 1.5px solid #CDD4D0') });
@@ -1735,6 +1736,8 @@ class Component extends DCLogic {
       for (let i = 1; i <= r.used; i++) dots.push({ style: DOT + 'border: 1.5px dashed #E0605A; background: #FFF5F4' });
     }
     for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
+    // 중도 입금(남은 회차가 있는데 또 입금): 입금한 횟수만큼 초록 점선 동그라미를 뒤에 붙인다. 지금 수강권을 다 쓰면 그 수강권이 본 동그라미가 된다
+    if (r.paid) (r.queue || []).forEach(c => { const q = []; for (let i = 0; i < c; i++) q.push({ style: DOT + 'border: 1.5px dashed #00A6AB; background: #F2FBFB' }); for (let i = 0; i < q.length; i += 4) dotGroups.push({ dots: q.slice(i, i + 4) }); });
     // 한 줄에 8개(4개씩 2묶음)까지, 넘으면 아래 줄로 8개씩 이어서 (줄 높이가 그만큼 늘어남)
     const dotLines = [];
     for (let i = 0; i < dotGroups.length; i += 2) dotLines.push({ groups: dotGroups.slice(i, i + 2) });
@@ -1756,7 +1759,7 @@ class Component extends DCLogic {
     if (starts.length) subParts.push({ t: starts.join(', ') + (tkUse[0] ? (/\(예정\)$/.test(tkUse[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
     if (tkUse[0]) subParts.push({ t: tkUse[0], style: tkUse[1] });
     const qn = r.queue.reduce((n, c) => n + c, 0);
-    return { dots: dots, dotGroups: dotGroups, dotLines: dotLines, canPlan: canPlan, plan: plan, tk: tk, subParts: subParts, lateLine: lateLine, queueTxt: qn ? '+' + qn + ' 대기' : '' };
+    return { dots: dots, dotGroups: dotGroups, dotLines: dotLines, canPlan: canPlan, plan: plan, tk: tk, subParts: subParts, lateLine: lateLine, queueTxt: '' };
     };
     const all = this.students();
     const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['휴원', '휴원'], ['퇴원', '퇴원'], ['이동', '이동']];
@@ -1819,7 +1822,7 @@ class Component extends DCLogic {
           dotGroups: dotGroups, dotLines: dotLines,
           subText: tk[0], subParts: subParts, lateLine: lateLine,
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
-          queueTxt: qn ? '+' + qn + ' 대기' : '',
+          queueTxt: '',
           // 다음 달 이후에 낸 미납금액 수납은 출석부 칸이 없으므로 수강권 칸을 눌러 고치거나 취소한다
           tkClick: () => { if (r.latePaid) this.openPay({ sid: r.latePaid.sid, date: r.latePaid.date }); else if (canPlan) this.openTkPlan(s, plan); },
           tkTitle: canPlan ? '눌러서 레슨시작일(예정) 직접 넣기' : '',
