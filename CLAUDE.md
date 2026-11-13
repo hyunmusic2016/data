@@ -62,7 +62,7 @@
 - 설계: `supabase/schema.sql` (SQL Editor에 붙여 넣어 실행). 표: staff(직원·로그인 연결), students(기본 정보), student_terms(날짜별 수업 정보·수강료·현금영수증 = 시작 날짜 + 값), status_changes(휴원·퇴원·복귀), attendance(원생·날짜마다 한 칸), payments(수납, 미납금액 수납은 kind 'unpaid'), ticket_plans(레슨시작일 예정), activity_log(3개월, pg_cron 삭제).
 - 지금 localStorage에 있는 것(academy.lessonChanges / statusChanges / students / payments / ticketPlans / tickets)은 위 표로 옮긴다. 원생은 이름이 아니라 등록번호(students.id)로 맞춘다. 화면 설정(열·필터·시트 탭 순서 등)은 브라우저에 그대로 둔다.
 - 사이트에는 Project URL과 anon(public) 키만 넣는다(공개돼도 RLS로 막힘). **service_role(비밀) 키는 절대 코드·GitHub·대화에 넣지 않는다.**
-- 프로젝트 지역: 서울(Northeast Asia (Seoul)).
+- 프로젝트 지역: 서울(Northeast Asia (Seoul)). 만들 때 설정: GitHub 연결 안 함, Enable Data API 켬, Automatically expose new tables 끔(권한은 schema.sql에서 authenticated에게만 직접 줌, anon은 아무 권한 없음), Enable automatic RLS 켬.
 
 ## 수강료·강사 수당 규칙
 - **나중에 꼭 확인할 것:** 통계 페이지나 강사 월급(수당) 계산 탭을 만들 때, 수강생대장에서 적용 날짜로 바꾼 수업 정보·수강료·현금영수증(예정 변경 포함, 지난 날짜로 바꾼 경우 포함)이 그 날짜 기준으로 잘 반영되는지 원장님께 **반드시 먼저 여쭤보고** 함께 확인한다.

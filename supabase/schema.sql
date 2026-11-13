@@ -139,6 +139,16 @@ drop trigger if exists attendance_touch on attendance;
 create trigger attendance_touch before update on attendance for each row execute function touch_updated_at();
 
 -- =====================================================================
+-- 접근 권한: 프로젝트를 만들 때 'Automatically expose new tables'를 껐으므로 직접 준다.
+-- 로그인한 사용자(authenticated)에게만 주고, 로그인 안 한 방문자(anon)에게는 아무 권한도 주지 않는다.
+-- (실제로 무엇을 볼 수 있는지는 아래 RLS 규칙이 한 번 더 막는다: staff 표에 등록된 직원만)
+-- =====================================================================
+grant usage on schema public to authenticated;
+grant select, insert, update, delete on staff, students, student_terms, status_changes, attendance, payments, ticket_plans, activity_log to authenticated;
+grant usage, select on all sequences in schema public to authenticated;
+revoke all on staff, students, student_terms, status_changes, attendance, payments, ticket_plans, activity_log from anon;
+
+-- =====================================================================
 -- 보안 (RLS): staff 표에 등록된 '활성' 직원만 데이터를 읽고 쓸 수 있다.
 -- 로그인하지 않은 사람(공개 사이트 방문자)은 아무것도 볼 수 없다.
 -- =====================================================================
