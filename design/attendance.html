@@ -136,6 +136,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <sc-for list="{{lg.c.headsS}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}"><span>{{h.label}}</span><span style="font-size: 11px; font-weight: 400; opacity: 0.8">{{h.range}}</span></span></sc-for>
           </div>
           <sc-for list="{{lg.c.groups}}" as="g" hint-placeholder-count="6">
+            <sc-if value="{{g.sep}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 18px; padding: 0 16px; background: #F1F3F2; border-top: 2px solid #C6CDC7; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: #5E6873"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9AA4AD"></span>휴원 · 퇴원 · 이동</div></sc-if>
             <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); border-top: 1px solid #D5DBD8">
               <span style="display: flex; align-items: center; justify-content: center; padding: 6px 0"><span style="{{g.dayChip}}">{{g.day}}</span></span>
               <div style="display: flex; flex-direction: column; border-left: 1px solid #E8ECEA">
@@ -206,7 +207,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.53.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.53.3</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -659,6 +660,7 @@ class Component extends DCLogic {
     const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] };
     const to12 = t => { const x = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return x ? ((+x[1] % 12) || 12) + ':' + x[2] : ''; };
     let nNotes = 0, nRows = 0;
+    this._clSep = 0;
     const groups = this.attOrder(this.students()).map(G => {
       const dc = DC[G.g] || DC.R;
       const rows = G.rows.map(s => {
@@ -681,7 +683,9 @@ class Component extends DCLogic {
         return { name: name, sub: (s.g === '퇴휴' ? (s.origG ? s.origG + ' ' : '') : '') + (s.time ? to12(s.time) : '') + (s.status ? (s.time || s.origG ? ' · ' : '') + s.status : ''),
           rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#FDF0F2' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]) };
       });
-      return { day: G.g, rows: rows,
+      const isOutG = ['휴원', '퇴원', '이동'].indexOf(G.g) >= 0;
+      const sep = isOutG && !this._clSep; if (sep) this._clSep = 1;
+      return { day: G.g, rows: rows, sep: sep,
         dayChip: 'display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; font-size: ' + (G.g.length > 1 ? 13 : 16) + 'px; font-weight: 600; background: ' + dc[0] + '; color: ' + dc[1] };
     });
     const heads = [];
@@ -1951,7 +1955,7 @@ class Component extends DCLogic {
     // 수강권 칸 모양 (동그라미 + 레슨시작일·상태 줄 + 미납금액 수납완료 줄). 출석부 화면과 수강생대장 휴원·퇴원 탭이 같이 쓴다
     const tkView = (s, r) => {
     const dots = [], dotGroups = [];
-    // 동그라미 크기 10px (v0.53.2, 예전 7px)
+    // 동그라미 크기 10px (v0.53.3, 예전 7px)
     const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
     const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
     if (r.paid) {
@@ -2210,10 +2214,11 @@ class Component extends DCLogic {
       lesson: 'width: 150px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 1px solid #EBEEEC',
       count: 'width: 120px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #EBEEEC',
       teacher: 'width: 230px; flex: none; display: flex; align-items: center; gap: 10px; padding-left: 16px; box-sizing: border-box; border-left: 1px solid #EBEEEC',
-      nav: ['att', 'class', 'work'].filter(k => k !== hKind && kOk(k)).map(k => ({ label: KC[k][0], isAtt: k === 'att', isClass: k === 'class', isWork: k === 'work',
-        go: () => this.setState({ logView: k === 'att' ? null : k, sel: null, pop: null }),
-        style: 'display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 9px; border-radius: 12px; border: 1px solid ' + KC[k][5] + '; background: ' + KC[k][3] + '; color: ' + KC[k][4] + '; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; white-space: nowrap',
-        icon: 'width: 27px; height: 27px; border-radius: 8px; background: ' + KC[k][1] + '; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center' }))
+      // 출석부·수업일지·업무일지 버튼은 어느 화면에서나 이 순서로 (그 강사 탭에서 쓸 수 있는 것만, 출석부밖에 없으면 버튼 없음)
+      nav: (() => { const L = ['att', 'class', 'work'].filter(k => kOk(k)); return L.length < 2 ? [] : L; })().map(k => ({ label: KC[k][0], isAtt: k === 'att', isClass: k === 'class', isWork: k === 'work',
+        go: () => { if (k !== hKind) this.setState({ logView: k === 'att' ? null : k, sel: null, pop: null }); },
+        style: 'display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 9px; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; ' + (k === hKind ? 'border: 1.5px solid ' + KC[k][1] + '; background: ' + KC[k][1] + '; color: #FFFFFF; cursor: default; box-shadow: 0 4px 12px ' + KC[k][2] : 'border: 1px solid ' + KC[k][5] + '; background: ' + KC[k][3] + '; color: ' + KC[k][4] + '; cursor: pointer'),
+        icon: 'width: 27px; height: 27px; border-radius: 8px; background: ' + (k === hKind ? 'rgba(255, 255, 255, 0.22)' : KC[k][1]) + '; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center' }))
     };
     // 수업일지·업무일지 화면 값
     const lgM = cur[1] || 11;
