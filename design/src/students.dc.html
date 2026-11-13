@@ -65,6 +65,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <span id="secCount" style="{{cur.countStyle}}">{{cur.count}}명</span>
         <span style="font-size: 12px; color: #8A949E">{{cur.note}}</span>
         <span style="flex: 1"></span>
+        <sc-if value="{{fltRes.on}}" hint-placeholder-val="{{ false }}"><span class="noexp" title="필터로 걸러낸 원생 수" style="{{fltRes.style}}">필터 결과 <b style="font-weight: 600">{{fltRes.n}}</b>명</span></sc-if>
         <div class="noexp" style="position: relative">
           <button type="button" onClick="{{flt.toggle}}" aria-expanded="{{flt.openTxt}}" aria-haspopup="dialog" style="{{flt.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{flt.hasActive}}" hint-placeholder-val="{{ false }}"><span style="{{flt.badge}}">{{flt.count}}</span></sc-if></button>
           <sc-if value="{{flt.open}}" hint-placeholder-val="{{ false }}">
@@ -166,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.53.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.53.4</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1150,7 +1151,7 @@ class Component extends DCLogic {
     const DAY = { '월요일': ['#FDE8E7', '#B4332B'], '화요일': ['#E3ECFD', '#2952A3'], '수요일': ['#FCF1C2', '#7A6200'], '목요일': ['#DFF2E4', '#2F6B43'], '금요일': ['#FDEBDC', '#9A4A12'], '토요일': ['#ECE4F8', '#5B4A8B'], '변동': ['#EEF1F0', '#3A4450'] };
     const AGE = { '학생': ['#E3F3EC', '#2F6B43'], '성인': ['#FBE6E4', '#9A3A31'] };
     const chip = (c, w) => 'display: inline-flex; align-items: center; justify-content: center; height: 20px; padding: 0 9px; min-width: ' + (w || 52) + 'px; box-sizing: border-box; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1];
-    // 줄 높이: 한 화면에 15~20명 보이게 (v0.53.3, 예전 46px)
+    // 줄 높이: 한 화면에 15~20명 보이게 (v0.53.4, 예전 46px)
     const cell = 'min-height: 30px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; padding: 0 8px; border-bottom: 1px solid #EEF1F0; white-space: nowrap; overflow: hidden';
     const all = this.students().map(s => this.enrich(s));
     const q = (st.q || '').replace(/[-\s]/g, '').toLowerCase();
@@ -1333,6 +1334,9 @@ class Component extends DCLogic {
       return x < y ? -1 : x > y ? 1 : a[1] - b[1];
     }).map(p => p[0]);
     const curRows = curList.filter(match).filter(pass).map(row);
+    // 필터를 걸었을 때 필터 버튼 왼쪽에 걸러낸 원생 수 (검색어와 상관없이 필터만 기준)
+    const fltRes = { on: FG.some(g => (F[g[0]] || []).length), n: curList.filter(pass).length,
+      style: 'display: inline-flex; align-items: center; gap: 3px; height: 36px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #A9DCDE; background: #FFFFFF; color: #007E82; font-size: 13px; white-space: nowrap' };
     const cur = {
       id: curSec[2], title: curSec[1], count: curList.length, note: curSec[6], rows: curRows, empty: curRows.length === 0, canReg: curSec[0] === 'act',
       bandStyle: 'display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 12px 22px; background: ' + curSec[4] + '; border-bottom: 1px solid #E1E6E3',
@@ -1542,7 +1546,7 @@ class Component extends DCLogic {
     const tabs = this.menuTabs('students', { students: cnt('act') + '명' });
     return {
       noAccess: this.isTeacherUser(), attHref: 'Main.dc.html',
-      q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols.slice(0, nMain), xHeads: headCols.slice(nMain),
+      q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, fltRes: fltRes, colsCfg: colsCfg, headCols: headCols.slice(0, nMain), xHeads: headCols.slice(nMain),
       tableMin: 'min-width: ' + minW + 'px',
       pt: pt, pr: pr,
       actHead: hBase + 'justify-content: center; position: sticky; z-index: 1; right: 0; background: #F7F9F8' + (visX.length ? '' : '; ' + SHADOW),
