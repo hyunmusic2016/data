@@ -6,7 +6,7 @@
 <title>설정</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.42.0"></script>
+<script src="db.js?v=0.43.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -105,33 +105,76 @@ html.bwp .printonly .pcell{border-color:#000!important}
 
         <sc-if value="{{viewStaff}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
-            <div style="display: flex; align-items: center; gap: 10px">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
               <span style="font-size: 15px; font-weight: 800">직원 {{staffCount}}명</span>
               <span style="font-size: 12px; color: #8A949E">{{staffNote}}</span>
               <span style="flex: 1"></span>
+              <div class="noexp" style="position: relative">
+                <button type="button" onClick="{{sf.toggle}}" aria-haspopup="dialog" style="{{sf.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{sf.n}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 800">{{sf.n}}</span></sc-if></button>
+                <sc-if value="{{sf.open}}" hint-placeholder-val="{{ false }}">
+                  <div onMouseDown="{{sf.close}}" style="position: fixed; inset: 0; z-index: 30"></div>
+                  <div role="dialog" aria-label="필터" style="position: absolute; right: 0; top: calc(100% + 8px); z-index: 31; width: 520px; max-width: calc(100vw - 48px); box-sizing: border-box; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 18px 48px rgba(23, 32, 28, 0.18)">
+                    <div style="display: flex; align-items: center; gap: 8px">
+                      <span style="font-size: 15px; font-weight: 800">필터</span>
+                      <span style="flex: 1"></span>
+                      <button type="button" onClick="{{sf.reset}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">초기화</button>
+                      <button type="button" onClick="{{sf.close}}" aria-label="닫기" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer">×</button>
+                    </div>
+                    <sc-if value="{{sf.none}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #8A949E"><span>아직 고른 필터 항목이 없습니다.</span><button type="button" onClick="{{sf.pick}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">필터 항목 고르기</button></div>
+                    </sc-if>
+                    <sc-for list="{{sf.groups}}" as="g" hint-placeholder-count="2">
+                      <div style="display: flex; flex-direction: column; gap: 6px">
+                        <span style="font-size: 12px; font-weight: 700; color: #5E6873">{{g.title}}</span>
+                        <div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+              <span class="noexp" style="display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; width: 240px; box-sizing: border-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
+                <input id="sq" type="text" defaultValue="{{sq.val}}" onInput="{{sq.input}}" onBlur="{{sq.blur}}" onKeyDown="{{sq.key}}" aria-label="이름, 전화번호, 주소, 담당업무로 찾기" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; color: #17201C">
+              </span>
               <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp" onClick="{{empNew}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">+ 직원 등록</button></sc-if>
+              <button type="button" class="noexp" onClick="{{scfg.open}}" aria-label="표시할 항목 설정" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
             </div>
             <div style="overflow-x: auto; border: 1px solid #E3E8E5; border-radius: 12px">
               <div style="{{empGrid}}; background: #F7F9F8; border-bottom: 1px solid #E1E6E3">
                 <sc-for list="{{empHeads}}" as="h" hint-placeholder-count="10"><span class="{{h.cls}}" style="{{h.style}}">{{h.label}}</span></sc-for>
               </div>
               <sc-for list="{{empRows}}" as="r" hint-placeholder-count="5">
-                <div class="{{r.cls}}" style="{{empGrid}}; border-bottom: 1px solid #EBEEEC; background: {{r.bg}}">
-                  <span style="{{c.cc}}; color: #8A949E">{{r.seq}}</span>
-                  <span style="{{c.cc}}"><span style="{{r.roleChip}}">{{r.role}}</span></span>
-                  <span style="{{c.cl}}; font-weight: 800; color: {{r.nameColor}}">{{r.name}}</span>
-                  <span style="{{c.cl}}; font-size: 13px">{{r.addr}}</span>
-                  <span style="{{c.cc}}; font-size: 13px">{{r.phone}}</span>
-                  <span style="{{c.cl}}; gap: 4px; flex-wrap: wrap"><sc-for list="{{r.subj}}" as="sj" hint-placeholder-count="2"><span style="{{sj.style}}">{{sj.name}}</span></sc-for></span>
-                  <span style="{{c.cc}}; font-size: 13px">{{r.hire}}</span>
-                  <span style="{{c.cc}}; font-size: 13px; font-weight: 700; color: #B4332B">{{r.leave}}</span>
-                  <span style="{{c.cc}}"><span style="{{r.accChip}}">{{r.acc}}</span></span>
+                <div class="{{r.cls}}" data-s="{{r.sKey}}" style="{{empGrid}}; border-bottom: 1px solid #EBEEEC; background: {{r.bg}}">
+                  <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="9">
+                    <span style="{{x.cell}}"><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isChips}}" hint-placeholder-val="{{ false }}"><sc-for list="{{x.chips}}" as="sj" hint-placeholder-count="2"><span style="{{sj.style}}">{{sj.name}}</span></sc-for></sc-if></span>
+                  </sc-for>
                   <span class="noexp" style="{{c.cc}}; gap: 6px">
                     <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{r.edit}}" style="{{c.btn}}">수정</button><button type="button" onClick="{{r.leaveAct}}" style="{{r.leaveBtnStyle}}">{{r.leaveLabel}}</button></sc-if>
                   </span>
                 </div>
               </sc-for>
-              <sc-if value="{{staffEmpty}}" hint-placeholder-val="{{ false }}"><div style="padding: 26px; text-align: center; font-size: 14px; color: #8A949E">등록된 직원이 없습니다.</div></sc-if>
+              <sc-if value="{{staffEmpty}}" hint-placeholder-val="{{ false }}"><div style="padding: 26px; text-align: center; font-size: 14px; color: #8A949E">{{staffEmptyTxt}}</div></sc-if>
+              <div id="sqEmpty" style="display: none; padding: 26px; text-align: center; font-size: 14px; color: #8A949E">찾는 직원이 없습니다.</div>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{scfg.isOpen}}" hint-placeholder-val="{{ false }}">
+          <div class="noprint" onMouseDown="{{scfg.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+          <div class="noprint" role="dialog" aria-label="직원명부 설정" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 640px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <sc-for list="{{scfg.tabs}}" as="t" hint-placeholder-count="2"><button type="button" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for>
+              <span style="flex: 1"></span>
+              <button type="button" onClick="{{scfg.reset}}" style="height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">기본값으로</button>
+              <button type="button" onClick="{{scfg.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer">×</button>
+            </div>
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px">
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: #FAFBFA; border: 1px solid #E3E8E5">
+                <sc-for list="{{scfg.all}}" as="o" hint-placeholder-count="8"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.toggle}}" disabled="{{o.fixed}}" style="{{o.style}}"><span style="{{o.box}}">✓</span>{{o.label}}</button></sc-for>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E8E5">
+                <span style="font-size: 12px; font-weight: 700; color: #5E6873; margin-bottom: 4px">보이는 순서</span>
+                <sc-for list="{{scfg.order}}" as="o" hint-placeholder-count="6"><div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 8px; border-radius: 9px; background: #F7F9F8"><span style="flex: 1; font-size: 13px; font-weight: 600">{{o.label}}</span><button type="button" onClick="{{o.up}}" disabled="{{o.first}}" aria-label="위로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▲</button><button type="button" onClick="{{o.down}}" disabled="{{o.last}}" aria-label="아래로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▼</button></div></sc-for>
+              </div>
             </div>
           </div>
         </sc-if>
@@ -194,7 +237,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.42.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.43.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -215,11 +258,12 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <label style="{{ed.lbl}}">성명<input id="e_name" type="text" defaultValue="{{ed.name}}" onInput="{{ed.q.name}}" style="{{ed.inp}}"></label>
           <label style="{{ed.lbl}}">전화번호<input id="e_phone" type="tel" inputmode="numeric" maxlength="13" defaultValue="{{ed.phone}}" onInput="{{ed.q.phone}}" style="{{ed.inp}}"></label>
           <label style="{{ed.lbl}}">주소<input id="e_addr" type="text" defaultValue="{{ed.addr}}" onInput="{{ed.q.addr}}" style="{{ed.inp}}"></label>
+          <label style="{{ed.lbl}}">담당업무<input id="e_duty" type="text" defaultValue="{{ed.duty}}" onInput="{{ed.q.addr}}" style="{{ed.inp}}"></label>
           <label style="{{ed.lbl}}">메모<textarea id="e_memo" rows="3" onInput="{{ed.q.memo}}" style="{{ed.inp}}; height: auto; padding: 10px 12px; resize: vertical">{{ed.memo}}</textarea></label>
         </section>
         <section aria-label="수업 정보" style="{{ed.card}}">
           <span style="{{ed.secTitle}}">수업 정보</span>
-          <span style="font-size: 13px; font-weight: 600; color: #5E6873">수강과목</span>
+          <span style="font-size: 13px; font-weight: 600; color: #5E6873">교습과목</span>
           <div style="display: flex; flex-wrap: wrap; gap: 8px">
             <sc-for list="{{ed.subj}}" as="o" hint-placeholder-count="6"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
           </div>
@@ -404,18 +448,18 @@ class Component extends DCLogic {
   openEmp(e) {
     const E = this.employeeList();
     const seq = e ? e.seq : (E.reduce((m, x) => Math.max(m, x.seq || 0), 0) + 1);
-    const d = e ? JSON.parse(JSON.stringify(e)) : { id: 'e' + Date.now(), seq: seq, role: '강사', name: '', phone: '', addr: '', email: '', subjects: [], tab: true, hire: this.todayYmd(), leave: '', leaveReason: '', memo: '' };
+    const d = e ? JSON.parse(JSON.stringify(e)) : { id: 'e' + Date.now(), seq: seq, role: '강사', name: '', phone: '', addr: '', duty: '', email: '', subjects: [], tab: true, hire: this.todayYmd(), leave: '', leaveReason: '', memo: '' };
     this.setState({ ed: Object.assign(d, { isEdit: !!e, err: '', origEmail: e ? (e.email || '') : '' }) });
   }
   saveEmp() {
     const D = this.state.ed;
     if (!D) return;
     const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-    const rec = Object.assign({}, D, { name: v('e_name').trim(), phone: v('e_phone').replace(/[^0-9]/g, ''), addr: v('e_addr').trim(), memo: v('e_memo'), email: v('e_email').trim(), hire: v('e_hire') || D.hire });
+    const rec = Object.assign({}, D, { duty: v('e_duty').trim(), name: v('e_name').trim(), phone: v('e_phone').replace(/[^0-9]/g, ''), addr: v('e_addr').trim(), memo: v('e_memo'), email: v('e_email').trim(), hire: v('e_hire') || D.hire });
     if (!rec.name) { this.setState({ ed: Object.assign({}, D, rec, { err: '성명을 입력해 주세요.' }) }); return; }
     const A = window.academy;
     if (A && A.staff && rec.leave && rec.email && rec.email === (A.staff.email || '')) {}
-    const keep = ['id', 'seq', 'role', 'name', 'phone', 'addr', 'email', 'subjects', 'tab', 'hire', 'leave', 'leaveReason', 'memo', 'linked'];
+    const keep = ['id', 'seq', 'role', 'name', 'phone', 'addr', 'duty', 'email', 'subjects', 'tab', 'hire', 'leave', 'leaveReason', 'memo', 'linked'];
     const clean = {}; keep.forEach(k => { if (rec[k] !== undefined) clean[k] = rec[k]; });
     const list = this.employeeList();
     const i = list.findIndex(e => e.id === D.id);
@@ -434,6 +478,41 @@ class Component extends DCLogic {
       };
       tryLink(clean.id, 0);
     }
+  }
+  // ---------- 직원명부 표시할 항목·필터 (수강생대장과 같은 방식, 이 브라우저에 저장) ----------
+  staffCols() {
+    return [
+      { k: 'seq', label: '연번', w: 60 }, { k: 'role', label: '직명', w: 76 }, { k: 'name', label: '성명', w: 96, fixed: true, left: true },
+      { k: 'addr', label: '주소', w: 230, left: true }, { k: 'phone', label: '전화번호', w: 128 }, { k: 'duty', label: '담당업무', w: 220, left: true },
+      { k: 'subjects', label: '교습과목', w: 170, left: true }, { k: 'hire', label: '채용연월일', w: 100 }, { k: 'leave', label: '해임연월일', w: 100 },
+      { k: 'acc', label: '로그인', w: 84 }, { k: 'email', label: '로그인 이메일', w: 200, left: true }, { k: 'tab', label: '출석부 탭', w: 84 }, { k: 'memo', label: '메모', w: 200, left: true }
+    ];
+  }
+  staffDefCols() { return ['seq', 'role', 'name', 'addr', 'phone', 'duty', 'subjects', 'hire', 'leave', 'acc']; }
+  staffFilterCatalog() {
+    const td = this.todayYmd();
+    const out = e => !!(e.leave && e.leave <= td);
+    return [
+      { k: 'role', label: '직명', opts: E => ['원장', '강사'], val: e => e.role },
+      { k: 'subjects', label: '교습과목', opts: E => this.subjectList().map(s => s.name).filter(n => E.some(e => (e.subjects || []).indexOf(n) >= 0)), val: e => e.subjects || [] },
+      { k: 'state', label: '재직 상태', opts: E => ['재직', '해임'], val: e => out(e) ? '해임' : '재직' },
+      { k: 'acc', label: '로그인', opts: E => ['연결됨', '연결 전', '없음'], val: e => e.linked ? '연결됨' : e.email ? '연결 전' : '없음' },
+      { k: 'hireY', label: '채용 연도', opts: E => Array.from(new Set(E.map(e => (e.hire || '').slice(0, 4)).filter(Boolean))).sort().reverse().map(y => y + '년'), val: e => e.hire ? e.hire.slice(0, 4) + '년' : '' },
+      { k: 'tab', label: '출석부 탭', opts: E => ['있음', '없음'], val: e => e.tab !== false ? '있음' : '없음' }
+    ];
+  }
+  readArr(key) { try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return Array.isArray(v) ? v : null; } catch (e) { return null; } }
+  staffVisible() { const all = this.staffCols().map(c => c.k); const v = (this.readArr('staff.cols') || this.staffDefCols()).filter(k => all.indexOf(k) >= 0); if (v.indexOf('name') < 0) v.splice(Math.min(2, v.length), 0, 'name'); return v; }
+  staffFilterKeys() { const all = this.staffFilterCatalog().map(c => c.k); return (this.readArr('staff.filters') || []).filter(k => all.indexOf(k) >= 0); }
+  saveStaffCfg(key, list) { try { localStorage.setItem(key, JSON.stringify(list)); } catch (e) {} this.setState({ tick: Date.now() }); }
+  // 검색: 치는 동안 다시 그리지 않고 줄만 숨김 (한글 입력 규칙)
+  staffSearch(v) {
+    this._sq = v;
+    const q = String(v || '').replace(/[-\s]/g, '').toLowerCase();
+    const rows = [].slice.call(document.querySelectorAll('.emprow[data-s]'));
+    let n = 0;
+    rows.forEach(r => { const ok = !q || (r.getAttribute('data-s') || '').indexOf(q) >= 0; if (r.getAttribute('data-disp') == null) r.setAttribute('data-disp', r.style.display || ''); r.style.display = ok ? r.getAttribute('data-disp') : 'none'; if (ok) n++; });
+    const em = document.getElementById('sqEmpty'); if (em) em.style.display = rows.length && !n ? '' : 'none';
   }
   studentCountOf(name) { try { return (JSON.parse(localStorage.getItem('academy.students') || '[]') || []).filter(s => s.teacher === name).length; } catch (e) { return 0; } }
   // 메뉴 탭 편집은 원장님만 (로그인 안 한 시안에서는 누구나)
@@ -611,7 +690,7 @@ class Component extends DCLogic {
     rows.forEach((r, i) => r.forEach((val, k) => put(3 + i, k, val, { align: head[k] === '주소' || head[k] === '담당업무' ? 'left' : 'center' })));
     ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 2 + Math.max(rows.length, 1), c: head.length - 1 } });
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: head.length - 1 } }];
-    const W = { '연번': 6, '직명': 10, '성명': 10, '주소': 46, '전화번호': 16, '담당업무': 26, '채용연월일': 12, '해임연월일': 12, '순서': 6, '수강과목': 16, '맡은 직원': 12 };
+    const W = { '연번': 6, '직명': 10, '성명': 10, '주소': 46, '전화번호': 16, '담당업무': 32, '교습과목': 20, '로그인': 10, '로그인 이메일': 26, '출석부 탭': 10, '메모': 30, '채용연월일': 12, '해임연월일': 12, '순서': 6, '수강과목': 16, '맡은 직원': 12 };
     ws['!cols'] = head.map(h => ({ wch: W[h] || 12 }));
     ws['!rows'] = [{ hpt: 30 }, { hpt: 8 }, { hpt: 22 }];
     const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, head[0] === '연번' ? '직원명부' : '수강과목');
@@ -698,41 +777,88 @@ class Component extends DCLogic {
     const PC = this.partColors();
     const fmtD = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1].slice(2) + '.' + (+m[2]) + '.' + (+m[3]) : ''; };
     const fmtP = p => { const x = String(p || '').replace(/[^0-9]/g, ''); return x.length === 11 ? x.slice(0, 3) + '-' + x.slice(3, 7) + '-' + x.slice(7) : x.length === 10 ? x.slice(0, 3) + '-' + x.slice(3, 6) + '-' + x.slice(6) : p || ''; };
-    const empHeads = [['연번', 60], ['직명', 76], ['성명', 96], ['주소', 230], ['전화번호', 132], ['담당업무', 200], ['채용연월일', 100], ['해임연월일', 100], ['로그인', 90], ['관리', 140]];
-    const empGrid = 'display: grid; grid-template-columns: ' + empHeads.map(h => h[1] + 'px').join(' ') + '; min-width: ' + empHeads.reduce((n, h) => n + h[1], 0) + 'px';
+    const CAT = this.staffCols(), VIS = this.staffVisible().map(k => CAT.find(c => c.k === k)).filter(Boolean);
+    const FC = this.staffFilterCatalog(), FK = this.staffFilterKeys(), FV = st.sfv || {};
+    // 필터: 같은 항목 안에서는 하나라도, 항목끼리는 모두 맞아야
+    const pass = e => FK.every(k => { const sel = FV[k] || []; if (!sel.length) return true; const v = FC.find(c => c.k === k).val(e); return Array.isArray(v) ? v.some(x => sel.indexOf(x) >= 0) : sel.indexOf(v) >= 0; });
+    const SHOWN = EMPS.filter(pass);
+    const colW = VIS.map(c => c.w).concat([140]);
+    const empHeads = VIS.map(c => ({ label: c.label, cls: '', style: 'height: 38px; display: flex; align-items: center; justify-content: ' + (c.left ? 'flex-start; padding-left: 10px' : 'center') + '; font-size: 12px; font-weight: 700; color: #5E6873' })).concat([{ label: '관리', cls: 'noexp', style: 'height: 38px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #5E6873' }]);
+    const empGrid = 'display: grid; grid-template-columns: ' + colW.map(w => w + 'px').join(' ') + '; min-width: ' + colW.reduce((n, w) => n + w, 0) + 'px';
     const A0 = window.academy;
     const myName = A0 && A0.staff ? A0.staff.name : '';
-    const empRows = EMPS.map(e => {
+    const CC = 'min-height: 46px; display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box; font-size: 14px; flex-wrap: wrap; gap: 4px';
+    const CL = 'min-height: 46px; display: flex; align-items: center; justify-content: flex-start; padding: 6px 10px; box-sizing: border-box; font-size: 14px; flex-wrap: wrap; gap: 4px; white-space: pre-line; line-height: 1.4';
+    const cellOf = (c, e, out) => {
+      const cell = (c.left ? CL : CC);
+      const T = (t, x) => ({ isText: true, isChip: false, isChips: false, text: t == null ? '' : String(t), cell: cell + (x ? '; ' + x : '') });
+      if (c.k === 'role') return { isText: false, isChip: true, isChips: false, text: e.role, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 700; ' + (e.role === '원장' ? 'background: #F3E6C4; color: #7A5C12' : 'background: #E6F6F6; color: #007E82') };
+      if (c.k === 'subjects') return { isText: false, isChip: false, isChips: true, cell: cell, chips: (e.subjects || []).map(nm => ({ name: nm, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: ' + (PC[nm] || ['#EEF1F0'])[0] + '; color: ' + (PC[nm] || ['', '#3A4450'])[1] })) };
+      if (c.k === 'acc') { const t = e.linked ? '연결됨' : e.email ? '연결 전' : '없음'; return { isText: false, isChip: true, isChips: false, text: t, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; ' + (e.linked ? 'background: #E2F1EA; color: #1F7A5A' : e.email ? 'background: #FFF4E0; color: #9A5B00' : 'background: #EEF1F0; color: #8A949E') }; }
+      if (c.k === 'name') return T(e.name, 'font-weight: 800; color: ' + (out ? '#8A949E' : '#17201C'));
+      if (c.k === 'seq') return T(e.seq, 'color: #8A949E');
+      if (c.k === 'phone') return T(fmtP(e.phone), 'font-size: 13px');
+      if (c.k === 'hire') return T(fmtD(e.hire), 'font-size: 13px');
+      if (c.k === 'leave') return T(fmtD(e.leave), 'font-size: 13px; font-weight: 700; color: #B4332B');
+      if (c.k === 'tab') return T(e.tab !== false ? '있음' : '없음', 'font-size: 13px');
+      return T(e[c.k] || '', 'font-size: 13px');
+    };
+    const plainOf = (c, e) => c.k === 'subjects' ? (e.subjects || []).join(', ') : c.k === 'phone' ? fmtP(e.phone) : c.k === 'hire' ? fmtD(e.hire) : c.k === 'leave' ? fmtD(e.leave) : c.k === 'acc' ? (e.linked ? '연결됨' : e.email ? '연결 전' : '없음') : c.k === 'tab' ? (e.tab !== false ? '있음' : '없음') : (e[c.k] == null ? '' : e[c.k]);
+    const empRows = SHOWN.map(e => {
       const out = this.isDismissed(e);
       const isMe = !!(myName && e.name === myName && e.role === '원장');
       return {
         cls: this._flash === e.id ? 'emprow empflash' : 'emprow',
-        bg: out ? '#FAFBFA' : '#FFFFFF', nameColor: out ? '#8A949E' : '#17201C',
-        seq: e.seq, role: e.role, name: e.name, addr: e.addr || '', phone: fmtP(e.phone), hire: fmtD(e.hire), leave: fmtD(e.leave),
-        roleChip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 700; ' + (e.role === '원장' ? 'background: #F3E6C4; color: #7A5C12' : 'background: #E6F6F6; color: #007E82'),
-        subj: (e.subjects || []).map(nm => ({ name: nm, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: ' + (PC[nm] || ['#EEF1F0'])[0] + '; color: ' + (PC[nm] || ['', '#3A4450'])[1] })),
-        acc: e.linked ? '연결됨' : e.email ? '연결 전' : '없음',
-        accChip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; ' + (e.linked ? 'background: #E2F1EA; color: #1F7A5A' : e.email ? 'background: #FFF4E0; color: #9A5B00' : 'background: #EEF1F0; color: #8A949E'),
+        sKey: [e.name, e.phone, e.addr, e.duty, (e.subjects || []).join(' '), e.email].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|'),
+        bg: out ? '#FAFBFA' : '#FFFFFF',
+        cells: VIS.map(c => cellOf(c, e, out)),
         edit: () => this.openEmp(e),
         leaveLabel: e.leave ? (st.unleave === e.id ? '한 번 더' : '해임 취소') : '해임',
         leaveBtnStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (e.leave ? 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873' : isMe ? 'border: 1px solid #EBEEEC; background: #FFFFFF; color: #C9D0CC; cursor: default' : 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B'),
         leaveAct: () => {
           if (e.leave) {
             if (st.unleave !== e.id) { this.setState({ unleave: e.id }); return; }
-            this.setState({ unleave: null }); this.saveEmployees(this.employeeList().filter(x => !x.sample || true).map(x => x.id === e.id ? Object.assign({}, x, { leave: '', leaveReason: '' }) : x)); return;
+            this.setState({ unleave: null }); this.saveEmployees(this.employeeList().map(x => x.id === e.id ? Object.assign({}, x, { leave: '', leaveReason: '' }) : x)); return;
           }
           if (isMe) return;
           this.setState({ lv: { id: e.id, name: e.name, date: this.todayYmd(), reason: '' } });
         }
       };
     });
+    // 검색어가 있으면 다시 그린 뒤에도 줄 숨김을 다시 적용
+    if (this._sq) setTimeout(() => this.staffSearch(this._sq), 0);
+    const sfVals = {
+      open: !!st.sfOpen, n: FK.filter(k => (FV[k] || []).length).length || '',
+      toggle: () => this.setState({ sfOpen: !st.sfOpen }), close: () => this.setState({ sfOpen: false }),
+      reset: () => this.setState({ sfv: {} }), none: !FK.length,
+      pick: () => this.setState({ sfOpen: false, scfgOpen: true, scfgTab: 'flt' }),
+      btnStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (FK.some(k => (FV[k] || []).length) ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450'),
+      groups: FK.map(k => { const fc = FC.find(c => c.k === k); const sel = FV[k] || []; return { title: fc.label, opts: fc.opts(EMPS).map(o => { const on = sel.indexOf(o) >= 0; return { label: o, pick: () => this.setState({ sfv: Object.assign({}, FV, { [k]: on ? sel.filter(x => x !== o) : sel.concat([o]) }) }), style: 'height: 30px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }) }; })
+    };
+    const sqVals = { val: this._sq || '', input: e => this.staffSearch(e.target.value), blur: () => {}, key: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } } };
+    const tabC = st.scfgTab || 'cols';
+    const cfgKeys = tabC === 'cols' ? this.staffVisible() : FK;
+    const cfgAll = tabC === 'cols' ? CAT.map(c => ({ k: c.k, label: c.label, fixed: !!c.fixed })) : FC.map(c => ({ k: c.k, label: c.label, fixed: false }));
+    const cfgKey = tabC === 'cols' ? 'staff.cols' : 'staff.filters';
+    const scfgVals = {
+      isOpen: !!st.scfgOpen, open: () => this.setState({ scfgOpen: true }), close: () => this.setState({ scfgOpen: false }),
+      reset: () => { try { localStorage.removeItem(cfgKey); } catch (e) {} this.setState({ tick: Date.now() }); },
+      tabs: [['cols', '표시할 항목'], ['flt', '필터 항목']].map(t => ({ label: t[1], pick: () => this.setState({ scfgTab: t[0] }), style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (tabC === t[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') })),
+      all: cfgAll.map(c => { const on = cfgKeys.indexOf(c.k) >= 0; return { label: c.label, on: on ? 'true' : 'false', fixed: c.fixed,
+        toggle: () => { if (c.fixed) return; this.saveStaffCfg(cfgKey, on ? cfgKeys.filter(k => k !== c.k) : cfgKeys.concat([c.k])); },
+        box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
+        style: 'display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 8px; border: none; border-radius: 8px; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; text-align: left; cursor: ' + (c.fixed ? 'default; opacity: 0.6' : 'pointer') }; }),
+      order: cfgKeys.map((k, i) => ({ label: (cfgAll.find(c => c.k === k) || {}).label || k, first: i === 0, last: i === cfgKeys.length - 1,
+        up: () => { if (!i) return; const L = cfgKeys.slice(); const t = L.splice(i, 1)[0]; L.splice(i - 1, 0, t); this.saveStaffCfg(cfgKey, L); },
+        down: () => { if (i === cfgKeys.length - 1) return; const L = cfgKeys.slice(); const t = L.splice(i, 1)[0]; L.splice(i + 1, 0, t); this.saveStaffCfg(cfgKey, L); } }))
+    };
     const ED = st.ed;
     const edVals = !ED ? { open: false } : (() => {
       const upd = p => this.setState({ ed: Object.assign({}, ED, p) });
-      const keepTyped = () => { const v = id => { const el = document.getElementById(id); return el ? el.value : undefined; }; const o = {}; [['name', 'e_name'], ['phone', 'e_phone'], ['addr', 'e_addr'], ['memo', 'e_memo'], ['email', 'e_email'], ['hire', 'e_hire']].forEach(p => { const x = v(p[1]); if (x !== undefined) o[p[0]] = x; }); return o; };
+      const keepTyped = () => { const v = id => { const el = document.getElementById(id); return el ? el.value : undefined; }; const o = {}; [['name', 'e_name'], ['phone', 'e_phone'], ['addr', 'e_addr'], ['duty', 'e_duty'], ['memo', 'e_memo'], ['email', 'e_email'], ['hire', 'e_hire']].forEach(p => { const x = v(p[1]); if (x !== undefined) o[p[0]] = x; }); return o; };
       return {
         open: true, title: ED.isEdit ? '직원 정보 수정' : '직원 등록', saveLabel: ED.isEdit ? '저장하기' : '등록하기', seq: ED.seq, err: ED.err || '',
-        name: ED.name, phone: ED.phone, addr: ED.addr, memo: ED.memo, email: ED.email, hire: ED.hire,
+        name: ED.name, phone: ED.phone, addr: ED.addr, duty: ED.duty || '', memo: ED.memo, email: ED.email, hire: ED.hire,
         close: () => this.setState({ ed: null }), save: () => this.saveEmp(),
         setHire: e => { ED.hire = e.target.value; },
         // 글자 칸은 칠 때 다시 그리지 않음 (저장할 때 칸에서 읽음)
@@ -763,8 +889,8 @@ class Component extends DCLogic {
     const d = new Date();
     const V = st.view || 'hub', F = this.featureOf(V);
     const PV = V;
-    const printHead = PV === 'staff' ? ['연번', '직명', '성명', '주소', '전화번호', '담당업무', '채용연월일', '해임연월일'] : PV === 'subjects' ? ['순서', '수강과목', '맡은 직원'] : ['순서', '탭 이름', '종류', '보이기'];
-    const printRows = PV === 'staff' ? EMPS.map(e => [e.seq, e.role, e.name, e.addr || '', fmtP(e.phone), (e.subjects || []).join(', '), fmtD(e.hire), fmtD(e.leave)])
+    const printHead = PV === 'staff' ? VIS.map(c => c.label) : PV === 'subjects' ? ['순서', '수강과목', '맡은 직원'] : ['순서', '탭 이름', '종류', '보이기'];
+    const printRows = PV === 'staff' ? SHOWN.filter(e => !this._sq || [e.name, e.phone, e.addr, e.duty, (e.subjects || []).join(' '), e.email].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|').indexOf(String(this._sq).replace(/[-\s]/g, '').toLowerCase()) >= 0).map(e => VIS.map(c => plainOf(c, e)))
       : PV === 'subjects' ? SUB.map((s, i) => [i + 1, s.name, usedBy(s.name) ? usedBy(s.name) + '명' : ''])
       : items.map((t, i) => [i + 1, t.label, t.custom ? '추가한 탭' : '기본 탭', t.hidden ? '숨김' : '보임']);
     const groups = this.features().map(g => ({ title: g.title, items: g.items.map((it, k) => ({ label: it.label, soon: !it.ready, open: () => this.openView(it.id),
@@ -774,8 +900,8 @@ class Component extends DCLogic {
       groups: groups, viewHub: V === 'hub', viewSub: V !== 'hub', viewMenu: V === 'menu', viewSoon: !!(F && !F.ready),
       viewSubj: V === 'subjects', viewStaff: V === 'staff',
       subjRows: subjRows, addSubj: () => this.addSubject(), subjKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); this.addSubject(); } },
-      empHeads: empHeads.map(h => ({ label: h[0], cls: h[0] === '관리' ? 'noexp' : '', style: 'height: 38px; display: flex; align-items: center; justify-content: ' + (h[0] === '주소' || h[0] === '성명' || h[0] === '담당업무' ? 'flex-start; padding-left: 10px' : 'center') + '; font-size: 12px; font-weight: 700; color: #5E6873' })),
-      empGrid: empGrid, empRows: empRows, staffCount: EMPS.length, staffEmpty: !EMPS.length, staffNote: EMPS.some(e => e.sample) ? '(시안 샘플)' : '',
+      empHeads: empHeads,
+      empGrid: empGrid, empRows: empRows, staffCount: SHOWN.length, staffEmpty: !SHOWN.length, staffEmptyTxt: EMPS.length ? '필터에 맞는 직원이 없습니다.' : '등록된 직원이 없습니다.', sf: sfVals, sq: sqVals, scfg: scfgVals, staffNote: EMPS.some(e => e.sample) ? '(시안 샘플)' : '',
       empNew: () => this.openEmp(null),
       c: { cc: 'min-height: 46px; display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box; font-size: 14px', cl: 'min-height: 46px; display: flex; align-items: center; justify-content: flex-start; padding: 6px 10px; box-sizing: border-box; font-size: 14px', btn: 'height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer' },
       ed: edVals, lv: lvVals,
