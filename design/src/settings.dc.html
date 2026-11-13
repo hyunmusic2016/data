@@ -236,7 +236,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.43.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.43.1</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -792,7 +792,7 @@ class Component extends DCLogic {
       if (c.k === 'role') return { isText: false, isChip: true, isChips: false, text: e.role, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 700; ' + (e.role === '원장' ? 'background: #F3E6C4; color: #7A5C12' : 'background: #E6F6F6; color: #007E82') };
       if (c.k === 'subjects') return { isText: false, isChip: false, isChips: true, cell: cell, chips: (e.subjects || []).map(nm => ({ name: nm, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: ' + (PC[nm] || ['#EEF1F0'])[0] + '; color: ' + (PC[nm] || ['', '#3A4450'])[1] })) };
       if (c.k === 'acc') { const t = e.linked ? '연결됨' : e.email ? '연결 전' : '없음'; return { isText: false, isChip: true, isChips: false, text: t, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; ' + (e.linked ? 'background: #E2F1EA; color: #1F7A5A' : e.email ? 'background: #FFF4E0; color: #9A5B00' : 'background: #EEF1F0; color: #8A949E') }; }
-      if (c.k === 'name') return T(e.name, 'font-weight: 800; color: ' + (out ? '#8A949E' : '#17201C'));
+      if (c.k === 'name') return T(e.name, 'font-weight: 600; color: ' + (out ? '#8A949E' : '#17201C'));
       if (c.k === 'seq') return T(e.seq, 'color: #8A949E');
       if (c.k === 'phone') return T(fmtP(e.phone), 'font-size: 13px');
       if (c.k === 'hire') return T(fmtD(e.hire), 'font-size: 13px');
