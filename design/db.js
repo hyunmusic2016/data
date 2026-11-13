@@ -55,6 +55,13 @@
     setTimeout(function () { var i = document.getElementById('acEmail'); if (i && !i.value) i.focus(); }, 30);
   }
 
+  function loading(on) {
+    var f = document.querySelector('#acLogin form'); if (!f) return;
+    f.style.display = on ? 'none' : 'flex';
+    var m = document.getElementById('acLoading');
+    if (!m) { m = el('<div id="acLoading" style="font-size:15px;font-weight:700;color:#5E6873">불러오는 중…</div>'); document.getElementById('acLogin').appendChild(m); }
+    m.style.display = on ? 'block' : 'none';
+  }
   function hideLogin() { var b = document.getElementById('acLogin'); if (b) b.style.display = 'none'; }
 
   function showUser(st) {
@@ -74,13 +81,213 @@
       return sb.from('staff').select('*').eq('id', s.user.id).maybeSingle().then(function (q) {
         if (!q.data || !q.data.active) { sb.auth.signOut(); showLogin('직원 명단에 등록되지 않은 계정입니다. 원장님께 등록을 요청하세요.'); return null; }
         A.staff = q.data; A.ready = true;
-        hideLogin(); showUser(q.data);
-        document.dispatchEvent(new CustomEvent('academy:login', { detail: q.data }));
-        return q.data;
+        showUser(q.data);
+        loading(true);
+        return A.load().then(function () {
+          loading(false); hideLogin();
+          document.dispatchEvent(new CustomEvent('academy:login', { detail: q.data }));
+          return q.data;
+        }, function (e) { loading(false); showLogin('데이터를 불러오지 못했습니다. 새로고침해 주세요.'); console.warn(e); });
       });
     });
   }
   A.check = check;
+
+
+  // =====================================================================
+  // 데이터: Supabase 표 ↔ 화면이 쓰는 모양
+  //  - 원생: students + student_terms(처음 값) → 수강생대장 원생 목록
+  //  - 날짜별 변경: 수업 정보 → 'academy.lessonChanges'(출석부와 같이 씀), 수강료·현금영수증 → 수강생대장 hist
+  //  - 휴원·퇴원·복귀 → 'academy.statusChanges'
+  //  - 변경 기록 → activity_log
+  // 화면이 localStorage에 쓰면 여기서 받아 Supabase에도 저장한다.
+  // =====================================================================
+  var LONG = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
+  var SHORT = { '월요일': '월', '화요일': '화', '수요일': '수', '목요일': '목', '금요일': '금', '토요일': '토', '변동': 'R' };
+  var origSet = Storage.prototype.setItem;
+  function rawSet(k, v) { origSet.call(localStorage, k, v); }
+  function ymdToShort(d) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : ''; }
+  function anyToYmd(v) { var m = /^(\d{2,4})[.\-](\d{1,2})[.\-](\d{1,2})$/.exec(String(v || '').trim()); if (!m) return null; var y = m[1].length === 2 ? '20' + m[1] : m[1]; return y + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2); }
+  function msOf(t) { var n = Date.parse(t); return isNaN(n) ? 0 : n; }
+  // 수업 정보(출석부 모양: days ['월'], times {'월':'15:30'}) → 수강생대장 모양
+  function lessonToPatch(v) {
+    v = v || {};
+    var days = (v.days || []).map(function (d) { return LONG[d]; }).filter(Boolean);
+    var times = {};
+    Object.keys(v.times || {}).forEach(function (d) { var m = /^(\d{1,2}):(\d{2})$/.exec(v.times[d]); if (m && LONG[d]) times[LONG[d]] = ((+m[1] % 12) || 12) + ':' + m[2]; });
+    var p = { day: days.length ? days.map(function (x) { return x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x); }).join('·') : '변동', days: days.length ? days : ['변동'], extra: { times: times } };
+    if (v.stick !== undefined) p.extra.stickBox = !!v.stick;
+    if (v.teacher) p.teacher = v.teacher;
+    if (v.part) p.part = v.part;
+    return p;
+  }
+  function mergeRec(a, p) {
+    var o = Object.assign({}, a, p);
+    if (a.extra || p.extra) o.extra = Object.assign({}, a.extra, p.extra);
+    if (a.flags || p.flags) o.flags = Object.assign({}, a.flags, p.flags);
+    return o;
+  }
+
+  A.load = function () {
+    return Promise.all([
+      sb.from('students').select('*').order('reg_no'),
+      sb.from('student_terms').select('*').order('from_date').order('id'),
+      sb.from('status_changes').select('*').order('id'),
+      sb.from('activity_log').select('*').order('at')
+    ]).then(function (rs) {
+      rs.forEach(function (r) { if (r.error) throw r.error; });
+      var studs = rs[0].data, terms = rs[1].data, stats = rs[2].data, logs = rs[3].data;
+      var byId = {}, byName = {}, list = [], hist = {}, shared = [], log = {};
+      studs.forEach(function (s) { byId[s.id] = s; byName[s.name] = s; });
+      var firsts = {};
+      terms.forEach(function (t) {
+        var s = byId[t.student_id]; if (!s) return;
+        var k = t.student_id + '|' + t.section;
+        if (!firsts[k]) { firsts[k] = t; return; }
+        var prev = firsts[k + '|last'] || firsts[k];
+        firsts[k + '|last'] = t;
+        if (t.section === 'lesson') {
+          var v = Object.assign({}, t.value); var pv = v._prev; delete v._prev;
+          shared.push(Object.assign({ id: 'T' + t.id, at: msOf(t.created_at), name: s.name, from: t.from_date }, v, { prev: pv || prev.value }));
+        } else {
+          (hist[s.reg_no] = hist[s.reg_no] || []).push({ hid: 'T' + t.id, sec: t.section, from: t.from_date, prev: prev.value, patch: t.value });
+        }
+      });
+      studs.forEach(function (s) {
+        var r = { id: s.reg_no, dbId: s.id, name: s.name, guardian: s.guardian || '', phone: s.phone || '', gphone: s.gphone || '', age: s.age_group || '', join: ymdToShort(s.join_date), leave: '', memo: '', note: s.memo || '', rest: '', status: 'act', restReason: '', leaveReason: '', backDate: '', flags: {}, extra: { birth: s.birth || '', addr: s.addr || '', gender: s.gender || '' } };
+        var l = firsts[s.id + '|lesson'], fe = firsts[s.id + '|fee'], ca = firsts[s.id + '|cash'];
+        if (l) r = mergeRec(r, lessonToPatch(l.value));
+        if (fe) r = mergeRec(r, fe.value);
+        if (ca) r = mergeRec(r, ca.value);
+        var cnt = (r.extra || {}).count || 4;
+        r.flags = Object.assign({}, r.flags, cnt >= 12 ? { t12: 1 } : cnt > 4 ? { t8: 1 } : {});
+        if (!r.days) { r.days = ['변동']; r.day = '변동'; }
+        list.push(r);
+      });
+      var status = stats.map(function (e) { var s = byId[e.student_id]; return s ? { id: 'S' + e.id, at: msOf(e.created_at), name: s.name, kind: e.kind, date: e.date, reason: e.reason || '', ticket: e.ticket || '' } : null; }).filter(Boolean);
+      logs.forEach(function (g) { var s = byId[g.student_id]; if (!s || !g.detail) return; (log[s.reg_no] = log[s.reg_no] || []).push(Object.assign({ at: msOf(g.at) }, g.detail)); });
+      A.data = { students: list, byId: byId, byName: byName, hist: hist, log: log };
+      known.shared = {}; shared.forEach(function (e) { known.shared[e.id] = e; });
+      known.status = {}; status.forEach(function (e) { known.status[e.id] = e; });
+      rawSet('academy.lessonChanges', JSON.stringify(shared));
+      rawSet('academy.statusChanges', JSON.stringify(status));
+      document.dispatchEvent(new CustomEvent('academy:data'));
+    });
+  };
+
+  function sidOfName(name) { var s = A.data && A.data.byName[name]; return s ? s.id : null; }
+  function sidOfReg(reg) { var r = A.data && A.data.students.find(function (x) { return x.id === reg; }); return r ? r.dbId : null; }
+  function report(r, what) { if (r && r.error) { console.warn(what, r.error); toast('저장하지 못했습니다: ' + what); } return r; }
+  function toast(msg) {
+    var t = document.getElementById('acToast');
+    if (!t) { t = el('<div id="acToast" style="position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:1001;padding:10px 16px;border-radius:12px;background:#B4332B;color:#fff;font-size:13px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.18)"></div>'); document.body.appendChild(t); }
+    t.textContent = msg; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(function () { t.style.display = 'none'; }, 4000);
+  }
+  A.toast = toast;
+  var known = { shared: {}, status: {} }, idMap = {};
+  function dbIdOf(localId) { if (/^T\d+$/.test(localId) || /^S\d+$/.test(localId)) return Promise.resolve(+localId.slice(1)); return idMap[localId] || Promise.resolve(null); }
+
+  // 화면이 localStorage에 쓰는 기록을 받아 Supabase에 저장
+  Storage.prototype.setItem = function (k, v) {
+    origSet.call(this, k, v);
+    if (this !== window.localStorage || !A.data) return;
+    try {
+      if (k === 'academy.lessonChanges') syncList(JSON.parse(v || '[]'), 'shared', saveLesson, 'student_terms');
+      else if (k === 'academy.statusChanges') syncList(JSON.parse(v || '[]'), 'status', saveStatus, 'status_changes');
+    } catch (e) { console.warn(e); }
+  };
+  function syncList(list, kind, saveFn, table) {
+    var prev = known[kind], now = {};
+    list.forEach(function (e) { now[e.id] = e; if (!prev[e.id]) saveFn(e); });
+    Object.keys(prev).forEach(function (id) { if (!now[id]) dbIdOf(id).then(function (n) { if (n) sb.from(table).delete().eq('id', n).then(function (r) { report(r, '삭제'); }); }); });
+    known[kind] = now;
+  }
+  function saveLesson(e) {
+    var sid = sidOfName(e.name); if (!sid) return;
+    var v = {}; ['days', 'times', 'stick', 'teacher', 'part'].forEach(function (k) { if (e[k] !== undefined) v[k] = e[k]; });
+    if (e.prev) v._prev = e.prev;
+    idMap[e.id] = sb.from('student_terms').insert({ student_id: sid, section: 'lesson', from_date: e.from, value: v, created_by: A.staff.id }).select('id').single()
+      .then(function (r) { report(r, '수업 정보 변경'); return r.data ? r.data.id : null; });
+  }
+  function saveStatus(e) {
+    var sid = sidOfName(e.name); if (!sid) return;
+    idMap[e.id] = sb.from('status_changes').insert({ student_id: sid, kind: e.kind, date: e.date, reason: e.reason || null, ticket: e.ticket || null, created_by: A.staff.id }).select('id').single()
+      .then(function (r) { report(r, '휴원·퇴원 처리'); return r.data ? r.data.id : null; });
+    sb.from('students').update({ status: e.kind === 'back' ? 'act' : e.kind }).eq('id', sid).then(function (r) { report(r, '원생 상태'); });
+  }
+
+  // ---------- 수강생대장에서 부르는 저장 ----------
+  function studentRow(rec) {
+    var ex = rec.extra || {};
+    return { reg_no: rec.id, name: rec.name, guardian: rec.guardian || null, phone: rec.phone || null, gphone: rec.gphone || null, birth: anyToYmd(ex.birth), gender: ex.gender || null, age_group: rec.age || null, addr: ex.addr || null, memo: rec.note || null, join_date: anyToYmd(rec.join) };
+  }
+  function termsOf(rec) {
+    var ex = rec.extra || {}, fl = rec.flags || {};
+    var times = {};
+    Object.keys(ex.times || {}).forEach(function (d) { var m = /^(\d{1,2}):(\d{2})$/.exec(ex.times[d]); if (m && SHORT[d]) { var h = +m[1]; times[SHORT[d]] = ('0' + (h < 9 ? h + 12 : h)).slice(-2) + ':' + m[2]; } });
+    return {
+      lesson: { days: (rec.days || []).map(function (d) { return SHORT[d]; }).filter(Boolean), times: times, stick: !!ex.stickBox, teacher: rec.teacher || '', part: rec.part || '' },
+      fee: { flags: { pro: fl.pro ? 1 : 0 }, extra: { count: ex.count, dur: ex.dur, unit: ex.unit, pay: ex.pay, total: ex.total } },
+      cash: { flags: { cash: fl.cash ? 1 : 0 }, extra: { cashType: ex.cashType || 'person', cashNo: ex.cashNo || '' } }
+    };
+  }
+  // 새 원생: 화면 목록에 바로 넣고 Supabase에 저장
+  A.addStudent = function (rec) {
+    var raw = Object.assign({}, rec, { dbId: null });
+    A.data.students.push(raw);
+    return sb.from('students').insert(studentRow(rec)).select('*').single().then(function (r) {
+      report(r, '원생 등록'); if (!r.data) return null;
+      raw.dbId = r.data.id; A.data.byId[r.data.id] = r.data; A.data.byName[r.data.name] = r.data;
+      var from = anyToYmd(rec.join) || new Date().toISOString().slice(0, 10), T = termsOf(rec);
+      return sb.from('student_terms').insert(['lesson', 'fee', 'cash'].map(function (k) { return { student_id: r.data.id, section: k, from_date: from, value: T[k], created_by: A.staff.id }; }))
+        .then(function (q) { report(q, '원생 등록(수업·수강료)'); return r.data.id; });
+    });
+  };
+  // 원생 정보 수정: 기본 정보는 바로, 수강료·현금영수증 날짜별 변경은 student_terms에 (수업 정보는 lessonChanges로 따로 저장됨)
+  A.saveEdit = function (reg, basic, newHist, dropHids) {
+    var sid = sidOfReg(reg); if (!sid) return;
+    var raw = A.data.students.find(function (x) { return x.id === reg; });
+    if (raw) { var keep = Object.assign({}, raw.extra); Object.assign(raw, mergeRec(raw, basic)); raw.extra = Object.assign(keep, (basic || {}).extra); }
+    var row = studentRow(Object.assign({}, raw || {}, basic, { id: reg, extra: Object.assign({}, (raw || {}).extra, (basic || {}).extra) }));
+    delete row.reg_no;
+    sb.from('students').update(row).eq('id', sid).then(function (r) { report(r, '원생 정보 수정'); if (r && !r.error && A.data.byId[sid]) { var nm0 = A.data.byId[sid].name; if (nm0 !== row.name) { delete A.data.byName[nm0]; A.data.byId[sid].name = row.name; A.data.byName[row.name] = A.data.byId[sid]; } } });
+    (dropHids || []).forEach(function (h) { A.deleteTerm(h); });
+    (newHist || []).forEach(function (h) {
+      idMap[h.hid] = sb.from('student_terms').insert({ student_id: sid, section: h.sec, from_date: h.from, value: h.patch, created_by: A.staff.id }).select('id').single()
+        .then(function (r) { report(r, '날짜별 변경'); return r.data ? r.data.id : null; });
+    });
+  };
+  A.deleteTerm = function (hid) { dbIdOf(hid).then(function (n) { if (n) sb.from('student_terms').delete().eq('id', n).then(function (r) { report(r, '예정 취소'); }); }); };
+  A.logEvent = function (reg, item) {
+    var sid = sidOfReg(reg); if (!sid) return;
+    sb.from('activity_log').insert({ staff_id: A.staff.id, kind: item.kind || 'edit', student_id: sid, detail: item }).then(function (r) { report(r, '변경 기록'); });
+  };
+  // 샘플 원생을 한 번에 넣기 (시험용). list = 수강생대장 enrich 된 원생들
+  A.seed = function (list) {
+    var rows = list.map(function (s) { var r = studentRow(Object.assign({}, s, { extra: Object.assign({}, s.extra, { birth: s.birth, addr: s.addr, gender: s.gender }) })); return r; });
+    return sb.from('students').insert(rows).select('id,reg_no').then(function (r) {
+      if (report(r, '샘플 원생').error) throw r.error;
+      var idOf = {}; r.data.forEach(function (x) { idOf[x.reg_no] = x.id; });
+      var terms = [], stats = [];
+      list.forEach(function (s) {
+        var sid = idOf[s.id]; var from = anyToYmd(s.join) || '2020-01-01';
+        var times = {}; var segs = (s.timeTxt || '').split(' · ').filter(Boolean), days = s.days || [];
+        segs.forEach(function (seg, i) { var m = /(\d{1,2}):(\d{2})/.exec(seg); if (!m) return; var d = days[i]; if (days.length > 1) { var lt = seg.trim().split(' ')[0]; d = days.find(function (x) { return (x === '변동' ? 'R' : x[0]) === lt; }) || d; } if (d) times[d] = m[1] + ':' + m[2]; });
+        var T = termsOf(Object.assign({}, s, { extra: Object.assign({}, s.extra, { times: times, stickBox: s.stick, count: s.count, dur: s.dur, unit: s.unit, pay: s.pay, total: s.total }), flags: Object.assign({}, s.flags, { pro: s.cls === 'pro' ? 1 : 0, cash: s.cashOn ? 1 : 0 }) }));
+        ['lesson', 'fee', 'cash'].forEach(function (k) { terms.push({ student_id: sid, section: k, from_date: from, value: T[k], created_by: A.staff.id }); });
+        if (s.backDate) stats.push({ student_id: sid, kind: 'back', date: anyToYmd(s.backDate), created_by: A.staff.id });
+        if (s.status === 'rest') stats.push({ student_id: sid, kind: 'rest', date: anyToYmd(s.restDate) || from, reason: s.restReason || null, ticket: s.restTicket || null, created_by: A.staff.id });
+        if (s.status === 'out') stats.push({ student_id: sid, kind: 'out', date: anyToYmd(s.leave) || from, reason: s.leaveReason || null, created_by: A.staff.id });
+      });
+      return sb.from('student_terms').insert(terms).then(function (q) {
+        if (report(q, '샘플 수업 정보').error) throw q.error;
+        return stats.length ? sb.from('status_changes').insert(stats).then(function (w) { report(w, '샘플 휴원·퇴원'); }) : null;
+      }).then(function () {
+        var upd = list.filter(function (s) { return s.status !== 'act'; });
+        return Promise.all(upd.map(function (s) { return sb.from('students').update({ status: s.status }).eq('id', idOf[s.id]); }));
+      }).then(function () { return A.load(); });
+    });
+  };
 
   function start() {
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);

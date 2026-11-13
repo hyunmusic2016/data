@@ -166,7 +166,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.38.5</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.39.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -567,6 +567,10 @@ class Component extends DCLogic {
   componentDidMount() {
     this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusShared: this.readStatus() }); if (e.key === 'academy.tickets') this.setState({ tkTick: Date.now() }); };
     window.addEventListener('storage', this._st);
+    // Supabase에서 데이터를 불러오면 날짜별 변경·변경 기록·휴원/퇴원·수업 정보 변경을 다시 읽는다
+    this._dbl = () => { const A = window.academy; if (!A || !A.data) return; this.setState({ hist: JSON.parse(JSON.stringify(A.data.hist || {})), log: JSON.parse(JSON.stringify(A.data.log || {})), statusShared: this.readStatus(), shared: this.readShared(), changes: {}, added: [] }); };
+    document.addEventListener('academy:data', this._dbl);
+    if (window.academy && window.academy.data) this._dbl();
   }
   componentWillUnmount() { window.removeEventListener('storage', this._st); }
   sharedToPatch(e) {
@@ -679,6 +683,7 @@ class Component extends DCLogic {
   addLog(id, item) {
     const L = Object.assign({}, this.state.log);
     L[id] = (L[id] || []).concat([Object.assign({ at: Date.now() }, item)]);
+    const A = window.academy; if (A && A.data) A.logEvent(id, item);
     return L;
   }
   timeline(s) {
@@ -705,6 +710,7 @@ class Component extends DCLogic {
     const R = this.state.reg;
     const H = Object.assign({}, this.state.hist);
     H[R.editId] = (H[R.editId] || []).filter(h => h.hid !== hid);
+    const A0 = window.academy; if (A0 && A0.data && ((this.state.hist || {})[R.editId] || []).some(h => h.hid === hid)) A0.deleteTerm(hid);
     const SH = this.writeShared((this.state.shared || []).filter(e => e.id !== hid));
     const left = this.schedEntries(R.editId, R.schedView).filter(h => h.hid !== hid).length;
     this.setState({ hist: H, shared: SH, reg: Object.assign({}, R, { schedView: left ? R.schedView : null, svConfirm: null }), toast: '예정 변경을 취소했습니다' });
@@ -752,7 +758,13 @@ class Component extends DCLogic {
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
+  // 원생 목록: GitHub 페이지(로그인)에서는 Supabase에서 불러온 원생, 시안(claude.ai)에서는 샘플
   baseStudents() {
+    const A = window.academy;
+    if (A && A.sb) return A.data ? A.data.students : [];
+    return this.sampleStudents();
+  }
+  sampleStudents() {
     const T = { '드럼': '박서준', '보컬': '이하늘', '기타': '김도윤', '베이스': '최민재', '피아노': '정우진', '우쿨렐레': '김도윤' };
     const raw = [
       [507, '드럼', '김재윤', '', '월요일', '성인', '0102-6870', '', '26.11.02', '', '', '', 'act', { t12: 1 }],
@@ -984,7 +996,10 @@ class Component extends DCLogic {
       const H = Object.assign({}, this.state.hist);
       // '고치기'로 불러온 예정은 지우고 새로 저장 (바꾼 게 없으면 그대로 취소됨)
       const drop = Object.values(r.replace || {});
-      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(changed.filter(k => k !== 'lesson').map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], prev: was[k], patch: now[k] })));
+      const newH = changed.filter(k => k !== 'lesson').map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], prev: was[k], patch: now[k] }));
+      H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(newH);
+      // Supabase: 기본 정보는 바로, 수강료·현금영수증 날짜별 변경 저장 (수업 정보는 아래 출석부 공용 기록으로 저장됨)
+      const A1 = window.academy; if (A1 && A1.data) A1.saveEdit(r.editId, now.basic, newH, drop.filter(h => ((this.state.hist || {})[r.editId] || []).some(x => x.hid === h)));
       // 수업 정보는 출석부와 같이 쓰는 기록으로
       let SH = (this.state.shared || []).filter(e => drop.indexOf(e.id) < 0);
       if (changed.indexOf('lesson') >= 0) SH = SH.concat([Object.assign({ id: 'L' + Date.now(), name: now.basic.name, from: r.dates.lesson, at: Date.now() }, this.patchToShared(now.lesson), { prev: this.patchToShared(was.lesson) })]);
@@ -1001,7 +1016,9 @@ class Component extends DCLogic {
     }
     const rec = { note: (r.note || '').trim(), id: manual || this.nextId(), manualId: !!manual, part: r.part, name: r.name.trim(), guardian: r.guardian.trim(), teacher: r.teacher, day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], age: r.age, phone: r.phone.trim(), gphone: r.gphone.trim(), join: join, leave: '', memo: r.stick ? '스틱 보관함' : '', rest: '', status: 'act', flags: { pro: r.cls === 'pro' ? 1 : 0, cash: r.cash ? 1 : 0 }, extra: { birth: r.birth, addr: r.addr, gender: r.gender, times: times, dur: r.dur, count: r.count, unit: r.unit, pay: r.pay, total: r.total, cashType: r.cashType, cashNo: r.cashNo, stickBox: !!r.stick } };
     this.flashRow(rec.id, 'new');
-    this.setState({ added: (this.state.added || []).concat([rec]), reg: null, tab: 'act', q: '', filt: {}, toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
+    const A2 = window.academy; const toDb = !!(A2 && A2.data);
+    if (toDb) A2.addStudent(rec);
+    this.setState({ added: toDb ? (this.state.added || []) : (this.state.added || []).concat([rec]), reg: null, tab: 'act', q: '', filt: {}, toast: rec.name + ' 원생을 등록했습니다 (등록번호 ' + rec.id + ')' });
     clearTimeout(this._tt);
     this._tt = setTimeout(() => this.setState({ toast: '' }), 2600);
   }
