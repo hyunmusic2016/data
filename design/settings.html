@@ -46,6 +46,11 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 166, 171, 0.32)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></span>
           <span style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #BFEAEB 62%, #BFEAEB 92%, transparent 92%)">현실용음악학원 설정</span>
         </span>
+        <sc-if value="{{viewSub}}" hint-placeholder-val="{{ false }}">
+          <span style="display: inline-flex; align-items: center; gap: 10px; padding-left: 4px"><span style="width: 1px; height: 22px; background: #D5DBD8; margin-right: 4px"></span><span style="font-size: 15px; color: #8A949E">{{subGroup}}</span><span style="font-size: 15px; color: #B7C0BC">›</span><span style="font-size: 18px; font-weight: 600; color: #17201C">{{subTitle}}</span></span>
+          <span style="flex: 1"></span>
+          <button type="button" class="noexp" onClick="{{goHub}}" style="display: inline-flex; align-items: center; gap: 4px; height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">‹ 설정</button>
+        </sc-if>
       </div>
 
       <div class="shellscroll" style="padding: 22px; display: flex; flex-direction: column; gap: 16px">
@@ -59,14 +64,6 @@ html.bwp .printonly .pcell{border-color:#000!important}
                 </sc-for>
               </div>
             </sc-for>
-          </div>
-        </sc-if>
-        <sc-if value="{{viewSub}}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; align-items: center; gap: 10px">
-            <button type="button" class="noexp" onClick="{{goHub}}" style="display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">‹ 설정</button>
-            <span style="font-size: 13px; color: #8A949E">{{subGroup}}</span>
-            <span style="font-size: 13px; color: #B7C0BC">›</span>
-            <span style="font-size: 15px; font-weight: 600; color: #17201C">{{subTitle}}</span>
           </div>
         </sc-if>
         <sc-if value="{{viewSoon}}" hint-placeholder-val="{{ false }}">
@@ -258,7 +255,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.53.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.53.5</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
