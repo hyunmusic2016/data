@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.50.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.51.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -492,6 +492,56 @@ class Component extends DCLogic {
       // 출석은 원장님이 직접 테스트하도록 비워 둠 (샘플 출결 없음)
       ev: {}
     };
+    if (this.dbMode()) Object.assign(this.state, this.cellsState());
+  }
+  // ---------- 출석부 저장 (로그인 사이트) ----------
+  // 화면의 출결·수납 표시와 보강 시간을 원생('D'+원생번호)·달별로 'academy.attCells'에 써 두면 db.js가 Supabase(attendance_cells)에 저장한다.
+  dbMode() { const A = window.academy; return !!(A && A.data && Array.isArray(A.data.students)); }
+  cellsState() {
+    let ac = {};
+    try { ac = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; } catch (e) {}
+    const ev = {}, bm = {}, mk = {}, ml = {}, months = [];
+    Object.keys(ac).forEach(ym => {
+      const m = +ym.slice(5, 7);
+      if (ym.slice(0, 4) !== '2026' || !m) return;
+      if (months.indexOf(m) < 0) months.push(m);
+      const tgt = m === 11 ? ev : (bm[m] = bm[m] || {});
+      // 원생('D'+번호)마다 { 줄 id: 칸 내용, _mk: {'날짜-줄 id': 보강 시간}, _ml: {'날짜-줄 id': 보강 날짜} }
+      Object.keys(ac[ym] || {}).forEach(sk => {
+        const c = ac[ym][sk] || {};
+        Object.keys(c).forEach(rid => { if (rid !== '_mk' && rid !== '_ml' && c[rid] && Object.keys(c[rid]).length) tgt[rid] = Object.assign({}, c[rid]); });
+        Object.keys(c._mk || {}).forEach(k => { mk[m + '-' + k] = c._mk[k]; });
+        Object.keys(c._ml || {}).forEach(k => { ml[m + '-' + k] = c._ml[k]; });
+      });
+    });
+    const extra = (this.state && this.state.extra || []).concat(months.filter(m => m > 11)).filter((m, i, a) => a.indexOf(m) === i).sort((a, b) => b - a);
+    return { ev: ev, evByMonth: bm, mkTimes: mk, mkLinks: ml, extra: extra };
+  }
+  buildCells() {
+    // 줄 id 'D12-화' → 원생 키 'D12' (로그인 사이트 원생 줄만 저장)
+    const st = this.state, ac = {}, skOf = rid => { const m = /^(D\d+)(-|$)/.exec(String(rid)); return m ? m[1] : null; };
+    const put = (m, sk) => { const ym = '2026-' + String(m).padStart(2, '0'); ac[ym] = ac[ym] || {}; return (ac[ym][sk] = ac[ym][sk] || {}); };
+    [[11, st.ev]].concat(Object.keys(st.evByMonth || {}).filter(m => +m !== 11).map(m => [+m, st.evByMonth[m]])).forEach(p => {
+      Object.keys(p[1] || {}).forEach(rid => { const r = p[1][rid], sk = skOf(rid); if (sk && r && Object.keys(r).length) put(p[0], sk)[rid] = r; });
+    });
+    [['_mk', st.mkTimes], ['_ml', st.mkLinks]].forEach(p => {
+      Object.keys(p[1] || {}).forEach(k => { const a = k.split('-'), rest = a.slice(1).join('-'), sk = skOf(a.slice(2).join('-')); if (!sk || !p[1][k]) return; const o = put(+a[0], sk); (o[p[0]] = o[p[0]] || {})[rest] = p[1][k]; });
+    });
+    return ac;
+  }
+  persistCells() {
+    const st = this.state, refs = [st.ev, st.evByMonth, st.mkTimes, st.mkLinks];
+    if (this._pc && this._pc.every((x, i) => x === refs[i])) return;
+    const first = !this._pc;
+    this._pc = refs;
+    if (first) return;
+    clearTimeout(this._pcT);
+    this._pcT = setTimeout(() => {
+      const js = JSON.stringify(this.buildCells());
+      let cur = '';
+      try { cur = localStorage.getItem('academy.attCells') || ''; } catch (e) {}
+      if (js !== cur) { try { localStorage.setItem('academy.attCells', js); } catch (e) {} }
+    }, 250);
   }
   students() {
     // 수업 요일·시간·드럼스틱 변경(수강생대장과 같이 쓰는 기록)을 적용 날짜가 들어 있는 달부터 반영한다.
@@ -696,7 +746,7 @@ class Component extends DCLogic {
         const time = m ? String(+m[1] < 9 ? +m[1] + 12 : +m[1]).padStart(2, '0') + ':' + m[2] : undefined;
         out.push({ id: 'D' + r.dbId + '-' + g, sid: 'D' + r.dbId, dbId: r.dbId, g: g, name: r.name + (fl.cash ? '$' : ''), start: 0, fresh: true, time: time,
           stick: !!ex.stickBox, teacher: r.teacher || '', join: db.join_date || '', dbStatus: db.status || 'act', tickets: cnt,
-          rowBg: fl.pro ? '#F9DADC' : undefined, nameBg: cnt > 4 ? '#DCD3EE' : undefined, cashNo: ex.cashNo || '' });
+          rowBg: fl.pro ? '#F9DADC' : undefined, cashNo: ex.cashNo || '' });
       });
     });
     return out;
@@ -868,7 +918,7 @@ class Component extends DCLogic {
     this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); };
     window.addEventListener('storage', this._st);
     // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
-    this._dbl = () => this.setState({ shared: this.readShared(), statusList: this.readStatus() });
+    this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); };
     document.addEventListener('academy:data', this._dbl);
     this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
     this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
@@ -1009,7 +1059,7 @@ class Component extends DCLogic {
     const to12 = t => { const m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return m ? ((+m[1] % 12) || 12) + ':' + m[2] : ''; };
     const days = r.days || ['변동'];
     return { id: r.id, join: r.join, name: r.name, cls: fl.pro ? 'pro' : 'hobby', part: r.part || '', teacher: r.teacher || '', day: r.day || days.join('·'),
-      timeTxt: days.map(d => to12((ex.times || {})[d])).filter(Boolean).join(' · '), count: +ex.count || 4, dur: +ex.dur || 60, unit: +ex.unit || (fl.pro ? 62500 : 40000), total: +ex.total || 0,
+      timeTxt: days.map(d => to12((ex.times || {})[d])).filter(Boolean).join(' · '), count: +ex.count || 4, dur: +ex.dur || 60, unit: +ex.unit || (fl.pro ? 62500 : 40000), total: +ex.total || (+ex.unit || (fl.pro ? 62500 : 40000)) * (+ex.count || 4),
       cashOn: !!fl.cash, cashType: ex.cashType || 'person', cashNo: ex.cashNo || '', phone: r.phone || '', guardian: r.guardian || '', gphone: r.gphone || '', status: r.status || 'act' };
   }
   openPay(late) {
@@ -1460,6 +1510,7 @@ class Component extends DCLogic {
   }
   renderVals() {
     const st = this.state;
+    if (this.dbMode()) this.persistCells();
     const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
     const COLS = 'display: grid; grid-template-columns: 44px 118px 132px repeat(31, minmax(0, 1fr))';
     const base = 'min-height: 44px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
@@ -1730,7 +1781,7 @@ class Component extends DCLogic {
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
         const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
         const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
-        const expRow = { g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: r.T > 4, sum: r.startUsed || '', since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells };
+        const expRow = { g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: false, sum: r.startUsed || '', since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells };
         this._exp.push(expRow);
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';

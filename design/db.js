@@ -179,8 +179,27 @@
       return Promise.all([
         sb.from('app_settings').select('key,value'),
         sb.from('employees').select('*').order('seq'),
-        sb.from('subjects').select('*').order('sort')
+        sb.from('subjects').select('*').order('sort'),
+        sb.from('attendance_cells').select('student_id,ym,cells'),
+        sb.from('payments').select('*').order('id'),
+        sb.from('ticket_plans').select('student_id,plan_date')
       ]).then(function (qs) {
+        // 출석부 저장 (008 SQL). 출결 칸은 'academy.attCells' = { '2026-11': { 'D원생번호': 칸 내용 } }
+        A.attTried = true;
+        if (!qs[3].error) {
+          A.attReady = true;
+          var ac = {}; (qs[3].data || []).forEach(function (r) { if (byId[r.student_id]) (ac[r.ym] = ac[r.ym] || {})['D' + r.student_id] = r.cells; });
+          rawSet('academy.attCells', JSON.stringify(ac)); known.att = attIdx(ac);
+        }
+        if (!qs[4].error && qs[4].data && (!qs[4].data.length || 'local_id' in qs[4].data[0])) {
+          A.payReady = true;
+          var pl = qs[4].data.map(function (r) { var s = byId[r.student_id]; if (!s) return null; return Object.assign({}, r.extra || {}, { id: r.local_id || ('P' + r.id), name: s.name, date: r.date, count: r.count, dur: r.dur, unit: r.unit, total: r.total, cls: r.cls }, r.kind === 'unpaid' ? { kind: 'unpaid' } : {}); }).filter(Boolean);
+          rawSet('academy.payments', JSON.stringify(pl)); known.pay = idxList(pl);
+        }
+        if (!qs[5].error) {
+          var tp = {}; (qs[5].data || []).forEach(function (r) { var s = byId[r.student_id]; if (s) tp[s.name] = r.plan_date; });
+          rawSet('academy.ticketPlans', JSON.stringify(tp)); known.tkp = tp;
+        }
         var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); });
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
@@ -222,6 +241,9 @@
         if (!A.staff || A.staff.role !== 'owner') { toast('메뉴 탭은 원장님만 바꿀 수 있습니다'); return; }
         sb.from('app_settings').upsert({ key: 'menu', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '메뉴 탭 설정'); });
       }
+      else if (k === 'academy.attCells') syncAtt(JSON.parse(v || '{}'));
+      else if (k === 'academy.payments') syncPays(JSON.parse(v || '[]'));
+      else if (k === 'academy.ticketPlans') syncPlans(JSON.parse(v || '{}'));
       else if (k === 'academy.staffOrder') {
         if (!A.staff || A.staff.role !== 'owner') { toast('직원 순서는 원장님만 바꿀 수 있습니다'); return; }
         sb.from('app_settings').upsert({ key: 'staffOrder', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '직원 순서'); });
@@ -233,6 +255,43 @@
     list.forEach(function (e) { now[e.id] = e; if (!prev[e.id]) saveFn(e); });
     Object.keys(prev).forEach(function (id) { if (!now[id]) dbIdOf(id).then(function (n) { if (n) sb.from(table).delete().eq('id', n).then(function (r) { report(r, '삭제'); }); }); });
     known[kind] = now;
+  }
+  // ---------- 출석부 저장 (008 SQL) ----------
+  function attIdx(ac) { var o = {}; Object.keys(ac || {}).forEach(function (ym) { Object.keys(ac[ym] || {}).forEach(function (k) { if (/^D\d+$/.test(k)) o[ym + '|' + k] = JSON.stringify(ac[ym][k]); }); }); return o; }
+  function syncAtt(ac) {
+    if (!A.attReady) { if (A.attTried) toast('출석부를 저장하려면 Supabase에서 008 SQL을 먼저 실행해 주세요'); return; }
+    var prev = known.att || {}, now = attIdx(ac), up = [];
+    Object.keys(now).forEach(function (k) {
+      if (prev[k] === now[k]) return;
+      var p = k.split('|'), cells = JSON.parse(now[k]);
+      if (!Object.keys(cells).length) { if (prev[k]) sb.from('attendance_cells').delete().eq('student_id', +p[1].slice(1)).eq('ym', p[0]).then(function (r) { report(r, '출석부 저장'); }); return; }
+      up.push({ student_id: +p[1].slice(1), ym: p[0], cells: cells, updated_by: A.staff.id, updated_at: new Date().toISOString() });
+    });
+    Object.keys(prev).forEach(function (k) { if (!(k in now)) { var p = k.split('|'); sb.from('attendance_cells').delete().eq('student_id', +p[1].slice(1)).eq('ym', p[0]).then(function (r) { report(r, '출석부 저장'); }); } });
+    if (up.length) sb.from('attendance_cells').upsert(up, { onConflict: 'student_id,ym' }).then(function (r) { report(r, '출석부 저장'); });
+    known.att = now;
+  }
+  function syncPays(list) {
+    if (!A.payReady) { if (A.attTried) toast('수납을 저장하려면 Supabase에서 008 SQL을 먼저 실행해 주세요'); return; }
+    var prev = known.pay || {}, now = {}, up = [];
+    (list || []).forEach(function (e) {
+      if (!e || !e.id) return;
+      var sid = sidOfName(e.name); if (!sid) return;
+      var js = JSON.stringify(e); now[e.id] = js; if (prev[e.id] === js) return;
+      up.push({ local_id: e.id, student_id: sid, date: e.date, kind: e.kind === 'unpaid' ? 'unpaid' : 'normal', count: +e.count || 0, dur: +e.dur || null, unit: +e.unit || null, total: +e.total || 0, cls: e.cls === 'pro' ? 'pro' : 'hobby', extra: e, created_by: A.staff.id, updated_at: new Date().toISOString() });
+    });
+    Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('payments').delete().eq('local_id', id).then(function (r) { report(r, '수납 취소'); }); });
+    if (up.length) sb.from('payments').upsert(up, { onConflict: 'local_id' }).then(function (r) { report(r, '수납 저장'); });
+    known.pay = now;
+  }
+  function syncPlans(all) {
+    var prev = known.tkp || {}, now = {};
+    Object.keys(all || {}).forEach(function (nm) {
+      var sid = sidOfName(nm); if (!sid) return; now[nm] = all[nm];
+      if (prev[nm] !== all[nm]) sb.from('ticket_plans').upsert({ student_id: sid, plan_date: all[nm], updated_by: A.staff.id, updated_at: new Date().toISOString() }, { onConflict: 'student_id' }).then(function (r) { report(r, '레슨시작일 예정'); });
+    });
+    Object.keys(prev).forEach(function (nm) { if (!(nm in now)) { var sid = sidOfName(nm); if (sid) sb.from('ticket_plans').delete().eq('student_id', sid).then(function (r) { report(r, '레슨시작일 예정'); }); } });
+    known.tkp = now;
   }
   // 직원명부·수강과목: 새 줄은 insert(번호를 받아 id를 바꿔 둠), 바뀐 줄은 update, 빠진 줄은 delete
   function idxList(list) { var o = {}; (list || []).forEach(function (e) { o[e.id] = JSON.stringify(e); }); return o; }
