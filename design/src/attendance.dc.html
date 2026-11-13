@@ -78,7 +78,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
-                  <button type="button" data-cell="{{x.key}}" title="{{x.title}}" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span><sc-if value="{{x.hint}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-hidden="true" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; pointer-events: none; font-size: 9px; font-weight: 600; line-height: 1.15; color: #A9B1AD; white-space: nowrap"><span>{{x.hint}}</span><span>{{x.hint2}}</span></span></sc-if></button>
+                  <button type="button" data-cell="{{x.key}}" title="{{x.title}}" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="{{x.chip}}">{{x.text}}</span><sc-if value="{{x.hint}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-hidden="true" style="{{x.hintStyle}}"><span>{{x.hint}}</span><span>{{x.hint2}}</span></span></sc-if></button>
                 </sc-for>
                 <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{r.lastStyle}}"></span></sc-for>
               </div>
@@ -201,7 +201,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.53.10</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.53.11</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1825,7 +1825,8 @@ class Component extends DCLogic {
     const EV = this.monthEvents(MON);
     const fillers = [];
     for (let i = ND; i < 31; i++) fillers.push({ i: i });
-    const TODAY = MON === 11 ? 11 : 0;
+    // 오늘 날짜 (실제 날짜 기준, 그 달이 아니면 0)
+    const TODAY = (() => { const t0 = new Date(); return t0.getFullYear() === 2026 && t0.getMonth() + 1 === MON ? t0.getDate() : 0; })();
     const days = [];
     for (let d = 1; d <= ND; d++) {
       const w = (d - 1 + FIRST) % 7;
@@ -1986,7 +1987,7 @@ class Component extends DCLogic {
     // 수강권 칸 모양 (동그라미 + 레슨시작일·상태 줄 + 미납금액 수납완료 줄). 출석부 화면과 수강생대장 휴원·퇴원 탭이 같이 쓴다
     const tkView = (s, r) => {
     const dots = [], dotGroups = [];
-    // 동그라미 크기 10px (v0.53.10, 예전 7px)
+    // 동그라미 크기 10px (v0.53.11, 예전 7px)
     const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
     const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
     if (r.paid) {
@@ -2032,7 +2033,7 @@ class Component extends DCLogic {
     this._unpaid = {};
     const groups = GROUPS.map((gp, gi) => {
       const tint = '#FFFFFF', tintWe = '#FFFFFF';
-      const isTodayG = MON === 11 && gp[0] === '수';
+      const isTodayG = !!TODAY && gp[0] === ['일', '월', '화', '수', '목', '금', '토'][new Date(2026, MON - 1, TODAY).getDay()];
       const tmin = s => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(s.time || ''); return m0 ? +m0[1] * 60 + +m0[2] : Infinity; };
       const sortName = s => s.name.replace('$', '').replace(/^[A-Za-z]\)/, '');
       // 시간이 있는 원생은 시간 순서, 시간이 없는 원생은 그 아래 가나다 순서
@@ -2110,7 +2111,9 @@ class Component extends DCLogic {
               selected: inSel ? 'true' : 'false',
               // 칸 하나만 골랐고 비어 있으면 그 줄 이름과 날짜·요일을 흐리게
               hint: inSel && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && !x.text ? s.name.replace('$', '').replace(/^[A-Za-z]\)/, '') : '',
-              hint2: MON + '/' + x.d + ' ' + ['일', '월', '화', '수', '목', '금', '토'][new Date(2026, MON - 1, x.d).getDay()],
+              // 오늘 날짜면 '오늘'로, 글씨도 진하게
+              hint2: (() => { return x.d === TODAY ? '오늘' : MON + '/' + x.d + ' ' + ['일', '월', '화', '수', '목', '금', '토'][new Date(2026, MON - 1, x.d).getDay()]; })(),
+              hintStyle: (() => { const td = x.d === TODAY; return 'position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; pointer-events: none; font-size: 9px; font-weight: 600; line-height: 1.15; white-space: nowrap; color: ' + (td ? '#3A4450' : '#A9B1AD'); })(),
               style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
                 ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px ' + (x.upay ? '#E8A9A4' : '#E2C35E')] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
