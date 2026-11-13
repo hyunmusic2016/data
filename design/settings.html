@@ -6,7 +6,7 @@
 <title>설정</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.47.0"></script>
+<script src="db.js?v=0.47.2"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -258,7 +258,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.2</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -293,7 +293,6 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <input id="e_email" type="email" defaultValue="{{ed.email}}" onInput="{{ed.q.email}}" aria-label="로그인 이메일" style="{{ed.inp}}; flex: 1">
             <span style="{{ed.accChip}}">{{ed.acc}}</span>
           </div>
-          <button type="button" id="e_admin" role="checkbox" aria-checked="{{ed.adminOn}}" onClick="{{ed.adminToggle}}" disabled="{{ed.adminOwner}}" style="{{ed.adminStyle}}"><span style="{{ed.adminBox}}">✓</span><span style="display: flex; flex-direction: column; gap: 2px"><span>관리자 권한 (원장님과 같은 권한)</span><span style="font-size: 12px; font-weight: 400; opacity: 0.8">{{ed.adminNote}}</span></span></button>
         </section>
       </div>
       <div style="display: flex; align-items: center; gap: 10px">
@@ -476,8 +475,6 @@ class Component extends DCLogic {
     try { localStorage.setItem('academy.employees', JSON.stringify(list.map(e => { const o = Object.assign({}, e); delete o.sample; return o; }))); } catch (e) {}
     this.setState({ tick: Date.now() });
   }
-  // 관리자 권한: 직명에 원장이 있거나, 직원명부에서 '관리자 권한'을 켠 직원 (로그인하면 원장님과 같은 권한)
-  isAdminEmp(e) { return !!(e && (this.titlesOf(e).indexOf('원장') >= 0 || e.admin)); }
   todayYmd() { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }
   openEmp(e) {
     const E = this.employeeList();
@@ -493,7 +490,6 @@ class Component extends DCLogic {
     if (!rec.name) { this.setState({ ed: Object.assign({}, D, rec, { err: '성명을 입력해 주세요.' }) }); return; }
     if (!(rec.titles || []).length) { this.setState({ ed: Object.assign({}, D, rec, { err: '직명을 하나 이상 골라 주세요.' }) }); return; }
     rec.role = rec.titles.indexOf('원장') >= 0 ? '원장' : '강사';
-    rec.admin = rec.role !== '원장' && !!rec.admin;
     const A = window.academy;
     if (A && A.staff && rec.leave && rec.email && rec.email === (A.staff.email || '')) {}
     const keep = ['id', 'seq', 'role', 'titles', 'name', 'phone', 'addr', 'duty', 'email', 'subjects', 'tab', 'admin', 'hire', 'leave', 'leaveReason', 'memo', 'linked'];
@@ -531,7 +527,7 @@ class Component extends DCLogic {
       { k: 'seq', label: '연번', w: 60 }, { k: 'role', label: '직명', w: 110 }, { k: 'name', label: '성명', w: 96, fixed: true, left: true },
       { k: 'addr', label: '주소', w: 210, left: true }, { k: 'phone', label: '전화번호', w: 128 }, { k: 'duty', label: '담당업무', w: 200, left: true },
       { k: 'subjects', label: '교습과목', w: 150, left: true }, { k: 'hire', label: '채용연월일', w: 90 }, { k: 'leave', label: '해임연월일', w: 90 },
-      { k: 'acc', label: '로그인', w: 84 }, { k: 'email', label: '로그인 이메일', w: 200, left: true }, { k: 'tab', label: '출석부 탭', w: 84 }, { k: 'perm', label: '권한', w: 84 }, { k: 'memo', label: '메모', w: 200, left: true }
+      { k: 'acc', label: '로그인', w: 84 }, { k: 'email', label: '로그인 이메일', w: 200, left: true }, { k: 'tab', label: '출석부 탭', w: 84 }, { k: 'memo', label: '메모', w: 200, left: true }
     ];
   }
   staffDefCols() { return ['seq', 'role', 'name', 'addr', 'phone', 'duty', 'subjects', 'hire', 'leave', 'acc']; }
@@ -544,8 +540,7 @@ class Component extends DCLogic {
       { k: 'state', label: '재직 상태', opts: E => ['재직', '해임'], val: e => out(e) ? '해임' : '재직' },
       { k: 'acc', label: '로그인', opts: E => ['연결됨', '연결 전', '없음'], val: e => e.linked ? '연결됨' : e.email ? '연결 전' : '없음' },
       { k: 'hireY', label: '채용 연도', opts: E => Array.from(new Set(E.map(e => (e.hire || '').slice(0, 4)).filter(Boolean))).sort().reverse().map(y => y + '년'), val: e => e.hire ? e.hire.slice(0, 4) + '년' : '' },
-      { k: 'tab', label: '출석부 탭', opts: E => ['있음', '없음'], val: e => e.tab !== false ? '있음' : '없음' },
-      { k: 'perm', label: '권한', opts: E => ['관리자', '일반'], val: e => this.isAdminEmp(e) ? '관리자' : '일반' }
+      { k: 'tab', label: '출석부 탭', opts: E => ['있음', '없음'], val: e => e.tab !== false ? '있음' : '없음' }
     ];
   }
   readArr(key) { try { const v = JSON.parse(localStorage.getItem(key) || 'null'); return Array.isArray(v) ? v : null; } catch (e) { return null; } }
@@ -848,7 +843,6 @@ class Component extends DCLogic {
       if (c.k === 'role') return { isText: false, isChip: false, isChips: true, cell: cell, chips: this.titlesOf(e).map(t => ({ name: t, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; ' + (t === '원장' ? 'background: #F3E6C4; color: #7A5C12' : t === '행정' ? 'background: #E3ECFD; color: #2952A3' : 'background: #E6F6F6; color: #007E82') })) };
       if (c.k === 'subjects') return { isText: false, isChip: false, isChips: true, cell: cell, chips: (e.subjects || []).map(nm => ({ name: nm, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + (PC[nm] || ['#EEF1F0'])[0] + '; color: ' + (PC[nm] || ['', '#3A4450'])[1] })) };
       if (c.k === 'acc') { const t = e.linked ? '연결됨' : e.email ? '연결 전' : '없음'; return { isText: false, isChip: true, isChips: false, text: t, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 600; ' + (e.linked ? 'background: #E2F1EA; color: #1F7A5A' : e.email ? 'background: #FFF4E0; color: #9A5B00' : 'background: #EEF1F0; color: #8A949E') }; }
-      if (c.k === 'perm') return this.isAdminEmp(e) ? { isText: false, isChip: true, isChips: false, text: '관리자', cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 600; background: #F3E6C4; color: #7A5C12' } : T('일반', 'font-size: 13px; color: #8A949E');
       if (c.k === 'name') return T(e.name, 'font-weight: 600; color: ' + (out ? '#8A949E' : '#17201C'));
       if (c.k === 'seq') return T(e._no, 'color: #8A949E');
       if (c.k === 'phone') return T(fmtP(e.phone), 'font-size: 13px');
@@ -857,7 +851,7 @@ class Component extends DCLogic {
       if (c.k === 'tab') return T(e.tab !== false ? '있음' : '없음', 'font-size: 13px');
       return T(e[c.k] || '', 'font-size: 13px');
     };
-    const plainOf = (c, e) => c.k === 'seq' ? e._no : c.k === 'role' ? this.titlesOf(e).join(',') : c.k === 'subjects' ? (e.subjects || []).join(', ') : c.k === 'phone' ? fmtP(e.phone) : c.k === 'hire' ? fmtD(e.hire) : c.k === 'leave' ? fmtD(e.leave) : c.k === 'acc' ? (e.linked ? '연결됨' : e.email ? '연결 전' : '없음') : c.k === 'tab' ? (e.tab !== false ? '있음' : '없음') : c.k === 'perm' ? (this.isAdminEmp(e) ? '관리자' : '일반') : (e[c.k] == null ? '' : e[c.k]);
+    const plainOf = (c, e) => c.k === 'seq' ? e._no : c.k === 'role' ? this.titlesOf(e).join(',') : c.k === 'subjects' ? (e.subjects || []).join(', ') : c.k === 'phone' ? fmtP(e.phone) : c.k === 'hire' ? fmtD(e.hire) : c.k === 'leave' ? fmtD(e.leave) : c.k === 'acc' ? (e.linked ? '연결됨' : e.email ? '연결 전' : '없음') : c.k === 'tab' ? (e.tab !== false ? '있음' : '없음') : (e[c.k] == null ? '' : e[c.k]);
     const empRows = SHOWN.map(e => {
       const out = this.isDismissed(e);
       const isMe = !!(myName && e.name === myName && e.role === '원장');
@@ -932,12 +926,6 @@ class Component extends DCLogic {
         subj: SUB.map(s => { const on = (ED.subjects || []).indexOf(s.name) >= 0; return { label: s.name, on: on ? 'true' : 'false',
           pick: () => upd(Object.assign(keepTyped(), { subjects: on ? ED.subjects.filter(x => x !== s.name) : (ED.subjects || []).concat([s.name]) })),
           style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'background: ' + s.bg + '; color: ' + s.fg + '; border: 2px solid ' + s.fg : 'background: #FFFFFF; color: #8A949E; border: 1px solid #DDE2DF') }; }),
-        adminOwner: (ED.titles || []).indexOf('원장') >= 0,
-        adminOn: ((ED.titles || []).indexOf('원장') >= 0 || ED.admin) ? 'true' : 'false',
-        adminToggle: () => { if ((ED.titles || []).indexOf('원장') >= 0) return; upd(Object.assign(keepTyped(), { admin: !ED.admin })); },
-        adminNote: (ED.titles || []).indexOf('원장') >= 0 ? '직명이 원장이면 원래 관리자입니다' : '직명은 그대로, 권한만 원장님과 같게',
-        adminBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; ' + (((ED.titles || []).indexOf('원장') >= 0 || ED.admin) ? 'background: #B08A2E; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
-        adminStyle: 'display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 12px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; text-align: left; ' + (((ED.titles || []).indexOf('원장') >= 0 || ED.admin) ? 'border: 1px solid #E8D9AE; background: #FBF6E8; color: #7A5C12' : 'border: 1px solid #E1E6E3; background: #FFFFFF; color: #3A4450') + '; cursor: ' + ((ED.titles || []).indexOf('원장') >= 0 ? 'default' : 'pointer'),
         tabOn: ED.tab !== false ? 'true' : 'false',
         tabToggle: () => upd(Object.assign(keepTyped(), { tab: ED.tab === false })),
         tabBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; ' + (ED.tab !== false ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
