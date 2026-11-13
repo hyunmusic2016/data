@@ -142,7 +142,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                     <sc-for list="{{r.weeks}}" as="w" hint-placeholder-count="5">
                       <span style="display: flex; flex-direction: column; gap: 4px; padding: 6px; border-left: 1px solid #F0F2F1">
                         <sc-for list="{{w.items}}" as="it" hint-placeholder-count="1">
-                          <button type="button" onClick="{{it.open}}" style="{{it.style}}"><span style="display: flex; align-items: center; gap: 6px"><span style="font-size: 12px; font-weight: 600; color: #3A4450">{{it.date}}</span><span style="{{it.markStyle}}">{{it.mark}}</span></span><sc-if value="{{it.empty}}" hint-placeholder-val="{{ true }}"><span class="noexp" style="font-size: 12px; color: #B7C0BC">+ 수업 내용</span></sc-if><sc-if value="{{it.note}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.45; color: #17201C; white-space: pre-wrap; word-break: break-word">{{it.note}}</span></sc-if></button>
+                          <button type="button" onClick="{{it.open}}" style="{{it.style}}"><sc-if value="{{it.isAdd}}" hint-placeholder-val="{{ false }}"><span class="noexp">+ 수업 추가</span></sc-if><sc-if value="{{it.date}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #3A4450">{{it.date}}</span></sc-if><sc-if value="{{it.empty}}" hint-placeholder-val="{{ true }}"><span class="noexp" style="font-size: 12px; color: #B7C0BC">+ 수업 내용</span></sc-if><sc-if value="{{it.note}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.45; color: #17201C; white-space: pre-wrap; word-break: break-word">{{it.note}}</span></sc-if></button>
                         </sc-for>
                       </span>
                     </sc-for>
@@ -179,7 +179,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-if value="{{cl.open}}" hint-placeholder-val="{{ false }}">
       <div class="noprint" onMouseDown="{{cl.close}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(23, 32, 28, 0.28)"></div>
       <div class="noprint" role="dialog" aria-label="수업 내용" onKeyDown="{{cl.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 61; width: 460px; max-width: calc(100vw - 32px); padding: 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 20px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
-        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 18px; font-weight: 600">{{cl.name}}</span><sc-if value="{{cl.mark}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 12px; font-weight: 600">{{cl.mark}}</span></sc-if><span style="flex: 1"></span><span style="font-size: 13px; color: #5E6873">{{cl.date}}</span></div>
+        <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 18px; font-weight: 600">{{cl.name}}</span><sc-if value="{{cl.mark}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 12px; font-weight: 600">{{cl.mark}}</span></sc-if><span style="flex: 1"></span><sc-if value="{{cl.pick}}" hint-placeholder-val="{{ false }}"><input id="cl_date" type="date" min="{{cl.min}}" max="{{cl.max}}" defaultValue="{{cl.min}}" aria-label="수업 날짜" style="height: 34px; padding: 0 8px; border: 1px solid #DDE2DF; border-radius: 9px; font-family: inherit; font-size: 13px"></sc-if><span style="font-size: 13px; color: #5E6873">{{cl.date}}</span></div>
+        <sc-if value="{{cl.err}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; font-weight: 600; color: #B4332B">{{cl.err}}</span></sc-if>
         <textarea id="cl_note" aria-label="수업 내용" rows="6" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border: 1px solid #DDE2DF; border-radius: 12px; font-family: inherit; font-size: 14px; line-height: 1.5; resize: vertical">{{cl.note}}</textarea>
         <div style="display: flex; align-items: center; gap: 8px"><sc-if value="{{cl.canClear}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{cl.clear}}" style="height: 40px; padding: 0 14px; border-radius: 11px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">지우기</button></sc-if><span style="flex: 1"></span><button type="button" onClick="{{cl.close}}" style="height: 40px; padding: 0 16px; border-radius: 11px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">취소</button><button type="button" onClick="{{cl.save}}" style="height: 40px; padding: 0 22px; border-radius: 11px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">저장</button></div>
       </div>
@@ -203,7 +204,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.53.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.53.6</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -647,32 +648,53 @@ class Component extends DCLogic {
     const KEEP = [];
     for (let w = 0; w < nW; w++) { const a = Math.max(1, w * 7 - off + 1), b = Math.min(nd, w * 7 - off + 7); let k = false; for (let d = a; d <= b; d++) if (new Date(2026, m - 1, d).getDay() !== 0) k = true; KEEP.push(k); }
     const WD = ['일', '월', '화', '수', '목', '금', '토'];
-    const ev = this.monthEvents(m) || {};
     const LOG = this.readLog('academy.classLog', {}), LM = LOG[ym] || {};
     const t0 = new Date(), today = t0.getFullYear() === 2026 && t0.getMonth() + 1 === m ? t0.getDate() : 0;
-    const MK = { '수': ['출석', '#E6F6F6', '#007E82'], '결': ['결석', '#FCEBEA', '#B4332B'], '연': ['연기', '#EEF1F0', '#5E6873'] };
     const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] };
     const to12 = t => { const x = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return x ? ((+x[1] % 12) || 12) + ':' + x[2] : ''; };
     let nNotes = 0, nRows = 0;
     this._clSep = 0;
-    const groups = this.attOrder(this.students()).map(G => {
+    // 수업 날짜는 출석부 출결과 상관없이 수업 요일로 정한다 (요일 변경·휴원·퇴원·강사 이동만 따라감). R은 날짜를 골라서 추가
+    const DIX = { '일': 0, '월': 1, '화': 2, '수': 3, '목': 4, '금': 5, '토': 6 };
+    const allRows = this.students();
+    const daysOf = {};
+    allRows.forEach(s => { const k = s.dbId ? 'D' + s.dbId : s.name.replace('$', ''); const g = s.g === '퇴휴' ? s.origG : s.g; (daysOf[k] = daysOf[k] || []).push(g); });
+    const firstRowDone = {};
+    const groups = this.attOrder(allRows).map(G => {
       const dc = DC[G.g] || DC.R;
       const rows = G.rows.map(s => {
         nRows++;
         const name = s.name.replace('$', ''), key = s.dbId ? 'D' + s.dbId : name;
         const notes = ((LM[key] || {}).notes) || {};
-        const E = ev[s.id] || {};
+        const g = s.g === '퇴휴' ? s.origG : s.g;
+        let from = 1, to = nd;
+        if (s.dimBefore) from = s.dimBefore;
+        if (s.g === '퇴휴' && s.outDate && +s.outDate.slice(5, 7) === m) to = +s.outDate.slice(8, 10) - 1;
+        if (s.dimFrom) to = Math.min(to, s.dimFrom - 1);
+        const ds = {};
+        if (g && DIX[g] != null) for (let d = from; d <= to; d++) if (new Date(2026, m - 1, d).getDay() === DIX[g]) ds[d] = 1;
+        // 적어 둔 내용이 있는데 지금 요일과 안 맞는 날(요일을 바꾼 경우, R 수업)은 그 원생 첫 줄에 보여 준다
+        if (!firstRowDone[key]) {
+          firstRowDone[key] = 1;
+          const myW = (daysOf[key] || []).map(x => DIX[x]).filter(x => x != null);
+          Object.keys(notes).forEach(d => { if (notes[d] && myW.indexOf(new Date(2026, m - 1, +d).getDay()) < 0) ds[+d] = 1; });
+        }
         const weeks = [];
         for (let w = 0; w < nW; w++) weeks.push({ items: [] });
-        Object.keys(E).filter(k => /^\d+$/.test(k) && MK[E[k]]).map(Number).sort((a, b) => a - b).forEach(d => {
-          const M = MK[E[d]], att = E[d] === '수', note = att ? (notes[d] || '') : '';
+        const mkItem = d => {
+          const note = notes[d] || '';
           if (note) nNotes++;
-          weeks[Math.floor((d - 1 + off) / 7)].items.push({
-            date: m + '/' + d + ' ' + WD[new Date(2026, m - 1, d).getDay()], mark: M[0], att: att, note: note, empty: att && !note,
-            markStyle: 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 5px; font-size: 11px; font-weight: 600; background: ' + M[1] + '; color: ' + M[2],
-            style: 'display: flex; flex-direction: column; align-items: stretch; gap: 3px; width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 9px; border: 1px solid ' + (d === today ? '#C9B8EA' : '#E8ECEA') + '; background: ' + (att ? (note ? '#FFFFFF' : '#FAFBFA') : '#F6F7F7') + '; font-family: inherit; text-align: left; cursor: ' + (att ? 'pointer' : 'default'),
-            open: () => { if (att) this.setState({ clEd: { key: key, name: name, d: d, date: m + '월 ' + d + '일 (' + WD[new Date(2026, m - 1, d).getDay()] + ')', mark: '출석', note: notes[d] || '', m: m } }); }
-          });
+          return { date: m + '/' + d + ' ' + WD[new Date(2026, m - 1, d).getDay()], note: note, empty: !note, isAdd: false,
+            style: 'display: flex; flex-direction: column; align-items: stretch; gap: 3px; width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 9px; border: 1px solid ' + (d === today ? '#C9B8EA' : '#E8ECEA') + '; background: ' + (note ? '#FFFFFF' : '#FAFBFA') + '; font-family: inherit; text-align: left; cursor: pointer',
+            open: () => this.setState({ clEd: { key: key, name: name, d: d, date: m + '월 ' + d + '일 (' + WD[new Date(2026, m - 1, d).getDay()] + ')', note: notes[d] || '', m: m } }) };
+        };
+        Object.keys(ds).map(Number).sort((a, b) => a - b).forEach(d => { weeks[Math.floor((d - 1 + off) / 7)].items.push(mkItem(d)); });
+        // R(정해진 요일 없음): 주마다 '+ 수업 추가' (날짜를 골라 적음)
+        if (g === 'R' && s.g !== '퇴휴') weeks.forEach((wk, w) => {
+          const a = Math.max(1, w * 7 - off + 1), b = Math.min(nd, w * 7 - off + 7);
+          wk.items.push({ date: '', note: '', empty: false, isAdd: true,
+            style: 'display: flex; align-items: center; justify-content: center; width: 100%; height: 30px; box-sizing: border-box; border-radius: 9px; border: 1px dashed #D3C6EE; background: #FFFFFF; color: #8B6CC9; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer',
+            open: () => this.setState({ clEd: { key: key, name: name, d: 0, pick: true, minD: a, maxD: b, date: '', note: '', m: m } }) });
         });
         return { name: name, sub: (s.g === '퇴휴' ? (s.origG ? s.origG + ' ' : '') : '') + (s.time ? to12(s.time) : '') + (s.status ? (s.time || s.origG ? ' · ' : '') + s.status : ''),
           rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#FDF0F2' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]) };
@@ -717,6 +739,7 @@ class Component extends DCLogic {
   saveClassNote(clear) {
     const E = this.state.clEd; if (!E) return;
     const el = document.getElementById('cl_note'); const v = clear ? '' : String((el && el.value) || '').trim();
+    if (E.pick) { const dv = (document.getElementById('cl_date') || {}).value || ''; const mm = /^2026-(\d{2})-(\d{2})$/.exec(dv); if (!mm || +mm[1] !== E.m) { this.setState({ clEd: Object.assign({}, E, { err: '수업 날짜를 골라 주세요.', note: v }) }); return; } E.d = +mm[2]; }
     const LOG = this.readLog('academy.classLog', {}), ym = this.ymOf(E.m);
     const LM = LOG[ym] = LOG[ym] || {}, rec = LM[E.key] = LM[E.key] || { notes: {} };
     rec.notes = rec.notes || {};
@@ -747,7 +770,7 @@ class Component extends DCLogic {
       const V = this.classLogVals(m);
       title = '현실용음악학원 수업일지'; fname = '수업일지_' + this.tKey().replace(/\s/g, '') + '_2026년' + m + '월.xlsx';
       aoa.push([title], ['2026년 ' + m + '월 · ' + this.tKey()], ['요일', '이름'].concat(V.heads.map(h => h.label + ' (' + h.range + ')')));
-      V.groups.forEach(G => G.rows.forEach((r, i) => aoa.push([i ? '' : G.day, r.name + (r.sub ? ' (' + r.sub + ')' : '')].concat(r.weeks.map(w => w.items.map(it => it.date + ' ' + it.mark + (it.note ? ': ' + it.note : '')).join('\n'))))));
+      V.groups.forEach(G => G.rows.forEach((r, i) => aoa.push([i ? '' : G.day, r.name + (r.sub ? ' (' + r.sub + ')' : '')].concat(r.weeks.map(w => w.items.filter(it => !it.isAdd).map(it => it.date + (it.note ? ': ' + it.note : '')).join('\n'))))));
     } else {
       const V = this.workLogVals(m);
       title = '현실용음악학원 업무일지'; fname = '업무일지_2026년' + m + '월.xlsx';
@@ -1949,7 +1972,7 @@ class Component extends DCLogic {
     // 수강권 칸 모양 (동그라미 + 레슨시작일·상태 줄 + 미납금액 수납완료 줄). 출석부 화면과 수강생대장 휴원·퇴원 탭이 같이 쓴다
     const tkView = (s, r) => {
     const dots = [], dotGroups = [];
-    // 동그라미 크기 10px (v0.53.5, 예전 7px)
+    // 동그라미 크기 10px (v0.53.6, 예전 7px)
     const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
     const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
     if (r.paid) {
@@ -2221,7 +2244,9 @@ class Component extends DCLogic {
     lg.w = lg.isWork ? this.workLogVals(lgM) : { days: [], counts: [] };
     const CE = st.clEd, WE = st.wlEd;
     const keepW = () => { const g = id => { const e = document.getElementById(id); return e ? e.value : undefined; }; const o = {}; const t = g('wl_text'), b = g('wl_by'), d = g('wl_date'); if (t !== undefined) o.text = t; if (b !== undefined) o.by = b; if (d) { const mm = /^2026-(\d{2})-(\d{2})$/.exec(d); if (mm) o.date0 = d; } return o; };
-    const cl = { open: !!CE, name: CE ? CE.name : '', date: CE ? CE.date : '', mark: CE ? CE.mark : '', note: CE ? CE.note : '', canClear: !!(CE && CE.note),
+    const p2c = n => String(n).padStart(2, '0');
+    const cl = { open: !!CE, name: CE ? CE.name : '', date: CE ? CE.date : '', mark: '', note: CE ? CE.note : '', canClear: !!(CE && CE.note && !CE.pick), err: CE ? (CE.err || '') : '',
+      pick: !!(CE && CE.pick), min: CE && CE.pick ? '2026-' + p2c(CE.m) + '-' + p2c(CE.minD) : '', max: CE && CE.pick ? '2026-' + p2c(CE.m) + '-' + p2c(CE.maxD) : '',
       close: () => this.setState({ clEd: null }), save: () => this.saveClassNote(false), clear: () => this.saveClassNote(true),
       key: e => { if (e.key === 'Escape') this.setState({ clEd: null }); else if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); this.saveClassNote(false); } } };
     const wl = { open: !!WE, title: WE && WE.id ? '업무 기록 수정' : '업무 기록',
