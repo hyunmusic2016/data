@@ -6,7 +6,7 @@
 <title>수강생대장</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.47.2"></script>
+<script src="db.js?v=0.48.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 
@@ -167,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.48.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1028,7 +1028,17 @@ class Component extends DCLogic {
     (Array.isArray(cfg) ? cfg : []).forEach(c => { const e = E.find(x => x.id === c.id); if (e && !seen[e.id]) { seen[e.id] = 1; out.push(Object.assign({}, e, { use: c.use !== false })); } });
     E.forEach(e => { if (!seen[e.id]) out.push(Object.assign({}, e, { use: true })); });
     return out;
+  }  // 강사 이름 색 (직원명부 등록·수정에서 고름). 고르지 않으면 자동 = 원장은 금색, 강사는 첫 번째 교습과목 색. 직원명부에 없는 이름은 회색
+  teacherColor(name) {
+    const P = this.partColors();
+    const e = this.employeeList().find(x => x.name === name);
+    if (!e) return ['#EEF1F0', '#3A4450'];
+    const c = String(e.color || '').split('|');
+    if (/^#[0-9A-Fa-f]{6}$/.test(c[0]) && /^#[0-9A-Fa-f]{6}$/.test(c[1] || '')) return c;
+    const own = (Array.isArray(e.titles) && e.titles.length ? e.titles : [e.role]).indexOf('원장') >= 0;
+    return (own ? P['원장'] : P[(e.subjects || [])[0]]) || ['#EEF1F0', '#3A4450'];
   }
+
   // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
   isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   setReg(patch) {
@@ -1218,7 +1228,7 @@ class Component extends DCLogic {
       const bg = pro ? '#FDF0F2' : '#FFFFFF';
       const C = cell + '; background: ' + bg;
       const CL = C + '; justify-content: flex-start; gap: 6px';
-      const tp = PART[TPART[s.teacher]] || PART['원장'];
+      const tp = this.teacherColor(s.teacher);
       const T = (t, extra) => ({ isText: true, text: t == null ? '' : t, cell: C + (extra ? '; ' + extra : '') });
       const TL = (t, extra) => ({ isText: true, text: t == null ? '' : t, cell: CL + (extra ? '; ' + extra : '') });
       const CH = (t, c, w) => ({ isChip: true, text: t, chip: chip(c, w), cell: C });

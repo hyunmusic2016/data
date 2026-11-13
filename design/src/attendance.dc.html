@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.47.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.48.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -590,7 +590,7 @@ class Component extends DCLogic {
   teacherList() {
     const E = this.staffOrdered().filter(e => e.use && e.tab !== false);
     if (!E.length) return [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
-    return E.map(e => [e.name + (e.role === '원장' ? ' 원장님' : ''), e.role === '원장' ? '원장' : ((e.subjects || [])[0] || ''), this.isDismissed(e)]);
+    return E.map(e => [e.name + (e.role === '원장' ? ' 원장님' : ''), e.role === '원장' ? '원장' : ((e.subjects || [])[0] || ''), this.isDismissed(e), this.teacherColor(e.name)]);
   }
   // 수강과목 (설정 > 수강과목, 모든 페이지 공통). 이 브라우저 'academy.subjects', 로그인 사이트는 Supabase subjects와 같이 씀
   subjectList() {
@@ -629,7 +629,17 @@ class Component extends DCLogic {
     (Array.isArray(cfg) ? cfg : []).forEach(c => { const e = E.find(x => x.id === c.id); if (e && !seen[e.id]) { seen[e.id] = 1; out.push(Object.assign({}, e, { use: c.use !== false })); } });
     E.forEach(e => { if (!seen[e.id]) out.push(Object.assign({}, e, { use: true })); });
     return out;
+  }  // 강사 이름 색 (직원명부 등록·수정에서 고름). 고르지 않으면 자동 = 원장은 금색, 강사는 첫 번째 교습과목 색. 직원명부에 없는 이름은 회색
+  teacherColor(name) {
+    const P = this.partColors();
+    const e = this.employeeList().find(x => x.name === name);
+    if (!e) return ['#EEF1F0', '#3A4450'];
+    const c = String(e.color || '').split('|');
+    if (/^#[0-9A-Fa-f]{6}$/.test(c[0]) && /^#[0-9A-Fa-f]{6}$/.test(c[1] || '')) return c;
+    const own = (Array.isArray(e.titles) && e.titles.length ? e.titles : [e.role]).indexOf('원장') >= 0;
+    return (own ? P['원장'] : P[(e.subjects || [])[0]]) || ['#EEF1F0', '#3A4450'];
   }
+
   // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
   isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   readShared() {
@@ -1907,7 +1917,7 @@ class Component extends DCLogic {
     Object.assign(PART, this.partColors());
     const TEACHERS = this.teacherList();
     const teacherTabs = TEACHERS.map((t, i) => {
-      const on = i === st.teacher, c = PART[t[1]] || ['#EEF1F0', '#3A4450'];
+      const on = i === st.teacher, c = t[3] || PART[t[1]] || ['#EEF1F0', '#3A4450'];
       return {
         name: t[0] + (t[2] ? ' (해임)' : ''), part: t[1], on: on ? 'true' : 'false',
         pick: () => this.setState({ teacher: i }),
@@ -1916,7 +1926,7 @@ class Component extends DCLogic {
           (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 600' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500') + (t[2] && !on ? '; opacity: 0.55' : '')
       };
     });
-    const curT = TEACHERS[Math.min(st.teacher || 0, TEACHERS.length - 1)], curC = PART[curT[1]] || ['#EEF1F0', '#3A4450'];
+    const curT = TEACHERS[Math.min(st.teacher || 0, TEACHERS.length - 1)], curC = curT[3] || PART[curT[1]] || ['#EEF1F0', '#3A4450'];
     // 수강생대장 휴원·퇴원 탭 '수강권' 칸과 연동: 가장 최근 달까지 이어서 계산한 지금 수강권을 이름별로 저장 (academy.tickets)
     try {
       const Mx = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));

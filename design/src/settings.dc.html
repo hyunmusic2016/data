@@ -257,7 +257,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.48.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -285,6 +285,12 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <span style="font-size: 13px; font-weight: 600; color: #5E6873">교습과목</span>
           <div style="display: flex; flex-wrap: wrap; gap: 8px">
             <sc-for list="{{ed.subj}}" as="o" hint-placeholder-count="6"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+          </div>
+          <span style="font-size: 13px; font-weight: 600; color: #5E6873; margin-top: 4px">강사 이름 색</span>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+            <button type="button" role="radio" aria-checked="{{ed.colorAuto.on}}" onClick="{{ed.colorAuto.pick}}" style="{{ed.colorAuto.style}}">자동 (교습과목 색)</button>
+            <sc-for list="{{ed.colors}}" as="o" hint-placeholder-count="11"><button type="button" role="radio" aria-checked="{{o.on}}" aria-label="색 고르기" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+            <span style="margin-left: 6px; font-size: 12px; color: #8A949E">미리 보기</span><span style="{{ed.colorPrev}}">{{ed.colorName}}</span>
           </div>
           <button type="button" role="checkbox" aria-checked="{{ed.tabOn}}" onClick="{{ed.tabToggle}}" style="display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px; margin-top: auto; border-radius: 12px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; color: #3A4450; cursor: pointer"><span style="{{ed.tabBox}}">✓</span>출석부 강사 탭 만들기</button>
           <span style="font-size: 13px; font-weight: 600; color: #5E6873; margin-top: 6px">로그인 계정</span>
@@ -415,7 +421,17 @@ class Component extends DCLogic {
     (Array.isArray(cfg) ? cfg : []).forEach(c => { const e = E.find(x => x.id === c.id); if (e && !seen[e.id]) { seen[e.id] = 1; out.push(Object.assign({}, e, { use: c.use !== false })); } });
     E.forEach(e => { if (!seen[e.id]) out.push(Object.assign({}, e, { use: true })); });
     return out;
+  }  // 강사 이름 색 (직원명부 등록·수정에서 고름). 고르지 않으면 자동 = 원장은 금색, 강사는 첫 번째 교습과목 색. 직원명부에 없는 이름은 회색
+  teacherColor(name) {
+    const P = this.partColors();
+    const e = this.employeeList().find(x => x.name === name);
+    if (!e) return ['#EEF1F0', '#3A4450'];
+    const c = String(e.color || '').split('|');
+    if (/^#[0-9A-Fa-f]{6}$/.test(c[0]) && /^#[0-9A-Fa-f]{6}$/.test(c[1] || '')) return c;
+    const own = (Array.isArray(e.titles) && e.titles.length ? e.titles : [e.role]).indexOf('원장') >= 0;
+    return (own ? P['원장'] : P[(e.subjects || [])[0]]) || ['#EEF1F0', '#3A4450'];
   }
+
   // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
   isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   // 설정 안의 기능 목록 (카드 = 묶음, 줄 = 기능). 새 기능은 여기에 넣는다. ready: false 이면 '준비 중'
@@ -476,7 +492,7 @@ class Component extends DCLogic {
   openEmp(e) {
     const E = this.employeeList();
     const seq = e ? e.seq : (E.reduce((m, x) => Math.max(m, x.seq || 0), 0) + 1);
-    const d = e ? Object.assign(JSON.parse(JSON.stringify(e)), { titles: this.titlesOf(e) }) : { id: 'e' + Date.now(), seq: seq, role: '강사', titles: ['강사'], name: '', phone: '', addr: '', duty: '', email: '', subjects: [], tab: true, admin: false, hire: this.todayYmd(), leave: '', leaveReason: '', memo: '' };
+    const d = e ? Object.assign(JSON.parse(JSON.stringify(e)), { titles: this.titlesOf(e) }) : { id: 'e' + Date.now(), seq: seq, role: '강사', titles: ['강사'], name: '', phone: '', addr: '', duty: '', email: '', subjects: [], tab: true, admin: false, color: '', hire: this.todayYmd(), leave: '', leaveReason: '', memo: '' };
     this.setState({ ed: Object.assign(d, { isEdit: !!e, err: '', origEmail: e ? (e.email || '') : '' }) });
   }
   saveEmp() {
@@ -489,7 +505,7 @@ class Component extends DCLogic {
     rec.role = rec.titles.indexOf('원장') >= 0 ? '원장' : '강사';
     const A = window.academy;
     if (A && A.staff && rec.leave && rec.email && rec.email === (A.staff.email || '')) {}
-    const keep = ['id', 'seq', 'role', 'titles', 'name', 'phone', 'addr', 'duty', 'email', 'subjects', 'tab', 'admin', 'hire', 'leave', 'leaveReason', 'memo', 'linked'];
+    const keep = ['id', 'seq', 'role', 'titles', 'name', 'phone', 'addr', 'duty', 'email', 'subjects', 'tab', 'admin', 'color', 'hire', 'leave', 'leaveReason', 'memo', 'linked'];
     const clean = {}; keep.forEach(k => { if (rec[k] !== undefined) clean[k] = rec[k]; });
     const list = this.employeeList();
     const i = list.findIndex(e => e.id === D.id);
@@ -923,6 +939,13 @@ class Component extends DCLogic {
         subj: SUB.map(s => { const on = (ED.subjects || []).indexOf(s.name) >= 0; return { label: s.name, on: on ? 'true' : 'false',
           pick: () => upd(Object.assign(keepTyped(), { subjects: on ? ED.subjects.filter(x => x !== s.name) : (ED.subjects || []).concat([s.name]) })),
           style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'background: ' + s.bg + '; color: ' + s.fg + '; border: 2px solid ' + s.fg : 'background: #FFFFFF; color: #8A949E; border: 1px solid #DDE2DF') }; }),
+        // 강사 이름 색: 자동(교습과목 색) 또는 파스텔 중 고르기
+        colorPrev: (() => { const P = this.partColors(); const c0 = String(ED.color || '').split('|'); const c = (/^#/.test(c0[0]) && c0[1]) ? c0 : (((ED.titles || []).indexOf('원장') >= 0 ? P['원장'] : P[(ED.subjects || [])[0]]) || ['#EEF1F0', '#3A4450']); return 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: ' + c[0] + '; color: ' + c[1]; })(),
+        colorName: ((document.getElementById('e_name') || {}).value || ED.name || '이름'),
+        colorAuto: { on: !ED.color ? 'true' : 'false', pick: () => upd(Object.assign(keepTyped(), { color: '' })),
+          style: 'height: 30px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; ' + (!ED.color ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') },
+        colors: [['#F3E6C4', '#7A5C12']].concat(this.palette()).map(p => { const v = p[0] + '|' + p[1], on = ED.color === v; return { label: on ? '✓' : '', on: on ? 'true' : 'false', pick: () => upd(Object.assign(keepTyped(), { color: v })),
+          style: 'width: 28px; height: 28px; padding: 0; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; background: ' + p[0] + '; color: ' + p[1] + '; border: ' + (on ? '2px solid ' + p[1] : '1px solid rgba(0, 0, 0, 0.08)') }; }),
         tabOn: ED.tab !== false ? 'true' : 'false',
         tabToggle: () => upd(Object.assign(keepTyped(), { tab: ED.tab === false })),
         tabBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; ' + (ED.tab !== false ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
