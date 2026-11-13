@@ -6,7 +6,7 @@
 <title>학원 출석부</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.44.1"></script>
+<script src="db.js?v=0.46.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.45.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.46.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -594,7 +594,7 @@ class Component extends DCLogic {
   }
   // 출석부 강사 탭 = 직원명부(출석부 탭 켠 직원, 연번 순서). 해임한 직원도 탭과 출석부는 남기고 '해임'으로 흐리게 표시
   teacherList() {
-    const E = this.employeeList().filter(e => e.tab !== false);
+    const E = this.staffOrdered().filter(e => e.use && e.tab !== false);
     if (!E.length) return [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
     return E.map(e => [e.name + (e.role === '원장' ? ' 원장님' : ''), e.role === '원장' ? '원장' : ((e.subjects || [])[0] || ''), this.isDismissed(e)]);
   }
@@ -625,6 +625,17 @@ class Component extends DCLogic {
   }
   // 오늘 기준 해임된 직원인지
   isDismissed(e) { const t = new Date(), td = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); return !!(e && e.leave && e.leave <= td); }
+  // 전체 페이지 공통 직원 순서 (설정 > 직원 > 직원 순서): 출석부 강사 탭·수강생대장 강사 목록·통계 등이 이 순서와 '사용' 여부를 따른다.
+  // 'academy.staffOrder' = [{ id, use }] (로그인 사이트는 Supabase app_settings 'staffOrder'와 같이 씀). 목록에 없는 새 직원은 맨 뒤에 '사용'으로 붙는다.
+  staffOrdered() {
+    const E = this.employeeList();
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('academy.staffOrder') || 'null'); } catch (e) {}
+    const out = [], seen = {};
+    (Array.isArray(cfg) ? cfg : []).forEach(c => { const e = E.find(x => x.id === c.id); if (e && !seen[e.id]) { seen[e.id] = 1; out.push(Object.assign({}, e, { use: c.use !== false })); } });
+    E.forEach(e => { if (!seen[e.id]) out.push(Object.assign({}, e, { use: true })); });
+    return out;
+  }
   // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
   isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   readShared() {

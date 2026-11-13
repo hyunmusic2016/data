@@ -166,7 +166,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.45.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.46.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1015,6 +1015,17 @@ class Component extends DCLogic {
   }
   // 오늘 기준 해임된 직원인지
   isDismissed(e) { const t = new Date(), td = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); return !!(e && e.leave && e.leave <= td); }
+  // 전체 페이지 공통 직원 순서 (설정 > 직원 > 직원 순서): 출석부 강사 탭·수강생대장 강사 목록·통계 등이 이 순서와 '사용' 여부를 따른다.
+  // 'academy.staffOrder' = [{ id, use }] (로그인 사이트는 Supabase app_settings 'staffOrder'와 같이 씀). 목록에 없는 새 직원은 맨 뒤에 '사용'으로 붙는다.
+  staffOrdered() {
+    const E = this.employeeList();
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('academy.staffOrder') || 'null'); } catch (e) {}
+    const out = [], seen = {};
+    (Array.isArray(cfg) ? cfg : []).forEach(c => { const e = E.find(x => x.id === c.id); if (e && !seen[e.id]) { seen[e.id] = 1; out.push(Object.assign({}, e, { use: c.use !== false })); } });
+    E.forEach(e => { if (!seen[e.id]) out.push(Object.assign({}, e, { use: true })); });
+    return out;
+  }
   // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
   isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   setReg(patch) {
@@ -1093,7 +1104,7 @@ class Component extends DCLogic {
     const match = s => (!q || st.qEdit || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
     const PORDER = ['드럼', '보컬', '기타', '베이스', '피아노', '우쿨렐레'];
     const DORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'];
-    const TEACHERS = this.employeeList().map(e => e.name);
+    const TEACHERS = this.staffOrdered().map(e => e.name);
     // 필터: 같은 항목 안에서는 하나라도 맞으면, 항목끼리는 모두 맞아야 보인다
     const F = st.filt || {};
     // 필터 항목은 설정에서 고른 것만 (기본은 없음)
@@ -1364,7 +1375,7 @@ class Component extends DCLogic {
     const cnt = k => all.filter(s => s.status === k).length;
     const R = st.reg;
     // 담당 강사·수강 과목 = 직원명부(해임 안 한 직원)와 그 직원의 수강과목
-    const EMP = this.employeeList().filter(e => !this.isDismissed(e));
+    const EMP = this.staffOrdered().filter(e => e.use && !this.isDismissed(e));
     const TEACH = {}, ROLE = {};
     EMP.forEach(e => { TEACH[e.name] = (e.subjects || []).slice(); ROLE[e.name] = e.role; });
     const fmtN = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') : '';

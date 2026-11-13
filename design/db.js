@@ -182,7 +182,7 @@
         sb.from('subjects').select('*').order('sort')
       ]).then(function (qs) {
         var q = qs[0];
-        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); });
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); });
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
         if (!qs[2].error) {
@@ -221,6 +221,10 @@
       else if (k === 'academy.menu') {
         if (!A.staff || A.staff.role !== 'owner') { toast('메뉴 탭은 원장님만 바꿀 수 있습니다'); return; }
         sb.from('app_settings').upsert({ key: 'menu', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '메뉴 탭 설정'); });
+      }
+      else if (k === 'academy.staffOrder') {
+        if (!A.staff || A.staff.role !== 'owner') { toast('직원 순서는 원장님만 바꿀 수 있습니다'); return; }
+        sb.from('app_settings').upsert({ key: 'staffOrder', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '직원 순서'); });
       }
     } catch (e) { console.warn(e); }
   };
