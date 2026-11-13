@@ -19,11 +19,11 @@
     '#acLogin label{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:#5E6873}' +
     '#acLogin input{height:46px;padding:0 14px;box-sizing:border-box;border-radius:12px;border:1px solid #D5DBD8;background:#FAFBFA;font-family:inherit;font-size:15px;color:#17201C;outline:none}' +
     '#acLogin input:focus{border-color:#00A6AB;background:#fff}' +
-    '#acLogin button{height:50px;border:none;border-radius:14px;background:#00A6AB;color:#fff;font-family:inherit;font-size:16px;font-weight:800;cursor:pointer;margin-top:6px}' +
+    '#acLogin button{height:50px;border:none;border-radius:14px;background:#00A6AB;color:#fff;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer;margin-top:6px}' +
     '#acLogin button[disabled]{opacity:.6;cursor:default}' +
     '#acLogin .err{min-height:18px;font-size:13px;font-weight:600;color:#B4332B}' +
     '#acUser{position:fixed;top:10px;right:24px;z-index:900;display:flex;align-items:center;gap:8px;font-size:12px;color:#3A4450}' +
-    '#acUser b{font-weight:800}#acUser button{height:26px;padding:0 10px;border-radius:8px;border:1px solid #D9DEE3;background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:#5E6873;cursor:pointer}' +
+    '#acUser b{font-weight:600}#acUser button{height:26px;padding:0 10px;border-radius:8px;border:1px solid #D9DEE3;background:#fff;font-family:inherit;font-size:12px;font-weight:600;color:#5E6873;cursor:pointer}' +
     '@media print{#acLogin,#acUser{display:none!important}}';
 
   function el(html) { var d = document.createElement('div'); d.innerHTML = html; return d.firstChild; }
@@ -59,7 +59,7 @@
     var f = document.querySelector('#acLogin form'); if (!f) return;
     f.style.display = on ? 'none' : 'flex';
     var m = document.getElementById('acLoading');
-    if (!m) { m = el('<div id="acLoading" style="font-size:15px;font-weight:700;color:#5E6873">불러오는 중…</div>'); document.getElementById('acLogin').appendChild(m); }
+    if (!m) { m = el('<div id="acLoading" style="font-size:15px;font-weight:600;color:#5E6873">불러오는 중…</div>'); document.getElementById('acLogin').appendChild(m); }
     m.style.display = on ? 'block' : 'none';
   }
   function hideLogin() { var b = document.getElementById('acLogin'); if (b) b.style.display = 'none'; }
@@ -71,7 +71,7 @@
       document.body.appendChild(u);
       document.getElementById('acOut').addEventListener('click', function () { clearCache(); sb.auth.signOut().then(function () { location.reload(); }); });
     }
-    document.getElementById('acUserName').innerHTML = '<b>' + st.name + '</b> ' + (st.title || '');
+    document.getElementById('acUserName').innerHTML = '<b style="font-weight: 600">' + st.name + '</b> ' + (st.title || '');
   }
 
   // quiet: 페이지를 옮길 때처럼 저장해 둔 데이터로 이미 화면을 보여 준 경우, 가리지 않고 뒤에서 새로 불러온다
@@ -202,7 +202,7 @@
   function report(r, what) { if (r && r.error) { console.warn(what, r.error); toast('저장하지 못했습니다: ' + what); } return r; }
   function toast(msg) {
     var t = document.getElementById('acToast');
-    if (!t) { t = el('<div id="acToast" style="position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:1001;padding:10px 16px;border-radius:12px;background:#B4332B;color:#fff;font-size:13px;font-weight:700;box-shadow:0 8px 20px rgba(0,0,0,.18)"></div>'); document.body.appendChild(t); }
+    if (!t) { t = el('<div id="acToast" style="position:fixed;left:50%;bottom:70px;transform:translateX(-50%);z-index:1001;padding:10px 16px;border-radius:12px;background:#B4332B;color:#fff;font-size:13px;font-weight:600;box-shadow:0 8px 20px rgba(0,0,0,.18)"></div>'); document.body.appendChild(t); }
     t.textContent = msg; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(function () { t.style.display = 'none'; }, 4000);
   }
   A.toast = toast;

@@ -60,14 +60,14 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </span>
           <span style="{{c.spacer}}"></span>
           <span style="{{c.lessonCell}}">
-            <span style="font-size: 12px; color: #5E6873">레슨횟수 <b style="color: #17201C">{{lessonCount}}</b></span>
+            <span style="font-size: 12px; color: #5E6873">레슨횟수 <b style="font-weight: 600; color: #17201C">{{lessonCount}}</b></span>
             <span style="display: flex; align-items: center; gap: 6px">
-              <span title="취미반" style="display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: #E2F1EA; color: #1F7A5A; font-size: 15px; font-weight: 800">{{lessonHobby}}</span>
-              <span title="전문반" style="display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: #FCE4E6; color: #C8323C; font-size: 15px; font-weight: 800">{{lessonPro}}</span>
+              <span title="취미반" style="display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: #E2F1EA; color: #1F7A5A; font-size: 15px; font-weight: 600">{{lessonHobby}}</span>
+              <span title="전문반" style="display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: #FCE4E6; color: #C8323C; font-size: 15px; font-weight: 600">{{lessonPro}}</span>
             </span>
           </span>
-          <span style="{{c.countCell}}"><span style="font-size: 12px; color: #5E6873">재원</span><span style="font-size: 18px; font-weight: 700; color: #1F7A5A">{{headCount}}명</span></span>
-          <span style="{{c.teacherCell}}"><span style="{{teacherAvatar}}">{{teacherInitial}}</span><span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{teacherName}}</span><span style="font-size: 11px; color: #5E6873">{{teacherPart}}</span></span></span>
+          <span style="{{c.countCell}}"><span style="font-size: 12px; color: #5E6873">재원</span><span style="font-size: 18px; font-weight: 600; color: #1F7A5A">{{headCount}}명</span></span>
+          <span style="{{c.teacherCell}}"><span style="{{teacherAvatar}}">{{teacherInitial}}</span><span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{teacherName}}</span><span style="font-size: 11px; color: #5E6873">{{teacherPart}}</span></span></span>
 
           <span style="{{c.headName}}">요일</span>
           <span style="{{c.headName}}">이름</span>
@@ -84,11 +84,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div class="{{r.rowCls}}" style="display: contents">
-                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 5px; background: #E3ECFD; color: #2952A3; font-size: 10px; font-weight: 800">신규</span></sc-if><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 800; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
+                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 5px; background: #E3ECFD; color: #2952A3; font-size: 10px; font-weight: 600">신규</span></sc-if><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 600; white-space: nowrap">{{r.flashTag}}</span></sc-if></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if></span><span style="{{r.checkChip}}">{{r.check}}</span></span>
                 <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
-                    <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 800; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
-                    <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{r.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 800; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{r.lateLine}}</span></sc-if>
+                    <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
+                    <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{r.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{r.lateLine}}</span></sc-if>
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
@@ -101,7 +101,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </sc-for>
 
         <div class="pnote" style="display: grid; grid-template-columns: 132px 304px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
-          <span style="display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; color: #3A4450">비고</span>
+          <span style="display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #3A4450">비고</span>
           <span style="padding: 22px 0 0 8px; font-size: 12px; line-height: 1.5; white-space: pre-line; color: #3A4450">* 김재윤(월) (11월9일 기준) 6/8
 * 정다온(월) (11월9일 기준) 3/8
 * 소율,소민(금) (11월6일 기준) 9/8</span>
@@ -138,7 +138,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-if value="{{isLog}}" hint-placeholder-val="{{ false }}">
       <section aria-label="{{activeName}}" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; padding: 56px 24px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center">
         <span style="width: 44px; height: 44px; border-radius: 12px; background: #E6F6F6; color: #00A6AB; display: inline-flex; align-items: center; justify-content: center"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h9l3 3v15H6zM9 9h6M9 13h6M9 17h4"></path></svg></span>
-        <span style="font-size: 18px; font-weight: 700">{{activeName}}</span>
+        <span style="font-size: 18px; font-weight: 600">{{activeName}}</span>
         <span style="font-size: 14px; color: #5E6873">수업진행표·업무일지 화면은 다음 시안에서 만듭니다.</span>
       </section>
     </sc-if>
@@ -151,18 +151,18 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.44.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.44.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint qedlg" role="dialog" aria-label="수업 정보 간단 수정" onKeyDown="{{qe.key}}" tabIndex="-1" id="qeDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 480px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{qe.name}}</span>
+        <span style="font-size: 18px; font-weight: 600; color: #17201C">{{qe.name}}</span>
         <span style="font-size: 14px; color: #5E6873">수업 정보 간단 수정</span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{qe.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
-      <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #EEF1F0; font-size: 14px; font-weight: 700; color: #3A4450"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="qe_date" type="date" defaultValue="{{qe.date}}" onChange="{{qe.setDate}}" style="margin-left: auto; width: 150px; height: 34px; padding: 0 8px; box-sizing: border-box; border: none; border-radius: 9px; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; color: #17201C; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.12)"></label>
+      <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #EEF1F0; font-size: 14px; font-weight: 600; color: #3A4450"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="qe_date" type="date" defaultValue="{{qe.date}}" onChange="{{qe.setDate}}" style="margin-left: auto; width: 150px; height: 34px; padding: 0 8px; box-sizing: border-box; border: none; border-radius: 9px; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; color: #17201C; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.12)"></label>
       <div style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">수업 요일
         <div role="group" aria-label="수업 요일" style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px">
           <sc-for list="{{qe.dayOpts}}" as="o" hint-placeholder-count="7"><button type="button" aria-pressed="{{o.on}}" disabled="{{qe.lock}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
@@ -183,13 +183,13 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed #E1E6E3">
         <span style="font-size: 13px; font-weight: 600; color: #5E6873">원생 상태</span>
         <span style="flex: 1"></span>
-        <button type="button" onClick="{{qe.rest}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">휴원</button>
-        <button type="button" onClick="{{qe.out}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">퇴원</button>
+        <button type="button" onClick="{{qe.rest}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">휴원</button>
+        <button type="button" onClick="{{qe.out}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">퇴원</button>
       </div>
       <span style="font-size: 13px; font-weight: 600; color: #C2410C">{{qe.err}}</span>
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장하기</button>
+        <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">저장하기</button>
       </div>
     </div>
   </sc-if>
@@ -199,7 +199,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; align-items: center; gap: 10px">
         <span style="{{pv.iconStyle}}">₩</span>
         <span style="display: flex; flex-direction: column; gap: 2px">
-          <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 800; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.umode}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FBE3E1; color: #B4332B; font-size: 12px; font-weight: 800">미납금액 수납</span></sc-if><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 800">수납 완료</span></sc-if></span>
+          <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 600; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.umode}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FBE3E1; color: #B4332B; font-size: 12px; font-weight: 600">미납금액 수납</span></sc-if><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 600">수납 완료</span></sc-if></span>
           <sc-if value="{{pv.showDateText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
           <sc-if value="{{pv.showDate}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{pv.dateWord}}<input id="pay_date" type="date" min="{{pv.minDate}}" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="{{pv.dateStyle}}"></label></sc-if>
         </span>
@@ -208,11 +208,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
-        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 800; color: #3A4450">수강생대장 정보<span style="font-size: 11px; font-weight: 600; color: #8A949E">{{pv.src}}</span></span>
+        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3A4450">수강생대장 정보<span style="font-size: 11px; font-weight: 600; color: #8A949E">{{pv.src}}</span></span>
         <sc-for list="{{pv.info}}" as="x" hint-placeholder-count="6">
           <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 14px">
             <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{x.label}}</span>
-            <span style="font-weight: 700; color: #17201C">{{x.value}}</span>
+            <span style="font-weight: 600; color: #17201C">{{x.value}}</span>
           </div>
         </sc-for>
       </div>
@@ -220,7 +220,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; flex-direction: column; gap: 12px">
         <div style="display: flex; align-items: center; gap: 10px">
           <span style="{{pv.feeIcon}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4"></path></svg></span>
-          <span style="font-size: 16px; font-weight: 800; color: #17201C">수강료</span>
+          <span style="font-size: 16px; font-weight: 600; color: #17201C">수강료</span>
           <span style="font-size: 12px; font-weight: 600; color: #8A949E">이번 수납에만 적용</span>
         </div>
         <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
@@ -230,14 +230,14 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
         <sc-if value="{{pv.cashOn}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: #E6F6F6; border: 1px solid #A9DCDE; font-size: 13px; color: #007E82">
-            <b style="font-size: 14px">현금영수증 발급 대상자</b>
+            <b style="font-weight: 600; font-size: 14px">현금영수증 발급 대상자</b>
             <span>{{pv.cashLine}}</span>
           </div>
         </sc-if>
       </div>
 
       <div style="display: flex; gap: 10px">
-        <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
+        <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
         <button type="button" onClick="{{pv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.closeLabel}}</button>
         <button type="button" onClick="{{pv.go}}" style="{{pv.goStyle}}">{{pv.goLabel}}</button>
       </div>
@@ -247,8 +247,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div class="noprint" onMouseDown="{{tp.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="레슨시작일 예정" onKeyDown="{{tp.key}}" tabIndex="-1" id="tkpDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: #E3ECFD; color: #2952A3">예정</span>
-        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{tp.name}}</span>
+        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: #E3ECFD; color: #2952A3">예정</span>
+        <span style="font-size: 18px; font-weight: 600; color: #17201C">{{tp.name}}</span>
         <span style="font-size: 14px; color: #5E6873">레슨시작일</span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{tp.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
@@ -258,7 +258,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{tp.clear}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">자동으로</button>
         <button type="button" onClick="{{tp.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{tp.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">저장</button>
+        <button type="button" onClick="{{tp.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">저장</button>
       </div>
     </div>
   </sc-if>
@@ -266,8 +266,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div class="noprint" onMouseDown="{{ti.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="강사 변경 정보" onKeyDown="{{ti.key}}" tabIndex="-1" id="tiDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 420px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: #E3ECFD; color: #2952A3">강사 변경</span>
-        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{ti.name}}</span>
+        <span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: #E3ECFD; color: #2952A3">강사 변경</span>
+        <span style="font-size: 18px; font-weight: 600; color: #17201C">{{ti.name}}</span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{ti.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
@@ -275,7 +275,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <sc-for list="{{ti.rows}}" as="x" hint-placeholder-count="4">
           <div style="display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 14px">
             <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{x.label}}</span>
-            <span style="font-weight: 700; color: #17201C">{{x.value}}</span>
+            <span style="font-weight: 600; color: #17201C">{{x.value}}</span>
           </div>
         </sc-for>
       </div>
@@ -287,11 +287,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div class="noprint" role="dialog" aria-label="{{ad.title}}" onKeyDown="{{ad.key}}" tabIndex="-1" id="astDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 420px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
       <div style="display: flex; align-items: center; gap: 10px">
         <span style="{{ad.chip}}">{{ad.kindLabel}}</span>
-        <span style="font-size: 18px; font-weight: 800; color: #17201C">{{ad.title}}</span>
+        <span style="font-size: 18px; font-weight: 600; color: #17201C">{{ad.title}}</span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{ad.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
-      <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="color: #17201C">{{ad.name}}</b> 원생을 {{ad.kindLabel}} 처리합니다.</span>
+      <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="font-weight: 600; color: #17201C">{{ad.name}}</b> 원생을 {{ad.kindLabel}} 처리합니다.</span>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.dateLabel}}<input id="ad_date" type="date" defaultValue="{{ad.date}}" onChange="{{ad.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       <sc-if value="{{ad.hasReason}}" hint-placeholder-val="{{ true }}"><label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.reasonLabel}}<input id="ad_memo" type="text" defaultValue="{{ad.memo}}" onInput="{{ad.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label></sc-if>
       <div style="display: flex; gap: 10px; margin-top: 2px">
@@ -305,41 +305,41 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div class="noprint" role="alertdialog" aria-label="현금영수증 발급 안내" onKeyDown="{{cn.key}}" tabIndex="-1" id="cashNotice" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
       <div style="display: flex; align-items: center; gap: 12px">
         <span style="width: 40px; height: 40px; flex: none; border-radius: 12px; background: #F3E6C4; color: #7A5C12; display: inline-flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span>
-        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 18px; font-weight: 800; color: #17201C">현금영수증 발급 대상자입니다</span><span style="font-size: 13px; color: #5E6873">학원 단말기로 현금영수증을 발급해 주세요.</span></span>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 18px; font-weight: 600; color: #17201C">현금영수증 발급 대상자입니다</span><span style="font-size: 13px; color: #5E6873">학원 단말기로 현금영수증을 발급해 주세요.</span></span>
       </div>
       <sc-for list="{{cn.items}}" as="it" hint-placeholder-count="1">
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; border-radius: 14px; background: #FBF6E8; border: 1px solid #EAD9A6">
-          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 16px; font-weight: 800; color: #17201C">{{it.name}}</span><span style="font-size: 12px; color: #7A5C12">{{it.type}}</span></span>
-          <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 금액</span><b style="color: #17201C; font-size: 16px">{{it.amount}}</b></span>
-          <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 번호</span><b style="color: #17201C; font-size: 16px; letter-spacing: 0.02em">{{it.no}}</b></span>
-          <span style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px dashed #EAD9A6; font-size: 14px"><span style="color: #5E6873">발급 용도</span><b style="display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 9px; background: #FFFFFF; border: 1.5px solid #E2C35E; color: #7A5C12; font-size: 18px; font-weight: 800">{{it.purpose}}</b></span>
+          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 16px; font-weight: 600; color: #17201C">{{it.name}}</span><span style="font-size: 12px; color: #7A5C12">{{it.type}}</span></span>
+          <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 금액</span><b style="font-weight: 600; color: #17201C; font-size: 16px">{{it.amount}}</b></span>
+          <span style="display: flex; justify-content: space-between; font-size: 14px"><span style="color: #5E6873">발급 번호</span><b style="font-weight: 600; color: #17201C; font-size: 16px; letter-spacing: 0.02em">{{it.no}}</b></span>
+          <span style="display: flex; justify-content: space-between; align-items: center; margin-top: 4px; padding-top: 10px; border-top: 1px dashed #EAD9A6; font-size: 14px"><span style="color: #5E6873">발급 용도</span><b style="font-weight: 600; display: inline-flex; align-items: center; height: 32px; padding: 0 12px; border-radius: 9px; background: #FFFFFF; border: 1.5px solid #E2C35E; color: #7A5C12; font-size: 18px; font-weight: 600">{{it.purpose}}</b></span>
         </div>
       </sc-for>
-      <button type="button" class="pbtn" onClick="{{cn.close}}" style="--sh: #E0CB8F; height: 50px; border-radius: 15px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 4px">확인</button>
+      <button type="button" class="pbtn" onClick="{{cn.close}}" style="--sh: #E0CB8F; height: 50px; border-radius: 15px; border: 1px solid #EAD9A6; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">확인</button>
     </div>
   </sc-if>
   <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div class="noprint" role="dialog" aria-label="인쇄 설정" onKeyDown="{{pr.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
       <div style="display: flex; align-items: center; justify-content: space-between">
-        <span style="font-size: 18px; font-weight: 800; color: #17201C">인쇄</span>
+        <span style="font-size: 18px; font-weight: 600; color: #17201C">인쇄</span>
         <button type="button" onClick="{{pr.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
-      <span style="font-size: 12px; font-weight: 700; color: #5E6873">레이아웃 · A4 가로</span>
+      <span style="font-size: 12px; font-weight: 600; color: #5E6873">레이아웃 · A4 가로</span>
       <div style="display: flex; flex-direction: column; gap: 8px">
         <sc-for list="{{pr.layouts}}" as="o" hint-placeholder-count="2">
-          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
+          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
         </sc-for>
       </div>
-      <span style="font-size: 12px; font-weight: 700; color: #5E6873">색상</span>
+      <span style="font-size: 12px; font-weight: 600; color: #5E6873">색상</span>
       <div style="display: flex; gap: 8px">
         <sc-for list="{{pr.colors}}" as="o" hint-placeholder-count="2">
-          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; flex: 1"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 700; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
+          <button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}; flex: 1"><span style="{{o.radio}}"></span><span style="display: flex; flex-direction: column; gap: 2px; text-align: left"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{o.label}}</span><span style="font-size: 12px; color: #5E6873">{{o.desc}}</span></span></button>
         </sc-for>
       </div>
       <div style="display: flex; gap: 10px; margin-top: 4px">
         <button type="button" class="pbtn" onClick="{{pr.close}}" style="--sh: #D5DBD8; flex: 1; height: 50px; border-radius: 15px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #3A4450; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">취소</button>
-        <button type="button" class="pbtn" onClick="{{pr.go}}" style="--sh: #8FCFD1; flex: 2; height: 50px; border-radius: 15px; border: 1px solid #A9DCDE; background: linear-gradient(180deg, #FFFFFF 0%, #DDF3F3 55%); color: #007E82; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; margin-bottom: 4px">인쇄하기</button>
+        <button type="button" class="pbtn" onClick="{{pr.go}}" style="--sh: #8FCFD1; flex: 2; height: 50px; border-radius: 15px; border: 1px solid #A9DCDE; background: linear-gradient(180deg, #FFFFFF 0%, #DDF3F3 55%); color: #007E82; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">인쇄하기</button>
       </div>
     </div>
   </sc-if>
@@ -372,11 +372,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div role="dialog" aria-label="출결 입력" onKeyDown="{{pop.key}}" style="{{pop.style}}">
       <div style="display: flex; align-items: center; gap: 14px">
         <div style="width: 44px; height: 48px; flex: none; border-radius: 12px; overflow: hidden; border: 1px solid #E1E6E3; display: flex; flex-direction: column; text-align: center; background: #FFFFFF">
-          <span style="height: 16px; line-height: 16px; background: #00A6AB; color: #FFFFFF; font-size: 10px; font-weight: 700">{{pop.monLabel}}</span>
-          <span style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 800; color: #17201C">{{pop.dayLabel}}</span>
+          <span style="height: 16px; line-height: 16px; background: #00A6AB; color: #FFFFFF; font-size: 10px; font-weight: 600">{{pop.monLabel}}</span>
+          <span style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; color: #17201C">{{pop.dayLabel}}</span>
         </div>
         <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px">
-          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 18px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">{{pop.title}}</span><span style="font-size: 12px; color: #5E6873">{{pop.cls}}</span></span>
+          <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 18px; font-weight: 600; color: #17201C; letter-spacing: -0.02em">{{pop.title}}</span><span style="font-size: 12px; color: #5E6873">{{pop.cls}}</span></span>
           <span style="font-size: 12px; color: #5E6873">{{pop.sub}}</span>
         </div>
         <button type="button" onClick="{{pop.close}}" aria-label="닫기" style="align-self: flex-start; width: 32px; height: 32px; flex: none; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
@@ -385,25 +385,25 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
           <sc-for list="{{pop.btns}}" as="b" hint-placeholder-count="4">
             <button type="button" class="pbtn" onClick="{{b.pick}}" style="{{b.style}}">
-              <span style="font-size: 24px; font-weight: 800; letter-spacing: -0.02em">{{b.label}}</span>
+              <span style="font-size: 24px; font-weight: 600; letter-spacing: -0.02em">{{b.label}}</span>
               <span style="{{b.keyStyle}}">{{b.key}}</span>
               <span style="{{b.curStyle}}">현재</span>
             </button>
           </sc-for>
         </div>
         <sc-if value="{{pop.showPay}}" hint-placeholder-val="{{ true }}"><button type="button" class="pbtn" onClick="{{pop.pay}}" style="{{pop.payStyle}}">
-          <span style="font-size: 22px; font-weight: 800; letter-spacing: -0.02em">{{pop.payLabel}}</span>
+          <span style="font-size: 22px; font-weight: 600; letter-spacing: -0.02em">{{pop.payLabel}}</span>
           <span style="{{pop.payCur}}">현재</span>
           <span style="{{pop.payKey}}">0</span>
         </button></sc-if>
         <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
-          <span><b style="color: #5E6873">Delete</b> 지우기</span>
-          <span><b style="color: #5E6873">Esc</b> 닫기</span>
+          <span><b style="font-weight: 600; color: #5E6873">Delete</b> 지우기</span>
+          <span><b style="font-weight: 600; color: #5E6873">Esc</b> 닫기</span>
         </div>
       </sc-if>
       <sc-if value="{{pop.isDel}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 6px; padding: 18px 16px; border-radius: 16px; background: #FEF3F1; border: 1px solid #F6D5CD; text-align: center">
-          <span style="font-size: 20px; font-weight: 800; color: #17201C; letter-spacing: -0.02em">삭제하시겠습니까?</span>
+          <span style="font-size: 20px; font-weight: 600; color: #17201C; letter-spacing: -0.02em">삭제하시겠습니까?</span>
           <span style="font-size: 13px; color: #5E6873; word-break: keep-all">{{pop.delText}}</span>
           <span style="font-size: 12px; color: #8A949E">삭제한 뒤에도 Ctrl+Z로 되돌릴 수 있습니다.</span>
         </div>
@@ -414,26 +414,26 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #D5DBD8; position: relative; height: 52px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #17201C; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 4px">둘 다 지우기<span style="position: absolute; top: 15px; right: 14px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid #DDE2DF; border-bottom-width: 2px; background: #FFFFFF; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">3</span></button>
           </div>
           <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
-            <span><b style="color: #5E6873">1·2·3</b> 선택</span>
-            <span><b style="color: #5E6873">Esc</b> 취소</span>
+            <span><b style="font-weight: 600; color: #5E6873">1·2·3</b> 선택</span>
+            <span><b style="font-weight: 600; color: #5E6873">Esc</b> 취소</span>
           </div>
         </sc-if>
         <sc-if value="{{pop.delOne}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; gap: 10px">
-          <button type="button" class="pbtn" onClick="{{pop.close}}" style="--sh: #D5DBD8; flex: 1; height: 54px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #3A4450; font-family: inherit; font-size: 17px; font-weight: 700; cursor: pointer; margin-bottom: 4px">취소</button>
-          <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #E9B3A5; flex: 1; height: 54px; border-radius: 16px; border: 1px solid #F3C8BC; background: linear-gradient(180deg, #FFFFFF 0%, #FCE3DC 55%); color: #C2410C; font-family: inherit; font-size: 17px; font-weight: 800; cursor: pointer; margin-bottom: 4px">삭제</button>
+          <button type="button" class="pbtn" onClick="{{pop.close}}" style="--sh: #D5DBD8; flex: 1; height: 54px; border-radius: 16px; border: 1px solid #DDE2DF; background: linear-gradient(180deg, #FFFFFF 0%, #F4F6F5 55%); color: #3A4450; font-family: inherit; font-size: 17px; font-weight: 600; cursor: pointer; margin-bottom: 4px">취소</button>
+          <button type="button" class="pbtn" onClick="{{pop.confirmDel}}" style="--sh: #E9B3A5; flex: 1; height: 54px; border-radius: 16px; border: 1px solid #F3C8BC; background: linear-gradient(180deg, #FFFFFF 0%, #FCE3DC 55%); color: #C2410C; font-family: inherit; font-size: 17px; font-weight: 600; cursor: pointer; margin-bottom: 4px">삭제</button>
         </div>
         <div style="display: flex; justify-content: center; gap: 14px; font-size: 11px; color: #8A949E">
-          <span><b style="color: #5E6873">Enter</b> 삭제</span>
-          <span><b style="color: #5E6873">Esc</b> 취소</span>
+          <span><b style="font-weight: 600; color: #5E6873">Enter</b> 삭제</span>
+          <span><b style="font-weight: 600; color: #5E6873">Esc</b> 취소</span>
         </div>
         </sc-if>
       </sc-if>
       <sc-if value="{{pop.isMk}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 14px; background: #F4F7FD; border: 1px solid #DCE5F7">
-          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: #1E4FA8"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #E3ECFD; font-size: 12px">보</span>보강 일정</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; color: #1E4FA8"><span style="display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; background: #E3ECFD; font-size: 12px">보</span>보강 일정</span>
           <button type="button" role="switch" aria-checked="{{pop.mkOnStr}}" onClick="{{pop.toggleMk}}" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; padding: 10px 12px; border-radius: 12px; border: 1px solid #DCE5F7; background: #FFFFFF; font-family: inherit; cursor: pointer">
-            <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 14px; font-weight: 700; color: #17201C">보강 일정 정하기</span></span>
+            <span style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px"><span style="font-size: 14px; font-weight: 600; color: #17201C">보강 일정 정하기</span></span>
             <span style="{{pop.swTrack}}"><span style="{{pop.swKnob}}"></span></span>
           </button>
           <label for="mkDate" style="{{pop.lblStyle}}">보강 날짜</label>
@@ -451,7 +451,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
         <div style="display: flex; gap: 10px">
           <button type="button" onClick="{{pop.back}}" style="flex: 1; height: 48px; border-radius: 13px; border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">뒤로</button>
-          <button type="button" onClick="{{pop.saveMk}}" style="flex: 2; height: 48px; border-radius: 13px; border: none; background: #4A78C9; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">{{pop.saveLabel}}</button>
+          <button type="button" onClick="{{pop.saveMk}}" style="flex: 2; height: 48px; border-radius: 13px; border: none; background: #4A78C9; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{pop.saveLabel}}</button>
         </div>
       </sc-if>
     </div>
@@ -1350,9 +1350,9 @@ class Component extends DCLogic {
     const base = 'min-height: 44px; display: flex; align-items: center; justify-content: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; border-bottom: 1px solid ' + ROW + '; ';
     const span = n => 'grid-column: span ' + n + '; ';
     const band = 'height: 92px; display: flex; align-items: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; background-color: #16201B; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(255, 255, 255, 0.1) 27px, rgba(255, 255, 255, 0.1) 28px); background-position: 0 4px; ';
-    const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
-    const circ = (n, filled) => 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A';
-    const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; background: ' + bg + '; color: ' + fg;
+    const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + bg + '; color: ' + fg;
+    const circ = (n, filled) => 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A';
+    const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: ' + bg + '; color: ' + fg;
     const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em', 'Mo': tag('#E2F1EA', '#1F7A5A') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #9FD3B4', 'Mx': tag('#FDEBE4', '#C2410C') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #F0B9A6' };
     const chipFor = t => {
       if (!t) return 'display: none';
@@ -1375,7 +1375,7 @@ class Component extends DCLogic {
       lessonProDot: 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; border: 2px solid #C8323C; background: #FFFFFF',
       countCell: base + span(4) + 'border-bottom: none; height: 76px; flex-direction: column; gap: 0; border-left: 1px solid ' + ROW,
       teacherCell: base + span(6) + 'border-bottom: none; height: 76px; justify-content: flex-start; gap: 10px; padding-left: 16px; border-left: 1px solid ' + ROW,
-      avatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: #E2F1EA; color: #1F7A5A; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700',
+      avatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: #E2F1EA; color: #1F7A5A; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600',
       head: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; font-size: 12px; font-weight: 600; color: ' + MUTED,
       headName: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; font-size: 12px; font-weight: 600; color: ' + MUTED + '; border-right: 1px solid ' + SPLIT,
       headStart: base + 'background: #F7F9F8; border-top: 1px solid ' + ROW + '; font-size: 12px; font-weight: 600; color: ' + MUTED + '; border-right: 1px solid ' + SPLIT,
@@ -1396,8 +1396,8 @@ class Component extends DCLogic {
     for (let d = 1; d <= ND; d++) {
       const w = (d - 1 + FIRST) % 7;
       // 날짜 아래에 요일(월 화 수 …)
-      const s = 'width: 26px; height: 36px; border-radius: 7px; display: inline-flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; font-size: 12px; line-height: 1; font-weight: 700; ';
-      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, style: s + (d === TODAY ? 'background: #D5DBD8; color: ' + INK + '; font-weight: 800' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
+      const s = 'width: 26px; height: 36px; border-radius: 7px; display: inline-flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; font-size: 12px; line-height: 1; font-weight: 600; ';
+      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, style: s + (d === TODAY ? 'background: #D5DBD8; color: ' + INK + '; font-weight: 600' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0;
@@ -1569,9 +1569,9 @@ class Component extends DCLogic {
     const plan = canPlan ? planOf(s, r) : null;
     // 레슨시작일은 무조건 남긴다: 이번 달에 쓴 수강권들의 시작일을 쉼표로 이어 쓰고, 그 오른쪽에 지금 상태(수업완료·미납·예정)
     const starts = r.doneStarts.concat(r.paid && r.firstDate && r.doneStarts.indexOf(r.firstDate) < 0 ? [r.firstDate] : []);
-    const tk = !r.paid && r.newReg && r.used === 0 && !starts.length ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 700']
-      : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 800']
-      : r.done ? ['수업완료', 'color: #007E82; font-weight: 800']
+    const tk = !r.paid && r.newReg && r.used === 0 && !starts.length ? [s.newReg ? '신규 (미입금)' : '미입금', 'color: #9A5B00; font-weight: 600']
+      : !r.paid ? ['미납 ' + r.used + '회', 'color: #C2410C; font-weight: 600']
+      : r.done ? ['수업완료', 'color: #007E82; font-weight: 600']
       : r.firstDate ? ['', '']
       : r.used > 0 ? ['—', 'color: #8A949E']
       : plan ? [plan.txt + ' (예정)', 'color: #5B7FB8; font-weight: 600']
@@ -1619,7 +1619,7 @@ class Component extends DCLogic {
         this._exp.push(expRow);
         const rowBg = s.rowBg ? '#FDF0F2' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
-        const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 700; background: ' + bg + '; color: ' + fg;
+        const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 600; background: ' + bg + '; color: ' + fg;
         const V = tkView(s, r);
         const dotGroups = V.dotGroups, dotLines = V.dotLines, canPlan = V.canPlan, plan = V.plan, tk = V.tk, subParts = V.subParts, lateLine = V.lateLine;
         expRow.since = subParts.map(x => x.t).join('') + (lateLine ? ' · ' + lateLine : '');
@@ -1691,9 +1691,9 @@ class Component extends DCLogic {
           const one = rows.length === 1;
           const two = gp[1].length > 1;
           return 'background: ' + DC[0] + '; color: ' + DC[1] + '; border: none; ' + (isTodayG ? 'box-shadow: inset 0 0 0 2px ' + DC[1] + '; ' : '') +
-            'min-width: ' + (one ? 30 : 36) + 'px; padding: 0 ' + (two ? 6 : 0) + 'px; min-height: ' + (one ? 30 : 36) + 'px; box-sizing: border-box; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (two ? 13 : one ? 14 : 16) + 'px; font-weight: 800; line-height: 1.15; white-space: pre-line; text-align: center';
+            'min-width: ' + (one ? 30 : 36) + 'px; padding: 0 ' + (two ? 6 : 0) + 'px; min-height: ' + (one ? 30 : 36) + 'px; box-sizing: border-box; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (two ? 13 : one ? 14 : 16) + 'px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center';
         })(),
-        countStyle: 'font-size: 11px; font-weight: 700; color: #8A949E' + (rows.length === 1 ? '; font-size: 10px; white-space: nowrap; letter-spacing: -0.04em' : ''),
+        countStyle: 'font-size: 11px; font-weight: 600; color: #8A949E' + (rows.length === 1 ? '; font-size: 10px; white-space: nowrap; letter-spacing: -0.04em' : ''),
       };
     });
 
@@ -1721,7 +1721,7 @@ class Component extends DCLogic {
     const curPay = popCells.length === 1 && !!(curRow['p' + first.d] || curRow[first.d] === 'V');
     const popU = !!(firstStu && firstStu.g === '퇴휴' && (firstStu.status === '휴원' || firstStu.status === '퇴원'));
     const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
-    const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center';
+    const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center';
     const popBtns = [
       ['수', '출석', '1', circ(1, false), '1', '#EEF7F2', '#1F7A5A', '#D2EADB', '#B9DDC7'],
       ['결', '결석', '결', MARK['결'], '2', '#FEF1EC', '#C2410C', '#F8D7C9', '#F0C2AE'],
@@ -1734,7 +1734,7 @@ class Component extends DCLogic {
         style: '--sh: ' + b[8] + '; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 110px; border-radius: 18px; border: ' + (on ? '2px solid ' + b[6] : '1px solid ' + b[7]) + '; background: linear-gradient(180deg, #FFFFFF 0%, ' + b[5] + ' 55%); color: ' + b[6] + '; cursor: pointer; font-family: inherit; padding: 0; margin-bottom: 4px',
         tile: 'width: 48px; height: 48px; border-radius: 14px; background: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.08)',
         keyStyle: keycap(b[6], b[7]),
-        curStyle: on ? 'position: absolute; top: 9px; left: 10px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: ' + b[6] + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
+        curStyle: on ? 'position: absolute; top: 9px; left: 10px; font-size: 10px; font-weight: 600; color: #FFFFFF; background: ' + b[6] + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
         pick: () => (b[0] === '보' ? this.openPop('mk') : this.applyMark(b[0]))
       };
     });
@@ -1764,7 +1764,7 @@ class Component extends DCLogic {
       // 휴원·퇴원 원생은 '수납' 대신 '미납금액 수납' (빨강). 미납금액이 없으면 버튼이 생기지 않음 (이미 넣은 수납 수정은 가능)
       payLabel: popU ? (curPay ? '미납금액 수납 수정' : '미납금액 수납') : curPay ? '수납 수정' : '수납',
       showPay: !popU || curPay || (popCells.length === 1 && (this._unpaid[first.sid] || 0) > 0),
-      payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 700; color: #FFFFFF; background: ' + (popU ? '#B4332B' : '#7A5C12') + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
+      payCur: curPay ? 'position: absolute; top: 19px; left: 14px; font-size: 10px; font-weight: 600; color: #FFFFFF; background: ' + (popU ? '#B4332B' : '#7A5C12') + '; padding: 2px 6px; border-radius: 6px' : 'display: none',
       payKey: keycap(popU ? '#B4332B' : '#7A5C12', popU ? '#F2C6C2' : '#EAD9A6').replace('top: 9px', 'top: 19px').replace('right: 9px', 'right: 14px'),
       close: () => this.closePop(),
       pay: () => this.openPay(),
@@ -1842,7 +1842,7 @@ class Component extends DCLogic {
         ctx: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ sheetCtx: { i: i, x: e.clientX, y: e.clientY }, sheetList: false }); },
         dot: 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
         style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? col : 'transparent') + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' +
-          (on ? 'background: ' + (att ? '#FDF1F1' : '#EEF4FC') + '; color: #17201C; font-weight: 700' : 'background: transparent; color: #5E6873; font-weight: 500')
+          (on ? 'background: ' + (att ? '#FDF1F1' : '#EEF4FC') + '; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500')
       };
     });
     const nextM = this.state.extra.length ? this.state.extra[0] + 1 : 12;
@@ -1865,8 +1865,8 @@ class Component extends DCLogic {
         return {
           label: k[1], on: on ? 'true' : 'false', cnt: sheets.filter(t => (k[0] === 'att') === (t[1] > 0)).length,
           pick: () => this.setState({ sheetListTab: k[0] }),
-          style: 'flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 30px; padding: 0 8px; border: none; border-radius: 7px; font-family: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #FFFFFF; color: #17201C; font-weight: 700; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.12)' : 'background: transparent; color: #5E6873; font-weight: 500'),
-          cntStyle: 'font-size: 10px; font-weight: 700; color: ' + (on ? (k[0] === 'att' ? '#00A6AB' : '#5B86C9') : '#8A949E')
+          style: 'flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 5px; height: 30px; padding: 0 8px; border: none; border-radius: 7px; font-family: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #FFFFFF; color: #17201C; font-weight: 600; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.12)' : 'background: transparent; color: #5E6873; font-weight: 500'),
+          cntStyle: 'font-size: 10px; font-weight: 600; color: ' + (on ? (k[0] === 'att' ? '#00A6AB' : '#5B86C9') : '#8A949E')
         };
       }),
       ctxStyle: 'position: fixed; left: ' + (ctx ? Math.min(ctx.x, window.innerWidth - 180) : 0) + 'px; top: ' + (ctx ? Math.max(8, ctx.y - 52) : 0) + 'px; z-index: 31; width: 168px; padding: 4px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 10px; box-shadow: 0 10px 28px rgba(23, 32, 28, 0.16)',
@@ -1886,8 +1886,8 @@ class Component extends DCLogic {
           name: o.t[0],
           pick: () => this.setState({ hiddenSheets: hidden.filter(h => h !== o.t[0]), sheet: o.i, sheetList: false }),
           dot: 'width: 7px; height: 7px; border-radius: 50%; flex: none; background: ' + (o.t[1] > 0 ? '#00A6AB' : '#8FB5E0') + (isH ? '; opacity: 0.4' : ''),
-          style: 'display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; font-family: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'background: #EEF8F8; color: #17201C; font-weight: 700' : 'background: #FFFFFF; font-weight: 500; color: ' + (isH ? '#8A949E' : '#17201C')),
-          tagStyle: isH ? 'font-size: 10px; font-weight: 700; color: #5E6873; background: #EEF1F0; padding: 2px 6px; border-radius: 5px' : 'display: none'
+          style: 'display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; font-family: inherit; font-size: 13px; cursor: pointer; ' + (on ? 'background: #EEF8F8; color: #17201C; font-weight: 600' : 'background: #FFFFFF; font-weight: 500; color: ' + (isH ? '#8A949E' : '#17201C')),
+          tagStyle: isH ? 'font-size: 10px; font-weight: 600; color: #5E6873; background: #EEF1F0; padding: 2px 6px; border-radius: 5px' : 'display: none'
         };
       })
     };
@@ -1900,9 +1900,9 @@ class Component extends DCLogic {
       return {
         name: t[0] + (t[2] ? ' (해임)' : ''), part: t[1], on: on ? 'true' : 'false',
         pick: () => this.setState({ teacher: i }),
-        chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + (on ? '#FFFFFF' : c[0]) + '; color: ' + c[1],
+        chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + (on ? '#FFFFFF' : c[0]) + '; color: ' + c[1],
         style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 8px; border-radius: 999px; font-size: 14px; cursor: pointer; ' +
-          (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 700' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500') + (t[2] && !on ? '; opacity: 0.55' : '')
+          (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 600' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500') + (t[2] && !on ? '; opacity: 0.55' : '')
       };
     });
     const curT = TEACHERS[Math.min(st.teacher || 0, TEACHERS.length - 1)], curC = PART[curT[1]] || ['#EEF1F0', '#3A4450'];
@@ -1938,7 +1938,7 @@ class Component extends DCLogic {
       teacherName: curT[0],
       teacherPart: curT[1] === '원장' ? '원장 · 담당 강사' : curT[1] + ' 담당 강사',
       teacherInitial: curT[0].slice(0, 1),
-      teacherAvatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: ' + curC[0] + '; color: ' + curC[1] + '; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700',
+      teacherAvatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: ' + curC[0] + '; color: ' + curC[1] + '; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600',
       sm: sm,
       sheetTabs: sheetTabs,
       addSheet: () => { if (nextM <= 12) this.setState({ extra: [nextM].concat(this.state.extra), sheet: 0 }); },
@@ -1953,7 +1953,7 @@ class Component extends DCLogic {
       groups: groups.filter(g => g.rows.length).map((g, i, arr) => {
         const OUTK = ['휴원', '퇴원', '이동'];
         const sep = OUTK.indexOf(g.key) >= 0 && (i === 0 || OUTK.indexOf(arr[i - 1].key) < 0);
-        return Object.assign({}, g, { sep: sep, sepStyle: 'display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 18px; padding: 0 16px; background: #F1F3F2; border-top: 2px solid #C6CDC7; font-size: 12px; font-weight: 800; letter-spacing: 0.02em; color: #5E6873' });
+        return Object.assign({}, g, { sep: sep, sepStyle: 'display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 18px; padding: 0 16px; background: #F1F3F2; border-top: 2px solid #C6CDC7; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: #5E6873' });
       }),
       gridStyle: COLS,
       c: c,
@@ -1981,13 +1981,13 @@ class Component extends DCLogic {
           showDate: P.paid || !!P.umode, showDateText: !P.paid && !P.umode, minDate: P.umode ? P.minDate : '',
           dateWord: P.umode ? '결제 일자' : '수납 날짜',
           feeIcon: 'width: 30px; height: 30px; flex: none; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
-          iconStyle: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; font-size: 18px; font-weight: 800; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
-          dateStyle: 'height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 700; ' + (P.umode ? 'border: 1px solid #E8A9A4; background: #FDF1F0; color: #B4332B' : 'border: 1px solid #E2C35E; background: #FBF6E8; color: #7A5C12'),
+          iconStyle: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 12px; font-size: 18px; font-weight: 600; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
+          dateStyle: 'height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; ' + (P.umode ? 'border: 1px solid #E8A9A4; background: #FDF1F0; color: #B4332B' : 'border: 1px solid #E2C35E; background: #FBF6E8; color: #7A5C12'),
           setDate: e => upd({ date: e.target.value, err: '' }),
           cancelPay: () => this.cancelPay(),
           cancelLabel: P.cancelAsk ? '한 번 더 누르면 취소' : '수납 취소',
           clsLabel: P.pro ? '전문반' : '취미반',
-          clsChip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 800; ' + (P.pro ? 'background: #FBE3E6; color: #C8323C' : 'background: #E6F6F6; color: #007E82'),
+          clsChip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; ' + (P.pro ? 'background: #FBE3E6; color: #C8323C' : 'background: #E6F6F6; color: #007E82'),
           dateLabel: P.m + '월 ' + P.d + '일',
           src: P.info ? '' : '(수강생대장에 없는 원생이라 출석부 정보로 채움)',
           info: [
@@ -1999,19 +1999,19 @@ class Component extends DCLogic {
           fees: (() => {
             const num = v => parseInt(String(v).replace(/[^0-9]/g, ''), 10) || 0;
             const W = 'display: flex; align-items: center; gap: 4px; height: 48px; padding: 0 10px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-size: 13px; color: #5E6873';
-            const I = 'flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: transparent; font-family: inherit; font-size: 17px; font-weight: 700; color: #17201C; text-align: right';
+            const I = 'flex: 1; min-width: 0; width: 100%; border: none; outline: none; background: transparent; font-family: inherit; font-size: 17px; font-weight: 600; color: #17201C; text-align: right';
             return [
               { label: '수강 횟수', id: 'pay_count', val: won(P.count), unit: '회', wrap: W, inp: I, set: e => { this.keepCaret(e); const c = num(e.target.value); upd({ count: c, total: c * P.unit }); } },
               { label: '수강 시간', id: 'pay_dur', val: won(P.dur), unit: '분', wrap: W, inp: I, set: e => { Object.assign(P, { dur: num(e.target.value) }); } },
               { label: '회당 수업료', id: 'pay_unit', val: won(P.unit), unit: '원', wrap: W, inp: I, set: e => { this.keepCaret(e); const u = num(e.target.value); upd({ unit: u, pay: Math.round(u * 0.5), total: u * P.count }); } },
-              { label: '수강료 합계', id: 'pay_total', val: won(P.total), unit: '원', wrap: W + '; background: #F2FBFB; border-color: #A9DCDE', inp: I + '; font-weight: 800; color: #007E82', set: e => { this.keepCaret(e); const t = num(e.target.value); const u = P.count ? Math.round(t / P.count) : P.unit; upd({ total: t, unit: u, pay: Math.round(u * 0.5) }); } }
+              { label: '수강료 합계', id: 'pay_total', val: won(P.total), unit: '원', wrap: W + '; background: #F2FBFB; border-color: #A9DCDE', inp: I + '; font-weight: 600; color: #007E82', set: e => { this.keepCaret(e); const t = num(e.target.value); const u = P.count ? Math.round(t / P.count) : P.unit; upd({ total: t, unit: u, pay: Math.round(u * 0.5) }); } }
             ];
           })(),
           cashOn: P.cash,
           cashLine: (P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') + ' · 발급 번호 ' + (P.cashNo || '—') + ' · 현금으로 받으면 학원 단말기로 ' + won(P.total) + '원 발급',
           closeLabel: P.paid ? '닫기' : '취소',
           goLabel: P.paid ? '수정 저장' : P.umode ? '미납금액 수납하기' : '수납하기',
-          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; ' + (P.umode ? 'border: none; background: #F2B8B3; color: #7A1F1A; box-shadow: 0 6px 16px rgba(224, 96, 90, 0.25)' : 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)'),
+          goStyle: 'flex: 2; height: 50px; border-radius: 14px; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer; ' + (P.umode ? 'border: none; background: #F2B8B3; color: #7A1F1A; box-shadow: 0 6px 16px rgba(224, 96, 90, 0.25)' : 'border: none; background: #E2C35E; color: #4A3A0A; box-shadow: 0 6px 16px rgba(226, 195, 94, 0.35)'),
           close: close,
           go: () => this.savePay(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.savePay(); } }
@@ -2054,8 +2054,8 @@ class Component extends DCLogic {
         const upd = p => this.setState({ ast: Object.assign({}, S, p) });
         return {
           open: true, hasReason: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
-          chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 800; background: ' + K[3] + '; color: ' + K[4],
-          goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
+          chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: ' + K[3] + '; color: ' + K[4],
+          goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
           close: () => { this.setState({ ast: null }); this.focusSheet(); },
           go: () => this.applyAStatus(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ ast: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyAStatus(); } },
@@ -2079,22 +2079,22 @@ class Component extends DCLogic {
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
           setDate: e => upd({ date: e.target.value }),
           dayOpts: ORD.map(d => { const on = Q.days.indexOf(d) >= 0; return { label: d, on: on ? 'true' : 'false', pick: () => upd({ days: on ? Q.days.filter(x => x !== d) : (Q.multi ? Q.days.concat([d]) : [d]) }),
-            style: 'height: 42px; padding: 0; border-radius: 11px; font-family: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'background: ' + DC[d][0] + '; color: ' + DC[d][1] + '; border: 2px solid ' + DC[d][1] + '; font-weight: 800' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500') }; }),
+            style: 'height: 42px; padding: 0; border-radius: 11px; font-family: inherit; font-size: 14px; cursor: pointer; ' + (on ? 'background: ' + DC[d][0] + '; color: ' + DC[d][1] + '; border: 2px solid ' + DC[d][1] + '; font-weight: 600' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500') }; }),
           multiOn: Q.multi ? 'true' : 'false',
           multiToggle: () => upd({ multi: !Q.multi, days: Q.multi ? Q.days.slice(0, 1) : Q.days }),
-          multiBox: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ' + (Q.multi ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD'),
+          multiBox: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; ' + (Q.multi ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD'),
           hasTimes: Q.days.length > 0,
           timeRows: ORD.filter(d => Q.days.indexOf(d) >= 0).map((d, i) => {
             const t = Q.times[d] || { h: '', m: '00' };
             const put = p => upd({ times: Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, p) }) });
             return { label: d, hid: 'qe_h' + i, mid: 'qe_m' + i, h: t.h, m: t.m, setH: e => { Q.times = Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, { h: e.target.value }) }); }, setM: e => { Q.times = Object.assign({}, Q.times, { [d]: Object.assign({ h: '', m: '00' }, Q.times[d] || {}, { m: e.target.value }) }); },
-              chip: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 11px; font-size: 14px; font-weight: 800; background: ' + DC[d][0] + '; color: ' + DC[d][1] };
+              chip: 'display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; flex: none; border-radius: 11px; font-size: 14px; font-weight: 600; background: ' + DC[d][0] + '; color: ' + DC[d][1] };
           }),
           numInp: 'width: 76px; height: 40px; padding: 0 8px; box-sizing: border-box; border-radius: 11px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; text-align: center; color: #17201C',
           stickOn: Q.stick ? 'true' : 'false',
           stickToggle: () => upd({ stick: !Q.stick }),
           stickStyle: 'display: flex; align-items: center; gap: 12px; height: 46px; padding: 0 14px; border-radius: 12px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; text-align: left; ' + (Q.stick ? 'background: #D7EFDD; color: #2F6B43; border: 2px solid #2F6B43' : 'background: #FAFBFA; color: #3A4450; border: 1px solid #D5DBD8'),
-          stickBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (Q.stick ? 'background: #2F6B43; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD')
+          stickBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; ' + (Q.stick ? 'background: #2F6B43; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #B9C2BD')
         };
       })(),
       cn: {

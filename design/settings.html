@@ -6,7 +6,7 @@
 <title>설정</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.44.0"></script>
+<script src="db.js?v=0.44.1"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -53,9 +53,9 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; align-items: start; max-width: 1100px">
             <sc-for list="{{groups}}" as="g" hint-placeholder-count="2">
               <div style="display: flex; flex-direction: column; padding: 16px 18px 6px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.04)">
-                <span style="padding-bottom: 10px; border-bottom: 2px solid #00A6AB; font-size: 14px; font-weight: 800; color: #3A4450">{{g.title}}</span>
+                <span style="padding-bottom: 10px; border-bottom: 2px solid #00A6AB; font-size: 14px; font-weight: 600; color: #3A4450">{{g.title}}</span>
                 <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2">
-                  <button type="button" class="hubitem" onClick="{{it.open}}" style="{{it.style}}"><span>{{it.label}}</span><span style="flex: 1"></span><sc-if value="{{it.soon}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 6px; background: #EEF1F0; color: #8A949E; font-size: 11px; font-weight: 700">준비 중</span></sc-if><span aria-hidden="true" style="color: #B7C0BC; font-size: 16px">›</span></button>
+                  <button type="button" class="hubitem" onClick="{{it.open}}" style="{{it.style}}"><span>{{it.label}}</span><span style="flex: 1"></span><sc-if value="{{it.soon}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 6px; background: #EEF1F0; color: #8A949E; font-size: 11px; font-weight: 600">준비 중</span></sc-if><span aria-hidden="true" style="color: #B7C0BC; font-size: 16px">›</span></button>
                 </sc-for>
               </div>
             </sc-for>
@@ -63,10 +63,10 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </sc-if>
         <sc-if value="{{viewSub}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; align-items: center; gap: 10px">
-            <button type="button" class="noexp" onClick="{{goHub}}" style="display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">‹ 설정</button>
+            <button type="button" class="noexp" onClick="{{goHub}}" style="display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">‹ 설정</button>
             <span style="font-size: 13px; color: #8A949E">{{subGroup}}</span>
             <span style="font-size: 13px; color: #B7C0BC">›</span>
-            <span style="font-size: 15px; font-weight: 800; color: #17201C">{{subTitle}}</span>
+            <span style="font-size: 15px; font-weight: 600; color: #17201C">{{subTitle}}</span>
           </div>
         </sc-if>
         <sc-if value="{{viewSoon}}" hint-placeholder-val="{{ false }}">
@@ -79,9 +79,9 @@ html.bwp .printonly .pcell{border-color:#000!important}
               <sc-for list="{{subjRows}}" as="m" hint-placeholder-count="6">
                 <div class="menurow" data-id="{{m.id}}" draggable="{{m.drag}}" onDragStart="{{m.dragStart}}" onDragOver="{{m.dragOver}}" onDragLeave="{{m.dragLeave}}" onDrop="{{m.drop}}" onDragEnd="{{m.dragEnd}}" style="{{m.rowStyle}}">
                   <span class="noexp" style="{{m.gripStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
-                  <span style="width: 22px; flex: none; font-size: 13px; font-weight: 700; color: #8A949E; text-align: center">{{m.no}}</span>
+                  <span style="width: 22px; flex: none; font-size: 13px; font-weight: 600; color: #8A949E; text-align: center">{{m.no}}</span>
                   <span style="{{m.chip}}">{{m.name}}</span>
-                  <input id="{{m.inputId}}" type="text" defaultValue="{{m.name}}" disabled="{{m.lock}}" onBlur="{{m.saveName}}" onKeyDown="{{m.nameKey}}" aria-label="과목 이름" style="width: 150px; height: 34px; padding: 0 10px; box-sizing: border-box; border-radius: 9px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; color: #17201C">
+                  <input id="{{m.inputId}}" type="text" defaultValue="{{m.name}}" disabled="{{m.lock}}" onBlur="{{m.saveName}}" onKeyDown="{{m.nameKey}}" aria-label="과목 이름" style="width: 150px; height: 34px; padding: 0 10px; box-sizing: border-box; border-radius: 9px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; color: #17201C">
                   <span class="noexp" style="display: inline-flex; gap: 4px; flex-wrap: wrap">
                     <sc-for list="{{m.colors}}" as="cl" hint-placeholder-count="10"><button type="button" onClick="{{cl.pick}}" disabled="{{m.lock}}" aria-label="색 고르기" style="{{cl.style}}"></button></sc-for>
                   </span>
@@ -96,7 +96,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}">
               <div class="noexp" style="display: flex; align-items: center; gap: 8px">
                 <input id="newSubj" type="text" defaultValue="" onKeyDown="{{subjKey}}" aria-label="새 수강과목 이름" style="flex: 1; max-width: 240px; height: 40px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C">
-                <button type="button" onClick="{{addSubj}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">+ 수강과목 추가</button>
+                <button type="button" onClick="{{addSubj}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ 수강과목 추가</button>
                 <span style="font-size: 13px; font-weight: 600; color: #B4332B">{{err}}</span>
               </div>
             </sc-if>
@@ -106,26 +106,26 @@ html.bwp .printonly .pcell{border-color:#000!important}
         <sc-if value="{{viewStaff}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
-              <span style="font-size: 15px; font-weight: 800">직원 {{staffCount}}명</span>
+              <span style="font-size: 15px; font-weight: 600">직원 {{staffCount}}명</span>
               <span style="font-size: 12px; color: #8A949E">{{staffNote}} {{staffHidNote}}</span>
               <span style="flex: 1"></span>
               <div class="noexp" style="position: relative">
-                <button type="button" onClick="{{sf.toggle}}" aria-haspopup="dialog" style="{{sf.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{sf.n}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 800">{{sf.n}}</span></sc-if></button>
+                <button type="button" onClick="{{sf.toggle}}" aria-haspopup="dialog" style="{{sf.btnStyle}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 5h18l-7 8v6l-4 2v-8z"></path></svg>필터<sc-if value="{{sf.n}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: #00A6AB; color: #FFFFFF; font-size: 11px; font-weight: 600">{{sf.n}}</span></sc-if></button>
                 <sc-if value="{{sf.open}}" hint-placeholder-val="{{ false }}">
                   <div onMouseDown="{{sf.close}}" style="position: fixed; inset: 0; z-index: 30"></div>
                   <div role="dialog" aria-label="필터" style="position: absolute; right: 0; top: calc(100% + 8px); z-index: 31; width: 520px; max-width: calc(100vw - 48px); box-sizing: border-box; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 18px; box-shadow: 0 18px 48px rgba(23, 32, 28, 0.18)">
                     <div style="display: flex; align-items: center; gap: 8px">
-                      <span style="font-size: 15px; font-weight: 800">필터</span>
+                      <span style="font-size: 15px; font-weight: 600">필터</span>
                       <span style="flex: 1"></span>
-                      <button type="button" onClick="{{sf.reset}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">초기화</button>
+                      <button type="button" onClick="{{sf.reset}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">초기화</button>
                       <button type="button" onClick="{{sf.close}}" aria-label="닫기" style="width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer">×</button>
                     </div>
                     <sc-if value="{{sf.none}}" hint-placeholder-val="{{ false }}">
-                      <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #8A949E"><span>아직 고른 필터 항목이 없습니다.</span><button type="button" onClick="{{sf.pick}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer">필터 항목 고르기</button></div>
+                      <div style="display: flex; align-items: center; gap: 10px; font-size: 13px; color: #8A949E"><span>아직 고른 필터 항목이 없습니다.</span><button type="button" onClick="{{sf.pick}}" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">필터 항목 고르기</button></div>
                     </sc-if>
                     <sc-for list="{{sf.groups}}" as="g" hint-placeholder-count="2">
                       <div style="display: flex; flex-direction: column; gap: 6px">
-                        <span style="font-size: 12px; font-weight: 700; color: #5E6873">{{g.title}}</span>
+                        <span style="font-size: 12px; font-weight: 600; color: #5E6873">{{g.title}}</span>
                         <div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{g.opts}}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
                       </div>
                     </sc-for>
@@ -136,7 +136,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg>
                 <input id="sq" type="text" defaultValue="{{sq.val}}" onInput="{{sq.input}}" onBlur="{{sq.blur}}" onKeyDown="{{sq.key}}" aria-label="이름, 전화번호, 주소, 담당업무로 찾기" style="flex: 1; min-width: 0; border: none; outline: none; background: transparent; font-family: inherit; font-size: 13px; color: #17201C">
               </span>
-              <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp" onClick="{{empNew}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">+ 직원 등록</button></sc-if>
+              <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp" onClick="{{empNew}}" style="display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 14px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ 직원 등록</button></sc-if>
               <button type="button" class="noexp" onClick="{{scfg.open}}" aria-label="표시할 항목 설정" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"></path><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg></button>
             </div>
             <div style="overflow-x: auto; border: 1px solid #E3E8E5; border-radius: 12px">
@@ -169,11 +169,11 @@ html.bwp .printonly .pcell{border-color:#000!important}
             </div>
             <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px">
               <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: #FAFBFA; border: 1px solid #E3E8E5">
-                <sc-if value="{{scfg.allTitle}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 700; color: #5E6873; margin-bottom: 4px">{{scfg.allTitle}}</span></sc-if>
+                <sc-if value="{{scfg.allTitle}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: #5E6873; margin-bottom: 4px">{{scfg.allTitle}}</span></sc-if>
                 <sc-for list="{{scfg.all}}" as="o" hint-placeholder-count="8"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.toggle}}" disabled="{{o.fixed}}" style="{{o.style}}"><span style="{{o.box}}">✓</span>{{o.label}}</button></sc-for>
               </div>
               <sc-if value="{{scfg.showOrder}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E8E5">
-                <span style="font-size: 12px; font-weight: 700; color: #5E6873; margin-bottom: 4px">보이는 순서</span>
+                <span style="font-size: 12px; font-weight: 600; color: #5E6873; margin-bottom: 4px">보이는 순서</span>
                 <sc-for list="{{scfg.order}}" as="o" hint-placeholder-count="6"><div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 8px; border-radius: 9px; background: #F7F9F8"><span style="flex: 1; font-size: 13px; font-weight: 600">{{o.label}}</span><button type="button" onClick="{{o.up}}" disabled="{{o.first}}" aria-label="위로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▲</button><button type="button" onClick="{{o.down}}" disabled="{{o.last}}" aria-label="아래로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▼</button></div></sc-for>
               </div></sc-if>
             </div>
@@ -183,7 +183,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         <div style="display: flex; flex-direction: column; gap: 14px; max-width: 760px; padding: 20px 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
           <div style="display: flex; align-items: center; gap: 10px">
             <span style="width: 30px; height: 30px; flex: none; border-radius: 9px; background: #E6F6F6; color: #007E82; display: inline-flex; align-items: center; justify-content: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h12"></path></svg></span>
-            <span style="font-size: 17px; font-weight: 800">메뉴 탭</span>
+            <span style="font-size: 17px; font-weight: 600">메뉴 탭</span>
             <span style="flex: 1"></span>
             <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp" onClick="{{resetMenu}}" style="height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">{{resetLabel}}</button></sc-if>
           </div>
@@ -192,7 +192,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-for list="{{items}}" as="m" hint-placeholder-count="6">
               <div class="menurow" data-id="{{m.id}}" draggable="{{m.drag}}" onDragStart="{{m.dragStart}}" onDragOver="{{m.dragOver}}" onDragLeave="{{m.dragLeave}}" onDrop="{{m.drop}}" onDragEnd="{{m.dragEnd}}" style="{{m.rowStyle}}">
                 <span class="noexp" title="끌어서 순서 바꾸기" style="{{m.gripStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
-                <span style="width: 22px; flex: none; font-size: 13px; font-weight: 700; color: #8A949E; text-align: center">{{m.no}}</span>
+                <span style="width: 22px; flex: none; font-size: 13px; font-weight: 600; color: #8A949E; text-align: center">{{m.no}}</span>
                 <input id="{{m.inputId}}" type="text" defaultValue="{{m.label}}" disabled="{{m.lockName}}" onInput="{{m.setName}}" onBlur="{{m.saveName}}" onKeyDown="{{m.nameKey}}" aria-label="탭 이름" style="{{m.inputStyle}}">
                 <span style="{{m.kindStyle}}">{{m.kind}}</span>
                 <span style="flex: 1"></span>
@@ -206,7 +206,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}">
             <div class="noexp" style="display: flex; align-items: center; gap: 8px">
               <input id="newTab" type="text" defaultValue="" onKeyDown="{{newKey}}" aria-label="새 탭 이름" style="flex: 1; max-width: 280px; height: 40px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C">
-              <button type="button" onClick="{{addTab}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">+ 탭 추가</button>
+              <button type="button" onClick="{{addTab}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ 탭 추가</button>
               <span style="font-size: 13px; font-weight: 600; color: #B4332B">{{err}}</span>
             </div>
           </sc-if>
@@ -238,17 +238,17 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.44.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.44.1</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
     <div class="noprint" role="dialog" aria-label="{{ed.title}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 880px; max-width: calc(100vw - 32px); max-height: calc(100vh - 40px); overflow: auto; box-sizing: border-box; padding: 24px; display: flex; flex-direction: column; gap: 16px; background: #F7F9F8; border: 1px solid #E1E6E3; border-radius: 26px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24)">
       <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap">
-        <span style="font-size: 22px; font-weight: 800">{{ed.title}}</span>
+        <span style="font-size: 22px; font-weight: 600">{{ed.title}}</span>
         <span style="display: inline-flex; gap: 6px">
-          <span style="font-size: 13px; font-weight: 700; color: #5E6873; align-self: center; margin-right: 2px">직명</span><sc-for list="{{ed.titles}}" as="o" hint-placeholder-count="3"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}"><span style="{{o.box}}">✓</span>{{o.label}}</button></sc-for>
+          <span style="font-size: 13px; font-weight: 600; color: #5E6873; align-self: center; margin-right: 2px">직명</span><sc-for list="{{ed.titles}}" as="o" hint-placeholder-count="3"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}"><span style="{{o.box}}">✓</span>{{o.label}}</button></sc-for>
         </span>
-        <label style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px 0 12px; border-radius: 12px; background: #EEF1F0; font-size: 13px; font-weight: 600; color: #5E6873">채용연월일<input id="e_hire" type="date" defaultValue="{{ed.hire}}" onChange="{{ed.setHire}}" style="height: 30px; padding: 0 6px; border: none; border-radius: 8px; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 700; color: #17201C"></label>
+        <label style="display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 8px 0 12px; border-radius: 12px; background: #EEF1F0; font-size: 13px; font-weight: 600; color: #5E6873">채용연월일<input id="e_hire" type="date" defaultValue="{{ed.hire}}" onChange="{{ed.setHire}}" style="height: 30px; padding: 0 6px; border: none; border-radius: 8px; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; color: #17201C"></label>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{ed.close}}" aria-label="닫기" style="width: 34px; height: 34px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; font-size: 16px; cursor: pointer">×</button>
       </div>
@@ -276,37 +276,37 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </section>
       </div>
       <div style="display: flex; align-items: center; gap: 10px">
-        <span style="font-size: 13px; font-weight: 700; color: #B4332B">{{ed.err}}</span>
+        <span style="font-size: 13px; font-weight: 600; color: #B4332B">{{ed.err}}</span>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{ed.close}}" style="height: 48px; padding: 0 22px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{ed.save}}" style="height: 48px; padding: 0 34px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{ed.saveLabel}}</button>
+        <button type="button" onClick="{{ed.save}}" style="height: 48px; padding: 0 34px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{ed.saveLabel}}</button>
       </div>
     </div>
   </sc-if>
   <sc-if value="{{lv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{lv.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="해임 처리" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
-      <span style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 800"><span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #FCEBEA; color: #B4332B; font-size: 13px">해임</span>{{lv.name}}</span>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600"><span style="display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; background: #FCEBEA; color: #B4332B; font-size: 13px">해임</span>{{lv.name}}</span>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">해임연월일<input id="lv_date" type="date" defaultValue="{{lv.date}}" onChange="{{lv.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">해임 사유<input id="lv_reason" type="text" defaultValue="{{lv.reason}}" onInput="{{lv.setReason}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       <span style="font-size: 13px; color: #9A5B00">{{lv.warn}}</span>
       <div style="display: flex; gap: 8px">
         <button type="button" onClick="{{lv.close}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{lv.go}}" style="flex: 2; height: 46px; border-radius: 13px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">해임하기</button>
+        <button type="button" onClick="{{lv.go}}" style="flex: 2; height: 46px; border-radius: 13px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">해임하기</button>
       </div>
     </div>
   </sc-if>
   <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="인쇄 설정" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 360px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
-      <span style="font-size: 18px; font-weight: 800">인쇄</span>
+      <span style="font-size: 18px; font-weight: 600">인쇄</span>
       <span style="font-size: 13px; color: #5E6873">A4 가로</span>
       <div style="display: flex; gap: 8px">
         <sc-for list="{{pr.opts}}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
       </div>
       <div style="display: flex; gap: 8px">
         <button type="button" onClick="{{pr.close}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{pr.go}}" style="flex: 2; height: 46px; border-radius: 13px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">인쇄하기</button>
+        <button type="button" onClick="{{pr.go}}" style="flex: 2; height: 46px; border-radius: 13px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">인쇄하기</button>
       </div>
     </div>
   </sc-if>
@@ -315,7 +315,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
   <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px">{{printTitle}}</div>
   <div style="font-size: 11px; color: #5E6873; margin-bottom: 10px">{{printDate}}</div>
   <table style="border-collapse: collapse; width: 100%; font-size: 12px">
-    <thead><tr><sc-for list="{{printHead}}" as="h" hint-placeholder-count="4"><th class="pcell" style="border: 1px solid #C9D0CC; padding: 6px; background: #EEF2EE">{{h}}</th></sc-for></tr></thead>
+    <thead><tr><sc-for list="{{printHead}}" as="h" hint-placeholder-count="4"><th class="pcell" style="font-weight: 600; border: 1px solid #C9D0CC; padding: 6px; background: #EEF2EE">{{h}}</th></sc-for></tr></thead>
     <tbody><sc-for list="{{printRows}}" as="pr0" hint-placeholder-count="6"><tr><sc-for list="{{pr0}}" as="v" hint-placeholder-count="4"><td class="pcell" style="border: 1px solid #C9D0CC; padding: 6px; text-align: center">{{v}}</td></sc-for></tr></sc-for></tbody>
   </table>
 </div>
@@ -707,7 +707,7 @@ class Component extends DCLogic {
     const can = this.canEdit();
     const items = this.menuItems();
     const n = items.length;
-    const btn = (on, dis) => 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: ' + (dis ? 'default' : 'pointer') + '; opacity: ' + (dis ? 0.35 : 1) + '; ' + (on ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #F3F5F4; color: #8A949E');
+    const btn = (on, dis) => 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: ' + (dis ? 'default' : 'pointer') + '; opacity: ' + (dis ? 0.35 : 1) + '; ' + (on ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #F3F5F4; color: #8A949E');
     const rows = items.map((t, i) => {
       const fixed = t.id === 'settings';
       const inputId = 'mn_' + t.id;
@@ -722,8 +722,8 @@ class Component extends DCLogic {
         saveName: e => commit(e.target.value),
         nameKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } else if (e.key === 'Escape') { e.target.value = t.label; e.target.blur(); } },
         lockName: !can,
-        inputStyle: 'width: 220px; height: 36px; padding: 0 10px; box-sizing: border-box; border-radius: 9px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; color: ' + (t.hidden ? '#8A949E' : '#17201C'),
-        kindStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; ' + (t.custom ? 'background: #E3ECFD; color: #2952A3' : 'background: #EEF1F0; color: #5E6873'),
+        inputStyle: 'width: 220px; height: 36px; padding: 0 10px; box-sizing: border-box; border-radius: 9px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: ' + (t.hidden ? '#8A949E' : '#17201C'),
+        kindStyle: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 600; ' + (t.custom ? 'background: #E3ECFD; color: #2952A3' : 'background: #EEF1F0; color: #5E6873'),
         shown: t.hidden ? 'false' : 'true', toggleLabel: t.hidden ? '숨김' : '보임', lockHide: !can || fixed,
         toggleStyle: btn(!t.hidden, !can || fixed),
         toggle: () => { if (!can || fixed) return; const L = this.menuItems(); L[i].hidden = !L[i].hidden; this.saveMenu(L); },
@@ -732,7 +732,7 @@ class Component extends DCLogic {
         up: () => { if (can && i > 0) this.moveMenu(t.id, items[i - 1].id); },
         down: () => { if (can && i < n - 1) this.moveMenu(t.id, items[i + 1].id); },
         lockDel: !can || !t.custom, delLabel: '삭제',
-        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; ' + (can && t.custom ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'border: 1px solid #EBEEEC; background: #FFFFFF; color: #C9D0CC; cursor: default; visibility: hidden'),
+        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; ' + (can && t.custom ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'border: 1px solid #EBEEEC; background: #FFFFFF; color: #C9D0CC; cursor: default; visibility: hidden'),
         del: () => { if (!can || !t.custom) return; this.saveMenu(this.menuItems().filter(x => x.id !== t.id)); },
         // 끌어서 순서 바꾸기 (끄는 동안에는 다시 그리지 않음)
         dragStart: e => { if (!can) { e.preventDefault(); return; } try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', t.id); } catch (x) {} this._drag = t.id; if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; },
@@ -752,7 +752,7 @@ class Component extends DCLogic {
         id: s.id, no: i + 1, name: s.name, inputId: inputId, lock: !can, drag: can ? 'true' : 'false',
         rowStyle: 'display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 6px 12px; box-sizing: border-box; border-bottom: 1px solid #EBEEEC; background: #FFFFFF' + (this._flash === s.id ? '; animation: rowflash2 0.9s ease-out' : ''),
         gripStyle: 'display: inline-flex; color: #B7C0BC; cursor: ' + (can ? 'grab' : 'default'),
-        chip: 'display: inline-flex; align-items: center; justify-content: center; min-width: 56px; height: 24px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: ' + s.bg + '; color: ' + s.fg,
+        chip: 'display: inline-flex; align-items: center; justify-content: center; min-width: 56px; height: 24px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + s.bg + '; color: ' + s.fg,
         saveName: e => { const nm = String(e.target.value || '').trim(); if (!nm) { e.target.value = s.name; return; } if (!this.renameSubject(s.id, nm)) e.target.value = s.name; },
         nameKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } else if (e.key === 'Escape') { e.target.value = s.name; e.target.blur(); } },
         colors: this.palette().map(p => ({ pick: () => { if (!can) return; const L = this.subjectList(); L[i].bg = p[0]; L[i].fg = p[1]; this.saveSubjects(L); },
@@ -763,7 +763,7 @@ class Component extends DCLogic {
         up: () => { if (!can || !i) return; const L = this.subjectList(); const t = L.splice(i, 1)[0]; L.splice(i - 1, 0, t); this.saveSubjects(L); },
         down: () => { if (!can || i === SUB.length - 1) return; const L = this.subjectList(); const t = L.splice(i, 1)[0]; L.splice(i + 1, 0, t); this.saveSubjects(L); },
         delLabel: st.subjDel === s.id ? '한 번 더' : '삭제',
-        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; ' + (can ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'visibility: hidden'),
+        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; ' + (can ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'visibility: hidden'),
         del: () => {
           if (!can) return;
           if (cnt) { this.setState({ err: s.name + ' 수강과목을 맡은 직원이 있어서 지울 수 없습니다. 직원명부에서 먼저 빼 주세요.' }); return; }
@@ -789,7 +789,7 @@ class Component extends DCLogic {
     const HID = this.staffHidden();
     const SHOWN = EMPS.filter(e => HID.indexOf(e.id) < 0).filter(pass).map((e, i) => Object.assign({}, e, { _no: i + 1 }));
     const colW = VIS.map(c => c.w).concat([140]);
-    const empHeads = VIS.map(c => ({ label: c.label, cls: '', style: 'height: 38px; display: flex; align-items: center; justify-content: ' + (c.left ? 'flex-start; padding-left: 10px' : 'center') + '; font-size: 12px; font-weight: 700; color: #5E6873' })).concat([{ label: '관리', cls: 'noexp', style: 'height: 38px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #5E6873' }]);
+    const empHeads = VIS.map(c => ({ label: c.label, cls: '', style: 'height: 38px; display: flex; align-items: center; justify-content: ' + (c.left ? 'flex-start; padding-left: 10px' : 'center') + '; font-size: 12px; font-weight: 600; color: #5E6873' })).concat([{ label: '관리', cls: 'noexp', style: 'height: 38px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #5E6873' }]);
     const empGrid = 'display: grid; grid-template-columns: ' + colW.map(w => w + 'px').join(' ') + '; min-width: ' + colW.reduce((n, w) => n + w, 0) + 'px';
     const A0 = window.academy;
     const myName = A0 && A0.staff ? A0.staff.name : '';
@@ -798,14 +798,14 @@ class Component extends DCLogic {
     const cellOf = (c, e, out) => {
       const cell = (c.left ? CL : CC);
       const T = (t, x) => ({ isText: true, isChip: false, isChips: false, text: t == null ? '' : String(t), cell: cell + (x ? '; ' + x : '') });
-      if (c.k === 'role') return { isText: false, isChip: false, isChips: true, cell: cell, chips: this.titlesOf(e).map(t => ({ name: t, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 700; ' + (t === '원장' ? 'background: #F3E6C4; color: #7A5C12' : t === '행정' ? 'background: #E3ECFD; color: #2952A3' : 'background: #E6F6F6; color: #007E82') })) };
-      if (c.k === 'subjects') return { isText: false, isChip: false, isChips: true, cell: cell, chips: (e.subjects || []).map(nm => ({ name: nm, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 700; background: ' + (PC[nm] || ['#EEF1F0'])[0] + '; color: ' + (PC[nm] || ['', '#3A4450'])[1] })) };
-      if (c.k === 'acc') { const t = e.linked ? '연결됨' : e.email ? '연결 전' : '없음'; return { isText: false, isChip: true, isChips: false, text: t, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 700; ' + (e.linked ? 'background: #E2F1EA; color: #1F7A5A' : e.email ? 'background: #FFF4E0; color: #9A5B00' : 'background: #EEF1F0; color: #8A949E') }; }
+      if (c.k === 'role') return { isText: false, isChip: false, isChips: true, cell: cell, chips: this.titlesOf(e).map(t => ({ name: t, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; ' + (t === '원장' ? 'background: #F3E6C4; color: #7A5C12' : t === '행정' ? 'background: #E3ECFD; color: #2952A3' : 'background: #E6F6F6; color: #007E82') })) };
+      if (c.k === 'subjects') return { isText: false, isChip: false, isChips: true, cell: cell, chips: (e.subjects || []).map(nm => ({ name: nm, style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + (PC[nm] || ['#EEF1F0'])[0] + '; color: ' + (PC[nm] || ['', '#3A4450'])[1] })) };
+      if (c.k === 'acc') { const t = e.linked ? '연결됨' : e.email ? '연결 전' : '없음'; return { isText: false, isChip: true, isChips: false, text: t, cell: cell, chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 11px; font-weight: 600; ' + (e.linked ? 'background: #E2F1EA; color: #1F7A5A' : e.email ? 'background: #FFF4E0; color: #9A5B00' : 'background: #EEF1F0; color: #8A949E') }; }
       if (c.k === 'name') return T(e.name, 'font-weight: 600; color: ' + (out ? '#8A949E' : '#17201C'));
       if (c.k === 'seq') return T(e._no, 'color: #8A949E');
       if (c.k === 'phone') return T(fmtP(e.phone), 'font-size: 13px');
       if (c.k === 'hire') return T(fmtD(e.hire), 'font-size: 13px');
-      if (c.k === 'leave') return T(fmtD(e.leave), 'font-size: 13px; font-weight: 700; color: #B4332B');
+      if (c.k === 'leave') return T(fmtD(e.leave), 'font-size: 13px; font-weight: 600; color: #B4332B');
       if (c.k === 'tab') return T(e.tab !== false ? '있음' : '없음', 'font-size: 13px');
       return T(e[c.k] || '', 'font-size: 13px');
     };
@@ -820,7 +820,7 @@ class Component extends DCLogic {
         cells: VIS.map(c => cellOf(c, e, out)),
         edit: () => this.openEmp(EMPS.find(x => x.id === e.id) || e),
         leaveLabel: e.leave ? (st.unleave === e.id ? '한 번 더' : '해임 취소') : '해임',
-        leaveBtnStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer; ' + (e.leave ? 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873' : isMe ? 'border: 1px solid #EBEEEC; background: #FFFFFF; color: #C9D0CC; cursor: default' : 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B'),
+        leaveBtnStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; ' + (e.leave ? 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873' : isMe ? 'border: 1px solid #EBEEEC; background: #FFFFFF; color: #C9D0CC; cursor: default' : 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B'),
         leaveAct: () => {
           if (e.leave) {
             if (st.unleave !== e.id) { this.setState({ unleave: e.id }); return; }
@@ -838,8 +838,8 @@ class Component extends DCLogic {
       toggle: () => this.setState({ sfOpen: !st.sfOpen }), close: () => this.setState({ sfOpen: false }),
       reset: () => this.setState({ sfv: {} }), none: !FK.length,
       pick: () => this.setState({ sfOpen: false, scfgOpen: true, scfgTab: 'flt' }),
-      btnStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (FK.some(k => (FV[k] || []).length) ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450'),
-      groups: FK.map(k => { const fc = FC.find(c => c.k === k); const sel = FV[k] || []; return { title: fc.label, opts: fc.opts(EMPS).map(o => { const on = sel.indexOf(o) >= 0; return { label: o, pick: () => this.setState({ sfv: Object.assign({}, FV, { [k]: on ? sel.filter(x => x !== o) : sel.concat([o]) }) }), style: 'height: 30px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer; ' + (on ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }) }; })
+      btnStyle: 'display: inline-flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (FK.some(k => (FV[k] || []).length) ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450'),
+      groups: FK.map(k => { const fc = FC.find(c => c.k === k); const sel = FV[k] || []; return { title: fc.label, opts: fc.opts(EMPS).map(o => { const on = sel.indexOf(o) >= 0; return { label: o, pick: () => this.setState({ sfv: Object.assign({}, FV, { [k]: on ? sel.filter(x => x !== o) : sel.concat([o]) }) }), style: 'height: 30px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }) }; })
     };
     const sqVals = { val: this._sq || '', input: e => this.staffSearch(e.target.value), blur: () => {}, key: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } } };
     const tabC = st.scfgTab || 'cols';
@@ -851,10 +851,10 @@ class Component extends DCLogic {
       isOpen: !!st.scfgOpen, open: () => this.setState({ scfgOpen: true }), close: () => this.setState({ scfgOpen: false }),
       reset: () => { try { localStorage.removeItem(cfgKey); } catch (e) {} this.setState({ tick: Date.now() }); },
       showOrder: !isHide, allTitle: isHide ? '체크한 직원은 직원명부 표에서 숨깁니다' : '',
-      tabs: [['cols', '표시할 항목'], ['flt', '필터 항목'], ['hide', '직원 숨기기']].map(t => ({ label: t[1], pick: () => this.setState({ scfgTab: t[0] }), style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (tabC === t[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') })),
+      tabs: [['cols', '표시할 항목'], ['flt', '필터 항목'], ['hide', '직원 숨기기']].map(t => ({ label: t[1], pick: () => this.setState({ scfgTab: t[0] }), style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (tabC === t[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') })),
       all: cfgAll.map(c => { const on = cfgKeys.indexOf(c.k) >= 0; return { label: c.label, on: on ? 'true' : 'false', fixed: c.fixed,
         toggle: () => { if (c.fixed) return; this.saveStaffCfg(cfgKey, on ? cfgKeys.filter(k => k !== c.k) : cfgKeys.concat([c.k])); },
-        box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
+        box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
         style: 'display: flex; align-items: center; gap: 10px; height: 34px; padding: 0 8px; border: none; border-radius: 8px; background: transparent; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; text-align: left; cursor: ' + (c.fixed ? 'default; opacity: 0.6' : 'pointer') }; }),
       order: cfgKeys.map((k, i) => ({ label: (cfgAll.find(c => c.k === k) || {}).label || k, first: i === 0, last: i === cfgKeys.length - 1,
         up: () => { if (!i) return; const L = cfgKeys.slice(); const t = L.splice(i, 1)[0]; L.splice(i - 1, 0, t); this.saveStaffCfg(cfgKey, L); },
@@ -873,18 +873,18 @@ class Component extends DCLogic {
         q: { name: () => {}, phone: e => { const x = e.target.value.replace(/[^0-9]/g, ''); if (x !== e.target.value) e.target.value = x; }, addr: () => {}, memo: () => {}, email: () => {} },
         titles: ['원장', '강사', '행정'].map(r => { const on = (ED.titles || []).indexOf(r) >= 0; return { label: r, on: on ? 'true' : 'false',
           pick: () => upd(Object.assign(keepTyped(), { titles: on ? (ED.titles || []).filter(x => x !== r) : (ED.titles || []).concat([r]) })),
-          box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
-          style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (on ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }),
+          box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
+          style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }),
         subj: SUB.map(s => { const on = (ED.subjects || []).indexOf(s.name) >= 0; return { label: s.name, on: on ? 'true' : 'false',
           pick: () => upd(Object.assign(keepTyped(), { subjects: on ? ED.subjects.filter(x => x !== s.name) : (ED.subjects || []).concat([s.name]) })),
-          style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (on ? 'background: ' + s.bg + '; color: ' + s.fg + '; border: 2px solid ' + s.fg : 'background: #FFFFFF; color: #8A949E; border: 1px solid #DDE2DF') }; }),
+          style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'background: ' + s.bg + '; color: ' + s.fg + '; border: 2px solid ' + s.fg : 'background: #FFFFFF; color: #8A949E; border: 1px solid #DDE2DF') }; }),
         tabOn: ED.tab !== false ? 'true' : 'false',
         tabToggle: () => upd(Object.assign(keepTyped(), { tab: ED.tab === false })),
-        tabBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; ' + (ED.tab !== false ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
+        tabBox: 'width: 20px; height: 20px; flex: none; box-sizing: border-box; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; ' + (ED.tab !== false ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
         acc: ED.linked ? '연결됨' : '연결 전',
-        accChip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 700; white-space: nowrap; ' + (ED.linked ? 'background: #E2F1EA; color: #1F7A5A' : 'background: #EEF1F0; color: #8A949E'),
+        accChip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 12px; font-weight: 600; white-space: nowrap; ' + (ED.linked ? 'background: #E2F1EA; color: #1F7A5A' : 'background: #EEF1F0; color: #8A949E'),
         card: 'display: flex; flex-direction: column; gap: 12px; padding: 18px 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5',
-        secTitle: 'font-size: 16px; font-weight: 800; color: #17201C',
+        secTitle: 'font-size: 16px; font-weight: 600; color: #17201C',
         lbl: 'display: flex; flex-direction: column; gap: 6px; font-size: 13px; font-weight: 600; color: #5E6873',
         inp: 'height: 42px; padding: 0 12px; box-sizing: border-box; border-radius: 11px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C'
       };
@@ -914,7 +914,7 @@ class Component extends DCLogic {
       empHeads: empHeads,
       empGrid: empGrid, empRows: empRows, staffHidNote: HID.filter(id => EMPS.some(e => e.id === id)).length ? '(숨긴 직원 ' + HID.filter(id => EMPS.some(e => e.id === id)).length + '명)' : '', staffCount: SHOWN.length, staffEmpty: !SHOWN.length, staffEmptyTxt: EMPS.length ? '필터에 맞는 직원이 없습니다.' : '등록된 직원이 없습니다.', sf: sfVals, sq: sqVals, scfg: scfgVals, staffNote: EMPS.some(e => e.sample) ? '(시안 샘플)' : '',
       empNew: () => this.openEmp(null),
-      c: { cc: 'min-height: 46px; display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box; font-size: 14px', cl: 'min-height: 46px; display: flex; align-items: center; justify-content: flex-start; padding: 6px 10px; box-sizing: border-box; font-size: 14px', btn: 'height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer' },
+      c: { cc: 'min-height: 46px; display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box; font-size: 14px', cl: 'min-height: 46px; display: flex; align-items: center; justify-content: flex-start; padding: 6px 10px; box-sizing: border-box; font-size: 14px', btn: 'height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer' },
       ed: edVals, lv: lvVals,
       printHead: printHead, printRows: printRows, printTitle: '현실용음악학원 ' + (PV === 'staff' ? '직원명부' : PV === 'subjects' ? '수강과목' : PV === 'menu' ? '설정 · 메뉴 탭' : '설정'),
       subTitle: F ? F.label : '', subGroup: F ? F.group : '', goHub: () => this.openView('hub'),
@@ -929,7 +929,7 @@ class Component extends DCLogic {
         open: !!st.printOpen,
         close: () => this.setState({ printOpen: false }),
         go: () => this.doPrint(),
-        opts: [[false, '컬러'], [true, '흑백']].map(o => ({ label: o[1], pick: () => this.setState({ bw: o[0] }), style: 'flex: 1; height: 42px; border-radius: 11px; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer; ' + (!!st.bw === o[0] ? 'border: 2px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }))
+        opts: [[false, '컬러'], [true, '흑백']].map(o => ({ label: o[1], pick: () => this.setState({ bw: o[0] }), style: 'flex: 1; height: 42px; border-radius: 11px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (!!st.bw === o[0] ? 'border: 2px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }))
       },
       exp: {
         open: !!st.expOpen, openStr: st.expOpen ? 'true' : 'false', label: st.expBusy ? '내보내는 중…' : '내보내기',
