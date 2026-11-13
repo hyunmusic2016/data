@@ -176,11 +176,8 @@ html.bwp .printonly .pcell{border-color:#000!important}
                 <sc-for list="{{scfg.order}}" as="o" hint-placeholder-count="6"><div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 8px; border-radius: 9px; background: #F7F9F8"><sc-if value="{{o.hasCheck}}" hint-placeholder-val="{{ false }}"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.toggle}}" aria-label="직원명부에 보이기" style="display: inline-flex; padding: 0; border: none; background: transparent; cursor: pointer"><span style="{{o.box}}">✓</span></button></sc-if><span style="flex: 1; font-size: 13px; font-weight: 600">{{o.label}}</span><button type="button" onClick="{{o.up}}" disabled="{{o.first}}" aria-label="위로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▲</button><button type="button" onClick="{{o.down}}" disabled="{{o.last}}" aria-label="아래로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▼</button></div></sc-for>
               </div></sc-if>
             </div>
-          </div>
-        </sc-if>
-        <sc-if value="{{viewSOrder}}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 14px; max-width: 820px; padding: 20px 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
-            <span style="font-size: 13px; color: #5E6873">출석부 강사 탭 · 수강생대장 강사 목록 · 통계에 쓰이는 직원 순서입니다. '사용 안 함'인 직원은 그 화면들에 나오지 않습니다.</span>
+            <sc-if value="{{scfg.isGlobal}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 10px">
+            <span style="font-size: 12px; font-weight: 600; color: #5E6873">출석부 강사 탭 · 수강생대장 강사 목록 · 통계에 쓰이는 직원 순서입니다. '사용 안 함'인 직원은 그 화면들에 나오지 않습니다.</span>
             <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">직원 순서는 원장님만 바꿀 수 있습니다.</div></sc-if>
             <div style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: hidden">
               <sc-for list="{{soRows}}" as="m" hint-placeholder-count="5">
@@ -198,6 +195,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
               </sc-for>
               <sc-if value="{{soEmpty}}" hint-placeholder-val="{{ false }}"><div style="padding: 26px; text-align: center; font-size: 14px; color: #8A949E">직원명부에 등록된 직원이 없습니다.</div></sc-if>
             </div>
+            </div></sc-if>
           </div>
         </sc-if>
         <sc-if value="{{viewMenu}}" hint-placeholder-val="{{ false }}">
@@ -259,7 +257,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.47.1</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -427,7 +425,7 @@ class Component extends DCLogic {
       { title: '화면·메뉴', items: [{ id: 'menu', label: '메뉴 탭', ready: true }] },
       { title: '수업', items: [{ id: 'subjects', label: '수강과목', ready: true }] },
       // 직원명부는 원장님만 (강사 계정에는 보이지 않음)
-      { title: '직원', items: this.isTeacherUser() ? [] : [{ id: 'staff', label: '직원명부', ready: true }, { id: 'sorder', label: '직원 순서', ready: true }] }
+      { title: '직원', items: this.isTeacherUser() ? [] : [{ id: 'staff', label: '직원명부', ready: true }] }
     ].filter(g => g.items.length);
   }
   viewOfHash() {
@@ -890,18 +888,18 @@ class Component extends DCLogic {
     };
     const sqVals = { val: this._sq || '', input: e => this.staffSearch(e.target.value), blur: () => {}, key: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } } };
     const tabC = st.scfgTab || 'cols';
-    const isHide = tabC === 'hide', isOrd = tabC === 'sorder';
+    const isHide = tabC === 'hide', isOrd = tabC === 'sorder', isG = tabC === 'gorder';
     const cfgKeys = tabC === 'cols' ? this.staffVisible() : isHide ? HID : isOrd ? EMPS.map(e => e.id) : FK;
     const cfgAll = tabC === 'cols' ? CAT.map(c => ({ k: c.k, label: c.label, fixed: !!c.fixed })) : (isHide || isOrd) ? EMPS.map(e => ({ k: e.id, label: e.name + ' · ' + this.titlesOf(e).join(',') + (this.isDismissed(e) ? ' (해임)' : ''), fixed: false })) : FC.map(c => ({ k: c.k, label: c.label, fixed: false }));
     const cfgKey = tabC === 'cols' ? 'staff.cols' : isHide ? 'staff.hidden' : 'staff.filters';
     const scfgVals = {
       isOpen: !!st.scfgOpen, open: () => this.setState({ scfgOpen: true }), close: () => this.setState({ scfgOpen: false }),
       reset: () => { try { localStorage.removeItem(cfgKey); } catch (e) {} this.setState({ tick: Date.now() }); },
-      showOrder: !isHide, showAll: !isOrd, showReset: !isOrd,
+      showOrder: !isHide && !isG, showAll: !isOrd && !isG, showReset: !isOrd && !isG, isGlobal: isG,
       orderTitle: isOrd ? '직원명부에 보이는 순서 · 체크를 끄면 직원명부에서 숨김' : '보이는 순서',
       gridStyle: 'display: grid; grid-template-columns: ' + (isOrd || isHide ? 'minmax(0, 1fr)' : 'minmax(0, 1fr) minmax(0, 1fr)') + '; gap: 14px',
       allTitle: isHide ? '체크한 직원은 직원명부 표에서 숨깁니다' : '',
-      tabs: [['cols', '표시할 항목'], ['flt', '필터 항목'], ['sorder', '직원명부 순서 변경']].map(t => ({ label: t[1], pick: () => this.setState({ scfgTab: t[0] }), style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (tabC === t[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') })),
+      tabs: [['cols', '표시할 항목'], ['flt', '필터 항목'], ['sorder', '직원명부 순서 변경'], ['gorder', '직원 순서']].map(t => ({ label: t[1], pick: () => this.setState({ scfgTab: t[0] }), style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (tabC === t[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') })),
       all: cfgAll.map(c => { const on = cfgKeys.indexOf(c.k) >= 0; return { label: c.label, on: on ? 'true' : 'false', fixed: c.fixed,
         toggle: () => { if (c.fixed) return; this.saveStaffCfg(cfgKey, on ? cfgKeys.filter(k => k !== c.k) : cfgKeys.concat([c.k])); },
         box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
