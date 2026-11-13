@@ -62,6 +62,8 @@
 - 설계: `supabase/schema.sql` (SQL Editor에 붙여 넣어 실행). 표: staff(직원·로그인 연결), students(기본 정보), student_terms(날짜별 수업 정보·수강료·현금영수증 = 시작 날짜 + 값), status_changes(휴원·퇴원·복귀), attendance(원생·날짜마다 한 칸), payments(수납, 미납금액 수납은 kind 'unpaid'), ticket_plans(레슨시작일 예정), activity_log(3개월, pg_cron 삭제).
 - 지금 localStorage에 있는 것(academy.lessonChanges / statusChanges / students / payments / ticketPlans / tickets)은 위 표로 옮긴다. 원생은 이름이 아니라 등록번호(students.id)로 맞춘다. 화면 설정(열·필터·시트 탭 순서 등)은 브라우저에 그대로 둔다.
 - 사이트에는 Project URL과 anon(public) 키만 넣는다(공개돼도 RLS로 막힘). **service_role(비밀) 키는 절대 코드·GitHub·대화에 넣지 않는다.**
+- 연결 정보: Project URL `https://aooohoacxbpsmfbjhphi.supabase.co`, 공개 키 `sb_publishable_PwAydZuvV3RLHhRcN3yL9g_JFZu5vDs` (공개돼도 되는 키). `design/db.js`에 있고, GitHub 페이지(attendance.html·students.html)는 head에서 supabase-js@2.45.4(jsdelivr)와 db.js를 불러온다. 들어오면 로그인 화면이 먼저 뜨고, staff 표에 있는 활성 직원만 통과(오른쪽 위에 이름·로그아웃). claude.ai 시안 페이지는 연결하지 않고 샘플(브라우저 저장)로 계속 둔다.
+- 진행 단계: ① 표·보안 규칙 만들기(완료) ② 로그인 화면(완료) ③ 원장님 계정·직원 등록 ④ 샘플 원생을 DB에 넣고 수강생대장이 DB에서 읽고 쓰기 ⑤ 출결·수납·휴원/퇴원·수업 정보 변경을 DB에 저장 ⑥ 실제 데이터로 전환.
 - 프로젝트 지역: 서울(Northeast Asia (Seoul)). 만들 때 설정: GitHub 연결 안 함, Enable Data API 켬, Automatically expose new tables 끔(권한은 schema.sql에서 authenticated에게만 직접 줌, anon은 아무 권한 없음), Enable automatic RLS 켬.
 
 ## 수강료·강사 수당 규칙
