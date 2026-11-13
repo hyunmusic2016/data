@@ -6,7 +6,7 @@
 <title>수강생대장</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.41.1"></script>
+<script src="db.js?v=0.42.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 
@@ -33,6 +33,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
 <body>
 <div id="app"></div>
 <template id="tpl">
+<sc-if value="{{noAccess}}" hint-placeholder-val="{{ false }}"><div class="noprint" style="position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #F3F5F4; font-family: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"><span style="font-size: 18px; font-weight: 800; color: #17201C">수강생대장은 원장님만 볼 수 있습니다.</span><a href="{{attHref}}" style="height: 44px; padding: 0 20px; display: inline-flex; align-items: center; border-radius: 12px; background: #00A6AB; color: #FFFFFF; font-size: 15px; font-weight: 700; text-decoration: none">출석부로 가기</a></div></sc-if>
 <div class="noprint shell" style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
 
   <header style="background: #FFFFFF; border-bottom: 1px solid #C6CDC7; padding: 8px 24px 0; display: flex; flex-direction: column">
@@ -166,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.41.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.42.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -983,12 +984,42 @@ class Component extends DCLogic {
     return out;
   }
   menuTabs(cur, cnts) {
-    return this.menuItems().filter(t => !t.hidden).map(t => ({
+    // 강사 계정은 수강생대장을 볼 수 없다
+    return this.menuItems().filter(t => !t.hidden && !(t.id === 'students' && this.isTeacherUser())).map(t => ({
       label: t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
       style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
         (t.id === cur ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));
   }
+  // 수강과목 (설정 > 수강과목, 모든 페이지 공통). 이 브라우저 'academy.subjects', 로그인 사이트는 Supabase subjects와 같이 씀
+  subjectList() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.subjects') || 'null'); } catch (e) {}
+    if (Array.isArray(v) && v.length) return v;
+    return [['드럼', '#D7EFDD', '#2F6B43'], ['보컬', '#FCF1C2', '#7A6200'], ['기타', '#F9D9D6', '#9A3A31'], ['베이스', '#D6E6F7', '#2E5A8A'], ['피아노', '#E6DFF5', '#5B4A8B'], ['우쿨렐레', '#EADDD0', '#6B4A2E']]
+      .map((s, i) => ({ id: 'S' + (i + 1), name: s[0], bg: s[1], fg: s[2], sort: i + 1, preset: true }));
+  }
+  // 과목 이름 → [바탕색, 글자색] ('원장'은 금색)
+  partColors() {
+    const o = { '원장': ['#F3E6C4', '#7A5C12'] };
+    this.subjectList().forEach(s => { o[s.name] = [s.bg || '#EEF1F0', s.fg || '#3A4450']; });
+    return o;
+  }
+  // 직원명부 (설정 > 직원명부). 이 브라우저 'academy.employees', 로그인 사이트는 Supabase employees와 같이 씀. 연번 순서 그대로
+  employeeList() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.employees') || 'null'); } catch (e) {}
+    const A = window.academy;
+    if (Array.isArray(v) && v.length) return v.slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
+    if (A && A.sb) return [];
+    // 시안(로그인 없는 화면)용 가짜 샘플
+    return [['원장', '김도윤', ['기타', '우쿨렐레']], ['강사', '이하늘', ['보컬']], ['강사', '박서준', ['드럼']], ['강사', '최민재', ['베이스']], ['강사', '정우진', ['피아노']]]
+      .map((e, i) => ({ id: 'X' + (i + 1), seq: i + 1, role: e[0], name: e[1], subjects: e[2], tab: true, hire: '2016-04-04', leave: '', phone: '', addr: '', memo: '', email: '', sample: true }));
+  }
+  // 오늘 기준 해임된 직원인지
+  isDismissed(e) { const t = new Date(), td = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); return !!(e && e.leave && e.leave <= td); }
+  // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
+  isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   setReg(patch) {
     this.setState({ reg: Object.assign({}, this.state.reg, patch) });
   }
@@ -1054,6 +1085,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
+    Object.assign(PART, this.partColors());
     const TPART = { '김도윤': '원장', '이하늘': '보컬', '박서준': '드럼', '최민재': '베이스', '정우진': '피아노' };
     const DAY = { '월요일': ['#FDE8E7', '#B4332B'], '화요일': ['#E3ECFD', '#2952A3'], '수요일': ['#FCF1C2', '#7A6200'], '목요일': ['#DFF2E4', '#2F6B43'], '금요일': ['#FDEBDC', '#9A4A12'], '토요일': ['#ECE4F8', '#5B4A8B'], '변동': ['#EEF1F0', '#3A4450'] };
     const AGE = { '학생': ['#E3F3EC', '#2F6B43'], '성인': ['#FBE6E4', '#9A3A31'] };
@@ -1064,7 +1096,7 @@ class Component extends DCLogic {
     const match = s => (!q || st.qEdit || [s.name, s.guardian, s.phone, s.gphone, String(s.id)].some(v => String(v || '').replace(/[-\s]/g, '').toLowerCase().indexOf(q) >= 0));
     const PORDER = ['드럼', '보컬', '기타', '베이스', '피아노', '우쿨렐레'];
     const DORDER = ['월요일', '화요일', '수요일', '목요일', '금요일', '토요일', '변동'];
-    const TEACHERS = ['김도윤', '이하늘', '박서준', '최민재', '정우진'];
+    const TEACHERS = this.employeeList().map(e => e.name);
     // 필터: 같은 항목 안에서는 하나라도 맞으면, 항목끼리는 모두 맞아야 보인다
     const F = st.filt || {};
     // 필터 항목은 설정에서 고른 것만 (기본은 없음)
@@ -1334,7 +1366,10 @@ class Component extends DCLogic {
     } catch (e) {}
     const cnt = k => all.filter(s => s.status === k).length;
     const R = st.reg;
-    const TEACH = { '김도윤': ['기타', '우쿨렐레'], '이하늘': ['보컬'], '박서준': ['드럼'], '최민재': ['베이스'], '정우진': ['피아노'] };
+    // 담당 강사·수강 과목 = 직원명부(해임 안 한 직원)와 그 직원의 수강과목
+    const EMP = this.employeeList().filter(e => !this.isDismissed(e));
+    const TEACH = {}, ROLE = {};
+    EMP.forEach(e => { TEACH[e.name] = (e.subjects || []).slice(); ROLE[e.name] = e.role; });
     const fmtN = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') : '';
     const numV = v => parseInt(String(v).replace(/[^0-9]/g, ''), 10) || 0;
     const segS = (on, c) => 'height: 46px; padding: 0 16px; border-radius: 12px; font-family: inherit; font-size: 14px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: ' + (c ? c[0] : '#E6F6F6') + '; color: ' + (c ? c[1] : '#007E82') + '; border: 2px solid ' + (c ? c[1] : '#00A6AB') + '; font-weight: 700' : 'background: #FFFFFF; color: #3A4450; border: 1px solid #DDE2DF; font-weight: 500');
@@ -1371,7 +1406,7 @@ class Component extends DCLogic {
           style: 'height: 40px; padding: 0 22px; border: none; border-radius: 10px; font-family: inherit; font-size: 15px; cursor: pointer; ' + (R.cls === o[0] ? (o[0] === 'pro' ? 'background: #FFFFFF; color: #C8323C; font-weight: 800; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)' : 'background: #FFFFFF; color: #007E82; font-weight: 800; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)') : 'background: transparent; color: #5E6873; font-weight: 500') })),
         genders: ['남', '여'].map(g => ropt(g, R.gender === g, () => this.setReg({ gender: g }))),
         ages: ['학생', '성인'].map(g => ropt(g, R.age === g, () => this.setReg({ age: g }), AGE[g])),
-        teacherOpts: [{ v: '', label: '강사 선택', sel: !R.teacher }].concat(Object.keys(TEACH).map(t => ({ v: t, label: t + (t === '김도윤' ? ' 원장님' : ' 강사') + ' · ' + TEACH[t].join('·'), sel: R.teacher === t }))),
+        teacherOpts: [{ v: '', label: '강사 선택', sel: !R.teacher }].concat(Object.keys(TEACH).map(t => ({ v: t, label: t + (ROLE[t] === '원장' ? ' 원장님' : ' 강사') + (TEACH[t].length ? ' · ' + TEACH[t].join('·') : ''), sel: R.teacher === t }))),
         partOpts: parts.map(p => ropt(p, R.part === p, () => this.setReg({ part: p }), PART[p])),
         partHint: !R.teacher ? '강사를 먼저 선택하세요' : parts.length === 1 ? '자동 선택됨' : '가르치는 과목 중 선택',
         days: [['월요일', '월'], ['화요일', '화'], ['수요일', '수'], ['목요일', '목'], ['금요일', '금'], ['토요일', '토'], ['변동', 'R']].map(d => ropt(d[1], R.days.indexOf(d[0]) >= 0, () => {
@@ -1441,6 +1476,7 @@ class Component extends DCLogic {
     });
     const tabs = this.menuTabs('students', { students: cnt('act') + '명' });
     return {
+      noAccess: this.isTeacherUser(), attHref: 'attendance.html',
       q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols.slice(0, nMain), xHeads: headCols.slice(nMain),
       tableMin: 'min-width: ' + minW + 'px',
       pt: pt, pr: pr,

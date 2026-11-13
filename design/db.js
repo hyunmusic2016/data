@@ -176,8 +176,20 @@
       rawSet('academy.lessonChanges', JSON.stringify(shared));
       rawSet('academy.statusChanges', JSON.stringify(status));
       // 학원 공통 설정 (메뉴 탭 등). 표(app_settings)가 아직 없으면 이 브라우저 설정을 그대로 쓴다
-      return sb.from('app_settings').select('key,value').then(function (q) {
+      return Promise.all([
+        sb.from('app_settings').select('key,value'),
+        sb.from('employees').select('*').order('seq'),
+        sb.from('subjects').select('*').order('sort')
+      ]).then(function (qs) {
+        var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); });
+        // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
+        if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
+        if (!qs[2].error) {
+          var sj = qs[2].data.map(function (r) { return { id: 'J' + r.id, name: r.name, bg: r.bg, fg: r.fg, sort: r.sort }; });
+          if (sj.length) rawSet('academy.subjects', JSON.stringify(sj)); else localStorage.removeItem('academy.subjects');
+          known.subj = idxList(sj);
+        }
         // 탭을 옮기거나 새 창으로 열 때 로그인·불러오기 화면이 번쩍이지 않도록 이 브라우저에 저장 (로그아웃·로그인 만료면 지움)
         try { rawSet('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (e) {}
         document.dispatchEvent(new CustomEvent('academy:data'));
@@ -204,6 +216,8 @@
     try {
       if (k === 'academy.lessonChanges') syncList(JSON.parse(v || '[]'), 'shared', saveLesson, 'student_terms');
       else if (k === 'academy.statusChanges') syncList(JSON.parse(v || '[]'), 'status', saveStatus, 'status_changes');
+      else if (k === 'academy.employees') syncRows(JSON.parse(v || '[]'), 'emp', 'employees', 'E', empToRow, k);
+      else if (k === 'academy.subjects') syncRows(JSON.parse(v || '[]'), 'subj', 'subjects', 'J', function (e, i) { return { name: e.name, bg: e.bg || null, fg: e.fg || null, sort: i + 1 }; }, k);
       else if (k === 'academy.menu') {
         if (!A.staff || A.staff.role !== 'owner') { toast('메뉴 탭은 원장님만 바꿀 수 있습니다'); return; }
         sb.from('app_settings').upsert({ key: 'menu', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '메뉴 탭 설정'); });
@@ -216,6 +230,39 @@
     Object.keys(prev).forEach(function (id) { if (!now[id]) dbIdOf(id).then(function (n) { if (n) sb.from(table).delete().eq('id', n).then(function (r) { report(r, '삭제'); }); }); });
     known[kind] = now;
   }
+  // 직원명부·수강과목: 새 줄은 insert(번호를 받아 id를 바꿔 둠), 바뀐 줄은 update, 빠진 줄은 delete
+  function idxList(list) { var o = {}; (list || []).forEach(function (e) { o[e.id] = JSON.stringify(e); }); return o; }
+  function empFromRow(r) { return { id: 'E' + r.id, seq: r.seq, role: r.role, name: r.name, phone: r.phone || '', addr: r.addr || '', email: r.email || '', subjects: r.subjects || [], tab: r.tab !== false, hire: r.hire_date || '', leave: r.leave_date || '', leaveReason: r.leave_reason || '', memo: r.memo || '', linked: !!r.user_id }; }
+  function empToRow(e) { return { seq: e.seq, role: e.role, name: e.name, phone: e.phone || null, addr: e.addr || null, email: e.email || null, subjects: e.subjects || [], tab: e.tab !== false, hire_date: e.hire || null, leave_date: e.leave || null, leave_reason: e.leaveReason || null, memo: e.memo || null }; }
+  var pending = {};
+  function syncRows(list, kind, table, P, toRow, key) {
+    if (!A.staff || A.staff.role !== 'owner') { toast('원장님만 바꿀 수 있습니다'); return; }
+    var prev = known[kind] || {}, now = {}, re = new RegExp('^' + P + '\\d+$');
+    list.forEach(function (e, i) {
+      now[e.id] = JSON.stringify(e);
+      if (!re.test(e.id)) {
+        if (pending[e.id]) return; pending[e.id] = 1;
+        sb.from(table).insert(toRow(e, i)).select('id').single().then(function (r) {
+          delete pending[e.id]; report(r, '저장'); if (!r.data) return;
+          var nid = P + r.data.id, cur = [];
+          try { cur = JSON.parse(localStorage.getItem(key) || '[]'); } catch (x) {}
+          cur.forEach(function (x) { if (x.id === e.id) x.id = nid; });
+          rawSet(key, JSON.stringify(cur)); known[kind] = idxList(cur);
+          if (A.onIds) A.onIds(e.id, nid);
+        });
+      } else if (prev[e.id] !== now[e.id]) {
+        sb.from(table).update(toRow(e, i)).eq('id', +e.id.slice(P.length)).then(function (r) { report(r, '저장'); });
+      }
+    });
+    Object.keys(prev).forEach(function (id) { if (!now[id] && re.test(id)) sb.from(table).delete().eq('id', +id.slice(P.length)).then(function (r) { report(r, '삭제'); }); });
+    known[kind] = now;
+  }
+  // 직원 ↔ 로그인 계정 연결 (계정은 Supabase 대시보드에서 먼저 만듦)
+  A.linkAccount = function (empId, mail) {
+    var n = +String(empId).replace(/^E/, '');
+    if (!n) return Promise.resolve('no_employee');
+    return sb.rpc('link_employee_account', { emp: n, mail: mail }).then(function (r) { if (r.error) { report(r, '계정 연결'); return 'error'; } return r.data; });
+  };
   function saveLesson(e) {
     var sid = sidOfName(e.name); if (!sid) return;
     var v = {}; ['days', 'times', 'stick', 'teacher', 'part'].forEach(function (k) { if (e[k] !== undefined) v[k] = e[k]; });
@@ -312,6 +359,8 @@
     A.data = c.data; A.staff = c.staff; A.ready = true; A.fromCache = true;
     var idx = function (k) { var o = {}; try { (JSON.parse(localStorage.getItem(k) || '[]') || []).forEach(function (e) { o[e.id] = e; }); } catch (e) {} return o; };
     known.shared = idx('academy.lessonChanges'); known.status = idx('academy.statusChanges');
+    var idx2 = function (k) { try { return idxList(JSON.parse(localStorage.getItem(k) || '[]') || []); } catch (e) { return {}; } };
+    known.emp = idx2('academy.employees'); known.subj = idx2('academy.subjects');
   })();
   function start() {
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);

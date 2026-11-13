@@ -151,7 +151,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.41.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.42.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -569,7 +569,7 @@ class Component extends DCLogic {
   applyTransfers(rows, shared, MON, mEnd) {
     // 담당 강사가 바뀐 원생: 바뀐 달에는 예전 강사 출석부 맨 아래 '퇴&휴'로 옮기고(수강권·출결 그대로),
     // 새 강사 출석부에는 같은 수강권으로 이어서 나온다. 다음 달부터 예전 강사 출석부에는 나오지 않는다.
-    const me = this.teacherList()[this.state.teacher || 0][0].replace(' 원장님', '');
+    const TL0 = this.teacherList(); const me = TL0[Math.min(this.state.teacher || 0, TL0.length - 1)][0].replace(' 원장님', '');
     const nm = r => r.name.replace('$', '');
     const last = {};
     shared.filter(e => e.teacher && e.prev && e.prev.teacher && e.teacher !== e.prev.teacher && e.from <= mEnd)
@@ -586,9 +586,41 @@ class Component extends DCLogic {
     });
     return out;
   }
+  // 출석부 강사 탭 = 직원명부(출석부 탭 켠 직원, 연번 순서). 해임한 직원도 탭과 출석부는 남기고 '해임'으로 흐리게 표시
   teacherList() {
-    return [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
+    const E = this.employeeList().filter(e => e.tab !== false);
+    if (!E.length) return [['김도윤 원장님', '원장'], ['이하늘', '보컬'], ['박서준', '드럼'], ['최민재', '베이스'], ['정우진', '피아노']];
+    return E.map(e => [e.name + (e.role === '원장' ? ' 원장님' : ''), e.role === '원장' ? '원장' : ((e.subjects || [])[0] || ''), this.isDismissed(e)]);
   }
+  // 수강과목 (설정 > 수강과목, 모든 페이지 공통). 이 브라우저 'academy.subjects', 로그인 사이트는 Supabase subjects와 같이 씀
+  subjectList() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.subjects') || 'null'); } catch (e) {}
+    if (Array.isArray(v) && v.length) return v;
+    return [['드럼', '#D7EFDD', '#2F6B43'], ['보컬', '#FCF1C2', '#7A6200'], ['기타', '#F9D9D6', '#9A3A31'], ['베이스', '#D6E6F7', '#2E5A8A'], ['피아노', '#E6DFF5', '#5B4A8B'], ['우쿨렐레', '#EADDD0', '#6B4A2E']]
+      .map((s, i) => ({ id: 'S' + (i + 1), name: s[0], bg: s[1], fg: s[2], sort: i + 1, preset: true }));
+  }
+  // 과목 이름 → [바탕색, 글자색] ('원장'은 금색)
+  partColors() {
+    const o = { '원장': ['#F3E6C4', '#7A5C12'] };
+    this.subjectList().forEach(s => { o[s.name] = [s.bg || '#EEF1F0', s.fg || '#3A4450']; });
+    return o;
+  }
+  // 직원명부 (설정 > 직원명부). 이 브라우저 'academy.employees', 로그인 사이트는 Supabase employees와 같이 씀. 연번 순서 그대로
+  employeeList() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.employees') || 'null'); } catch (e) {}
+    const A = window.academy;
+    if (Array.isArray(v) && v.length) return v.slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
+    if (A && A.sb) return [];
+    // 시안(로그인 없는 화면)용 가짜 샘플
+    return [['원장', '김도윤', ['기타', '우쿨렐레']], ['강사', '이하늘', ['보컬']], ['강사', '박서준', ['드럼']], ['강사', '최민재', ['베이스']], ['강사', '정우진', ['피아노']]]
+      .map((e, i) => ({ id: 'X' + (i + 1), seq: i + 1, role: e[0], name: e[1], subjects: e[2], tab: true, hire: '2016-04-04', leave: '', phone: '', addr: '', memo: '', email: '', sample: true }));
+  }
+  // 오늘 기준 해임된 직원인지
+  isDismissed(e) { const t = new Date(), td = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); return !!(e && e.leave && e.leave <= td); }
+  // 로그인한 사람이 강사면 true (원장·로그인 없는 시안이면 false)
+  isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   readShared() {
     try { const v = JSON.parse(localStorage.getItem('academy.lessonChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
   }
@@ -855,7 +887,8 @@ class Component extends DCLogic {
     return out;
   }
   menuTabs(cur, cnts) {
-    return this.menuItems().filter(t => !t.hidden).map(t => ({
+    // 강사 계정은 수강생대장을 볼 수 없다
+    return this.menuItems().filter(t => !t.hidden && !(t.id === 'students' && this.isTeacherUser())).map(t => ({
       label: t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
       style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
         (t.id === cur ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
@@ -1860,18 +1893,19 @@ class Component extends DCLogic {
     };
 
     const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
+    Object.assign(PART, this.partColors());
     const TEACHERS = this.teacherList();
     const teacherTabs = TEACHERS.map((t, i) => {
-      const on = i === st.teacher, c = PART[t[1]];
+      const on = i === st.teacher, c = PART[t[1]] || ['#EEF1F0', '#3A4450'];
       return {
-        name: t[0], part: t[1], on: on ? 'true' : 'false',
+        name: t[0] + (t[2] ? ' (해임)' : ''), part: t[1], on: on ? 'true' : 'false',
         pick: () => this.setState({ teacher: i }),
         chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 700; background: ' + (on ? '#FFFFFF' : c[0]) + '; color: ' + c[1],
         style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 8px; border-radius: 999px; font-size: 14px; cursor: pointer; ' +
-          (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 700' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500')
+          (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 700' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500') + (t[2] && !on ? '; opacity: 0.55' : '')
       };
     });
-    const curT = TEACHERS[st.teacher], curC = PART[curT[1]];
+    const curT = TEACHERS[Math.min(st.teacher || 0, TEACHERS.length - 1)], curC = PART[curT[1]] || ['#EEF1F0', '#3A4450'];
     // 수강생대장 휴원·퇴원 탭 '수강권' 칸과 연동: 가장 최근 달까지 이어서 계산한 지금 수강권을 이름별로 저장 (academy.tickets)
     try {
       const Mx = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));
