@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.52.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.52.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -499,6 +499,7 @@ class Component extends DCLogic {
       ev: {}
     };
     if (this.dbMode()) Object.assign(this.state, this.cellsState());
+    try { Object.assign(this.state, this.sheetFor(0)); } catch (e) {}
   }
   // ---------- 출석부 저장 (로그인 사이트) ----------
   // 화면의 출결·수납 표시와 보강 시간을 원생('D'+원생번호)·달별로 'academy.attCells'에 써 두면 db.js가 Supabase(attendance_cells)에 저장한다.
@@ -548,6 +549,18 @@ class Component extends DCLogic {
       try { cur = localStorage.getItem('academy.attCells') || ''; } catch (e) {}
       if (js !== cur) { try { localStorage.setItem('academy.attCells', js); } catch (e) {} }
     }, 250);
+  }
+  // 맨 아래 시트 탭은 강사마다 따로 기억한다: 보고 있던 시트·숨긴 시트(이 브라우저 'attendance.sheetByTeacher'), 탭 순서('attendance.tabOrder.강사')
+  tKey(i) { const L = this.teacherList(); return ((L[Math.min(i == null ? (this.state.teacher || 0) : i, L.length - 1)] || [])[0]) || ''; }
+  sheetMem() { try { return JSON.parse(localStorage.getItem('attendance.sheetByTeacher') || '{}') || {}; } catch (e) { return {}; } }
+  sheetFor(i) {
+    const m = this.sheetMem()[this.tKey(i)] || {};
+    const L = this.sheetList(), k = L.findIndex(x => x[0] === m.sheet);
+    return { sheet: k >= 0 ? k : 0, hiddenSheets: Array.isArray(m.hidden) ? m.hidden : [] };
+  }
+  pickTeacher(i) {
+    if (i === (this.state.teacher || 0)) return;
+    this.setState(Object.assign({ teacher: i, sel: null, sheetCtx: null, sheetList: false }, this.sheetFor(i)));
   }
   students() {
     // 수업 요일·시간·드럼스틱 변경(수강생대장과 같이 쓰는 기록)을 적용 날짜가 들어 있는 달부터 반영한다.
@@ -1726,7 +1739,7 @@ class Component extends DCLogic {
     // 수강권 칸 모양 (동그라미 + 레슨시작일·상태 줄 + 미납금액 수납완료 줄). 출석부 화면과 수강생대장 휴원·퇴원 탭이 같이 쓴다
     const tkView = (s, r) => {
     const dots = [], dotGroups = [];
-    // 동그라미 크기 10px (v0.52.0, 예전 7px)
+    // 동그라미 크기 10px (v0.52.1, 예전 7px)
     const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
     const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
     if (r.paid) {
@@ -1973,9 +1986,16 @@ class Component extends DCLogic {
     };
 
     const hidden = st.hiddenSheets || [];
-    // 맨 아래 시트 탭: 마우스로 끌어서 순서를 바꾼다 (이 컴퓨터 브라우저에 순서 저장)
-    let tabOrder = st.tabOrder;
-    if (!tabOrder) { try { tabOrder = JSON.parse(localStorage.getItem('attendance.tabOrder') || '[]') || []; } catch (e) { tabOrder = []; } }
+    // 맨 아래 시트 탭: 마우스로 끌어서 순서를 바꾼다 (강사마다 따로, 이 컴퓨터 브라우저에 저장)
+    const TK = this.tKey();
+    let tabOrder = (st.tabOrderBy || {})[TK];
+    if (!tabOrder) { try { tabOrder = JSON.parse(localStorage.getItem('attendance.tabOrder.' + TK) || localStorage.getItem('attendance.tabOrder') || '[]') || []; } catch (e) { tabOrder = []; } }
+    // 지금 강사가 보고 있는 시트·숨긴 시트를 기억
+    try {
+      const mem = this.sheetMem(), curS = (sheets[st.sheet] || [])[0] || '';
+      const now = JSON.stringify({ sheet: curS, hidden: hidden });
+      if (TK && JSON.stringify(mem[TK] || {}) !== now) { mem[TK] = { sheet: curS, hidden: hidden }; localStorage.setItem('attendance.sheetByTeacher', JSON.stringify(mem)); }
+    } catch (e) {}
     const ordIdx = o => { const k = tabOrder.indexOf(o.t[0]); return k < 0 ? 1000 + o.i : k; };
     const shown = sheets.map((t, i) => ({ t: t, i: i })).filter(o => hidden.indexOf(o.t[0]) < 0);
     // 순서에 없는 새 시트(새 달 추가 등)는 원래 자리 기준으로 끼워 넣는다
@@ -1988,8 +2008,8 @@ class Component extends DCLogic {
       if (a < 0 || b < 0 || a === b) return;
       names.splice(a, 1); names.splice(b, 0, from);
       const full = names.concat(tabOrder.filter(n => names.indexOf(n) < 0));
-      try { localStorage.setItem('attendance.tabOrder', JSON.stringify(full)); } catch (e) {}
-      this.setState({ tabOrder: full, sheetCtx: null, tabFlash: from });
+      try { localStorage.setItem('attendance.tabOrder.' + TK, JSON.stringify(full)); } catch (e) {}
+      this.setState({ tabOrderBy: Object.assign({}, st.tabOrderBy, { [TK]: full }), sheetCtx: null, tabFlash: from });
       clearTimeout(this._tabFlashT); this._tabFlashT = setTimeout(() => this.setState({ tabFlash: null }), 800);
     };
     const sheetTabs = tabsOrd.map(o => {
@@ -2076,7 +2096,7 @@ class Component extends DCLogic {
       const on = i === st.teacher, c = t[3] || PART[t[1]] || ['#EEF1F0', '#3A4450'];
       return {
         name: t[0] + (t[2] ? ' (해임)' : ''), part: t[1], on: on ? 'true' : 'false',
-        pick: () => this.setState({ teacher: i }),
+        pick: () => this.pickTeacher(i),
         chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + (on ? '#FFFFFF' : c[0]) + '; color: ' + c[1],
         style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px 0 8px; border-radius: 999px; font-size: 14px; cursor: pointer; ' +
           (on ? 'background: ' + c[0] + '; border: 1px solid ' + c[1] + '33; color: ' + c[1] + '; font-weight: 600' : 'background: #FFFFFF; border: 1px solid #E1E6E3; color: #5E6873; font-weight: 500') + (t[2] && !on ? '; opacity: 0.55' : '')
