@@ -171,7 +171,11 @@
       known.status = {}; status.forEach(function (e) { known.status[e.id] = e; });
       rawSet('academy.lessonChanges', JSON.stringify(shared));
       rawSet('academy.statusChanges', JSON.stringify(status));
-      document.dispatchEvent(new CustomEvent('academy:data'));
+      // 학원 공통 설정 (메뉴 탭 등). 표(app_settings)가 아직 없으면 이 브라우저 설정을 그대로 쓴다
+      return sb.from('app_settings').select('key,value').then(function (q) {
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); });
+        document.dispatchEvent(new CustomEvent('academy:data'));
+      });
     });
   };
 
@@ -194,6 +198,10 @@
     try {
       if (k === 'academy.lessonChanges') syncList(JSON.parse(v || '[]'), 'shared', saveLesson, 'student_terms');
       else if (k === 'academy.statusChanges') syncList(JSON.parse(v || '[]'), 'status', saveStatus, 'status_changes');
+      else if (k === 'academy.menu') {
+        if (!A.staff || A.staff.role !== 'owner') { toast('메뉴 탭은 원장님만 바꿀 수 있습니다'); return; }
+        sb.from('app_settings').upsert({ key: 'menu', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '메뉴 탭 설정'); });
+      }
     } catch (e) { console.warn(e); }
   };
   function syncList(list, kind, saveFn, table) {

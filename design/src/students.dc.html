@@ -165,7 +165,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.39.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.40.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -270,12 +270,11 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
 
         <section aria-label="수강료" style="{{reg.card}}; grid-column: span 2">
           <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap"><span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #F3E6C4; color: #7A5C12"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 10h18M7 15h4"></path></svg></span>수강료<span style="font-size: 12px; font-weight: 600; color: #8A949E; margin-left: 4px">{{reg.feeNote}}</span></span><span style="flex: 1"></span><sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><sc-if value="{{reg.sched.fee}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{reg.schedOpen.fee}}" title="눌러서 예정 변경 보기·고치기·취소" style="{{reg.schedStyle}}">{{reg.sched.fee}}<span aria-hidden="true" style="font-size: 10px">›</span></button></sc-if><label style="{{reg.applyLbl}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="r_d_fee" type="date" defaultValue="{{reg.dates.fee}}" onChange="{{reg.set.d_fee}}" style="{{reg.applyInp}}"></label></sc-if></div>
-          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
             <label style="{{reg.lbl}}">수강 횟수<span style="{{reg.unitWrap}}"><input disabled="{{reg.lock.fee}}" id="r_count" type="text" inputmode="numeric" defaultValue="{{reg.f.countTxt}}" onInput="{{reg.set.count}}" style="{{reg.numInp}}"><span>회</span></span></label>
             <label style="{{reg.lbl}}">수강 시간<span style="{{reg.unitWrap}}"><input disabled="{{reg.lock.fee}}" id="r_dur" type="text" inputmode="numeric" defaultValue="{{reg.f.durTxt}}" onInput="{{reg.set.dur}}" style="{{reg.numInp}}"><span>분</span></span></label>
             <label style="{{reg.lbl}}">회당 수업료<span style="{{reg.unitWrap}}"><input disabled="{{reg.lock.fee}}" id="r_unit" type="text" inputmode="numeric" defaultValue="{{reg.f.unitTxt}}" onInput="{{reg.set.unit}}" style="{{reg.numInp}}"><span>원</span></span></label>
             <label style="{{reg.lbl}}">수강료 합계<span style="{{reg.unitWrap}}; background: #F2FBFB; border-color: #A9DCDE"><input disabled="{{reg.lock.fee}}" id="r_total" type="text" inputmode="numeric" defaultValue="{{reg.f.totalTxt}}" onInput="{{reg.set.total}}" style="{{reg.numInp}}; font-weight: 800; color: #007E82"><span>원</span></span></label>
-            <label style="{{reg.lbl}}">강사 수당 (회당)<span style="{{reg.unitWrap}}; background: #FBF6E8; border-color: #EAD9A6"><input disabled="{{reg.lock.fee}}" id="r_pay" type="text" inputmode="numeric" defaultValue="{{reg.f.payTxt}}" onInput="{{reg.set.pay}}" style="{{reg.numInp}}; color: #7A5C12"><span>원</span></span></label>
           </div>
         </section>
 
@@ -474,7 +473,6 @@ class Component extends DCLogic {
       { k: 'dur', label: '수강 시간', w: '80px', g: '수강료', f: ['dur'] },
       { k: 'unit', label: '회당 수업료', w: '104px', g: '수강료', f: ['unit'] },
       { k: 'total', label: '수강료 합계', w: '110px', g: '수강료', f: ['total'] },
-      { k: 'pay', label: '강사 수당', w: '96px', g: '수강료', f: ['pay'] },
       { k: 'cash', label: '현금영수증', w: '90px', g: '현금영수증', f: ['cash', 'cashType'] },
       { k: 'restDate', label: '휴원 날짜', w: '96px', g: null },
       { k: 'restReason', label: '휴원 사유', w: '150px', left: true, g: null },
@@ -670,7 +668,7 @@ class Component extends DCLogic {
       ['담당 강사', p => p.teacher], ['수강 과목', p => p.part], ['수업 요일', p => p.day],
       ['수업 시간', p => X(p).times && tTxt(X(p).times)], ['드럼스틱 보관함', p => X(p).stickBox == null ? undefined : X(p).stickBox ? '사용' : '사용 안 함'],
       ['반 구분', p => FL(p).pro == null ? undefined : FL(p).pro ? '전문반' : '취미반'], ['수강 횟수', p => X(p).count == null ? undefined : X(p).count + '회'], ['수강 시간', p => X(p).dur == null ? undefined : X(p).dur + '분'],
-      ['회당 수업료', p => X(p).unit == null ? undefined : won(X(p).unit)], ['수강료 합계', p => X(p).total == null ? undefined : won(X(p).total)], ['강사 수당', p => X(p).pay == null ? undefined : won(X(p).pay)],
+      ['회당 수업료', p => X(p).unit == null ? undefined : won(X(p).unit)], ['수강료 합계', p => X(p).total == null ? undefined : won(X(p).total)],
       ['현금영수증', p => FL(p).cash == null ? undefined : FL(p).cash ? '발급' : '발급 안 함'], ['용도', p => FL(p).cash == null ? undefined : FL(p).cash ? (X(p).cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') : '—'], ['발급 번호', p => X(p).cashNo == null ? undefined : (X(p).cashNo || '—')]
     ];
     return F.map(f => ({ label: f[0], b: f[1](prev || {}), a: f[1](next || {}) }))
@@ -964,6 +962,30 @@ class Component extends DCLogic {
     rows.forEach(r => { const ok = !q || (r.getAttribute('data-s') || '').indexOf(q) >= 0; if (r.getAttribute('data-disp') == null) r.setAttribute('data-disp', r.style.display || ''); r.style.display = ok ? r.getAttribute('data-disp') : 'none'; if (ok) n++; });
     const em = document.getElementById('qEmpty'); if (em) em.style.display = rows.length && !n ? '' : 'none';
   }
+  // 맨 위 메뉴 탭 (모든 페이지 공통): 설정 > 메뉴 탭에서 순서·이름·숨기기·추가·삭제를 정한다.
+  // 이 브라우저에 'academy.menu'로 저장하고, 로그인한 사이트에서는 Supabase(app_settings)와 같이 쓴다.
+  menuItems() {
+    const DEF = [['attendance', '출석부', 'Main.dc.html'], ['students', '수강생대장', 'Students.dc.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['staff', '직원명부', '#'], ['settings', '설정', 'Settings.dc.html']];
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
+    const base = {};
+    DEF.forEach(d => { base[d[0]] = { id: d[0], label: d[1], href: d[2], builtin: true, custom: false, hidden: false }; });
+    const out = [];
+    (Array.isArray(cfg) ? cfg : []).forEach(c => {
+      if (!c || !c.id) return;
+      if (base[c.id]) { out.push(Object.assign({}, base[c.id], { label: c.label || base[c.id].label, hidden: c.id === 'settings' ? false : !!c.hidden })); delete base[c.id]; }
+      else if (c.custom) out.push({ id: c.id, label: c.label || '새 탭', href: '#', builtin: false, custom: true, hidden: !!c.hidden });
+    });
+    DEF.forEach(d => { if (base[d[0]]) out.push(base[d[0]]); });
+    return out;
+  }
+  menuTabs(cur, cnts) {
+    return this.menuItems().filter(t => !t.hidden).map(t => ({
+      label: t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
+      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
+        (t.id === cur ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
+    }));
+  }
   setReg(patch) {
     this.setState({ reg: Object.assign({}, this.state.reg, patch) });
   }
@@ -1068,7 +1090,6 @@ class Component extends DCLogic {
       cashType: ['현금영수증 용도', [['person', '개인 (소득공제)'], ['biz', '사업자 (지출증빙)'], ['none', '발급 안 함']], s => !s.cashOn ? 'none' : ((s.extra || {}).cashType || 'person')],
       unit: ['회당 수업료', uniq(s => s.unit).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.unit],
       total: ['수강료 합계', uniq(s => s.total).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.total],
-      pay: ['강사 수당', uniq(s => s.pay).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.pay],
       time: ['수업 시간', tSlots.map(t => [t, t]).concat(all.some(s => !tOf(s).length) ? [['none', '시간 없음']] : []), s => tOf(s).length ? tOf(s) : ['none']]
     };
     // f: 'auto' 항목은 원생 데이터에 실제로 있는 값으로 선택지를 만든다
@@ -1371,7 +1392,7 @@ class Component extends DCLogic {
             chip: 'display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; flex: none; border-radius: 12px; font-size: 15px; font-weight: 800; background: ' + DAY[x][0] + '; color: ' + DAY[x][1] };
         }),
         feeNote: (R.cls === 'pro' ? '전문반' : '취미반') + ' 기준 기본값',
-        sumLine: R.count + '회 × ' + fmtN(R.unit) + '원 = ' + fmtN(R.total) + '원  ·  1회 ' + (R.dur || 0) + '분  ·  강사 수당 회당 ' + fmtN(R.pay) + '원 (총 ' + fmtN(R.pay * R.count) + '원)',
+        sumLine: R.count + '회 × ' + fmtN(R.unit) + '원 = ' + fmtN(R.total) + '원  ·  1회 ' + (R.dur || 0) + '분',
         card: 'display: flex; flex-direction: column; gap: 18px; padding: 22px 24px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3E8E5; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.04)',
         secIcon: 'width: 32px; height: 32px; flex: none; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center',
         cashOn: !!R.cash,
@@ -1415,11 +1436,7 @@ class Component extends DCLogic {
           (on ? 'background: ' + x[3] + '; color: ' + x[4] + '; border: 2px solid ' + x[2] + '; font-weight: 800' : 'background: #FFFFFF; color: #5E6873; border: 1px solid #E1E6E3; font-weight: 600')
       };
     });
-    const tabs = [['수강생대장', cnt('act') + '명', 'Students.dc.html'], ['출석부', '', 'Main.dc.html'], ['수입·지출', '', '#'], ['통계', '', '#'], ['직원명부', '', '#']].map(t => ({
-      label: t[0], cnt: t[1], href: t[2],
-      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
-        (t[0] === '수강생대장' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
-    }));
+    const tabs = this.menuTabs('students', { students: cnt('act') + '명' });
     return {
       q: st.q, tabs: tabs, stats: stats, cur: cur, flt: flt, colsCfg: colsCfg, headCols: headCols.slice(0, nMain), xHeads: headCols.slice(nMain),
       tableMin: 'min-width: ' + minW + 'px',

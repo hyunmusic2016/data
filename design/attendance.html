@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.39.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.40.0</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -227,7 +227,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span style="font-size: 16px; font-weight: 800; color: #17201C">수강료</span>
           <span style="font-size: 12px; font-weight: 600; color: #8A949E">이번 수납에만 적용</span>
         </div>
-        <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px">
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
           <sc-for list="{{pv.fees}}" as="x" hint-placeholder-count="5">
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873; min-width: 0">{{x.label}}<span style="{{x.wrap}}"><input id="{{x.id}}" type="text" inputmode="numeric" defaultValue="{{x.val}}" onInput="{{x.set}}" style="{{x.inp}}"><span>{{x.unit}}</span></span></label>
           </sc-for>
@@ -840,6 +840,30 @@ class Component extends DCLogic {
       try { const p = Math.max(0, (n.value || '').length - fromEnd); n.setSelectionRange(p, p); } catch (x) {}
     }, 0);
   }
+  // 맨 위 메뉴 탭 (모든 페이지 공통): 설정 > 메뉴 탭에서 순서·이름·숨기기·추가·삭제를 정한다.
+  // 이 브라우저에 'academy.menu'로 저장하고, 로그인한 사이트에서는 Supabase(app_settings)와 같이 쓴다.
+  menuItems() {
+    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['staff', '직원명부', '#'], ['settings', '설정', 'settings.html']];
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
+    const base = {};
+    DEF.forEach(d => { base[d[0]] = { id: d[0], label: d[1], href: d[2], builtin: true, custom: false, hidden: false }; });
+    const out = [];
+    (Array.isArray(cfg) ? cfg : []).forEach(c => {
+      if (!c || !c.id) return;
+      if (base[c.id]) { out.push(Object.assign({}, base[c.id], { label: c.label || base[c.id].label, hidden: c.id === 'settings' ? false : !!c.hidden })); delete base[c.id]; }
+      else if (c.custom) out.push({ id: c.id, label: c.label || '새 탭', href: '#', builtin: false, custom: true, hidden: !!c.hidden });
+    });
+    DEF.forEach(d => { if (base[d[0]]) out.push(base[d[0]]); });
+    return out;
+  }
+  menuTabs(cur, cnts) {
+    return this.menuItems().filter(t => !t.hidden).map(t => ({
+      label: t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
+      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
+        (t.id === cur ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
+    }));
+  }
   stuInfo(name) {
     try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); return (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) { return null; }
   }
@@ -885,7 +909,7 @@ class Component extends DCLogic {
   savePay() {
     const P = this.state.pay;
     if (!P) return;
-    const rec = { name: P.name, date: P.date, amount: P.total, count: P.count, dur: P.dur, unit: P.unit, total: P.total, pay: P.pay, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher };
+    const rec = { name: P.name, date: P.date, amount: P.total, count: P.count, dur: P.dur, unit: P.unit, total: P.total, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher };
     if (P.umode) {
       // 미납금액 수납 (휴원·퇴원 원생): 그 달 안의 날짜면 그 날짜 칸에 빨간 ₩, 다음 달 이후면 칸에는 표시하지 않고 수강권 칸에 '미납금액 수납완료 (날짜)'
       const mm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(P.date || '');
@@ -1643,11 +1667,7 @@ class Component extends DCLogic {
       };
     });
 
-    const tabs = [['수강생대장', '19명', 'students.html'], ['출석부', '', 'attendance.html'], ['수입·지출', '', '#'], ['통계', '', '#'], ['직원명부', '', '#']].map(t => ({
-      label: t[0], cnt: t[1], href: t[2],
-      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
-        (t[0] === '출석부' ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
-    }));
+    const tabs = this.menuTabs('attendance');
 
     const DOTC = { '월': '#FFFFFF', '화': '#FFFFFF', '수': '#FFFFFF', '목': '#FFFFFF', '금': '#FFFFFF', '토': '#FFFFFF', 'R': '#E8B04B' };
     const headGroups = ['월', '화', '수', '목', '금', '토', 'R'].map(g => {
@@ -1953,8 +1973,7 @@ class Component extends DCLogic {
               { label: '수강 횟수', id: 'pay_count', val: won(P.count), unit: '회', wrap: W, inp: I, set: e => { this.keepCaret(e); const c = num(e.target.value); upd({ count: c, total: c * P.unit }); } },
               { label: '수강 시간', id: 'pay_dur', val: won(P.dur), unit: '분', wrap: W, inp: I, set: e => { Object.assign(P, { dur: num(e.target.value) }); } },
               { label: '회당 수업료', id: 'pay_unit', val: won(P.unit), unit: '원', wrap: W, inp: I, set: e => { this.keepCaret(e); const u = num(e.target.value); upd({ unit: u, pay: Math.round(u * 0.5), total: u * P.count }); } },
-              { label: '수강료 합계', id: 'pay_total', val: won(P.total), unit: '원', wrap: W + '; background: #F2FBFB; border-color: #A9DCDE', inp: I + '; font-weight: 800; color: #007E82', set: e => { this.keepCaret(e); const t = num(e.target.value); const u = P.count ? Math.round(t / P.count) : P.unit; upd({ total: t, unit: u, pay: Math.round(u * 0.5) }); } },
-              { label: '강사 수당 (회당)', id: 'pay_pay', val: won(P.pay), unit: '원', wrap: W + '; background: #FBF6E8; border-color: #EAD9A6', inp: I + '; color: #7A5C12', set: e => { Object.assign(P, { pay: num(e.target.value) }); } }
+              { label: '수강료 합계', id: 'pay_total', val: won(P.total), unit: '원', wrap: W + '; background: #F2FBFB; border-color: #A9DCDE', inp: I + '; font-weight: 800; color: #007E82', set: e => { this.keepCaret(e); const t = num(e.target.value); const u = P.count ? Math.round(t / P.count) : P.unit; upd({ total: t, unit: u, pay: Math.round(u * 0.5) }); } }
             ];
           })(),
           cashOn: P.cash,
