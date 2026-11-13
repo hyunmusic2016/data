@@ -94,7 +94,7 @@
     });
   }
   function rerender() { try { if (typeof comp !== 'undefined' && comp && comp.setState) comp.setState({}); } catch (e) {} }
-  function clearCache() { try { sessionStorage.removeItem('academy.cache'); } catch (e) {} }
+  function clearCache() { try { localStorage.removeItem('academy.cache'); } catch (e) {} }
   A.check = check;
 
 
@@ -178,8 +178,8 @@
       // 학원 공통 설정 (메뉴 탭 등). 표(app_settings)가 아직 없으면 이 브라우저 설정을 그대로 쓴다
       return sb.from('app_settings').select('key,value').then(function (q) {
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); });
-        // 탭을 옮길 때 로그인·불러오기 화면이 번쩍이지 않도록 이 탭(창)에만 잠깐 저장 (창을 닫으면 지워짐)
-        try { sessionStorage.setItem('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (e) {}
+        // 탭을 옮기거나 새 창으로 열 때 로그인·불러오기 화면이 번쩍이지 않도록 이 브라우저에 저장 (로그아웃·로그인 만료면 지움)
+        try { rawSet('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (e) {}
         document.dispatchEvent(new CustomEvent('academy:data'));
       });
     });
@@ -307,7 +307,7 @@
   var TOKEN_KEY = 'sb-' + URL.replace(/^https:\/\//, '').split('.')[0] + '-auth-token';
   (function restore() {
     var c = null;
-    try { if (localStorage.getItem(TOKEN_KEY)) c = JSON.parse(sessionStorage.getItem('academy.cache') || 'null'); } catch (e) {}
+    try { if (localStorage.getItem(TOKEN_KEY)) c = JSON.parse(localStorage.getItem('academy.cache') || 'null'); } catch (e) {}
     if (!c || !c.data || !c.staff) return;
     A.data = c.data; A.staff = c.staff; A.ready = true; A.fromCache = true;
     var idx = function (k) { var o = {}; try { (JSON.parse(localStorage.getItem(k) || '[]') || []).forEach(function (e) { o[e.id] = e; }); } catch (e) {} return o; };
