@@ -236,8 +236,10 @@
   }
   // 직원명부·수강과목: 새 줄은 insert(번호를 받아 id를 바꿔 둠), 바뀐 줄은 update, 빠진 줄은 delete
   function idxList(list) { var o = {}; (list || []).forEach(function (e) { o[e.id] = JSON.stringify(e); }); return o; }
-  function empFromRow(r) { return { id: 'E' + r.id, seq: r.seq, role: r.role, titles: r.titles && r.titles.length ? r.titles : [r.role], name: r.name, phone: r.phone || '', addr: r.addr || '', duty: r.duty || '', email: r.email || '', subjects: r.subjects || [], tab: r.tab !== false, hire: r.hire_date || '', leave: r.leave_date || '', leaveReason: r.leave_reason || '', memo: r.memo || '', linked: !!r.user_id }; }
-  function empToRow(e) { return { seq: e.seq, role: e.role, titles: e.titles || [e.role], name: e.name, phone: e.phone || null, addr: e.addr || null, duty: e.duty || null, email: e.email || null, subjects: e.subjects || [], tab: e.tab !== false, hire_date: e.hire || null, leave_date: e.leave || null, leave_reason: e.leaveReason || null, memo: e.memo || null }; }
+  // 관리자 권한 칸(admin)은 006 SQL을 실행해야 생긴다. 칸이 없으면 보내지 않음 (실행 전에도 직원 저장이 되게)
+  var hasAdminCol = false;
+  function empFromRow(r) { if (r && 'admin' in r) hasAdminCol = true; return { id: 'E' + r.id, seq: r.seq, role: r.role, titles: r.titles && r.titles.length ? r.titles : [r.role], name: r.name, phone: r.phone || '', addr: r.addr || '', duty: r.duty || '', email: r.email || '', subjects: r.subjects || [], tab: r.tab !== false, hire: r.hire_date || '', leave: r.leave_date || '', leaveReason: r.leave_reason || '', memo: r.memo || '', admin: !!r.admin, linked: !!r.user_id }; }
+  function empToRow(e) { var o = { seq: e.seq, role: e.role, titles: e.titles || [e.role], name: e.name, phone: e.phone || null, addr: e.addr || null, duty: e.duty || null, email: e.email || null, subjects: e.subjects || [], tab: e.tab !== false, hire_date: e.hire || null, leave_date: e.leave || null, leave_reason: e.leaveReason || null, memo: e.memo || null }; if (hasAdminCol) o.admin = !!e.admin; else if (e.admin) toast('관리자 권한을 저장하려면 Supabase에서 006 SQL을 먼저 실행해 주세요'); return o; }
   var pending = {};
   function syncRows(list, kind, table, P, toRow, key) {
     if (!A.staff || A.staff.role !== 'owner') { toast('원장님만 바꿀 수 있습니다'); return; }
