@@ -155,7 +155,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.40.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.40.1</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -737,6 +737,9 @@ class Component extends DCLogic {
   componentDidMount() {
     this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); };
     window.addEventListener('storage', this._st);
+    // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
+    this._dbl = () => this.setState({ shared: this.readShared(), statusList: this.readStatus() });
+    document.addEventListener('academy:data', this._dbl);
     this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
     this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
     window.addEventListener('beforeprint', this._bp);

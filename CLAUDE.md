@@ -67,6 +67,7 @@
 - 연결 정보: Project URL `https://aooohoacxbpsmfbjhphi.supabase.co`, 공개 키 `sb_publishable_PwAydZuvV3RLHhRcN3yL9g_JFZu5vDs` (공개돼도 되는 키). `design/db.js`에 있고, GitHub 페이지(attendance.html·students.html)는 head에서 supabase-js@2.45.4(jsdelivr)와 db.js를 불러온다. 들어오면 로그인 화면이 먼저 뜨고, staff 표에 있는 활성 직원만 통과(오른쪽 위에 이름·로그아웃). claude.ai 시안 페이지는 연결하지 않고 샘플(브라우저 저장)로 계속 둔다.
 - 진행 단계: ① 표·보안 규칙 만들기(완료) ② 로그인 화면(완료) ③ 원장님 계정·직원 등록(완료: 원장님 김도윤, 시험용 test@test.com '테스트 강사님' — 실제 데이터 넣기 전에 지울 것) ④ 샘플 원생 27명을 DB에 넣고 수강생대장이 DB에서 읽고 쓰기(완료, v0.39.0) ⑤ 출결·수납·레슨시작일 예정을 DB에 저장 + 출석부 원생 줄을 DB 원생으로 만들기 ⑥ 실제 데이터로 전환.
 - 연결 방식 (`design/db.js`): 로그인 → 데이터 불러오기('불러오는 중…') → 화면 표시. 원생 목록은 `academy.data.students`(students + 처음 student_terms 값을 수강생대장 모양으로), 수강료·현금영수증 날짜별 변경은 수강생대장 hist(hid 'T'+term id), 수업 정보 날짜별 변경은 localStorage 'academy.lessonChanges'(출석부 모양, value에 `_prev`), 휴원·퇴원·복귀는 'academy.statusChanges'로 채운다. 화면이 이 두 localStorage 키에 쓰면 db.js가 가로채서 새 항목은 insert, 빠진 항목은 delete. 수강생대장 새 등록·수정·예정 취소·변경 기록은 `academy.addStudent / saveEdit / deleteTerm / logEvent`로 저장. student_terms 값 모양: lesson = {days:['월'], times:{'월':'15:30'}, stick, teacher(이름), part}, fee = {flags:{pro}, extra:{count,dur,unit,pay,total}}, cash = {flags:{cash}, extra:{cashType,cashNo}}. 저장 실패 시 화면 아래 빨간 알림.
+- 페이지를 옮길 때 로그인 화면이 번쩍이지 않게: 불러온 데이터를 그 창(탭)의 sessionStorage 'academy.cache'에 잠깐 저장하고, 로그인 상태면 다음 페이지는 이 데이터로 바로 보여 준 뒤 뒤에서 확인·새로 불러온다(로그아웃·창 닫기·세션 만료면 지움). 처음 들어올 때는 로그인 칸 대신 '불러오는 중…'을 먼저 보이고, 로그인이 필요할 때만 로그인 칸을 보인다.
 - 원생 목록: GitHub 페이지(로그인)에서는 DB, claude.ai 시안에서는 `sampleStudents()` 샘플. 출석부는 아직 샘플 원생 줄(이름으로 맞춤)이라 DB의 휴원·퇴원 기록이 같은 이름 원생에 반영된다.
 - 프로젝트 지역: 서울(Northeast Asia (Seoul)). 만들 때 설정: GitHub 연결 안 함, Enable Data API 켬, Automatically expose new tables 끔(권한은 schema.sql에서 authenticated에게만 직접 줌, anon은 아무 권한 없음), Enable automatic RLS 켬.
 
@@ -189,5 +190,5 @@
 - **글자 입력칸 규칙 (모든 페이지, 맥·윈도우 공통):** 글자를 칠 때마다 화면을 다시 그리지 않는다 (다시 그리면 커서가 풀리고 한글이 자음·모음으로 따로 들어감). 글자 칸은 값만 기억하고(저장 버튼을 누를 때 사용), 다른 칸이 같이 바뀌어야 하는 숫자 칸(수강 횟수·회당 수업료·합계 등)만 다시 그린 뒤 커서 자리를 되살린다(keepCaret). 검색칸은 치는 동안 화면을 다시 그리지 않고 표의 줄만 바로 숨기거나 보이게 하고검색칸에서 나가거나 Enter를 누르면 검색어를 저장해 인쇄·내보내기에 반영한다 (조합이 끝날 때 다시 그리는 방식은 맥에서 다음 글자 조합을 깨뜨려 쓰지 않음). 입력칸에는 id를 꼭 붙인다.
 
 ## 버전
-- 버전은 페이지마다 따로 두지 않고 프로그램 전체에 하나로 통합한다. 현재 `v0.40.0`. 모든 페이지에 같은 번호를 표시한다 (출석부: 시트 탭 줄 오른쪽 끝, 수강생대장: 맨 아래 오른쪽).
+- 버전은 페이지마다 따로 두지 않고 프로그램 전체에 하나로 통합한다. 현재 `v0.40.1`. 모든 페이지에 같은 번호를 표시한다 (출석부: 시트 탭 줄 오른쪽 끝, 수강생대장: 맨 아래 오른쪽).
 - 화면을 수정해 올릴 때마다 버전을 올린다: 작은 수정은 마지막 숫자(v0.1.1), 기능 추가는 가운데 숫자(v0.2.0).

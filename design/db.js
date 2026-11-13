@@ -69,28 +69,32 @@
     if (!u) {
       u = el('<div id="acUser"><span id="acUserName"></span><button type="button" id="acOut">로그아웃</button></div>');
       document.body.appendChild(u);
-      document.getElementById('acOut').addEventListener('click', function () { sb.auth.signOut().then(function () { location.reload(); }); });
+      document.getElementById('acOut').addEventListener('click', function () { clearCache(); sb.auth.signOut().then(function () { location.reload(); }); });
     }
     document.getElementById('acUserName').innerHTML = '<b>' + st.name + '</b> ' + (st.title || '');
   }
 
-  function check() {
+  // quiet: 페이지를 옮길 때처럼 저장해 둔 데이터로 이미 화면을 보여 준 경우, 가리지 않고 뒤에서 새로 불러온다
+  function check(quiet) {
     return sb.auth.getSession().then(function (r) {
       var s = r.data && r.data.session;
-      if (!s) { showLogin(); return null; }
+      if (!s) { clearCache(); loading(false); showLogin(); return null; }
       return sb.from('staff').select('*').eq('id', s.user.id).maybeSingle().then(function (q) {
-        if (!q.data || !q.data.active) { sb.auth.signOut(); showLogin('직원 명단에 등록되지 않은 계정입니다. 원장님께 등록을 요청하세요.'); return null; }
+        if (!q.data || !q.data.active) { clearCache(); sb.auth.signOut(); loading(false); showLogin('직원 명단에 등록되지 않은 계정입니다. 원장님께 등록을 요청하세요.'); return null; }
         A.staff = q.data; A.ready = true;
         showUser(q.data);
-        loading(true);
+        if (!quiet) loading(true);
         return A.load().then(function () {
-          loading(false); hideLogin();
+          if (!quiet) { loading(false); hideLogin(); }
+          rerender();
           document.dispatchEvent(new CustomEvent('academy:login', { detail: q.data }));
           return q.data;
         }, function (e) { loading(false); showLogin('데이터를 불러오지 못했습니다. 새로고침해 주세요.'); console.warn(e); });
       });
     });
   }
+  function rerender() { try { if (typeof comp !== 'undefined' && comp && comp.setState) comp.setState({}); } catch (e) {} }
+  function clearCache() { try { sessionStorage.removeItem('academy.cache'); } catch (e) {} }
   A.check = check;
 
 
@@ -174,6 +178,8 @@
       // 학원 공통 설정 (메뉴 탭 등). 표(app_settings)가 아직 없으면 이 브라우저 설정을 그대로 쓴다
       return sb.from('app_settings').select('key,value').then(function (q) {
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); });
+        // 탭을 옮길 때 로그인·불러오기 화면이 번쩍이지 않도록 이 탭(창)에만 잠깐 저장 (창을 닫으면 지워짐)
+        try { sessionStorage.setItem('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (e) {}
         document.dispatchEvent(new CustomEvent('academy:data'));
       });
     });
@@ -297,9 +303,20 @@
     });
   };
 
+  // 페이지를 옮길 때: 로그인되어 있고 이 창에 저장해 둔 데이터가 있으면 바로 보여 주고, 뒤에서 확인·새로 불러오기
+  var TOKEN_KEY = 'sb-' + URL.replace(/^https:\/\//, '').split('.')[0] + '-auth-token';
+  (function restore() {
+    var c = null;
+    try { if (localStorage.getItem(TOKEN_KEY)) c = JSON.parse(sessionStorage.getItem('academy.cache') || 'null'); } catch (e) {}
+    if (!c || !c.data || !c.staff) return;
+    A.data = c.data; A.staff = c.staff; A.ready = true; A.fromCache = true;
+    var idx = function (k) { var o = {}; try { (JSON.parse(localStorage.getItem(k) || '[]') || []).forEach(function (e) { o[e.id] = e; }); } catch (e) {} return o; };
+    known.shared = idx('academy.lessonChanges'); known.status = idx('academy.statusChanges');
+  })();
   function start() {
     var st = document.createElement('style'); st.textContent = css; document.head.appendChild(st);
-    showLogin();            // 확인이 끝날 때까지 화면을 가린다
+    if (A.fromCache) { showUser(A.staff); check(true); return; }
+    showLogin(); loading(true);   // 확인이 끝날 때까지 화면을 가린다 (로그인 칸은 로그인이 필요할 때만)
     check();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
