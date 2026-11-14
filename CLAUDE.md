@@ -7,7 +7,7 @@
 - **claude.ai 시안(Artifact) 올리기는 원장님이 말할 때만** 한다. 평소에는 GitHub에만 올린다(커밋·푸시하면 사이트 https://hyunmusic2016.github.io/data/ 에 반영). 시안을 올릴 때는 design/src/*.dc.html을 project/Main.dc.html(출석부)·Students.dc.html·Settings.dc.html 이름으로 올린다(Artifact https://claude.ai/artifact/NB6nBbYThemaXQt1Eci9WC).
 - **시험은 바꾼 부분만** Playwright로 짧게(오프라인: db.js·supabase-js·xlsx 등은 빈 파일로 막고 file:// 로 열기). 큰 변경일 때만 출결·수납 기본 동작까지 확인.
 - 원장님이 요청을 여러 개 모아 주시면 한 번에 고치고 한 번만 올린다.
-- 버전: 프로그램 전체 하나, 모든 페이지에 표시. 작은 수정은 끝자리, 기능 추가는 가운데 자리. **현재 `v0.54.3`**. db.js를 고치면 세 페이지 head의 `db.js?v=` 숫자도 올린다(GitHub 페이지 캐시 때문).
+- 버전: 프로그램 전체 하나, 모든 페이지에 표시. 작은 수정은 끝자리, 기능 추가는 가운데 자리. **현재 `v0.54.4`**. db.js를 고치면 세 페이지 head의 `db.js?v=` 숫자도 올린다(GitHub 페이지 캐시 때문).
 - 커밋 메시지 끝에 정해진 Co-Authored-By/Claude-Session 줄을 붙인다(시스템 안내대로).
 - 이 메모도 짧게 유지한다. 새 규칙은 해당 항목을 고쳐 쓰고, '예전엔 ~' 같은 설명은 붙이지 않는다.
 

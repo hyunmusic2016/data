@@ -167,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.54.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.54.4</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1471,7 +1471,7 @@ class Component extends DCLogic {
         f: { note: R.note || '', name: R.name, guardian: R.guardian, phone: R.phone, gphone: R.gphone, birth: R.birth, addr: R.addr, countTxt: fmtN(R.count), durTxt: fmtN(R.dur), unitTxt: fmtN(R.unit), payTxt: fmtN(R.pay), totalTxt: fmtN(R.total), cashNo: R.cashNo, join: R.join },
         close: () => this.setState({ reg: null }),
         save: () => this.saveReg(),
-        classes: [['hobby', '취미반'], ['pro', '전문반']].map(o => ({ label: o[1], on: R.cls === o[0] ? 'true' : 'false', pick: () => this.setReg(Object.assign({ cls: o[0] }, this.regDefaults(o[0]))),
+        classes: [['hobby', '취미반'], ['pro', '전문반']].map(o => ({ label: o[1], on: R.cls === o[0] ? 'true' : 'false', pick: () => { if (o[0] === 'pro' && R.cls === 'hobby' && R.editId != null && !confirm('취미반에서 전문반으로 변경하시겠습니까?\n수강료가 전문반 기본값으로 바뀝니다.')) return; this.setReg(Object.assign({ cls: o[0] }, this.regDefaults(o[0]))); },
           style: 'height: 40px; padding: 0 22px; border: none; border-radius: 10px; font-family: inherit; font-size: 15px; cursor: pointer; ' + (R.cls === o[0] ? (o[0] === 'pro' ? 'background: #FFFFFF; color: #C8323C; font-weight: 600; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)' : 'background: #FFFFFF; color: #007E82; font-weight: 600; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)') : 'background: transparent; color: #5E6873; font-weight: 500') })),
         genders: ['남', '여'].map(g => ropt(g, R.gender === g, () => this.setReg({ gender: g }))),
         ages: ['학생', '성인'].map(g => ropt(g, R.age === g, () => this.setReg({ age: g }), AGE[g])),
