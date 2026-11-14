@@ -160,9 +160,9 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <section aria-label="업무일지" data-exp="1" class="shellsec" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; overflow: clip; display: flex; flex-direction: column; min-height: 0">
       <div style="display: grid; border-bottom: 1px solid #EBEEEC"><span style="{{hd.bar}}"><span style="{{hd.titleBox}}"><span style="{{hd.logo}}"><sc-if value="{{hd.isAtt}}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"></path></svg></sc-if><sc-if value="{{hd.isClass}}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"></path><path d="M8 9h8M8 13h6"></path></svg></sc-if><sc-if value="{{hd.isWork}}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3H9z"></path><path d="M7 5H5v16h14V5h-2M9 12l2 2 4-4"></path></svg></sc-if></span><span style="{{c.titleText}}">{{hd.title}}</span><span style="{{c.divider}}"></span><span style="{{c.month}}">{{monthLabel}}</span></span><span style="flex: 1 1 auto"></span><span class="noexp noprint" style="display: flex; align-items: center; gap: 8px; padding: 0 16px"><sc-for list="{{hd.nav}}" as="n" hint-placeholder-count="2"><button type="button" onClick="{{n.go}}" aria-label="{{n.label}}로 가기" style="{{n.style}}"><span style="{{n.icon}}"><sc-if value="{{n.isAtt}}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4M9 15l2 2 4-4"></path></svg></sc-if><sc-if value="{{n.isClass}}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"></path><path d="M8 9h8M8 13h6"></path></svg></sc-if><sc-if value="{{n.isWork}}" hint-placeholder-val="{{ false }}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4h6v3H9z"></path><path d="M7 5H5v16h14V5h-2M9 12l2 2 4-4"></path></svg></sc-if></span>{{n.label}}</button></sc-for></span><span style="{{hd.lesson}}"><span style="font-size: 12px; color: #5E6873">레슨횟수 <b style="font-weight: 600; color: #17201C">{{lessonCount}}</b></span><span style="display: flex; align-items: center; gap: 6px"><span title="취미반" style="display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: #E2F1EA; color: #1F7A5A; font-size: 15px; font-weight: 600">{{lessonHobby}}</span><span title="전문반" style="display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: #FCE4E6; color: #C8323C; font-size: 15px; font-weight: 600">{{lessonPro}}</span></span></span><span style="{{hd.count}}"><span style="font-size: 12px; color: #5E6873">재원</span><span style="font-size: 18px; font-weight: 600; color: #1F7A5A">{{headCount}}명</span></span><span style="{{hd.teacher}}"><span style="{{teacherAvatar}}">{{teacherInitial}}</span><span style="display: flex; flex-direction: column; line-height: 1.25"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{teacherName}}</span><span style="font-size: 11px; color: #5E6873">{{teacherPart}}</span></span></span></span></div>
       <div id="wlScroll" class="shellscroll" style="overflow: auto; flex: 1 1 auto; min-height: 0">
-        <div style="display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)) minmax(200px, 1.3fr); min-width: 980px; border-left: 1px solid #EBEEEC">
-          <div style="{{lg.w.memoBox}}"><textarea id="wl_memo" class="wltxt" aria-label="이 달 메모" onBlur="{{lg.w.saveMemo}}" placeholder="이 달 메모" style="flex: 1 1 auto; width: 100%; box-sizing: border-box; padding: 10px 12px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{lg.w.memo}}</textarea></div>
-          <sc-for list="{{lg.w.heads}}" as="h" hint-placeholder-count="7"><span style="{{h.style}}">{{h.label}}</span></sc-for>
+        <div style="display: flex; align-items: stretch; gap: 16px; min-width: 1060px; padding: 16px; box-sizing: border-box">
+        <div style="flex: 1 1 auto; min-width: 0; display: grid; grid-template-columns: repeat(6, minmax(130px, 1fr)); border-left: 1px solid #EBEEEC; border-top: 1px solid #EBEEEC; border-radius: 12px; overflow: clip">
+          <sc-for list="{{lg.w.heads}}" as="h" hint-placeholder-count="6"><span style="{{h.style}}">{{h.label}}</span></sc-for>
           <sc-for list="{{lg.w.cells}}" as="d" hint-placeholder-count="35">
             <div style="{{d.box}}">
               <span style="{{d.numStyle}}">{{d.d}}</span>
@@ -170,6 +170,14 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             </div>
           </sc-for>
         </div>
+        <div style="flex: 0 0 260px; display: flex; flex-direction: column; border: 1px solid #EBEEEC; border-radius: 12px; overflow: clip; background: #FFFDF5">
+          <div style="position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 10px 0 14px; box-sizing: border-box; background: #FFF8E1; border-bottom: 1px solid #DDE2DF">
+            <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: #8A6400">MEMO</span>
+            <span style="flex: 1 1 auto"></span>
+            <sc-if value="{{lg.w.memoMsg}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" style="font-size: 11px; font-weight: 600; color: #2F6B43; white-space: nowrap">{{lg.w.memoMsg}}</span></sc-if>
+            <button type="button" class="noexp noprint" onClick="{{lg.w.moveMemo}}" title="이 메모를 다음 달 메모에 이어 붙입니다" style="height: 28px; padding: 0 10px; border: 1px solid #E6D6A8; border-radius: 8px; background: #FFFFFF; color: #7A5C12; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap">다음 달로 넘기기 ›</button>
+          </div>
+          <textarea id="wl_memo" class="wltxt" aria-label="메모" onBlur="{{lg.w.saveMemo}}" style="flex: 1 1 auto; width: 100%; box-sizing: border-box; padding: 10px 12px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{lg.w.memo}}</textarea></div>
       </div>
     </section>
     </sc-if>
@@ -201,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.2</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -713,6 +721,18 @@ class Component extends DCLogic {
     if (v) LOG[ym] = v; else delete LOG[ym];
     try { localStorage.setItem('academy.workMemo', JSON.stringify(LOG)); } catch (e) {}
   }
+  // 메모를 다음 달 메모에 이어 붙인다(이번 달 메모는 그대로 둠, 같은 글이 이미 있으면 다시 붙이지 않음)
+  moveWorkMemo(m) {
+    const el = document.getElementById('wl_memo');
+    if (el) this.saveWorkMemo(m, el.value);
+    const cur = this.workMemo(m).trim();
+    if (!cur) { this.setState({ wlMemoMsg: { m: m, t: '넘길 메모가 없어요' } }); return; }
+    const LOG = this.readLog('academy.workMemo', {});
+    const nk = m >= 12 ? '2027-01' : this.ymOf(m + 1), nm = m >= 12 ? 1 : m + 1;
+    const nx = typeof LOG[nk] === 'string' ? LOG[nk] : '';
+    if (nx.indexOf(cur) < 0) { LOG[nk] = nx ? nx.replace(/\s+$/, '') + '\n\n' + cur : cur; try { localStorage.setItem('academy.workMemo', JSON.stringify(LOG)); } catch (e) {} }
+    this.setState({ wlMemoMsg: { m: m, t: nm + '월로 넘겼어요' } });
+  }
   workLogVals(m) {
     // 월~토 6칸(일요일 없음) + 맨 오른쪽 세로로 긴 MEMO 칸
     const nd = new Date(2026, m, 0).getDate(), off = (new Date(2026, m - 1, 1).getDay() + 6) % 7;
@@ -738,7 +758,8 @@ class Component extends DCLogic {
     }
     return { cells: cells, total: Object.keys(D).length, memo: this.workMemo(m),
       saveMemo: e => this.saveWorkMemo(m, e.target.value),
-      memoBox: 'grid-column: 7; grid-row: 2 / span ' + Math.max(1, rows) + '; display: flex; flex-direction: column; border-right: 1px solid #EBEEEC; border-bottom: 1px solid #EBEEEC; background: #FFFDF5' };
+      moveMemo: () => this.moveWorkMemo(m),
+      memoMsg: (this.state.wlMemoMsg && this.state.wlMemoMsg.m === m) ? this.state.wlMemoMsg.t : '' };
   }
   writerName() { const A = window.academy; if (A && A.staff && A.staff.name) return A.staff.name; return String(this.tKey() || '').replace(' 원장님', ''); }
   saveClassNote(clear) {
@@ -2253,7 +2274,7 @@ class Component extends DCLogic {
     const lg = { isClass: st.logView === 'class' && this.logAllow().cls, isWork: st.logView === 'work' && this.logAllow().work, teacher: String(this.tKey() || '') };
     if (lg.isClass) { const C = this.classLogVals(lgM); C.headsS = C.heads.map((h, i) => Object.assign({}, h, { style: C.headStyles[i] })); lg.c = C; } else lg.c = { groups: [], heads: [], headsS: [] };
     lg.w = lg.isWork ? this.workLogVals(lgM) : { cells: [] };
-    lg.w.heads = ['월', '화', '수', '목', '금', '토', 'MEMO'].map((x, i) => ({ label: x, style: 'position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center; height: 42px; background: ' + (i === 6 ? '#FFF8E1' : '#F4F6F5') + '; border-right: 1px solid #EBEEEC; border-bottom: 1px solid #DDE2DF; font-size: ' + (i === 6 ? 15 : 17) + 'px; font-weight: 700; letter-spacing: ' + (i === 6 ? '0.08em' : '0') + '; color: ' + (i === 5 ? '#2952A3' : i === 6 ? '#8A6400' : '#3A4450') }));
+    lg.w.heads = ['월', '화', '수', '목', '금', '토'].map((x, i) => ({ label: x, style: 'position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center; height: 42px; background: ' + (i === 6 ? '#FFF8E1' : '#F4F6F5') + '; border-right: 1px solid #EBEEEC; border-bottom: 1px solid #DDE2DF; font-size: ' + (i === 6 ? 15 : 17) + 'px; font-weight: 700; letter-spacing: ' + (i === 6 ? '0.08em' : '0') + '; color: ' + (i === 5 ? '#2952A3' : i === 6 ? '#8A6400' : '#3A4450') }));
     const CE = st.clEd, WE = st.wlEd;
     const keepW = () => { const g = id => { const e = document.getElementById(id); return e ? e.value : undefined; }; const o = {}; const t = g('wl_text'), b = g('wl_by'), d = g('wl_date'); if (t !== undefined) o.text = t; if (b !== undefined) o.by = b; if (d) { const mm = /^2026-(\d{2})-(\d{2})$/.exec(d); if (mm) o.date0 = d; } return o; };
     const keepCl = () => { const e = document.getElementById('cl_note'); return e ? { note: e.value } : {}; };
