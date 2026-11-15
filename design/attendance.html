@@ -213,7 +213,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.5</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1850,7 +1850,7 @@ class Component extends DCLogic {
       const w = (d - 1 + FIRST) % 7;
       // 날짜 아래에 요일(월 화 수 …)
       const s = 'width: 26px; height: 36px; border-radius: 7px; display: inline-flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; font-size: 12px; line-height: 1; font-weight: 600; ';
-      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, style: s + (d === TODAY ? 'background: #D5DBD8; color: ' + INK + '; font-weight: 600' : w === 0 ? 'background: #FDE8E7; color: #D92D20' : w === 6 ? 'background: #E3ECFD; color: #2563EB' : 'color: #3A4450') });
+      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, style: s + (d === TODAY ? 'background: #D5DBD8; ' : w === 0 ? 'background: #FDE8E7; ' : w === 6 ? 'background: #E3ECFD; ' : 'background: transparent; ') + 'color: ' + (w === 0 ? '#D92D20' : w === 6 ? '#2563EB' : d === TODAY ? INK : '#3A4450') });
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0;
