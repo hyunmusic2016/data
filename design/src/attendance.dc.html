@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.55.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1279,8 +1279,61 @@ class Component extends DCLogic {
     });
     document.addEventListener('mouseup', () => { drag = null; });
   }
+  // 글자 입력칸 공통: 처음 눌렀을 때 글자 전체 선택(커서는 맨 뒤) + 칸 안 오른쪽 X 버튼으로 지우기
+  installTextInputs() {
+    if (window.__txIn) return; window.__txIn = 1;
+    const OK = { text: 1, search: 1, tel: 1, email: 1, url: 1 };
+    const isTx = el => !!el && el.tagName === 'INPUT' && !el.readOnly && !el.disabled && !!OK[(el.getAttribute('type') || 'text').toLowerCase()] && !el.hasAttribute('data-noclear');
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'noprint noexp'; btn.setAttribute('aria-label', '입력 지우기'); btn.textContent = '×';
+    btn.style.cssText = 'position: fixed; z-index: 100000; display: none; width: 20px; height: 20px; padding: 0; border: none; border-radius: 50%; background: #DDE2DF; color: #5E6873; font-family: inherit; font-size: 14px; line-height: 20px; text-align: center; cursor: pointer';
+    document.body.appendChild(btn);
+    const sty = document.createElement('style');
+    sty.textContent = 'input[data-xon] { padding-right: 32px !important; box-sizing: border-box !important }';
+    document.head.appendChild(sty);
+    let cur = null, hov = null, down = null, raf = 0, pos = '';
+    const hide = () => { if (btn.style.display !== 'none') btn.style.display = 'none'; if (cur) { cur.removeAttribute('data-xon'); cur = null; } };
+    const tick = () => {
+      raf = 0;
+      const el = isTx(document.activeElement) ? document.activeElement : (hov && document.body.contains(hov) && isTx(hov) ? hov : null);
+      const r = el ? el.getBoundingClientRect() : null;
+      if (!el || !el.value || r.width < 110 || r.height < 14) { hide(); return; }
+      if (cur && cur !== el) cur.removeAttribute('data-xon');
+      cur = el;
+      if (el.getAttribute('data-xon') !== '1') el.setAttribute('data-xon', '1');
+      const p = Math.round(r.right - 26) + ',' + Math.round(r.top + (r.height - 20) / 2);
+      if (p !== pos) { pos = p; const q = p.split(','); btn.style.left = q[0] + 'px'; btn.style.top = q[1] + 'px'; }
+      if (btn.style.display !== 'block') btn.style.display = 'block';
+      raf = requestAnimationFrame(tick);
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    document.addEventListener('focusin', kick);
+    document.addEventListener('input', kick);
+    document.addEventListener('mouseover', e => { if (isTx(e.target)) { hov = e.target; kick(); } });
+    document.addEventListener('mouseout', e => { if (hov && e.target === hov && e.relatedTarget !== btn) { hov = null; kick(); } });
+    btn.addEventListener('mouseleave', e => { if (e.relatedTarget !== hov) { hov = null; kick(); } });
+    btn.addEventListener('mousedown', e => e.preventDefault());
+    const live = el => (el && el.id && document.getElementById(el.id)) || el;
+    btn.addEventListener('click', () => {
+      const el = live(cur); if (!el) return;
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.focus(); kick();
+      setTimeout(() => { const e2 = live(el); if (e2 && e2 !== document.activeElement) e2.focus(); kick(); }, 40);
+    });
+    document.addEventListener('mousedown', e => { down = (e.button === 0 && isTx(e.target) && document.activeElement !== e.target) ? { el: e.target, x: e.clientX, y: e.clientY } : null; }, true);
+    document.addEventListener('mouseup', e => {
+      const d = down; down = null;
+      if (!d || !(e.target === d.el || (d.el.id && e.target.id === d.el.id)) || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 4) return;
+      const v0 = d.el.value;
+      const go = () => { const el = live(d.el); if (el && document.activeElement === el && isTx(el) && el.value === v0 && el.selectionStart === el.selectionEnd) el.select(); };
+      go(); [0, 80, 250, 500].forEach(t => setTimeout(go, t));
+    }, true);
+  }
   componentDidMount() {
     this.installPopupDrag();
+    this.installTextInputs();
     this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); };
     window.addEventListener('storage', this._st);
     // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
