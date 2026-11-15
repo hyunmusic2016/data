@@ -213,8 +213,42 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.9</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.55.0</span>
   </nav>
+  <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="변경 기록" onKeyDown="{{hv.key}}" tabIndex="-1" id="histDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 560px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none; overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 20px 22px 14px; border-bottom: 1px solid #EEF1F0">
+        <span style="font-size: 18px; font-weight: 600; color: #17201C">변경 기록</span>
+        <span style="font-size: 14px; color: #5E6873"><b style="font-weight: 600; color: #17201C">{{hv.name}}</b><sc-if value="{{hv.hasId}}" hint-placeholder-val="{{ true }}"><span> · 등록번호 {{hv.id}}</span></sc-if></span>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{hv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
+      </div>
+      <ol id="histBody" style="margin: 0; padding: 16px 22px 20px; list-style: none; overflow: auto; display: flex; flex-direction: column; gap: 0">
+        <sc-if value="{{hv.empty}}" hint-placeholder-val="{{ false }}"><li style="padding: 18px 0; font-size: 14px; color: #8A949E; text-align: center">아직 기록이 없어요</li></sc-if>
+        <sc-for list="{{hv.items}}" as="e" hint-placeholder-count="4">
+          <li style="display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px dashed #EEF1F0">
+            <span style="{{e.dot}}"></span>
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+              <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <span style="font-size: 13px; font-weight: 600; color: #5E6873; font-variant-numeric: tabular-nums">{{e.date}}</span>
+                <span style="{{e.chip}}">{{e.kind}}</span>
+                <span style="font-size: 14px; font-weight: 600; color: #17201C">{{e.title}}</span>
+                <sc-if value="{{e.future}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FFF4E0; color: #9A5B00; font-size: 12px; font-weight: 600">예정</span></sc-if>
+              </div>
+              <sc-for list="{{e.lines}}" as="l" hint-placeholder-count="1"><span style="font-size: 13px; color: #3A4450">{{l.t}}</span></sc-for>
+              <sc-for list="{{e.diffs}}" as="d" hint-placeholder-count="1">
+                <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; font-size: 13px">
+                  <span style="color: #5E6873; font-weight: 600">{{d.label}}</span>
+                  <span style="color: #17201C"><span style="color: #8A949E; text-decoration: line-through">{{d.before}}</span> → <b style="font-weight: 600">{{d.after}}</b></span>
+                </div>
+              </sc-for>
+            </div>
+          </li>
+        </sc-for>
+      </ol>
+    </div>
+  </sc-if>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint qedlg" role="dialog" aria-label="수업 정보 간단 수정" onKeyDown="{{qe.key}}" tabIndex="-1" id="qeDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 480px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
@@ -222,6 +256,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <span style="font-size: 18px; font-weight: 600; color: #17201C">{{qe.name}}</span>
         <span style="font-size: 14px; color: #5E6873">수업 정보 간단 수정</span>
         <span style="flex: 1"></span>
+        <button type="button" onClick="{{qe.hist}}" aria-label="변경 기록 보기" style="height: 32px; padding: 0 12px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">기록</button>
         <button type="button" onClick="{{qe.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
       <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #EEF1F0; font-size: 14px; font-weight: 600; color: #3A4450"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M9 3v4M15 3v4"></path></svg>적용 날짜<input id="qe_date" type="date" defaultValue="{{qe.date}}" onChange="{{qe.setDate}}" style="margin-left: auto; width: 150px; height: 34px; padding: 0 8px; box-sizing: border-box; border: none; border-radius: 9px; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; color: #17201C; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.12)"></label>
@@ -529,6 +564,7 @@ class Component extends DCLogic {
     this.dragging = false;
     this.state = {
       qe: null,
+      hvName: null,
       shared: this.readShared(),
       statusList: this.readStatus(),
       ast: null,
@@ -974,6 +1010,58 @@ class Component extends DCLogic {
   isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
   readShared() {
     try { const v = JSON.parse(localStorage.getItem('academy.lessonChanges') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
+  }
+  // 수강생대장 '변경 기록'과 같은 내용을 출석부 이름 팝업에서 읽기만 한다
+  sharedToPatch(e) {
+    const L = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
+    const days = (e.days || []).map(d => L[d]).filter(Boolean);
+    const times = {};
+    Object.keys(e.times || {}).forEach(d => { const m = /^(\d{1,2}):(\d{2})$/.exec(e.times[d]); if (m && L[d]) times[L[d]] = ((+m[1] % 12) || 12) + ':' + m[2]; });
+    const p = { day: days.length ? days.map(x => x === '변동' ? (days.length > 1 ? 'R' : '변동') : (days.length > 1 ? x[0] : x)).join('·') : '변동', days: days.length ? days : ['변동'], extra: Object.assign({ times: times }, e.stick === undefined ? {} : { stickBox: !!e.stick }) };
+    if (e.teacher) p.teacher = e.teacher;
+    if (e.part) p.part = e.part;
+    return p;
+  }
+  diffFields(prev, next) {
+    const won = n => (n || n === 0) ? Number(n).toLocaleString('ko-KR') + '원' : '';
+    const tTxt = t => Object.keys(t || {}).map(d => (d === '변동' ? 'R' : d[0]) + ' ' + t[d]).join(', ') || '없음';
+    const X = p => p.extra || {}, FL = p => p.flags || {};
+    const F = [
+      ['원생 메모', p => p.note], ['이름', p => p.name], ['보호자 이름', p => p.guardian], ['연령', p => p.age], ['성별', p => X(p).gender], ['원생 연락처', p => p.phone], ['보호자 연락처', p => p.gphone],
+      ['생년월일', p => X(p).birth], ['주소', p => X(p).addr], ['입원 연월일', p => p.join],
+      ['담당 강사', p => p.teacher], ['수강 과목', p => p.part], ['수업 요일', p => p.day],
+      ['수업 시간', p => X(p).times && tTxt(X(p).times)], ['드럼스틱 보관함', p => X(p).stickBox == null ? undefined : X(p).stickBox ? '사용' : '사용 안 함'],
+      ['반 구분', p => FL(p).pro == null ? undefined : FL(p).pro ? '전문반' : '취미반'], ['수강 횟수', p => X(p).count == null ? undefined : X(p).count + '회'], ['수강 시간', p => X(p).dur == null ? undefined : X(p).dur + '분'],
+      ['회당 수업료', p => X(p).unit == null ? undefined : won(X(p).unit)], ['수강료 합계', p => X(p).total == null ? undefined : won(X(p).total)],
+      ['현금영수증', p => FL(p).cash == null ? undefined : FL(p).cash ? '발급' : '발급 안 함'], ['용도', p => FL(p).cash == null ? undefined : FL(p).cash ? (X(p).cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') : '—'], ['발급 번호', p => X(p).cashNo == null ? undefined : (X(p).cashNo || '—')]
+    ];
+    return F.map(f => ({ label: f[0], b: f[1](prev || {}), a: f[1](next || {}) }))
+      .filter(d => d.a !== undefined && String(d.b == null ? '' : d.b) !== String(d.a == null ? '' : d.a))
+      .map(d => ({ label: d.label, before: d.b == null || d.b === '' ? '없음' : String(d.b), after: d.a === '' ? '없음' : String(d.a) }));
+  }
+  histTimeline(name) {
+    const A = window.academy, D = (A && A.data) || {};
+    const db = (D.byName || {})[name] || null;
+    const reg = db ? db.reg_no : null;
+    const td = this.todayYmd();
+    const SECN = { lesson: '수업 정보', fee: '수강료', cash: '현금영수증' };
+    const KN = { rest: '휴원', out: '퇴원', back: '복귀' };
+    const logs = reg != null ? ((D.log || {})[reg] || []) : [];
+    const ev = [];
+    if (db && db.join_date) ev.push({ d: db.join_date, kind: 'join', title: '입원', lines: [] });
+    (this.state.statusList || []).filter(e => e.name === name && KN[e.kind] && !logs.some(l => l.kind === e.kind && l.d === e.date)).forEach(e => ev.push({ d: e.date, kind: e.kind, title: KN[e.kind], lines: [e.reason ? '사유: ' + e.reason : '', e.kind === 'rest' && e.ticket ? '그 당시 수강권: ' + e.ticket : ''].filter(Boolean), at: e.at || 0 }));
+    logs.forEach(l => ev.push(l));
+    ((reg != null ? (D.hist || {})[reg] : null) || []).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
+    (this.state.shared || []).filter(e => e.name === name).forEach(e => ev.push({ d: e.from, kind: 'change', title: '수업 정보 변경', future: e.from > td, diffs: this.diffFields(e.prev ? this.sharedToPatch(e.prev) : {}, this.sharedToPatch(e)), at: e.at || 0 }));
+    return ev.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : (b.at || 0) - (a.at || 0));
+  }
+  openHist(name) {
+    this.setState({ hvName: name });
+    setTimeout(() => { const d = document.getElementById('histDlg'); if (d) d.focus(); }, 30);
+  }
+  closeHist() {
+    this.setState({ hvName: null });
+    setTimeout(() => { const d = document.getElementById('qeDlg'); if (d) d.focus(); }, 30);
   }
   todayYmd() {
     const t = new Date();
@@ -2576,6 +2664,26 @@ class Component extends DCLogic {
           setMemo: e => { Object.assign(S, { memo: e.target.value }); }
         };
       })(),
+      hv: (() => {
+        const nm = st.hvName;
+        if (nm == null) return { open: false };
+        const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
+        const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
+        const items = this.histTimeline(nm).map(e => { const k = K[e.kind] || K.edit; return {
+          date: fmt(e.d), title: e.title === k[0] ? '' : e.title,
+          chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ' + k[1] + '; color: ' + k[2],
+          kind: k[0], future: !!e.future,
+          lines: (e.lines || []).map(t => ({ t: t })),
+          diffs: e.diffs || [],
+          dot: 'width: 12px; height: 12px; flex: none; box-sizing: border-box; border-radius: 50%; margin-top: 4px; ' + (e.future ? 'border: 2px dashed #E0A23B; background: #FFFFFF' : 'background: ' + k[2])
+        }; });
+        const A = window.academy, db = A && A.data && (A.data.byName || {})[nm];
+        return {
+          open: true, name: nm, hasId: !!db, id: db ? db.reg_no : '', items: items, empty: items.length === 0,
+          close: () => this.closeHist(),
+          key: e => { e.stopPropagation(); if (e.key === 'Escape') this.closeHist(); }
+        };
+      })(),
       qe: (() => {
         const Q = st.qe;
         if (!Q) return { open: false };
@@ -2587,6 +2695,7 @@ class Component extends DCLogic {
           open: true, name: Q.name, date: Q.date, err: Q.err || '', lock: lock ? 'true' : 'false',
           close: () => { this.setState({ qe: null }); this.focusSheet(); },
           save: () => this.saveQuick(),
+          hist: () => this.openHist(Q.name),
           rest: () => this.openAStatus('rest'),
           out: () => this.openAStatus('out'),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
