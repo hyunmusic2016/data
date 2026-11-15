@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.54.9</span>
   </nav>
   <sc-if value="{{qe.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{qe.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1321,9 +1321,9 @@ class Component extends DCLogic {
   menuTabs(cur, cnts) {
     // 강사 계정은 수강생대장을 볼 수 없다
     return this.menuItems().filter(t => !t.hidden && !(t.id === 'students' && this.isTeacherUser())).map(t => ({
-      label: t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
+      label: (t.id === 'settings' ? '⚙ ' : '') + t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
       style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
-        (t.id === cur ? 'background: #F3F5F4; color: #17201C; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
+        (t.id === 'settings' ? 'margin-left: 14px; ' : '') + (t.id === cur ? 'background: #F3F5F4; color: ' + (t.id === 'settings' ? '#007E82' : '#17201C') + '; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : t.id === 'settings' ? 'background: #E6F6F6; color: #007E82; font-weight: 600; border: 1px solid #BFE3E4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
     }));
   }
   stuInfo(name) {
