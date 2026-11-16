@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.57.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.57.1</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -278,16 +278,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <span style="flex: 1"></span>
         <button type="button" onClick="{{qe.rest}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">휴원</button>
         <button type="button" onClick="{{qe.out}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">퇴원</button>
-        <button type="button" onClick="{{qe.moveToggle}}" aria-pressed="{{qe.moveOn}}" style="{{qe.moveBtn}}">이동</button>
       </div>
-      <sc-if value="{{qe.move}}" hint-placeholder-val="{{ false }}">
-        <label style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 12px; background: #E3ECFD; font-size: 14px; font-weight: 600; color: #2952A3">옮길 강사<select id="qe_to" onChange="{{qe.setTo}}" style="margin-left: auto; width: 180px; height: 34px; padding: 0 8px; border: none; border-radius: 9px; background: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; color: #17201C"><sc-for list="{{qe.toOpts}}" as="o" hint-placeholder-count="3"><option value="{{o.v}}">{{o.label}}</option></sc-for></select></label>
-        <span style="font-size: 12px; color: #5E6873">적용 날짜부터 새 강사 탭으로 옮겨요. 그 전 출결·회차는 새 강사에게 넘어가고, 이 탭에서는 맨 아래 '이동' 묶음에 남아요.</span>
-      </sc-if>
       <span style="font-size: 13px; font-weight: 600; color: #C2410C">{{qe.err}}</span>
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{qe.saveLabel}}</button>
+        <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">저장하기</button>
       </div>
     </div>
   </sc-if>
@@ -1066,10 +1061,6 @@ class Component extends DCLogic {
     const t = new Date();
     return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
   }
-  curTeacherName() {
-    const TL = this.teacherList();
-    return TL[Math.min(this.state.teacher || 0, TL.length - 1)][0].replace(' 원장님', '');
-  }
   openQuick(s) {
     const key = String(s.sid || s.id).replace(/^K/, '');
     const rows = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === key && x.g !== '퇴휴');
@@ -1089,14 +1080,11 @@ class Component extends DCLogic {
     days.forEach(d => { const t = Q.times[d] || {}; const h = parseInt(t.h, 10); if (h) times[d] = String(h < 12 ? h + 12 : h).padStart(2, '0') + ':' + String(t.m || '0').padStart(2, '0'); });
     const cur = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === Q.key && x.g !== '퇴휴');
     const prev = { days: cur.map(x => x.g), times: cur.reduce((o, x) => { if (x.time) o[x.g] = x.time; return o; }, {}), stick: !!(cur[0] || {}).stick };
-    if (Q.move && !Q.to) { this.setState({ qe: Object.assign({}, Q, { err: '옮길 강사를 골라 주세요.' }) }); return; }
-    const mv = Q.move ? { teacher: Q.to } : {};
-    if (Q.move) prev.teacher = this.curTeacherName();
-    const list = this.readShared().concat([Object.assign({ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, prev: prev }, mv)]);
+    const list = this.readShared().concat([{ id: 'L' + Date.now(), at: Date.now(), name: Q.name, from: Q.date, days: days, times: times, prev: prev }]);
     try { localStorage.setItem('academy.lessonChanges', JSON.stringify(list)); } catch (e) {}
     // 옮겨 간 줄을 보여 주고 잠깐 표시
     const before = cur.map(x => x.g).join('·'), after = days.join('·');
-    this._flash = { key: Q.key, tag: Q.move ? '→ ' + Q.to : before !== after ? '→ ' + after : '수정됨' };
+    this._flash = { key: Q.key, tag: before !== after ? '→ ' + after : '수정됨' };
     clearTimeout(this._ft);
     this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
     this.setState({ shared: list, qe: null });
@@ -2772,12 +2760,6 @@ class Component extends DCLogic {
           close: () => { this.setState({ qe: null }); this.focusSheet(); },
           save: () => this.saveQuick(),
           hist: () => this.openHist(Q.name),
-          move: !!Q.move, moveOn: Q.move ? 'true' : 'false',
-          moveToggle: () => { upd({ move: !Q.move, to: '' }); setTimeout(() => { const x = document.getElementById('qe_to'); if (x) x.value = ''; }, 0); },
-          moveBtn: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (Q.move ? 'border: 2px solid #2952A3; background: #E3ECFD; color: #2952A3' : 'border: 1px solid #C9D7F2; background: #EEF3FC; color: #2952A3'),
-          saveLabel: Q.move ? '이동하기' : '저장하기',
-          toOpts: [{ v: '', label: '강사 선택', sel: !Q.to || undefined }].concat(this.teacherList().filter(t => !t[2]).map(t => t[0].replace(' 원장님', '')).filter(n => n !== this.curTeacherName()).map(n => ({ v: n, label: n, sel: Q.to === n || undefined }))),
-          setTo: e => upd({ to: e.target.value }),
           rest: () => this.openAStatus('rest'),
           out: () => this.openAStatus('out'),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
