@@ -213,7 +213,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.4</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2087,13 +2087,15 @@ class Component extends DCLogic {
           const pay = !!(e['p' + d] || raw === 'V');
           const v = raw === 'V' ? undefined : raw;
           const o = { d: d, m: Mm, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
+          // 다른 강사로 옮긴 원생: 예전 강사 탭에서는 옮긴 날부터 출결·수납을 더 세지 않는다 (그 전까지 기록만 새 강사에게 넘어감)
+          if (cur && s0.dimFrom && d >= s0.dimFrom) { o.kind = ''; outs[x.id].push(o); return; }
           if (v === '수' || v === '결') {
             if (paid && used >= T) nextTicket();
             used++;
             marks[used - 1] = v;
             if (used === 1) firstDate = Mm + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
-            if (cur && counting) { lessonCount++; if (this.proOn(s0, '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; }
+            if (cur && counting && !(s0.dimBefore && d < s0.dimBefore)) { lessonCount++; if (this.proOn(s0, '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; }
             if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
             else { o.text = '결' + used; o.what = used + '회차 결석'; }
             o.kind = v;
