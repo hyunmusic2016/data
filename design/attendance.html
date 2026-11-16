@@ -213,7 +213,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1112,7 +1112,7 @@ class Component extends DCLogic {
       days.forEach(g => {
         const m = /^(\d{1,2}):(\d{2})$/.exec((ex.times || {})[LG[g]] || '');
         const time = m ? String(+m[1] < 12 ? +m[1] + 12 : +m[1]).padStart(2, '0') + ':' + m[2] : undefined;
-        out.push({ id: 'D' + r.dbId + '-' + g, sid: 'D' + r.dbId, dbId: r.dbId, g: g, name: r.name + (fl.cash ? '$' : ''), start: 0, fresh: true, time: time,
+        out.push({ id: 'D' + r.dbId + '-' + g, sid: 'D' + r.dbId, dbId: r.dbId, reg: r.id, basePro: !!fl.pro, g: g, name: r.name + (fl.cash ? '$' : ''), start: 0, fresh: true, time: time,
           stick: !!ex.stickBox, teacher: r.teacher || '', join: db.join_date || '', dbStatus: db.status || 'act', tickets: cnt,
           rowBg: fl.pro ? '#F9DADC' : undefined, cashNo: ex.cashNo || '' });
       });
@@ -1134,7 +1134,15 @@ class Component extends DCLogic {
       // 휴원·퇴원 기록 없이 DB 상태만 휴원·퇴원인 원생은 빼기
       if (r.dbStatus && r.dbStatus !== 'act' && !stl.some(e => e.name === nm(r))) return false;
       return true;
-    });
+    }).map(r => Object.assign({}, r, { rowBg: this.proOn(r, mEnd) ? '#F9DADC' : undefined }));
+  }
+  // 반(취미/전문)은 수강생대장 수강료 변경의 적용 날짜부터. 그 날짜 전 수업·지난 달은 그대로
+  proOn(r, ymd) {
+    if (!r || r.reg == null) return !!(r && r.rowBg);
+    const A = window.academy, H = ((A && A.data && A.data.hist) || {})[r.reg] || [];
+    let pro = !!r.basePro;
+    H.filter(h => h.sec === 'fee' && h.from <= ymd && h.patch && h.patch.flags && h.patch.flags.pro != null).sort((a, b) => a.from < b.from ? -1 : 1).forEach(h => { pro = !!h.patch.flags.pro; });
+    return pro;
   }
   baseRows() {
     const A0 = window.academy;
@@ -2080,7 +2088,7 @@ class Component extends DCLogic {
             marks[used - 1] = v;
             if (used === 1) firstDate = Mm + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
-            if (cur && counting) { lessonCount++; if (s0.rowBg) lessonPro++; else lessonHobby++; }
+            if (cur && counting) { lessonCount++; if (this.proOn(s0, '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; }
             if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
             else { o.text = '결' + used; o.what = used + '회차 결석'; }
             o.kind = v;
