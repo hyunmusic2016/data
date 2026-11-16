@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.56.3</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1128,7 +1128,12 @@ class Component extends DCLogic {
       // 휴원·퇴원 기록 없이 DB 상태만 휴원·퇴원인 원생은 빼기
       if (r.dbStatus && r.dbStatus !== 'act' && !stl.some(e => e.name === nm(r))) return false;
       return true;
-    }).map(r => Object.assign({}, r, { rowBg: this.proOn(r, mEnd) ? '#F9DADC' : undefined }));
+    }).map(r => {
+      // 이 강사에게서 다른 강사로 옮긴 원생('이동' 줄): 옮기기 전날 기준 반으로 보여 준다
+      const mv = shared.filter(e => e.name === nm(r) && e.teacher && e.teacher !== me && e.prev && e.prev.teacher === me && e.from <= mEnd).sort((a, b) => a.from < b.from ? 1 : -1)[0];
+      const at = mv && +mv.from.slice(5, 7) === MON ? new Date(new Date(mv.from + 'T00:00:00').getTime() - 864e5).toISOString().slice(0, 10) : mEnd;
+      return Object.assign({}, r, { rowBg: this.proOn(r, mv && at !== mEnd ? (() => { const d = new Date(mv.from + 'T12:00:00'); d.setDate(d.getDate() - 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })() : mEnd) ? '#F9DADC' : undefined });
+    });
   }
   // 반(취미/전문)은 수강생대장 수강료 변경의 적용 날짜부터. 그 날짜 전 수업·지난 달은 그대로
   proOn(r, ymd) {
