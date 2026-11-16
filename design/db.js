@@ -359,16 +359,31 @@
     };
   }
   // 새 원생: 화면 목록에 바로 넣고 Supabase에 저장
+  A.busy = 0;
+  // 저장이 끝나기 전에 다른 페이지로 넘어가면 새 페이지가 덜 저장된 데이터를 불러온다 → 저장이 끝난 뒤 넘어간다
+  document.addEventListener('click', function (e) {
+    var a = e.target && e.target.closest && e.target.closest('a[href]');
+    if (!a || !A.busy || !/\.html(#.*)?$/.test(a.getAttribute('href') || '')) return;
+    e.preventDefault(); toast('저장하는 중이에요. 끝나면 넘어갑니다');
+    var go = a.href, t = setInterval(function () { if (!A.busy) { clearInterval(t); location.href = go; } }, 150);
+  }, true);
+  // 다른 탭(창)에서 데이터를 새로 불러오면 이 탭도 바로 바꾼다 (원생 등록·삭제 등)
+  window.addEventListener('storage', function (e) {
+    if (e.key !== 'academy.cache' || !e.newValue || !A.data) return;
+    try { var c = JSON.parse(e.newValue); if (c && c.data) { A.data = c.data; document.dispatchEvent(new CustomEvent('academy:data')); rerender(); } } catch (x) {}
+  });
   A.addStudent = function (rec) {
     var raw = Object.assign({}, rec, { dbId: null });
     A.data.students.push(raw);
+    A.busy++;
+    var end = function (v) { A.busy = Math.max(0, A.busy - 1); return v; };
     return sb.from('students').insert(studentRow(rec)).select('*').single().then(function (r) {
       report(r, '원생 등록'); if (!r.data) return null;
       raw.dbId = r.data.id; A.data.byId[r.data.id] = r.data; A.data.byName[r.data.name] = r.data;
       var from = anyToYmd(rec.join) || new Date().toISOString().slice(0, 10), T = termsOf(rec);
       return sb.from('student_terms').insert(['lesson', 'fee', 'cash'].map(function (k) { return { student_id: r.data.id, section: k, from_date: from, value: T[k], created_by: A.staff.id }; }))
-        .then(function (q) { report(q, '원생 등록(수업·수강료)'); return r.data.id; });
-    });
+        .then(function (q) { report(q, '원생 등록(수업·수강료)'); return Promise.resolve(A.load()).then(function () { return r.data.id; }, function () { return r.data.id; }); });
+    }).then(end, function (e) { end(); throw e; });
   };
   // 원생 정보 수정: 기본 정보는 바로, 수강료·현금영수증 날짜별 변경은 student_terms에 (수업 정보는 lessonChanges로 따로 저장됨)
   A.saveEdit = function (reg, basic, newHist, dropHids) {
