@@ -385,6 +385,13 @@
     });
   };
   A.deleteTerm = function (hid) { dbIdOf(hid).then(function (n) { if (n) sb.from('student_terms').delete().eq('id', n).then(function (r) { report(r, '예정 취소'); }); }); };
+  // 원생 삭제: 수업 정보·휴원/퇴원·출결·수납·수강권 계획은 표 연결(on delete cascade)로 같이 지워진다. 변경 기록도 지운 뒤 전체를 다시 불러온다
+  A.deleteStudent = function (reg) {
+    var sid = sidOfReg(reg); if (!sid) return Promise.resolve(false);
+    return sb.from('activity_log').delete().eq('student_id', sid)
+      .then(function () { return sb.from('students').delete().eq('id', sid); })
+      .then(function (r) { if (report(r, '원생 삭제').error) return false; return Promise.resolve(A.load()).then(function () { return true; }); });
+  };
   A.logEvent = function (reg, item) {
     var sid = sidOfReg(reg); if (!sid) return;
     sb.from('activity_log').insert({ staff_id: A.staff.id, kind: item.kind || 'edit', student_id: sid, detail: item }).then(function (r) { report(r, '변경 기록'); });
