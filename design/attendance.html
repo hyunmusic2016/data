@@ -213,7 +213,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.57.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.57.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1768,7 +1768,7 @@ class Component extends DCLogic {
     if (e.key === '3') { e.preventDefault(); this.openPop('mk'); return; }
     if (e.key === 'Enter') { e.preventDefault(); const pm = this.state.pop && this.state.pop.mode; if (pm === 'mk') this.saveMakeup(); else if (pm === 'del') this.applyMark(''); else this.openPop('main'); return; }
     if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); this.askDelete(); return; }
-    if (e.key === 'Escape') { if (this.state.pop) { e.preventDefault(); this.closePop(); } return; }
+    if (e.key === 'Escape') { e.preventDefault(); if (this.state.pop) this.closePop(); else this.setState({ sel: null }); return; }
     const D = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
     if (!D) return;
     e.preventDefault();
