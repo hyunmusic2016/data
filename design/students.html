@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -327,6 +327,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <span style="flex: 1"></span>
         <button type="button" onClick="{{hv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
+      <sc-if value="{{hv.lastOut}}" hint-placeholder-val="{{ false }}"><div style="margin: 14px 22px 0; padding: 12px 14px; border-radius: 12px; background: #FCEBEA; border: 1px solid #F2C6C2; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; color: #B4332B">{{hv.lastOutTitle}}</span><span style="font-size: 14px; font-weight: 600; color: #17201C">{{hv.lastOut}}</span></div></sc-if>
       <ol id="histBody" style="margin: 0; padding: 16px 22px 20px; list-style: none; overflow: auto; display: flex; flex-direction: column; gap: 0">
         <sc-for list="{{hv.items}}" as="e" hint-placeholder-count="4">
           <li style="display: flex; gap: 14px; padding: 10px 0; border-bottom: 1px dashed #EEF1F0">
@@ -964,7 +965,7 @@ class Component extends DCLogic {
     const word = { rest: '휴원', out: '퇴원', back: S.from === 'out' ? '재등록' : '재원으로 복귀' }[S.kind];
     this.flashRow(S.id, S.kind === 'back' && S.from === 'out' ? 'reg' : S.kind);
     const L = this.addLog(S.id, { d: S.date, kind: S.kind, title: { rest: '휴원', out: '퇴원', back: S.from === 'out' ? '재등록' : '복귀' }[S.kind], lines: S.kind === 'rest' ? [why ? '사유: ' + why : '', S.ticket ? '그 당시 수강권: ' + S.ticket : ''].filter(Boolean) : S.kind === 'out' ? [why ? '사유: ' + why : ''].filter(Boolean) : (S.from === 'out' ? [S.fresh ? '새로 시작 (지난 수강 이어지지 않음)' : '지난 수강 이어서'] : []) });
-    const SS = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: why, ticket: S.kind === 'rest' ? S.ticket : (S.kind === 'back' && S.from === 'out' && S.fresh ? 'NEW' : '') }]);
+    const SS = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: why, ticket: (S.kind === 'rest' || S.kind === 'out') ? S.ticket : (S.kind === 'back' && S.from === 'out' && S.fresh ? 'NEW' : '') }]);
     try { localStorage.setItem('academy.statusChanges', JSON.stringify(SS)); } catch (e) {}
     this.setState({ statusShared: SS, log: L, changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
     clearTimeout(this._tt);
@@ -1754,6 +1755,9 @@ class Component extends DCLogic {
         if (id == null) return { open: false };
         const s = all.find(x => x.id === id);
         if (!s) return { open: false };
+        // 마지막 퇴원 때 수강 (퇴원할 때 저장한 수강, 없으면 지금 퇴원 중이면 퇴원한 달 수강)
+        const lastOutE = (st.statusShared || []).filter(e => e.name === s.name && e.kind === 'out').sort((a, b) => (a.at || 0) - (b.at || 0)).pop();
+        const lastOutT = lastOutE ? (lastOutE.ticket || (s.status === 'out' ? (s.ticketNow || s.ticket || '') : '')) : '';
         const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
         const TL0 = this.timeline(s); { const asc = TL0.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.at || 0) - (b.at || 0)); let last = ''; asc.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') last = e.kind; else if (e.kind === 'back') e.bw = last === 'out' ? '재등록' : '복귀'; }); }
@@ -1765,7 +1769,7 @@ class Component extends DCLogic {
           diffs: e.diffs || [],
           dot: 'width: 12px; height: 12px; flex: none; box-sizing: border-box; border-radius: 50%; margin-top: 4px; ' + (e.future ? 'border: 2px dashed #E0A23B; background: #FFFFFF' : 'background: ' + K[e.kind][2])
         }));
-        return {
+        return { lastOut: lastOutT, lastOutTitle: lastOutE ? '마지막 퇴원 (' + String(lastOutE.date || '').replace(/-/g, '.') + ') 때 수강' : '',
           open: true, name: s.name, id: s.id, items: items, empty: items.length === 0,
           close: () => this.setState({ histView: null }),
           key: e => { if (e.key === 'Escape') this.setState({ histView: null }); }
