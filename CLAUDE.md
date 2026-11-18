@@ -4,7 +4,7 @@
 
 ## 작업 방식 (사용량 아끼기)
 - **파일은 페이지마다 두 벌**: `design/X.html`(GitHub 사이트용, 실행용 껍데기 포함)과 `design/src/X.dc.html`(claude.ai 캔버스 원본). 컴포넌트 코드·템플릿은 두 파일이 같으므로 **같은 수정을 두 파일에 똑같이** 한다 (python으로 문자열 바꾸기, 바꿀 곳이 정확히 1번 나오는지 확인). X = attendance(출석부), students(수강생대장), settings(설정). 공통 함수(menuItems/menuTabs, subjectList/partColors, employeeList, staffOrdered, teacherColor, installPopupDrag)는 세 페이지에 복사돼 있으니 고치면 다 고친다.
-- **claude.ai 시안(Artifact) 올리기는 원장님이 말할 때만** 한다. 평소에는 GitHub에만 올린다(커밋·푸시하면 사이트 https://hyunmusic2016.github.io/data/ 에 반영). 시안을 올릴 때는 design/src/*.dc.html을 project/Main.dc.html(출석부)·Students.dc.html·Settings.dc.html 이름으로 올린다(Artifact https://claude.ai/artifact/NB6nBbYThemaXQt1Eci9WC).
+- **claude.ai 시안(Artifact)은 올리지 않는다.** 수정은 GitHub에만 올린다(커밋·푸시하면 사이트 https://hyunmusic2016.github.io/data/ 에 반영). `design/src/*.dc.html`은 두 벌 규칙 때문에 계속 같이 고친다.
 - **시험**: 글자·색·간격 같은 작은 수정은 시험 없이 바로 올린다. 계산·저장·입력 동작이 바뀌는 수정만 Playwright로 바꾼 부분을 짧게 시험(오프라인: db.js·supabase-js·xlsx 등은 빈 파일로 막고 file:// 로 열기).
 - **토큰 아끼기**: 답은 짧게(바뀐 버전 + 바뀐 내용 몇 줄). 파일은 통째로 읽지 말고 grep으로 필요한 줄만. 원인 찾기가 길어지면 원장님께 먼저 상황을 묻는다.
 - 원장님이 요청을 여러 개 모아 주시면 한 번에 고치고 한 번만 올린다.
