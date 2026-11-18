@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.6</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -927,6 +927,14 @@ class Component extends DCLogic {
     setTimeout(() => { const el = document.querySelector('.aflash > span'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
     this.focusSheet();
   }
+  // 강사 이동 원생의 출결 칸 주인: 칸에 적힌 'w'+날짜(이동할 때 예전 강사 이름을 찍어 둠) → 없으면 이동 날짜 전은 예전 강사, 이후는 새 강사.
+  // 출결은 강사 월급과 이어지므로 자기 칸만 보이고·입력되고·레슨횟수에 들어간다.
+  cellMine(s, e, Mm, d) {
+    const t = s && s.mvT; if (!t) return true;
+    const w = e && e['w' + d];
+    const ymd = '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+    return (w || (ymd < t.from ? t.prev : t.to)) === t.me;
+  }
   applyTransfers(rows, shared, MON, mEnd) {
     // 담당 강사가 바뀐 원생: 바뀐 달에는 예전 강사 출석부 맨 아래 '퇴&휴'로 옮기고(수강권·출결 그대로),
     // 새 강사 출석부에는 같은 수강권으로 이어서 나온다. 다음 달부터 예전 강사 출석부에는 나오지 않는다.
@@ -942,8 +950,9 @@ class Component extends DCLogic {
       const t = last[nm(r)];
       if (!t || r.g === '퇴휴') { out.push(r); return; }
       const sameMon = +t.from.slice(5, 7) === MON, day = +t.from.slice(8, 10);
-      if (me === t.teacher) out.push(Object.assign({}, r, { dimBefore: sameMon ? day : 0 }));
-      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: '강사 변경', outDate: t.from, moveTo: t.teacher, dimFrom: day, canInfo: true, tInfo: { from: t.prev.teacher, to: t.teacher, date: t.from, days: t.days || [], times: t.times || {} } }));
+      const mvT = { from: t.from, prev: t.prev.teacher, to: t.teacher, me: me };
+      if (me === t.teacher) out.push(Object.assign({}, r, { dimBefore: sameMon ? day : 0, mvT: mvT }));
+      else if (me === t.prev.teacher && sameMon) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: '강사 변경', outDate: t.from, moveTo: t.teacher, dimFrom: day, mvT: mvT, canInfo: true, tInfo: { from: t.prev.teacher, to: t.teacher, date: t.from, days: t.days || [], times: t.times || {} } }));
     });
     return out;
   }
@@ -1388,7 +1397,7 @@ class Component extends DCLogic {
   selCells() {
     const n = this.normSel(), out = [];
     if (!n) return out;
-    for (let r = n.r1; r <= n.r2; r++) for (let c = n.c1; c <= n.c2; c++) { const hd = (this._rowHide || [])[r]; if (hd && ((hd.b && c < hd.b) || (hd.f && c >= hd.f))) continue; out.push({ r: r, d: c, sid: (this._rowSids || [])[r] }); }
+    for (let r = n.r1; r <= n.r2; r++) for (let c = n.c1; c <= n.c2; c++) { const hd = (this._rowHide || [])[r]; if (hd && hd(c)) continue; out.push({ r: r, d: c, sid: (this._rowSids || [])[r] }); }
     return out.filter(x => x.sid != null);
   }
   focusSheet() {
@@ -2118,14 +2127,14 @@ class Component extends DCLogic {
           const v = raw === 'V' ? undefined : raw;
           const o = { d: d, m: Mm, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
           // 다른 강사로 옮긴 원생: 예전 강사 탭에서는 옮긴 날부터 출결·수납을 더 세지 않는다 (그 전까지 기록만 새 강사에게 넘어감)
-          if (cur && s0.dimFrom && d >= s0.dimFrom) { o.kind = ''; outs[x.id].push(o); return; }
+          if (cur && s0.dimFrom && !this.cellMine(s0, e, Mm, d)) { o.kind = ''; outs[x.id].push(o); return; }
           if (v === '수' || v === '결') {
             if (paid && used >= T) nextTicket();
             used++;
             marks[used - 1] = v + (this.proOn(s0, ymdOf(Mm, d)) ? 'P' : '');
             if (used === 1) firstDate = Mm + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
-            if (cur && counting && !(s0.dimBefore && d < s0.dimBefore)) { lessonCount++; if (this.proOn(s0, '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; }
+            if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; }
             if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
             else { o.text = '결' + used; o.what = used + '회차 결석'; }
             o.kind = v;
@@ -2267,13 +2276,13 @@ class Component extends DCLogic {
       const rows = list.map(s => {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
-        this._rowHide[R] = (s.dimBefore || s.dimFrom) ? { b: s.dimBefore || 0, f: s.dimFrom || 0 } : null;
+        this._rowHide[R] = s.mvT ? (d => !this.cellMine(s, EV[s.id] || {}, MON, d)) : null;
         const r0 = calc(s);
         this._tk = this._tk || {};
         this._tk[s.id] = Math.min(r0.used, r0.T) + '/' + r0.T + '회 (남은 ' + Math.max(0, r0.T - r0.used) + '회)';
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
-        const hideCell = d => (s.dimBefore && d < s.dimBefore) || (s.dimFrom && d >= s.dimFrom);
-        const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
+        const hideCell = d => !this.cellMine(s, EV[s.id] || {}, MON, d);
+        const r = s.mvT ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
         const expRow = { g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: false, sum: r.startUsed || '', since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells };
         this._exp.push(expRow);
         const rowBg = s.rowBg ? '#FAF8FE' : tint;
