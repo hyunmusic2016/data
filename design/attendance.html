@@ -215,7 +215,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.3</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -226,7 +226,6 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <span style="flex: 1"></span>
         <button type="button" onClick="{{hv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
-      <sc-if value="{{hv.lastOut}}" hint-placeholder-val="{{ false }}"><div style="margin: 14px 22px 0; padding: 12px 14px; border-radius: 12px; background: #FCEBEA; border: 1px solid #F2C6C2; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 12px; font-weight: 600; color: #B4332B">{{hv.lastOutTitle}}</span><span style="font-size: 14px; font-weight: 600; color: #17201C">{{hv.lastOut}}</span></div></sc-if>
       <ol id="histBody" style="margin: 0; padding: 16px 22px 20px; list-style: none; overflow: auto; display: flex; flex-direction: column; gap: 0">
         <sc-if value="{{hv.empty}}" hint-placeholder-val="{{ false }}"><li style="padding: 18px 0; font-size: 14px; color: #8A949E; text-align: center">아직 기록이 없어요</li></sc-if>
         <sc-for list="{{hv.items}}" as="e" hint-placeholder-count="4">
@@ -3013,9 +3012,6 @@ class Component extends DCLogic {
       hv: (() => {
         const nm = st.hvName;
         if (nm == null) return { open: false };
-        // 마지막 퇴원 때 수강 (퇴원할 때 저장한 수강, 없으면 출석부가 계산해 둔 퇴원한 달 수강)
-        const lastOutE = (st.statusList || []).filter(e => e.name === nm && e.kind === 'out').sort((a, b) => (a.at || 0) - (b.at || 0)).pop();
-        const lastOutT = lastOutE ? (lastOutE.ticket || (() => { try { const v = (JSON.parse(localStorage.getItem('academy.tickets') || '{}') || {})[nm]; return v && typeof v === 'object' ? v.text : (v || ''); } catch (e) { return ''; } })()) : '';
         const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
         const TL0 = this.histTimeline(nm); { const asc = TL0.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.at || 0) - (b.at || 0)); let last = ''; asc.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') last = e.kind; else if (e.kind === 'back') e.bw = last === 'out' ? '재등록' : '복귀'; }); }
@@ -3028,7 +3024,7 @@ class Component extends DCLogic {
           dot: 'width: 12px; height: 12px; flex: none; box-sizing: border-box; border-radius: 50%; margin-top: 4px; ' + (e.future ? 'border: 2px dashed #E0A23B; background: #FFFFFF' : 'background: ' + k[2])
         }; });
         const A = window.academy, db = A && A.data && (A.data.byName || {})[nm];
-        return { lastOut: lastOutT, lastOutTitle: lastOutE ? '마지막 퇴원 (' + String(lastOutE.date || '').replace(/-/g, '.') + ') 때 수강' : '',
+        return {
           open: true, name: nm, hasId: !!db, id: db ? db.reg_no : '', items: items, empty: items.length === 0,
           close: () => this.closeHist(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') this.closeHist(); }
