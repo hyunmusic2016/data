@@ -342,9 +342,13 @@
   }
   function saveStatus(e) {
     var sid = sidOfName(e.name); if (!sid) return;
-    idMap[e.id] = sb.from('status_changes').insert({ student_id: sid, kind: e.kind, date: e.date, reason: e.reason || null, ticket: e.ticket || null, created_by: A.staff.id }).select('id').single()
+    // 저장이 끝나기 전에 다른 페이지로 가면 기록이 끊기므로, 끝날 때까지 이동을 기다리게 한다 (A.busy)
+    A.busy++;
+    var done = function () { A.busy = Math.max(0, A.busy - 1); };
+    var p1 = idMap[e.id] = sb.from('status_changes').insert({ student_id: sid, kind: e.kind, date: e.date, reason: e.reason || null, ticket: e.ticket || null, created_by: A.staff.id }).select('id').single()
       .then(function (r) { report(r, '휴원·퇴원 처리'); return r.data ? r.data.id : null; });
-    sb.from('students').update({ status: e.kind === 'back' ? 'act' : e.kind }).eq('id', sid).then(function (r) { report(r, '원생 상태'); });
+    var p2 = sb.from('students').update({ status: e.kind === 'back' ? 'act' : e.kind }).eq('id', sid).then(function (r) { report(r, '원생 상태'); if (A.data && A.data.byId && A.data.byId[sid]) A.data.byId[sid].status = e.kind === 'back' ? 'act' : e.kind; });
+    Promise.all([p1, p2]).then(function () { try { rawSet('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (x) {} done(); }, done);
   }
 
   // ---------- 수강생대장에서 부르는 저장 ----------

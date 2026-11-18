@@ -8,7 +8,7 @@
 - **시험**: 글자·색·간격 같은 작은 수정은 시험 없이 바로 올린다. 계산·저장·입력 동작이 바뀌는 수정만 Playwright로 바꾼 부분을 짧게 시험(오프라인: db.js·supabase-js·xlsx 등은 빈 파일로 막고 file:// 로 열기).
 - **토큰 아끼기**: 답은 짧게(바뀐 버전 + 바뀐 내용 몇 줄). 파일은 통째로 읽지 말고 grep으로 필요한 줄만. 원인 찾기가 길어지면 원장님께 먼저 상황을 묻는다.
 - 원장님이 요청을 여러 개 모아 주시면 한 번에 고치고 한 번만 올린다.
-- 버전: 프로그램 전체 하나, 모든 페이지에 표시. 작은 수정은 끝자리, 기능 추가는 가운데 자리. **현재 `v0.61.5`**. db.js를 고치면 세 페이지 head의 `db.js?v=` 숫자도 올린다(GitHub 페이지 캐시 때문).
+- 버전: 프로그램 전체 하나, 모든 페이지에 표시. 작은 수정은 끝자리, 기능 추가는 가운데 자리. **현재 `v0.61.6`**. db.js를 고치면 세 페이지 head의 `db.js?v=` 숫자도 올린다(GitHub 페이지 캐시 때문).
 - 커밋 메시지 끝에 정해진 Co-Authored-By/Claude-Session 줄을 붙인다(시스템 안내대로).
 - 이 메모도 짧게 유지한다. 새 규칙은 해당 항목을 고쳐 쓰고, '예전엔 ~' 같은 설명은 붙이지 않는다.
 
@@ -66,7 +66,7 @@
 ## Supabase (design/db.js)
 - 로그인(이메일+비밀번호, staff 표 활성 직원만, RLS). 로그인 화면 번쩍임 방지용 'academy.cache'. claude.ai 시안은 연결 안 하고 샘플 원생으로 동작.
 - db.js가 localStorage 쓰기를 가로채 저장: lessonChanges/statusChanges → student_terms/status_changes, employees/subjects, menu/staffOrder → app_settings, attCells → attendance_cells(원생·달마다 한 줄), payments → payments(local_id), ticketPlans → ticket_plans. 수강생대장 등록·수정은 academy.addStudent/saveEdit/deleteTerm/logEvent.
-- 원생 등록은 저장이 끝나면 `A.load()`로 다시 불러옴. 저장 중(`A.busy`)에 .html 링크를 누르면 끝난 뒤 넘어감. 다른 탭이 'academy.cache'를 새로 쓰면 storage 이벤트로 이 탭도 바로 갱신.
+- 원생 등록은 저장이 끝나면 `A.load()`로 다시 불러옴. 원생 등록·반/수강료 변경·휴원/퇴원/복귀 저장 중(`A.busy`)에 .html 링크를 누르면 끝난 뒤 넘어감. 다른 탭이 'academy.cache'를 새로 쓰면 storage 이벤트로 이 탭도 바로 갱신.
 - 로그인 사이트 출석부 줄 = DB 원생(`dbRows()`, 요일마다 한 줄, 출결 키 'D'+원생번호), 강사 탭·달별로 거름(`monthRows()`).
 - SQL 파일(원장님이 SQL Editor에서 순서대로 실행): schema.sql, 002_app_settings, 003_employees_subjects, 004_employee_duty, 005_employee_titles, 006_employee_admin, 007_employee_color, 008_attendance_save.
 - 실제 원생 불러오기 SQL은 GitHub에 올리지 않고 원장님께 파일로만 드린다(지금 DB에는 시험용 실제 명단 75명).
