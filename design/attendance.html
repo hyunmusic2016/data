@@ -213,7 +213,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2206,7 +2206,8 @@ class Component extends DCLogic {
     const dots = [], dotGroups = [];
     // 동그라미 크기 10px (v0.54.0, 예전 7px)
     const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
-    const fill = m => 'background: ' + (m === '결' ? '#E0605A' : '#00A6AB');
+    const PROC = s.rowBg ? '#7A5FBF' : '#00A6AB'; // 전문반 동그라미는 라벤더
+    const fill = m => 'background: ' + (m === '결' ? '#E0605A' : PROC);
     if (r.paid) {
       for (let i = 1; i <= r.T; i++) dots.push({ style: DOT + (i <= r.used ? fill(r.marks[i - 1]) : 'border: 1.5px solid #CDD4D0') });
     } else {
@@ -2215,7 +2216,7 @@ class Component extends DCLogic {
     }
     for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
     // 중도 입금(남은 회차가 있는데 또 입금): 입금한 횟수만큼 초록 점선 동그라미를 뒤에 붙인다. 지금 수강권을 다 쓰면 그 수강권이 본 동그라미가 된다
-    if (r.paid) (r.queue || []).forEach(c => { const q = []; for (let i = 0; i < c; i++) q.push({ style: DOT + 'border: 1.5px dashed #00A6AB; background: #F2FBFB' }); for (let i = 0; i < q.length; i += 4) dotGroups.push({ dots: q.slice(i, i + 4) }); });
+    if (r.paid) (r.queue || []).forEach(c => { const q = []; for (let i = 0; i < c; i++) q.push({ style: DOT + 'border: 1.5px dashed ' + PROC + '; background: ' + (s.rowBg ? '#F5F1FC' : '#F2FBFB') }); for (let i = 0; i < q.length; i += 4) dotGroups.push({ dots: q.slice(i, i + 4) }); });
     // 한 줄에 8개(4개씩 2묶음)까지, 넘으면 아래 줄로 8개씩 이어서 (줄 높이가 그만큼 늘어남)
     const dotLines = [];
     for (let i = 0; i < dotGroups.length; i += 2) dotLines.push({ groups: dotGroups.slice(i, i + 2) });
