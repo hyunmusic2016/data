@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.62.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.63.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -801,6 +801,7 @@ class Component extends DCLogic {
     if (s.status === 'rest' && !has('rest') && s.restDate) ev.push({ d: ymd(s.restDate), kind: 'rest', title: '휴원', lines: [s.restReason ? '사유: ' + s.restReason : '', s.restTicket ? '그 당시 수강권: ' + s.restTicket : ''].filter(Boolean) });
     if (s.status === 'out' && !has('out') && s.leave) ev.push({ d: ymd(s.leave), kind: 'out', title: '퇴원', lines: [s.leaveReason ? '사유: ' + s.leaveReason : ''].filter(Boolean) });
     logs.forEach(l => ev.push(l));
+    (() => { try { return JSON.parse(localStorage.getItem('academy.writeOffs') || '[]') || []; } catch (e) { return []; } })().filter(w => w.name === s.name).forEach(w => ev.push({ d: w.date, kind: 'writeoff', title: '미납 정리', lines: [w.n ? '미납 ' + w.n + '회' : '', w.diff ? '차액 ' + Number(w.diff).toLocaleString('ko-KR') + '원' : '', w.by ? '처리: ' + w.by : ''].filter(Boolean), at: w.at }));
     this.allHist(s.id, s.name).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
     return ev.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : (b.at || 0) - (a.at || 0));
   }
@@ -1670,7 +1671,7 @@ class Component extends DCLogic {
         if (id == null) return { open: false };
         const s = all.find(x => x.id === id);
         if (!s) return { open: false };
-        const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
+        const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], writeoff: ['미납 정리', '#EEF1F0', '#5E6873'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
         const TL0 = this.timeline(s); { const asc = TL0.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.at || 0) - (b.at || 0)); let last = ''; asc.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') last = e.kind; else if (e.kind === 'back') e.bw = last === 'out' ? '재등록' : '복귀'; }); }
         const items = TL0.map(e => ({

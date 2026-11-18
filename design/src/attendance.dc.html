@@ -65,7 +65,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </div>
 
         <sc-for list="{{groups}}" as="g" hint-placeholder-count="8">
-          <sc-if value="{{g.sep}}" hint-placeholder-val="{{ false }}"><div class="grp grpsep" style="{{g.sepStyle}}"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9AA4AD"></span>휴원 · 퇴원 · 이동</div></sc-if>
+          <sc-if value="{{g.sep}}" hint-placeholder-val="{{ false }}"><div class="grp grpsep" style="{{g.sepStyle}}"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9AA4AD"></span>휴원 · 퇴원 · 미납 · 이동</div></sc-if>
           <div class="grp" style="{{g.boxStyle}}">
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
@@ -134,7 +134,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <sc-for list="{{lg.c.headsS}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}"><span>{{h.label}}</span><span style="font-size: 11px; font-weight: 400; opacity: 0.8">{{h.range}}</span></span></sc-for>
           </div>
           <sc-for list="{{lg.c.groups}}" as="g" hint-placeholder-count="6">
-            <sc-if value="{{g.sep}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 18px; padding: 0 16px; background: #F1F3F2; border-top: 2px solid #C6CDC7; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: #5E6873"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9AA4AD"></span>휴원 · 퇴원 · 이동</div></sc-if>
+            <sc-if value="{{g.sep}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 18px; padding: 0 16px; background: #F1F3F2; border-top: 2px solid #C6CDC7; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: #5E6873"><span style="width: 6px; height: 6px; border-radius: 50%; background: #9AA4AD"></span>휴원 · 퇴원 · 미납 · 이동</div></sc-if>
             <div style="display: grid; grid-template-columns: 64px minmax(0, 1fr); border-top: 1px solid #D5DBD8">
               <span style="display: flex; align-items: center; justify-content: center; padding: 6px 0"><span style="{{g.dayChip}}">{{g.day}}</span></span>
               <div style="display: flex; flex-direction: column; border-left: 1px solid #E8ECEA">
@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.62.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.63.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -413,6 +413,10 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <button type="button" onClick="{{ad.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{ad.go}}" style="{{ad.goStyle}}">{{ad.kindLabel}} 처리</button>
       </div>
+      <sc-if value="{{ad.showWo}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; background: #FAFBFA; border: 1px dashed #D5DBD8">
+        <span style="font-size: 13px; line-height: 1.5; color: #5E6873; word-break: keep-all">{{ad.woText}}</span>
+        <button type="button" onClick="{{ad.wo}}" style="height: 40px; border-radius: 12px; border: 1px solid #C9D0CC; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{ad.woLabel}}</button>
+      </div></sc-if>
     </div>
   </sc-if>
   <sc-if value="{{cn.open}}" hint-placeholder-val="{{ false }}">
@@ -654,6 +658,17 @@ class Component extends DCLogic {
     if (v) all[me] = v; else delete all[me];
     try { localStorage.setItem('academy.attMemo', JSON.stringify(all)); } catch (e) {}
   }
+  // 미납 정리(원장님만): 못 받을 미납을 받지 않기로 하고 출석부 '미납' 묶음에서 뺀다. 'academy.writeOffs' / app_settings 'writeOffs'
+  readWriteOffs() { try { const v = JSON.parse(localStorage.getItem('academy.writeOffs') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  saveWriteOff(S, on) {
+    const A = window.academy;
+    let list = this.readWriteOffs();
+    if (on) list = list.concat([{ id: 'W' + Date.now(), at: Date.now(), name: S.name, date: this.todayYmd(), n: S.debt || 0, diff: S.debtDiff || 0, by: (A && A.staff && A.staff.name) || '원장님' }]);
+    else list = list.filter(w => w.id !== S.woId);
+    try { localStorage.setItem('academy.writeOffs', JSON.stringify(list)); } catch (e) {}
+    this.setState({ ast: null });
+    this.focusSheet();
+  }
   readCloses() { try { return JSON.parse(localStorage.getItem('academy.monthClose') || '{}') || {}; } catch (e) { return {}; } }
   saveClose(ck, on) {
     const all = this.readCloses(), A = window.academy;
@@ -725,13 +740,13 @@ class Component extends DCLogic {
   ymOf(m) { return '2026-' + String(m).padStart(2, '0'); }
   // 출석부와 같은 순서: 요일 묶음(월~토, R, 휴원·퇴원·이동) 안에서 시간 순서, 시간 없으면 가나다
   attOrder(all) {
-    const GROUPS = ['월', '화', '수', '목', '금', '토', 'R', '휴원', '퇴원', '이동'];
-    const OUTG = { '휴원': '휴원', '퇴원': '퇴원', '강사 변경': '이동' };
+    const GROUPS = ['월', '화', '수', '목', '금', '토', 'R', '휴원', '퇴원', '미납', '이동'];
+    const OUTG = { '휴원': '휴원', '퇴원': '퇴원', '미납': '미납', '강사 변경': '이동' };
     const grpOf = s => s.g === '퇴휴' ? (OUTG[s.status] || '퇴원') : s.g;
     const tmin = s => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(s.time || ''); return m0 ? +m0[1] * 60 + +m0[2] : Infinity; };
     const sortName = s => s.name.replace('$', '').replace(/^[A-Za-z]\)/, '');
     return GROUPS.map(g => {
-      const isOut = ['휴원', '퇴원', '이동'].indexOf(g) >= 0;
+      const isOut = ['휴원', '퇴원', '미납', '이동'].indexOf(g) >= 0;
       const rows = all.filter(s => grpOf(s) === g).sort((a, b) => isOut
         ? ((a.outDate || '') < (b.outDate || '') ? -1 : (a.outDate || '') > (b.outDate || '') ? 1 : sortName(a).localeCompare(sortName(b), 'ko'))
         : ((tmin(a) - tmin(b)) || sortName(a).localeCompare(sortName(b), 'ko')));
@@ -779,7 +794,7 @@ class Component extends DCLogic {
         return { name: name, sub: (s.g === '퇴휴' ? (s.origG ? s.origG + ' ' : '') : '') + (s.time ? to12(s.time) : '') + (s.status ? (s.time || s.origG ? ' · ' : '') + s.status : ''),
           rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#F7F4FD' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]) };
       });
-      const isOutG = ['휴원', '퇴원', '이동'].indexOf(G.g) >= 0;
+      const isOutG = ['휴원', '퇴원', '미납', '이동'].indexOf(G.g) >= 0;
       const sep = isOutG && !this._clSep; if (sep) this._clSep = 1;
       return { day: G.g, rows: rows, sep: sep,
         dayChip: 'display: inline-flex; align-items: center; justify-content: center; min-width: 36px; min-height: 36px; padding: 0 6px; box-sizing: border-box; border-radius: 11px; font-size: ' + (G.g.length > 1 ? 13 : 16) + 'px; font-weight: 600; background: ' + dc[0] + '; color: ' + dc[1] };
@@ -961,6 +976,8 @@ class Component extends DCLogic {
       }
       if (!st || st.kind === 'back' || r.g === '퇴휴') { out.push(r); return; }
       if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '', canBack: true, outDate: st.date }));
+      // 휴원·퇴원한 달이 지났어도 미납을 다 받거나 '미납 정리'할 때까지 맨 아래 '미납' 묶음에 남긴다 (미납이 없으면 화면에서 뺌)
+      else if (st.date < mEnd.slice(0, 7) + '-01' && !this.readWriteOffs().some(w => w.name === n && (w.at || 0) >= (st.at || 0))) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: '미납', carry: true, carryKind: st.kind, moveTo: '', canBack: true, outDate: st.date }));
     });
     return out;
   }
@@ -979,7 +996,9 @@ class Component extends DCLogic {
     // 복귀 날짜 기본값: 오늘 (휴원·퇴원 날짜가 오늘보다 뒤면 그 날짜)
     let dd = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
     if (s.outDate && s.outDate > dd) dd = s.outDate;
-    this.setState({ ast: { kind: 'back', from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
+    const nm0 = s.name.replace('$', ''), st0 = (this.state.statusList || []).filter(e => e.name === nm0 && e.kind !== 'back').sort((a, b) => (a.at || 0) - (b.at || 0)).pop();
+    const wo0 = this.readWriteOffs().filter(w => w.name === nm0 && st0 && (w.at || 0) >= (st0.at || 0)).pop();
+    this.setState({ ast: { kind: 'back', debt: (this._unpaid || {})[s.id] || 0, debtDiff: (this._diffLeft || {})[s.id] || 0, woId: wo0 ? wo0.id : '', woDate: wo0 ? wo0.date : '', from: (s.carryKind || (s.status === '퇴원' ? 'out' : 'rest')) === 'out' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
@@ -1125,6 +1144,7 @@ class Component extends DCLogic {
     if (db && db.join_date) ev.push({ d: db.join_date, kind: 'join', title: '입원', lines: [] });
     (this.state.statusList || []).filter(e => e.name === name && KN[e.kind] && !logs.some(l => l.kind === e.kind && l.d === e.date)).forEach(e => ev.push({ d: e.date, kind: e.kind, title: KN[e.kind], lines: [e.reason ? '사유: ' + e.reason : '', e.kind === 'rest' && e.ticket ? '그 당시 수강권: ' + e.ticket : ''].filter(Boolean), at: e.at || 0 }));
     logs.forEach(l => ev.push(l));
+    this.readWriteOffs().filter(w => w.name === name).forEach(w => ev.push({ d: w.date, kind: 'writeoff', title: '미납 정리', lines: [w.n ? '미납 ' + w.n + '회' : '', w.diff ? '차액 ' + Number(w.diff).toLocaleString('ko-KR') + '원' : '', w.by ? '처리: ' + w.by : ''].filter(Boolean), at: w.at }));
     ((reg != null ? (D.hist || {})[reg] : null) || []).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
     (this.state.shared || []).filter(e => e.name === name).forEach(e => ev.push({ d: e.from, kind: 'change', title: '수업 정보 변경', future: e.from > td, diffs: this.diffFields(e.prev ? this.sharedToPatch(e.prev) : {}, this.sharedToPatch(e)), at: e.at || 0 }));
     return ev.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : (b.at || 0) - (a.at || 0));
@@ -2035,7 +2055,7 @@ class Component extends DCLogic {
     this._exp.forEach(x => { const g = groups[groups.length - 1]; if (g && g.g === x.g) g.rows.push(x); else groups.push({ g: x.g, label: x.label, rows: [x] }); });
     let sepDone = false;
     groups.forEach(g => {
-      if (!sepDone && ['휴원', '퇴원', '이동'].indexOf(g.g) >= 0) { sepDone = true; r++; }
+      if (!sepDone && ['휴원', '퇴원', '미납', '이동'].indexOf(g.g) >= 0) { sepDone = true; r++; }
       const start = r;
       g.rows.forEach(x => {
         const fill = x.pro ? 'F5F1FC' : undefined;
@@ -2367,8 +2387,11 @@ class Component extends DCLogic {
     const qn = r.queue.reduce((n, c) => n + c, 0);
     return { dots: dots, dotGroups: dotGroups, dotLines: dotLines, canPlan: canPlan, plan: plan, tk: tk, subParts: subParts, lateLine: lateLine, diffLine: diffLine[0], diffStyle: 'font-size: 10px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; ' + diffLine[1], queueTxt: '' };
     };
-    const all = this.students();
-    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['휴원', '휴원'], ['퇴원', '퇴원'], ['이동', '이동']];
+    const all0 = this.students();
+    // 미납 묶음: 미납 수업이나 남은 차액이 있는 원생만 남긴다
+    const calcCarry = all0.some(s => s.carry) ? mkCalc(MON, EV, all0, false) : null;
+    const all = all0.filter(s => { if (!s.carry) return true; const r = calcCarry(s); return (!r.paid && r.used > 0) || ((r.diffDue || 0) - (r.diffPaid || 0) > 0) || Object.keys(EV[s.id] || {}).length > 0; });
+    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['휴원', '휴원'], ['퇴원', '퇴원'], ['미납', '미납'], ['이동', '이동']];
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
     const BLUE = '#8AB4E8';
     let rowIdx = 0;
@@ -2384,9 +2407,9 @@ class Component extends DCLogic {
       const sortName = s => s.name.replace('$', '').replace(/^[A-Za-z]\)/, '');
       // 시간이 있는 원생은 시간 순서, 시간이 없는 원생은 그 아래 가나다 순서
       // 맨 아래 휴원·퇴원·이동(강사 이동) 묶음: 그 달에 해당 원생이 있을 때만 생기고, 처리 날짜가 오래된 것이 위
-      const OUTG = { '휴원': '휴원', '퇴원': '퇴원', '강사 변경': '이동' };
+      const OUTG = { '휴원': '휴원', '퇴원': '퇴원', '미납': '미납', '강사 변경': '이동' };
       const grpOf = s => s.g === '퇴휴' ? (OUTG[s.status] || '퇴원') : s.g;
-      const isOut = ['휴원', '퇴원', '이동'].indexOf(gp[0]) >= 0;
+      const isOut = ['휴원', '퇴원', '미납', '이동'].indexOf(gp[0]) >= 0;
       const list = all.filter(s => grpOf(s) === gp[0]).sort((a, b) => isOut
         ? ((a.outDate || '') < (b.outDate || '') ? -1 : (a.outDate || '') > (b.outDate || '') ? 1 : sortName(a).localeCompare(sortName(b), 'ko'))
         : ((tmin(a) - tmin(b)) || sortName(a).localeCompare(sortName(b), 'ko')));
@@ -2411,6 +2434,7 @@ class Component extends DCLogic {
         this._diff = this._diff || {}; this._diff[s.id] = Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         // 미납 횟수 (미납금액 수납 기본 횟수, 없으면 미납금액 수납 버튼을 숨김)
         this._unpaid[s.id] = !r.paid ? r.used : 0;
+        (this._diffLeft = this._diffLeft || {})[s.id] = Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
           name: s.name.replace('$', ''),
@@ -2427,7 +2451,7 @@ class Component extends DCLogic {
           // 다른 강사에게서 넘어온 원생(옮긴 달): '신규' 대신 '← 예전 강사'
           isNew: (() => { if (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) return false; if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && 2000 + +m[1] === 2026 && +m[2] === MON; })(),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
-          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : ((s.status === '휴원' || s.status === '퇴원') ? '' : (s.status || s.backTag || '')), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : 'display: none'),
+          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : ((s.status === '휴원' || s.status === '퇴원' || s.status === '미납') ? '' : (s.status || s.backTag || '')), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : 'display: none'),
           // 휴원·퇴원은 왼쪽 묶음 칸에 이미 보이므로 이름 옆 배지는 없음
           // 넘어온 원생이 복귀·재등록하면 '← 예전 강사' 옆에 복귀·재등록 배지를 따로
           check2: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && !s.status && s.backTag) ? s.backTag : '', check2Chip: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && !s.status && s.backTag) ? pill('#E6F6F6', '#007E82') + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none' : 'display: none' + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none',
@@ -2483,7 +2507,7 @@ class Component extends DCLogic {
         dayCell: 'grid-row: span ' + rows.length + '; display: flex; flex-direction: ' + (rows.length === 1 ? 'row; gap: 2px !important' : 'column') + '; align-items: center; justify-content: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid ' + ROW + '; border-right: 1px solid ' + SPLIT,
         // 요일 표시: 수강생대장과 같은 요일 색(파스텔 바탕 + 진한 글씨), 오늘 요일은 같은 색 테두리를 한 번 더
         dayChip: (() => {
-          const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] }[gp[0]] || ['#EEF1F0', '#3A4450'];
+          const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '미납': ['#FBE3E1', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] }[gp[0]] || ['#EEF1F0', '#3A4450'];
           const one = rows.length === 1;
           const two = gp[1].length > 1;
           return 'background: ' + DC[0] + '; color: ' + DC[1] + '; border: none; ' + (isTodayG ? 'box-shadow: inset 0 0 0 2px ' + DC[1] + '; ' : '') +
@@ -2800,7 +2824,7 @@ class Component extends DCLogic {
       days: days,
       // 맨 아래 휴원·퇴원·이동 묶음은 위쪽 재원생 묶음과 띄워서 구분 (첫 묶음 앞에 구분 띠)
       groups: groups.filter(g => g.rows.length).map((g, i, arr) => {
-        const OUTK = ['휴원', '퇴원', '이동'];
+        const OUTK = ['휴원', '퇴원', '미납', '이동'];
         const sep = OUTK.indexOf(g.key) >= 0 && (i === 0 || OUTK.indexOf(arr[i - 1].key) < 0);
         return Object.assign({}, g, { sep: sep, sepStyle: 'display: flex; align-items: center; gap: 8px; height: 30px; margin-top: 18px; padding: 0 16px; background: #F1F3F2; border-top: 2px solid #C6CDC7; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; color: #5E6873' });
       }),
@@ -2938,13 +2962,18 @@ class Component extends DCLogic {
           go: () => this.applyAStatus(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ ast: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyAStatus(); } },
           setDate: e => upd({ date: e.target.value }),
-          setMemo: e => { Object.assign(S, { memo: e.target.value }); }
+          setMemo: e => { Object.assign(S, { memo: e.target.value }); },
+          // 미납 정리 (원장님만, 복귀·재등록 창 아래)
+          showWo: S.kind === 'back' && (!this.dbMode() || !!(window.academy && window.academy.staff && window.academy.staff.role === 'owner')) && (S.debt > 0 || S.debtDiff > 0 || !!S.woId),
+          woText: S.woId ? '미납 정리됨 (' + (S.woDate || '').slice(5).replace('-', '/') + '). 취소하면 다시 출석부 미납 묶음에 나옵니다.' : '남은 미납: ' + [S.debt ? S.debt + '회' : '', S.debtDiff ? '차액 ' + Number(S.debtDiff).toLocaleString('ko-KR') + '원' : ''].filter(Boolean).join(' · ') + '. 받지 않기로 하면 정리하세요. 정리하면 다음 달부터 출석부에 나오지 않습니다.',
+          woLabel: S.woId ? '미납 정리 취소' : S.woAsk ? '한 번 더 누르면 미납 정리' : '미납 정리',
+          wo: () => { if (S.woId) this.saveWriteOff(S, false); else if (!S.woAsk) upd({ woAsk: true }); else this.saveWriteOff(S, true); }
         };
       })(),
       hv: (() => {
         const nm = st.hvName;
         if (nm == null) return { open: false };
-        const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
+        const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], writeoff: ['미납 정리', '#EEF1F0', '#5E6873'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
         const TL0 = this.histTimeline(nm); { const asc = TL0.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.at || 0) - (b.at || 0)); let last = ''; asc.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') last = e.kind; else if (e.kind === 'back') e.bw = last === 'out' ? '재등록' : '복귀'; }); }
         const items = TL0.map(e => { const k = e.kind === 'back' ? [e.bw || '복귀', K.back[1], K.back[2]] : (K[e.kind] || K.edit); return {

@@ -201,7 +201,7 @@
           rawSet('academy.ticketPlans', JSON.stringify(tp)); known.tkp = tp;
         }
         var q = qs[0];
-        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); }); if (!q.error) (q.data || []).forEach(function (r) { if (r.key !== 'attMemo') return; var loc = {}; try { loc = JSON.parse(localStorage.getItem('academy.attMemo') || '{}') || {}; } catch (x) {} var v = r.value || {}; rawSet('academy.attMemo', JSON.stringify(A.staff && A.staff.role === 'owner' ? v : Object.assign({}, v, loc))); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); }); if (!q.error) (q.data || []).forEach(function (r) { if (r.key !== 'attMemo') return; var loc = {}; try { loc = JSON.parse(localStorage.getItem('academy.attMemo') || '{}') || {}; } catch (x) {} var v = r.value || {}; rawSet('academy.attMemo', JSON.stringify(A.staff && A.staff.role === 'owner' ? v : Object.assign({}, v, loc))); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
         if (!qs[2].error) {
@@ -247,6 +247,10 @@
       else if (k === 'academy.attMemo') {
         // 출석부 MEMO: 원장님 것만 Supabase에 저장(설정 표는 원장님만 쓸 수 있음), 강사는 이 브라우저에만
         if (A.staff && A.staff.role === 'owner') sb.from('app_settings').upsert({ key: 'attMemo', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '출석부 메모'); });
+      }
+      else if (k === 'academy.writeOffs') {
+        if (!A.staff || A.staff.role !== 'owner') { toast('미납 정리는 원장님만 할 수 있습니다'); return; }
+        sb.from('app_settings').upsert({ key: 'writeOffs', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '미납 정리'); });
       }
       else if (k === 'academy.monthClose') {
         if (!A.staff || A.staff.role !== 'owner') { toast('출석부 마감은 원장님만 할 수 있습니다'); return; }
