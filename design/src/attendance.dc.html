@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2440,7 +2440,9 @@ class Component extends DCLogic {
         this._rowHide[R] = s.mvT ? (d => !this.cellMine(s, EV[s.id] || {}, MON, d)) : null;
         const r0 = calc(s);
         this._tk = this._tk || {};
-        this._tk[s.id] = Math.min(r0.used, r0.T) + '/' + r0.T + '회 (남은 ' + Math.max(0, r0.T - r0.used) + '회)';
+        // 휴원·퇴원할 때 저장하는 '그 당시 수강': 수강 칸과 같은 말로 (미납이면 미납 N회, 남은 차액도)
+        { const dl = Math.max(0, (r0.diffDue || 0) - (r0.diffPaid || 0)), qn0 = (r0.queue || []).reduce((n, c) => n + c, 0);
+          this._tk[s.id] = (!r0.paid ? (r0.newReg && r0.used === 0 ? '미입금' : '미납 ' + r0.used + '회') : Math.min(r0.used, r0.T) + '/' + r0.T + '회 (남은 ' + Math.max(0, r0.T - r0.used) + '회)') + (qn0 ? ' +' + qn0 + ' 대기' : '') + (dl ? ' · 차액 ' + dl.toLocaleString('ko-KR') + '원 미납' : ''); }
         // 강사가 바뀐 원생: 새 강사 출석부에는 바뀐 날 전 칸, 예전 강사 출석부에는 바뀐 날부터 칸을 비워 보여 준다 (수강권 회차는 그대로 이어서 계산)
         const hideCell = d => !this.cellMine(s, EV[s.id] || {}, MON, d);
         const r = s.mvT ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
