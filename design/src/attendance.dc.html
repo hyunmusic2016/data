@@ -214,7 +214,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.8</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -950,6 +950,11 @@ class Component extends DCLogic {
       const n = r.name.replace('$', '');
       // 마지막으로 처리한 기록이 지금 상태 (복귀 날짜가 휴원 날짜보다 앞서도 나중에 처리한 복귀가 이긴다)
       const st = list.filter(e => e.name === n && e.date <= mEnd).sort((a, b) => ((a.at || 0) - (b.at || 0)) || (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).pop();
+      if (st && st.kind === 'back' && r.g !== '퇴휴' && st.date.slice(0, 7) === mEnd.slice(0, 7)) {
+        // 이 달에 복귀·재등록한 원생: 이 달 동안 이름 옆에 배지 (휴원에서 돌아오면 복귀, 퇴원에서 돌아오면 재등록)
+        const prev = list.filter(e => e.name === n && e !== st && (e.at || 0) <= (st.at || 0) && (e.kind === 'rest' || e.kind === 'out')).sort((a, b) => (a.at || 0) - (b.at || 0)).pop();
+        out.push(Object.assign({}, r, { backTag: prev && prev.kind === 'out' ? '재등록' : '복귀' })); return;
+      }
       if (!st || st.kind === 'back' || r.g === '퇴휴') { out.push(r); return; }
       if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '', canBack: true, outDate: st.date }));
     });
@@ -970,7 +975,7 @@ class Component extends DCLogic {
     // 복귀 날짜 기본값: 오늘 (휴원·퇴원 날짜가 오늘보다 뒤면 그 날짜)
     let dd = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
     if (s.outDate && s.outDate > dd) dd = s.outDate;
-    this.setState({ ast: { kind: 'back', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
+    this.setState({ ast: { kind: 'back', from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
@@ -978,7 +983,7 @@ class Component extends DCLogic {
     if (!S) return;
     const list = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: (S.memo || '').trim(), ticket: S.kind === 'rest' ? S.ticket : '' }]);
     try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (e) {}
-    this._flash = { key: S.key, tag: S.kind === 'back' ? '복귀됨' : '' };
+    this._flash = { key: S.key, tag: S.kind === 'back' ? (S.from === 'out' ? '재등록됨' : '복귀됨') : '' };
     clearTimeout(this._ft);
     this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
     this.setState({ statusList: list, ast: null });
@@ -2417,7 +2422,7 @@ class Component extends DCLogic {
           // 다른 강사에게서 넘어온 원생(옮긴 달): '신규' 대신 '← 예전 강사'
           isNew: (() => { if (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) return false; if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && 2000 + +m[1] === 2026 && +m[2] === MON; })(),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
-          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : (s.status || ''), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : 'display: none'),
+          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : (s.status || s.backTag || ''), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : 'display: none'),
           // 넘어온 원생이 휴원·퇴원하면 '← 예전 강사' 옆에 상태 배지를 따로
           check2: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && (s.status === '휴원' || s.status === '퇴원')) ? s.status : '', check2Chip: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && (s.status === '휴원' || s.status === '퇴원')) ? (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : pill('#FFF1DC', '#9A5B00')) + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none' : 'display: none' + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
@@ -2916,7 +2921,7 @@ class Component extends DCLogic {
       ad: (() => {
         const S = st.ast;
         if (!S) return { open: false };
-        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: ['복귀', '복귀 날짜', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
+        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: [S.from === 'out' ? '재등록' : '복귀', (S.from === 'out' ? '재등록' : '복귀') + ' 날짜', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
         const upd = p => this.setState({ ast: Object.assign({}, S, p) });
         return {
           open: true, hasReason: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
@@ -2934,8 +2939,9 @@ class Component extends DCLogic {
         if (nm == null) return { open: false };
         const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
-        const items = this.histTimeline(nm).map(e => { const k = K[e.kind] || K.edit; return {
-          date: fmt(e.d), title: e.title === k[0] ? '' : e.title,
+        const TL0 = this.histTimeline(nm); { const asc = TL0.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.at || 0) - (b.at || 0)); let last = ''; asc.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') last = e.kind; else if (e.kind === 'back') e.bw = last === 'out' ? '재등록' : '복귀'; }); }
+        const items = TL0.map(e => { const k = e.kind === 'back' ? [e.bw || '복귀', K.back[1], K.back[2]] : (K[e.kind] || K.edit); return {
+          date: fmt(e.d), title: (e.title === k[0] || e.kind === 'back') ? '' : e.title,
           chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ' + k[1] + '; color: ' + k[2],
           kind: k[0], future: !!e.future,
           lines: (e.lines || []).map(t => ({ t: t })),

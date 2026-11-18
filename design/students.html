@@ -22,7 +22,7 @@ html.bwp .printonly *{color:#000!important;background-color:transparent!importan
 html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!important}
 @media print{.noprint{display:none!important}.printonly{display:block!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .flashrow>span{animation:rowflash 3.6s ease-out}
-.flash-rest>span{--fl:rgba(224,162,59,.22)}.flash-out>span{--fl:rgba(217,116,108,.2)}.flash-back>span,.flash-new>span{--fl:rgba(0,166,171,.18)}.flash-edit>span{--fl:rgba(138,180,232,.25)}
+.flash-rest>span{--fl:rgba(224,162,59,.22)}.flash-out>span{--fl:rgba(217,116,108,.2)}.flash-back>span,.flash-reg>span,.flash-new>span{--fl:rgba(0,166,171,.18)}.flash-edit>span{--fl:rgba(138,180,232,.25)}
 @keyframes rowflash{0%,55%{background-image:linear-gradient(var(--fl),var(--fl))}100%{background-image:linear-gradient(transparent,transparent)}}
 .flashtag{animation:tagfade 4s ease-out forwards}
 @keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.61.7</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.61.8</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -477,7 +477,7 @@ class Component extends DCLogic {
       { k: 'birth', label: '생년월일', w: '104px', g: '기본 정보', f: ['birthY'] },
       { k: 'addr', label: '주소', w: '200px', left: true, g: '기본 정보' },
       { k: 'join', label: '입원 연월일', w: '96px', g: '기본 정보', f: ['joinY'] },
-      { k: 'backDate', label: '복귀 날짜', w: '96px', g: '기본 정보', f: ['backY'] },
+      { k: 'backDate', label: '복귀·재등록 날짜', w: '110px', g: '기본 정보', f: ['backY'] },
       { k: 'part', label: '교습과목', w: '92px', g: '수업 정보', f: ['part'] },
       { k: 'teacher', label: '강사', w: '92px', g: '수업 정보', f: ['teacher'] },
       { k: 'day', label: '레슨요일', w: '92px', g: '수업 정보', f: ['day'] },
@@ -757,7 +757,7 @@ class Component extends DCLogic {
   }
   openStatus(kind, s) {
     const t = new Date();
-    this.setState({ stat: { kind: kind, id: s.id, name: s.name, ticket: s.ticketNow || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    this.setState({ stat: { kind: kind, from: s.status, id: s.id, name: s.name, ticket: s.ticketNow || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
     setTimeout(() => { const d = document.getElementById('statusDlg'); if (d) d.focus(); }, 30);
   }
   flashRow(id, kind) {
@@ -885,9 +885,9 @@ class Component extends DCLogic {
     const patch = S.kind === 'rest' ? { status: 'rest', rest: '', restDate: ymd, restReason: why, restTicket: S.ticket }
       : S.kind === 'out' ? { status: 'out', leave: ymd, leaveReason: why }
       : { status: 'act', backDate: ymd, rest: '', restDate: '', restReason: '', restTicket: '', leave: '', leaveReason: '' };
-    const word = { rest: '휴원', out: '퇴원', back: '재원으로 복귀' }[S.kind];
-    this.flashRow(S.id, S.kind);
-    const L = this.addLog(S.id, { d: S.date, kind: S.kind, title: { rest: '휴원', out: '퇴원', back: '복귀' }[S.kind], lines: S.kind === 'rest' ? [why ? '사유: ' + why : '', S.ticket ? '그 당시 수강권: ' + S.ticket : ''].filter(Boolean) : S.kind === 'out' ? [why ? '사유: ' + why : ''].filter(Boolean) : [] });
+    const word = { rest: '휴원', out: '퇴원', back: S.from === 'out' ? '재등록' : '재원으로 복귀' }[S.kind];
+    this.flashRow(S.id, S.kind === 'back' && S.from === 'out' ? 'reg' : S.kind);
+    const L = this.addLog(S.id, { d: S.date, kind: S.kind, title: { rest: '휴원', out: '퇴원', back: S.from === 'out' ? '재등록' : '복귀' }[S.kind], lines: S.kind === 'rest' ? [why ? '사유: ' + why : '', S.ticket ? '그 당시 수강권: ' + S.ticket : ''].filter(Boolean) : S.kind === 'out' ? [why ? '사유: ' + why : ''].filter(Boolean) : [] });
     const SS = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: why, ticket: S.kind === 'rest' ? S.ticket : '' }]);
     try { localStorage.setItem('academy.statusChanges', JSON.stringify(SS)); } catch (e) {}
     this.setState({ statusShared: SS, log: L, changes: this.patchStudent(S.id, patch), stat: null, tab: { rest: 'rest', out: 'out', back: 'act' }[S.kind], q: '', filt: {}, toast: S.name + ' 원생을 ' + word + ' 처리했습니다' });
@@ -1283,7 +1283,7 @@ class Component extends DCLogic {
       cash: ['현금영수증', [['y', '발급'], ['n', '발급 안 함']], s => s.cashOn ? 'y' : 'n'],
       joinY: ['입원 연도', uniq(s => joinY(s)).reverse().map(v => [v, v + '년']), s => joinY(s)],
       birthY: ['태어난 해', uniq(s => birthY(s)).filter(Boolean).reverse().map(v => [v, v + '년']).concat(all.some(s => !birthY(s)) ? [[0, '모름']] : []), s => birthY(s)],
-      backY: ['복귀 연도', uniq(s => backY(s)).filter(Boolean).reverse().map(v => [v, v + '년']).concat([[0, '복귀 기록 없음']]), s => backY(s)],
+      backY: ['복귀·재등록 연도', uniq(s => backY(s)).filter(Boolean).reverse().map(v => [v, v + '년']).concat([[0, '복귀 기록 없음']]), s => backY(s)],
       cashType: ['현금영수증 용도', [['person', '개인 (소득공제)'], ['biz', '사업자 (지출증빙)'], ['none', '발급 안 함']], s => !s.cashOn ? 'none' : ((s.extra || {}).cashType || 'person')],
       unit: ['회당 수업료', uniq(s => s.unit).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.unit],
       total: ['수강료 합계', uniq(s => s.total).map(v => [v, v.toLocaleString('ko-KR') + '원']), s => s.total],
@@ -1362,7 +1362,7 @@ class Component extends DCLogic {
       back: 'height: 22px; padding: 0 9px; border-radius: 7px; border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer',
       log: 'height: 22px; padding: 0 9px; border-radius: 7px; border: 1px solid #DDE2DF; background: #F3F5F4; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer'
     };
-    const FLT = { rest: ['휴원됨', '#FFF4E0', '#9A5B00'], out: ['퇴원됨', '#FCEBEA', '#B4332B'], back: ['복귀됨', '#E6F6F6', '#007E82'], edit: ['수정됨', '#E3ECFD', '#2952A3'], new: ['새로 등록', '#E6F6F6', '#007E82'] };
+    const FLT = { rest: ['휴원됨', '#FFF4E0', '#9A5B00'], out: ['퇴원됨', '#FCEBEA', '#B4332B'], back: ['복귀됨', '#E6F6F6', '#007E82'], reg: ['재등록됨', '#E6F6F6', '#007E82'], edit: ['수정됨', '#E3ECFD', '#2952A3'], new: ['새로 등록', '#E6F6F6', '#007E82'] };
     const row = s => {
       const fl = this._flash && this._flash.id === s.id ? this._flash.kind : '';
       const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
@@ -1414,8 +1414,8 @@ class Component extends DCLogic {
       return { sKey: [s.name, s.guardian, s.phone, s.gphone, String(s.id)].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|'), rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', allCells: cells, cells: cells.slice(0, nMain), xcells: xcells, pro: pro, big: !!big,
         actCell: C + '; gap: 6px; padding: 0 12px; position: sticky; z-index: 1; right: 0' + (visX.length ? '' : '; ' + SHADOW),
         acts: ({ act: ['edit', 'log'], rest: ['edit', 'back', 'out', 'log'], out: ['edit', 'back', 'log'] }[s.status] || []).map(k => ({
-          label: { edit: '수정', rest: '휴원', out: '퇴원', back: '복귀', log: '기록' }[k],
-          aria: s.name + ' ' + { edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: '재원으로 복귀', log: '변경 기록 보기' }[k],
+          label: { edit: '수정', rest: '휴원', out: '퇴원', back: s.status === 'out' ? '재등록' : '복귀', log: '기록' }[k],
+          aria: s.name + ' ' + { edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: s.status === 'out' ? '재등록' : '재원으로 복귀', log: '변경 기록 보기' }[k],
           style: ACTB[k],
           pick: () => k === 'edit' ? this.openEdit(s) : k === 'log' ? this.openHist(s.id) : this.openStatus(k, s)
         })) };
@@ -1675,10 +1675,11 @@ class Component extends DCLogic {
         if (!s) return { open: false };
         const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
-        const items = this.timeline(s).map(e => ({
-          date: fmt(e.d), title: e.title === K[e.kind][0] ? '' : e.title,
+        const TL0 = this.timeline(s); { const asc = TL0.slice().sort((a, b) => a.d < b.d ? -1 : a.d > b.d ? 1 : (a.at || 0) - (b.at || 0)); let last = ''; asc.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') last = e.kind; else if (e.kind === 'back') e.bw = last === 'out' ? '재등록' : '복귀'; }); }
+        const items = TL0.map(e => ({
+          date: fmt(e.d), title: (e.title === K[e.kind][0] || e.kind === 'back') ? '' : e.title,
           chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ' + K[e.kind][1] + '; color: ' + K[e.kind][2],
-          kind: K[e.kind][0], future: !!e.future,
+          kind: e.kind === 'back' ? (e.bw || '복귀') : K[e.kind][0], future: !!e.future,
           lines: (e.lines || []).map(t => ({ t: t })),
           diffs: e.diffs || [],
           dot: 'width: 12px; height: 12px; flex: none; box-sizing: border-box; border-radius: 50%; margin-top: 4px; ' + (e.future ? 'border: 2px dashed #E0A23B; background: #FFFFFF' : 'background: ' + K[e.kind][2])
@@ -1716,7 +1717,7 @@ class Component extends DCLogic {
       sd: (() => {
         const S = st.stat;
         if (!S) return { open: false };
-        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: ['복귀', '복귀 날짜', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
+        const K = { rest: ['휴원', '휴원 날짜', '휴원 사유', '#FFF4E0', '#9A5B00', '#F0D4A4'], out: ['퇴원', '퇴원 날짜', '퇴원 사유', '#FCEBEA', '#B4332B', '#F2C6C2'], back: [S.from === 'out' ? '재등록' : '복귀', (S.from === 'out' ? '재등록' : '복귀') + ' 날짜', '', '#E6F6F6', '#007E82', '#A9DCDE'] }[S.kind];
         return {
           open: true, hasReason: S.kind !== 'back', kindLabel: K[0], title: K[0] + ' 처리', name: S.name, id: S.id,
           dateLabel: K[1], reasonLabel: K[2], date: S.date, memo: S.memo,
