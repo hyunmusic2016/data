@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.4</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -719,7 +719,7 @@ class Component extends DCLogic {
             open: () => { if (att) this.setState({ clEd: { key: key, name: name, d: d, m: m, title: m + '월 ' + d + '일 출석', note: notes[d] || '' } }); } });
         });
         return { name: name, sub: (s.g === '퇴휴' ? (s.origG ? s.origG + ' ' : '') : '') + (s.time ? to12(s.time) : '') + (s.status ? (s.time || s.origG ? ' · ' : '') + s.status : ''),
-          rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#F5F1FC' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]) };
+          rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#FAF8FE' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]) };
       });
       const isOutG = ['휴원', '퇴원', '이동'].indexOf(G.g) >= 0;
       const sep = isOutG && !this._clSep; if (sep) this._clSep = 1;
@@ -1980,8 +1980,8 @@ class Component extends DCLogic {
     const band = 'height: 92px; display: flex; align-items: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; background-color: #16201B; background-image: repeating-linear-gradient(to bottom, transparent 0, transparent 27px, rgba(255, 255, 255, 0.1) 27px, rgba(255, 255, 255, 0.1) 28px); background-position: 0 4px; ';
     const pill = (bg, fg) => 'display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + bg + '; color: ' + fg;
     const circ = (n, filled) => 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: #FFFFFF; color: #1F7A5A; border: 1.5px solid #1F7A5A';
-    const tag = (bg, fg) => 'min-width: 24px; height: 24px; padding: 0 5px; box-sizing: border-box; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: ' + bg + '; color: ' + fg;
-    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em', 'Mo': tag('#E2F1EA', '#1F7A5A') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #9FD3B4', 'Mx': tag('#FDEBE4', '#C2410C') + '; font-size: 10px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #F0B9A6' };
+    const tag = (bg, fg) => 'min-width: 28px; height: 28px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; background: ' + bg + '; color: ' + fg;
+    const MARK = { '보': tag('#E3ECFD', '#1E4FA8'), '결': tag('#FDEBE4', '#C2410C') + '; font-weight: 500', '연': tag('#EEF1F0', '#3A4450'), '₩': tag('#F3E6C4', '#7A5C12'), 'M': tag('#E3ECFD', '#1E4FA8') + '; font-size: 11px; padding: 0 3px; letter-spacing: -0.03em', 'Mo': tag('#E2F1EA', '#1F7A5A') + '; font-size: 11px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #9FD3B4', 'Mx': tag('#FDEBE4', '#C2410C') + '; font-size: 11px; padding: 0 3px; letter-spacing: -0.03em; box-shadow: inset 0 0 0 1px #F0B9A6' };
     const chipFor = t => {
       if (!t) return 'display: none';
       // 회차 숫자는 몇 회든 동그라미 (미납 13회 이상도)
@@ -2210,7 +2210,7 @@ class Component extends DCLogic {
     }
     for (let i = 0; i < dots.length; i += 4) dotGroups.push({ dots: dots.slice(i, i + 4) });
     // 중도 입금(남은 회차가 있는데 또 입금): 입금한 횟수만큼 초록 점선 동그라미를 뒤에 붙인다. 지금 수강권을 다 쓰면 그 수강권이 본 동그라미가 된다
-    if (r.paid) (r.queue || []).forEach(c => { const q = []; for (let i = 0; i < c; i++) q.push({ style: DOT + 'border: 1.5px dashed ' + PROC + '; background: ' + (s.rowBg ? '#F5F1FC' : '#F2FBFB') }); for (let i = 0; i < q.length; i += 4) dotGroups.push({ dots: q.slice(i, i + 4) }); });
+    if (r.paid) (r.queue || []).forEach(c => { const q = []; for (let i = 0; i < c; i++) q.push({ style: DOT + 'border: 1.5px dashed ' + PROC + '; background: ' + (s.rowBg ? '#FAF8FE' : '#F2FBFB') }); for (let i = 0; i < q.length; i += 4) dotGroups.push({ dots: q.slice(i, i + 4) }); });
     // 한 줄에 8개(4개씩 2묶음)까지, 넘으면 아래 줄로 8개씩 이어서 (줄 높이가 그만큼 늘어남)
     const dotLines = [];
     for (let i = 0; i < dotGroups.length; i += 2) dotLines.push({ groups: dotGroups.slice(i, i + 2) });
@@ -2276,7 +2276,7 @@ class Component extends DCLogic {
         const r = (s.dimBefore || s.dimFrom) ? Object.assign({}, r0, { cells: r0.cells.map(x => hideCell(x.d) ? Object.assign({}, x, { text: '', what: '', kind: '', pay: false, mstat: '' }) : x) }) : r0;
         const expRow = { g: gp[0], label: gp[1].replace(/\n/g, ''), name: s.name.replace('$', ''), cash: s.name.indexOf('$') >= 0, pro: !!s.rowBg, t8: false, sum: r.startUsed || '', since: !r.paid ? (r.newReg && r.used === 0 ? (s.newReg ? '신규 (미입금)' : '미입금') : '미납 ' + r.used + '회') : r.done ? '수업완료' : (r.firstDate || ''), needPay: !r.paid, cells: r.cells };
         this._exp.push(expRow);
-        const rowBg = s.rowBg ? '#F5F1FC' : tint;
+        const rowBg = s.rowBg ? '#FAF8FE' : tint;
         const cell = base + 'background: ' + rowBg + '; ';
         const mini = (bg, fg) => 'display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: 6px; font-size: 10px; font-weight: 600; background: ' + bg + '; color: ' + fg;
         const V = tkView(s, r);
@@ -2323,7 +2323,7 @@ class Component extends DCLogic {
             }
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const proD = s.reg != null ? this.proOn(s, '2026-' + String(MON).padStart(2, '0') + '-' + String(x.d).padStart(2, '0')) : !!s.rowBg;
-            const bg = x.pay ? (x.upay ? '#FCEBEA' : '#FAEFD2') : x.kind === 'DV' ? '#FDEBD8' : proD ? '#F5F1FC' : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
+            const bg = x.pay ? (x.upay ? '#FCEBEA' : '#FAEFD2') : x.kind === 'DV' ? '#FDEBD8' : proD ? '#FAF8FE' : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
               text: x.text.replace('!', ''), chip: x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : proD ? chipFor(x.text).replace(/#1F7A5A/g, '#7A5FBF') : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
               label: MON + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
