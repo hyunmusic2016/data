@@ -214,7 +214,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.9</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2422,9 +2422,9 @@ class Component extends DCLogic {
           // 다른 강사에게서 넘어온 원생(옮긴 달): '신규' 대신 '← 예전 강사'
           isNew: (() => { if (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) return false; if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && 2000 + +m[1] === 2026 && +m[2] === MON; })(),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
-          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : (s.status || s.backTag || ''), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : s.status === '휴원' ? pill('#FFF1DC', '#9A5B00') : 'display: none'),
-          // 넘어온 원생이 휴원·퇴원하면 '← 예전 강사' 옆에 상태 배지를 따로
-          check2: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && (s.status === '휴원' || s.status === '퇴원')) ? s.status : '', check2Chip: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && (s.status === '휴원' || s.status === '퇴원')) ? (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : pill('#FFF1DC', '#9A5B00')) + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none' : 'display: none' + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none',
+          check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : ((s.status === '휴원' || s.status === '퇴원') ? '' : (s.status || s.backTag || '')), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : 'display: none'),
+          // 휴원·퇴원은 왼쪽 묶음 칸에 이미 보이므로 이름 옆 배지는 없음
+          check2: '', check2Chip: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && (s.status === '휴원' || s.status === '퇴원')) ? (s.status === '퇴원' ? pill('#FDEBE4', '#C2410C') : pill('#FFF1DC', '#9A5B00')) + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none' : 'display: none' + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none',
           ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT,
           dotGroups: dotGroups, dotLines: dotLines,
           subText: tk[0], subParts: subParts, lateLine: lateLine, diffLine: V.diffLine, diffStyle: V.diffStyle,
