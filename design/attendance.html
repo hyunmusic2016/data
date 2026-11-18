@@ -215,7 +215,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.62.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.62.1</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1614,7 +1614,8 @@ class Component extends DCLogic {
       if (p2 !== pro || (u2 && u2 !== unit)) { pro = p2; if (u2) unit = u2; total = unit * count; }
     }
     const paid = late ? true : cells.every(c => { const r = cur[c.sid] || {}; return !!(r['p' + c.d] || r[c.d] === 'V'); });
-    const umode = s0.g === '퇴휴' && (s0.status === '휴원' || s0.status === '퇴원');
+    // 휴원·퇴원 원생도 재원생과 같은 일반 수납 (예전 '미납금액 수납'은 쓰지 않음)
+    const umode = false;
     const cellDate = '2026-' + String(m).padStart(2, '0') + '-' + String(c0.d).padStart(2, '0');
     // 미납금액 수납 기본 날짜: 오늘이 이 달 이후면 오늘, 아니면 누른 칸 날짜
     const today = this.todayYmd();
@@ -2520,7 +2521,7 @@ class Component extends DCLogic {
     const curRow = popCells.length === 1 ? (this.monthEvents(MON)[first.sid] || {}) : {};
     const curV = popCells.length === 1 ? (curRow[first.d] === 'V' ? '' : (curRow[first.d] || '')) : '';
     const curPay = popCells.length === 1 && !!(curRow['p' + first.d] || curRow[first.d] === 'V');
-    const popU = !!(firstStu && firstStu.g === '퇴휴' && (firstStu.status === '휴원' || firstStu.status === '퇴원'));
+    const popU = false;
     const big = st0 => st0.replace('width: 20px; height: 20px', 'width: 26px; height: 26px').replace('min-width: 24px; height: 24px', 'min-width: 28px; height: 28px').replace('font-size: 11px', 'font-size: 13px');
     const keycap = (fg, bd) => 'position: absolute; top: 9px; right: 9px; min-width: 20px; height: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 6px; border: 1px solid ' + bd + '; border-bottom-width: 2px; background: #FFFFFF; color: ' + fg + '; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center';
     const popBtns = [
