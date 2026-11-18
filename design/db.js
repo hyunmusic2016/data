@@ -398,10 +398,17 @@
     delete row.reg_no;
     sb.from('students').update(row).eq('id', sid).then(function (r) { report(r, '원생 정보 수정'); if (r && !r.error && A.data.byId[sid]) { var nm0 = A.data.byId[sid].name; if (nm0 !== row.name) { delete A.data.byName[nm0]; A.data.byId[sid].name = row.name; A.data.byName[row.name] = A.data.byId[sid]; } } });
     (dropHids || []).forEach(function (h) { A.deleteTerm(h); });
-    (newHist || []).forEach(function (h) {
-      idMap[h.hid] = sb.from('student_terms').insert({ student_id: sid, section: h.sec, from_date: h.from, value: h.patch, created_by: A.staff.id }).select('id').single()
-        .then(function (r) { report(r, '날짜별 변경'); return r.data ? r.data.id : null; });
+    // 날짜별 변경(반·수강료 등)은 저장되는 대로 이 브라우저의 데이터·캐시에도 넣어 출석부가 새로고침 없이 바로 쓰게 한다
+    var HS = A.data.hist = A.data.hist || {}, L = HS[reg] = (HS[reg] || []).filter(function (h) { return (dropHids || []).indexOf(h.hid) < 0; });
+    A.busy++;
+    var ps = (newHist || []).map(function (h) {
+      return (idMap[h.hid] = sb.from('student_terms').insert({ student_id: sid, section: h.sec, from_date: h.from, value: h.patch, created_by: A.staff.id }).select('id').single()
+        .then(function (r) { report(r, '날짜별 변경'); if (r.data) L.push({ hid: 'T' + r.data.id, sec: h.sec, from: h.from, prev: h.prev, patch: h.patch }); return r.data ? r.data.id : null; }));
     });
+    Promise.all(ps).then(function () {
+      try { rawSet('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (e) {}
+      A.busy = Math.max(0, A.busy - 1); rerender();
+    }, function () { A.busy = Math.max(0, A.busy - 1); });
   };
   A.deleteTerm = function (hid) { dbIdOf(hid).then(function (n) { if (n) sb.from('student_terms').delete().eq('id', n).then(function (r) { report(r, '예정 취소'); }); }); };
   // 원생 삭제: 수업 정보·휴원/퇴원·출결·수납·수강권 계획은 표 연결(on delete cascade)로 같이 지워진다. 변경 기록도 지운 뒤 전체를 다시 불러온다

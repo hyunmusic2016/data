@@ -6,7 +6,7 @@
 <title>학원 출석부</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.60.0"></script>
+<script src="db.js?v=0.60.1"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
@@ -218,7 +218,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.60.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.60.1</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -669,8 +669,8 @@ class Component extends DCLogic {
     setTimeout(() => this.setState({ mcDlg: { kind: 'note' } }), 0);
   }
   // 출결 칸 주인(강사 월급과 이어짐): 새로 적거나 바꾼 칸에 지금 보고 있는 강사 탭 이름('by'+날짜)을 적어 둔다
-  stampCells() {
-    const st = this.state, me = (this.tKey() || '').replace(' 원장님', '');
+  stampCells(src) {
+    const st = src || this.state, me = (this.tKey() || '').replace(' 원장님', '');
     const months = [[11, st.ev]].concat(Object.keys(st.evByMonth || {}).filter(m => +m !== 11).map(m => [+m, st.evByMonth[m]]));
     const snap = this._snap, next = {};
     months.forEach(p => { const m = p[0], ev = p[1] || {}; next[m] = {};
@@ -1428,10 +1428,10 @@ class Component extends DCLogic {
   componentDidMount() {
     this.installPopupDrag();
     this.installTextInputs();
-    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const c = this.cellsState(); this._snap = null; this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); } };
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const c = this.cellsState(); this._snap = null; this.stampCells(c); this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); } };
     window.addEventListener('storage', this._st);
     // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
-    this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); };
+    this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) { this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this._snap = null; this.stampCells(c); } this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); };
     document.addEventListener('academy:data', this._dbl);
     this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
     this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
