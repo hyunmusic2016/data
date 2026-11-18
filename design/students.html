@@ -15,7 +15,7 @@ a{color:#007E82}a:hover{color:#005F62}
 button,input{font-family:inherit}
 button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6AB;outline-offset:1px}
 .idInp:hover{border-color:#CDD4D0 !important;background:#FFFFFF !important}.idInp:focus{border-color:#00A6AB !important;background:#FFFFFF !important}
-.colgrip{background:linear-gradient(to right,transparent 3px,#CDD4D0 3px,#CDD4D0 4px,transparent 4px)}.colgrip:hover,.colgrip:active{background:linear-gradient(to right,transparent 3px,#00A6AB 3px,#00A6AB 5px,transparent 5px)}
+.colgrip{background:linear-gradient(#D5DBD8,#D5DBD8) center/1px 45% no-repeat}.colgrip:hover,.colgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}
 @page{size:A4 landscape;margin:8mm}
 .printonly{display:none}
 html.bwp .printonly *{color:#000!important;background-color:transparent!important}
@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.63.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.63.5</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1415,7 +1415,7 @@ class Component extends DCLogic {
     const minW = vis.reduce((n, c) => n + Wd(c), 0) + actW;
     const saveW = () => { try { localStorage.setItem('students.widths', JSON.stringify(this.state.widths || {})); } catch (e) {} };
     const hBase = 'height: 36px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap; ';
-    const headCols = vis.map((c, i) => ({ label: c.label, style: hBase + (i >= nMain ? 'position: relative; background: #F7F9F8; ' : 'position: relative; ') + (c.left ? 'justify-content: flex-start; padding-left: 8px' : 'justify-content: center'),
+    const headCols = vis.map((c, i) => ({ label: c.label, style: hBase + (i >= nMain ? 'position: relative; background: #F7F9F8; ' : 'position: relative; ') + 'justify-content: center',
       resize: e => {
         e.preventDefault(); e.stopPropagation();
         const x0 = e.clientX, w0 = Wd(c);
