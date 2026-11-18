@@ -167,7 +167,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.59.6</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.59.7</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1375,7 +1375,7 @@ class Component extends DCLogic {
     const row = s => {
       const fl = this._flash && this._flash.id === s.id ? this._flash.kind : '';
       const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
-      const bg = pro ? '#FAF8FE' : '#FFFFFF';
+      const bg = pro ? '#F7F4FD' : '#FFFFFF';
       const C = cell + '; background: ' + bg;
       const CL = C + '; justify-content: flex-start; gap: 6px';
       const tp = this.teacherColor(s.teacher);
@@ -1523,7 +1523,7 @@ class Component extends DCLogic {
       title: '현실용음악학원 수강생대장', info: xInfo,
       th: pcell + 'background: #EEF2EE; font-weight: 600; text-align: center',
       heads: vis.map(c => ({ label: c.label })),
-      rows: curRows.map(r => ({ style: 'display: table-row; break-inside: avoid; background: ' + (r.pro ? '#FAF8FE' : '#FFFFFF'),
+      rows: curRows.map(r => ({ style: 'display: table-row; break-inside: avoid; background: ' + (r.pro ? '#F7F4FD' : '#FFFFFF'),
         cells: r.allCells.map((x, i) => ({ t: x.ptxt, style: pcell + 'text-align: ' + (vis[i].left ? 'left' : 'center') + (vis[i].k === 'note' ? '; white-space: pre-line' : '') + (x.isName ? '; font-weight: 600' + (r.big ? '; background: #EFEAF8' : '') : '') })) }))
     };
     const ropt2 = (o, on, pick) => ({ label: o[1], desc: o[2], on: on ? 'true' : 'false', pick: pick,
