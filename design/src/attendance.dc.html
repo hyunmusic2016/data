@@ -214,7 +214,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2213,10 +2213,10 @@ class Component extends DCLogic {
           const e = EVm[x.id] || {};
           const raw = e[d];
           const pay = !!(e['p' + d] || raw === 'V');
-          const v = raw === 'V' ? undefined : raw;
+          // 다른 강사로 옮긴 원생: 예전 강사 탭에서는 새 강사가 적은 출결은 세지 않는다(월급). 수납·차액 수납은 원생 돈이라 어느 탭에서 받았든 센다
+          const notMine = cur && s0.dimFrom && !this.cellMine(s0, e, Mm, d);
+          const v = (raw === 'V' || notMine) ? undefined : raw;
           const o = { d: d, m: Mm, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
-          // 다른 강사로 옮긴 원생: 예전 강사 탭에서는 옮긴 날부터 출결·수납을 더 세지 않는다 (그 전까지 기록만 새 강사에게 넘어감)
-          if (cur && s0.dimFrom && !this.cellMine(s0, e, Mm, d)) { o.kind = ''; outs[x.id].push(o); return; }
           if (v === '수' || v === '결') {
             if (paid && used >= T) nextTicket();
             used++;
