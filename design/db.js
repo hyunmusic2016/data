@@ -135,7 +135,8 @@
   A.load = function () {
     return Promise.all([
       sb.from('students').select('*').order('reg_no'),
-      sb.from('student_terms').select('*').order('from_date').order('id'),
+      // 저장한 순서(id)로: 원생마다 처음 것이 등록 때 정보, 그 뒤가 변경 (적용 날짜가 등록일보다 앞선 변경도 변경으로 읽음)
+      sb.from('student_terms').select('*').order('id'),
       sb.from('status_changes').select('*').order('id'),
       sb.from('activity_log').select('*').order('at')
     ]).then(function (rs) {
