@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.3</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2122,7 +2122,7 @@ class Component extends DCLogic {
           if (v === '수' || v === '결') {
             if (paid && used >= T) nextTicket();
             used++;
-            marks[used - 1] = v;
+            marks[used - 1] = v + (this.proOn(s0, ymdOf(Mm, d)) ? 'P' : '');
             if (used === 1) firstDate = Mm + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
             if (cur && counting && !(s0.dimBefore && d < s0.dimBefore)) { lessonCount++; if (this.proOn(s0, '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; }
@@ -2201,7 +2201,7 @@ class Component extends DCLogic {
     // 동그라미 크기 10px (v0.54.0, 예전 7px)
     const DOT = 'width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; ';
     const PROC = s.rowBg ? '#7A5FBF' : '#00A6AB'; // 전문반 동그라미는 라벤더
-    const fill = m => 'background: ' + (m === '결' ? '#E0605A' : PROC);
+    const fill = m => 'background: ' + (m && m.charAt(0) === '결' ? '#E0605A' : (m && m.charAt(1) === 'P' ? '#7A5FBF' : '#00A6AB')); // 칸마다 그날의 반 색(취미 청록·전문 라벤더)
     if (r.paid) {
       for (let i = 1; i <= r.T; i++) dots.push({ style: DOT + (i <= r.used ? fill(r.marks[i - 1]) : 'border: 1.5px solid #CDD4D0') });
     } else {
