@@ -214,7 +214,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.1</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2002,8 +2002,8 @@ class Component extends DCLogic {
     const circ = n => (n >= 1 && n <= 20) ? String.fromCharCode(0x245F + n) : (n >= 21 && n <= 35) ? String.fromCharCode(0x3251 + n - 21) : (n >= 36 && n <= 50) ? String.fromCharCode(0x32B1 + n - 36) : String(n);
     const dayText = c => {
       const t = (c.text || '').replace('!', '');
-      let b = c.kind === '수' ? circ(+t) : c.kind === '결' ? t : c.kind === '보' ? '보' : c.kind === 'M' ? '보강 ' + t : c.kind === '연' ? '연' : c.kind === 'V' ? 'V' : '';
-      if (c.pay && c.kind !== 'V') b += ' V';
+      let b = c.kind === '수' ? circ(+t) : c.kind === '결' ? t : c.kind === '보' ? '보' : c.kind === 'M' ? '보강 ' + t : c.kind === '연' ? '연' : c.kind === 'V' ? 'V' + (c.payN > 1 ? c.payN : '') : '';
+      if (c.pay && c.kind !== 'V') b += ' V' + (c.payN > 1 ? c.payN : '');
       if (c.dpay) b = (b && c.kind !== 'DV' ? b + ' ' : '') + '차액입금';
       return b;
     };
@@ -2240,7 +2240,7 @@ class Component extends DCLogic {
             const pn = e['u' + d] ? 1 : Math.max(1, prs.length);
             if (!v) { o.text = '₩' + (pn > 1 ? pn : ''); o.kind = 'V'; }
             o.what = o.what ? o.what + ' · 수납' + (pn > 1 ? ' ' + pn + '건' : '') : '수납' + (pn > 1 ? ' ' + pn + '건' : '');
-            o.pay = !!v; o.upay = !!e['u' + d];
+            o.pay = !!v; o.upay = !!e['u' + d]; o.payN = pn;
             if (prs.length && !e['u' + d]) prs.forEach(pr => payNow(pr.count || T0, new Date(2026, Mm - 1, d)));
             else { const pr = prs[0]; payNow((pr && pr.count) || T0, new Date(2026, Mm - 1, d)); }
           }
