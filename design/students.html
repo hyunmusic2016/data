@@ -27,7 +27,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
 .flashtag{animation:tagfade 4s ease-out forwards}
 @keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
 .regdlg [disabled]{opacity:.42;cursor:not-allowed!important}
-.srow:hover>span{background-color:#EEF1F0!important;box-shadow:inset 0 1px 0 #C9D0CC,inset 0 -1px 0 #C9D0CC}
+.srow:hover>*{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2!important}
 </style>
 </head>
 <body>
@@ -122,6 +122,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
             <span class="noexp" style="{{actHead}}">관리</span>
           </div>
           <sc-for list="{{cur.rows}}" as="r" hint-placeholder-count="6">
+            <sc-if value="{{r.grpHead}}" hint-placeholder-val="{{ false }}"><div style="{{grpHeadRow}}"><span style="{{grpHeadCell}}"><span style="position: sticky; left: 16px">{{r.grpLabel}}</span></span></div></sc-if>
             <div class="{{r.rowCls}}" data-s="{{r.sKey}}" style="{{gridRow}}">
               <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
                 <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span style="{{x.nameStyle}}">{{x.text}}</span><sc-if value="{{x.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if></span>
@@ -168,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.60.6</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.60.7</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1430,7 +1431,12 @@ class Component extends DCLogic {
       const x = a[0][dKey] || '99', y = b[0][dKey] || '99';
       return x < y ? -1 : x > y ? 1 : a[1] - b[1];
     }).map(p => p[0]);
-    const curRows = curList.filter(match).filter(pass).map(row);
+    const curFl = curList.filter(match).filter(pass), curRows = curFl.map(row);
+    // 재원 탭: 강사별로 상자를 나눈다 (강사 순서대로 이어져 있을 때만, 다른 칸으로 정렬하면 나누지 않음)
+    if (curSec[0] === 'act' && curFl.length) {
+      const tn = curFl.map(s => s.teacher || '강사 없음'), runs = tn.filter((t, i) => i === 0 || t !== tn[i - 1]);
+      if (runs.length === new Set(tn).size) curFl.forEach((s, i) => { if (i === 0 || tn[i] !== tn[i - 1]) { curRows[i].grpHead = true; curRows[i].grpFirst = i === 0; curRows[i].grpLabel = tn[i] + ' · ' + tn.filter(t => t === tn[i]).length + '명'; } });
+    }
     // 필터를 걸었을 때 필터 버튼 왼쪽에 걸러낸 원생 수 (검색어와 상관없이 필터만 기준)
     const fltRes = { on: FG.some(g => (F[g[0]] || []).length), n: curList.filter(pass).length,
       style: 'display: inline-flex; align-items: center; gap: 3px; height: 36px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; border: 1px solid #A9DCDE; background: #FFFFFF; color: #007E82; font-size: 13px; white-space: nowrap' };
@@ -1741,6 +1747,8 @@ class Component extends DCLogic {
       onSearchKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } },
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
       gridRow: COLS,
+      grpHeadRow: COLS + '; background: #F3F5F4; border-top: 10px solid #FFFFFF; border-bottom: 1px solid #DDE2DF; box-shadow: inset 0 1px 0 #DDE2DF',
+      grpHeadCell: 'grid-column: 1 / -1; height: 30px; display: flex; align-items: center; font-size: 12px; font-weight: 600; color: #5E6873',
       c: {
         h: 'height: 36px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap',
         hl: 'height: 36px; display: flex; align-items: center; justify-content: flex-start; padding-left: 8px; font-size: 12px; font-weight: 600; color: #5E6873; white-space: nowrap'
