@@ -209,7 +209,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.59.9</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -625,9 +625,21 @@ class Component extends DCLogic {
     });
     return ac;
   }
+  // 출결 칸 주인(강사 월급과 이어짐): 새로 적거나 바꾼 칸에 지금 보고 있는 강사 탭 이름('by'+날짜)을 적어 둔다
+  stampCells() {
+    const st = this.state, me = (this.tKey() || '').replace(' 원장님', '');
+    const months = [[11, st.ev]].concat(Object.keys(st.evByMonth || {}).filter(m => +m !== 11).map(m => [+m, st.evByMonth[m]]));
+    const snap = this._snap, next = {};
+    months.forEach(p => { const m = p[0], ev = p[1] || {}; next[m] = {};
+      Object.keys(ev).forEach(rid => { const row = ev[rid] || {}, old = snap && (snap[m] || {})[rid];
+        if (snap && me) Object.keys(row).forEach(k => { const mm = /^(?:p|s|u|dp)?(\d+)$/.exec(k); if (!mm || !row[k] || (old && old[k] === row[k])) return; row['by' + mm[1]] = me; });
+        next[m][rid] = Object.assign({}, row); }); });
+    this._snap = next;
+  }
   persistCells() {
     const st = this.state, refs = [st.ev, st.evByMonth, st.mkTimes, st.mkLinks];
     if (this._pc && this._pc.every((x, i) => x === refs[i])) return;
+    this.stampCells();
     const first = !this._pc;
     this._pc = refs;
     if (first) return;
@@ -927,13 +939,16 @@ class Component extends DCLogic {
     setTimeout(() => { const el = document.querySelector('.aflash > span'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
     this.focusSheet();
   }
-  // 강사 이동 원생의 출결 칸 주인: 칸에 적힌 'w'+날짜(이동할 때 예전 강사 이름을 찍어 둠) → 없으면 이동 날짜 전은 예전 강사, 이후는 새 강사.
+  // 강사 이동 원생의 출결 칸 주인: 칸을 적은 강사('by'+날짜, stampCells).
   // 출결은 강사 월급과 이어지므로 자기 칸만 보이고·입력되고·레슨횟수에 들어간다.
   cellMine(s, e, Mm, d) {
     const t = s && s.mvT; if (!t) return true;
-    const w = e && e['w' + d];
+    const by = e && e['by' + d];
+    if (by) return by === t.me;
+    // 주인 표시가 없는 칸: 적힌 칸은 예전 기록이라 예전 강사, 빈 칸은 옮긴 날 전이면 예전 강사·이후면 새 강사
+    const has = e && ['', 'p', 's', 'u', 'dp'].some(x => e[x + d]);
     const ymd = '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-    return (w || (ymd < t.from ? t.prev : t.to)) === t.me;
+    return (has || ymd < t.from ? t.prev : t.to) === t.me;
   }
   applyTransfers(rows, shared, MON, mEnd) {
     // 담당 강사가 바뀐 원생: 바뀐 달에는 예전 강사 출석부 맨 아래 '퇴&휴'로 옮기고(수강권·출결 그대로),
@@ -1369,7 +1384,7 @@ class Component extends DCLogic {
   componentDidMount() {
     this.installPopupDrag();
     this.installTextInputs();
-    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const c = this.cellsState(); this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); } };
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const c = this.cellsState(); this._snap = null; this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); } };
     window.addEventListener('storage', this._st);
     // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
     this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); };
