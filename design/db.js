@@ -201,7 +201,7 @@
           rawSet('academy.ticketPlans', JSON.stringify(tp)); known.tkp = tp;
         }
         var q = qs[0];
-        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); });
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
         if (!qs[2].error) {
@@ -244,6 +244,10 @@
       else if (k === 'academy.attCells') syncAtt(JSON.parse(v || '{}'));
       else if (k === 'academy.payments') syncPays(JSON.parse(v || '[]'));
       else if (k === 'academy.ticketPlans') syncPlans(JSON.parse(v || '{}'));
+      else if (k === 'academy.monthClose') {
+        if (!A.staff || A.staff.role !== 'owner') { toast('출석부 마감은 원장님만 할 수 있습니다'); return; }
+        sb.from('app_settings').upsert({ key: 'monthClose', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '출석부 마감'); });
+      }
       else if (k === 'academy.staffOrder') {
         if (!A.staff || A.staff.role !== 'owner') { toast('직원 순서는 원장님만 바꿀 수 있습니다'); return; }
         sb.from('app_settings').upsert({ key: 'staffOrder', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '직원 순서'); });
