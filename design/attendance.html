@@ -218,7 +218,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.61.5</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -954,7 +954,8 @@ class Component extends DCLogic {
     const out = [];
     rows.forEach(r => {
       const n = r.name.replace('$', '');
-      const st = list.filter(e => e.name === n && e.date <= mEnd).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).pop();
+      // 마지막으로 처리한 기록이 지금 상태 (복귀 날짜가 휴원 날짜보다 앞서도 나중에 처리한 복귀가 이긴다)
+      const st = list.filter(e => e.name === n && e.date <= mEnd).sort((a, b) => ((a.at || 0) - (b.at || 0)) || (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).pop();
       if (!st || st.kind === 'back' || r.g === '퇴휴') { out.push(r); return; }
       if (+st.date.slice(5, 7) === MON) out.push(Object.assign({}, r, { g: '퇴휴', origG: r.g, status: st.kind === 'rest' ? '휴원' : '퇴원', moveTo: '', canBack: true, outDate: st.date }));
     });
@@ -972,7 +973,10 @@ class Component extends DCLogic {
   }
   openBack(s) {
     const t = new Date();
-    this.setState({ ast: { kind: 'back', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    // 복귀 날짜 기본값: 오늘 (휴원·퇴원 날짜가 오늘보다 뒤면 그 날짜)
+    let dd = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+    if (s.outDate && s.outDate > dd) dd = s.outDate;
+    this.setState({ ast: { kind: 'back', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
