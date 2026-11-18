@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.63.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -409,6 +409,12 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       </div>
       <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="font-weight: 600; color: #17201C">{{ad.name}}</b> 원생을 {{ad.kindLabel}} 처리합니다.</span>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.dateLabel}}<input id="ad_date" type="date" defaultValue="{{ad.date}}" onChange="{{ad.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <sc-if value="{{ad.askFresh}}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="재등록 방법" style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; font-weight: 600; color: #5E6873">수강(출결·수납)은 어떻게 할까요?</span>
+        <button type="button" role="radio" aria-checked="{{ad.contOn}}" onClick="{{ad.pickCont}}" style="{{ad.contStyle}}"><b style="font-weight: 600">지난 수강 이어서</b><span style="font-size: 12px; color: #5E6873">미납·남은 회차를 그대로 이어서 계산 (수업완료된 것은 빼고)</span></button>
+        <button type="button" role="radio" aria-checked="{{ad.freshOn}}" onClick="{{ad.pickFresh}}" style="{{ad.freshStyle}}"><b style="font-weight: 600">새로 시작</b><span style="font-size: 12px; color: #5E6873">신규 원생처럼 처음부터 (재등록 날짜부터, 지난 출석부 기록은 그대로)</span></button>
+        <sc-if value="{{ad.freshWarn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: #B4332B">{{ad.freshWarn}}</span></sc-if>
+      </div></sc-if>
       <sc-if value="{{ad.hasReason}}" hint-placeholder-val="{{ true }}"><label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.reasonLabel}}<input id="ad_memo" type="text" defaultValue="{{ad.memo}}" onInput="{{ad.setMemo}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label></sc-if>
       <div style="display: flex; gap: 10px; margin-top: 2px">
         <button type="button" onClick="{{ad.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
@@ -996,13 +1002,13 @@ class Component extends DCLogic {
     // 복귀 날짜 기본값: 오늘 (휴원·퇴원 날짜가 오늘보다 뒤면 그 날짜)
     let dd = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
     if (s.outDate && s.outDate > dd) dd = s.outDate;
-    this.setState({ ast: { kind: 'back', from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
+    this.setState({ ast: { kind: 'back', oweN: (this._unpaid || {})[s.id] || 0, oweDiff: (this._diffLeft || {})[s.id] || 0, from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
     const S = this.state.ast;
     if (!S) return;
-    const list = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: (S.memo || '').trim(), ticket: S.kind === 'rest' ? S.ticket : '' }]);
+    const list = this.readStatus().concat([{ id: 'S' + Date.now(), at: Date.now(), name: S.name, kind: S.kind, date: S.date, reason: (S.memo || '').trim(), ticket: S.kind === 'rest' ? S.ticket : (S.kind === 'back' && S.from === 'out' && S.fresh ? 'NEW' : '') }]);
     try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (e) {}
     this._flash = { key: S.key, tag: S.kind === 'back' ? (S.from === 'out' ? '재등록됨' : '복귀됨') : '' };
     clearTimeout(this._ft);
@@ -1140,7 +1146,7 @@ class Component extends DCLogic {
     const logs = reg != null ? ((D.log || {})[reg] || []) : [];
     const ev = [];
     if (db && db.join_date) ev.push({ d: db.join_date, kind: 'join', title: '입원', lines: [] });
-    (this.state.statusList || []).filter(e => e.name === name && KN[e.kind] && !logs.some(l => l.kind === e.kind && l.d === e.date)).forEach(e => ev.push({ d: e.date, kind: e.kind, title: KN[e.kind], lines: [e.reason ? '사유: ' + e.reason : '', e.kind === 'rest' && e.ticket ? '그 당시 수강권: ' + e.ticket : ''].filter(Boolean), at: e.at || 0 }));
+    (this.state.statusList || []).filter(e => e.name === name && KN[e.kind] && !logs.some(l => l.kind === e.kind && l.d === e.date)).forEach(e => ev.push({ d: e.date, kind: e.kind, title: KN[e.kind], lines: [e.reason ? '사유: ' + e.reason : '', e.kind === 'rest' && e.ticket ? '그 당시 수강권: ' + e.ticket : '', e.kind === 'back' && e.ticket === 'NEW' ? '새로 시작 (지난 수강 이어지지 않음)' : ''].filter(Boolean), at: e.at || 0 }));
     logs.forEach(l => ev.push(l));
     ((reg != null ? (D.hist || {})[reg] : null) || []).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
     (this.state.shared || []).filter(e => e.name === name).forEach(e => ev.push({ d: e.from, kind: 'change', title: '수업 정보 변경', future: e.from > td, diffs: this.diffFields(e.prev ? this.sharedToPatch(e.prev) : {}, this.sharedToPatch(e)), at: e.at || 0 }));
@@ -2245,10 +2251,13 @@ class Component extends DCLogic {
       // 차액: 수강권을 쓰는 중에 회당 수업료가 바뀌면 남은 회차 × (새 회당 − 예전 회당). 'dp'+날짜 칸 = 차액 수납 금액
       let tkSeq = 0, diffDue = 0, diffPaid = 0, diffDate = '', diffDateM = 0, diffSeq = -1, diffIdx = 0, diffT = 0;
       const ymdOf = (Mm, d) => '2026-' + String(Mm).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+      // 퇴원 뒤 '새로 시작'으로 재등록한 날: 그날부터 신규처럼 수강권을 처음부터 (그 전 기록은 그대로)
+      const FRESH = (this.state.statusList || []).filter(e => e.name === s0.name.replace('$', '') && e.kind === 'back' && e.ticket === 'NEW').map(e => e.date);
       const runMonth = (Mm, cur) => {
         const EVm = cur ? EV : this.monthEvents(Mm);
         const NDm = new Date(2026, Mm, 0).getDate();
         for (let d = 1; d <= NDm; d++) {
+          if (FRESH.length && FRESH.indexOf(ymdOf(Mm, d)) >= 0) { keepStart(firstDate, lastLesson); T = T0; used = 0; paid = false; newReg = true; prevT = 0; prevMarks = []; marks = []; firstDate = ''; queue.length = 0; queueD.length = 0; payDate = null; tCells = []; diffDue = 0; diffPaid = 0; diffSeq = -1; tkSeq++; latePaid = ''; }
           if (s0.reg != null && d > 1 || s0.reg != null && Mm > M0) {
             const u0 = this.unitOn(s0, d > 1 ? ymdOf(Mm, d - 1) : ymdOf(Mm - 1, new Date(2026, Mm - 1, 0).getDate())), u1 = this.unitOn(s0, ymdOf(Mm, d));
             if (u0 && u1 && u0 !== u1 && paid && used < T && !(s0.dimFrom && cur && d >= s0.dimFrom)) { diffDue += (T - used) * (u1 - u0); diffSeq = tkSeq; diffIdx = used; diffT = T; }
@@ -2982,6 +2991,12 @@ class Component extends DCLogic {
           close: () => { this.setState({ ast: null }); this.focusSheet(); },
           go: () => this.applyAStatus(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ ast: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyAStatus(); } },
+          // 퇴원 → 재등록: 지난 수강을 이어서 할지, 새로 시작할지 고른다 (새로 시작 = 상태 기록 ticket 'NEW')
+          askFresh: S.kind === 'back' && S.from === 'out', contOn: S.fresh ? 'false' : 'true', freshOn: S.fresh ? 'true' : 'false',
+          pickCont: () => upd({ fresh: false }), pickFresh: () => upd({ fresh: true }),
+          contStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (!S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
+          freshStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
+          freshWarn: S.fresh && (S.oweN > 0 || S.oweDiff > 0) ? '남은 미납(' + [S.oweN ? S.oweN + '회' : '', S.oweDiff ? '차액 ' + Number(S.oweDiff).toLocaleString('ko-KR') + '원' : ''].filter(Boolean).join(' · ') + ')은 이어지지 않습니다. 필요하면 먼저 수납하거나 미납 정리를 해 주세요.' : '',
           setDate: e => upd({ date: e.target.value }),
           setMemo: e => { Object.assign(S, { memo: e.target.value }); }
         };
