@@ -226,7 +226,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.16</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.17</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -669,6 +669,8 @@ class Component extends DCLogic {
     };
     if (this.dbMode()) Object.assign(this.state, this.cellsState());
     try { Object.assign(this.state, this.sheetFor(0)); } catch (e) {}
+    // 새로고침·처음 열 때는 항상 '오늘이 든 달' 출석부로 (그 달 시트가 없으면 맨 왼쪽 시트)
+    try { const L0 = this.sheetList(0), ci = L0.findIndex(x => x[1] === this.kOf(this.todayYmd())); if (ci >= 0) this.state.sheet = ci; } catch (e) {}
   }
   // ---------- 출석부 저장 (로그인 사이트) ----------
   // 화면의 출결·수납 표시와 보강 시간을 원생('D'+원생번호)·달별로 'academy.attCells'에 써 두면 db.js가 Supabase(attendance_cells)에 저장한다.
