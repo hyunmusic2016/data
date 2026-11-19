@@ -226,7 +226,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.9</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2848,7 +2848,8 @@ class Component extends DCLogic {
       title: '현실용음악학원 ' + KC[hKind][0], isAtt: hKind === 'att', isClass: hKind === 'class', isWork: hKind === 'work',
       bar: 'grid-column: 1 / -1; display: flex; align-items: stretch; height: 76px; min-width: 0; background: #FFFFFF',
       titleBox: 'display: flex; align-items: center; gap: 14px; padding-left: 22px; flex: none',
-      logo: 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + KC[hKind][1] + '; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px ' + KC[hKind][2],
+      // 제목 아이콘 = 지금 강사 탭 색 (강사 탭 칩과 같은 바탕·글자색)
+      logo: (() => { const tc = this.teacherColor(String(this.tKey() || '').replace(' 원장님', '')); return 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + tc[0] + '; color: ' + tc[1] + '; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px ' + tc[1] + '22, 0 4px 12px ' + tc[1] + '2E'; })(),
       lesson: 'width: 150px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 1px solid #EBEEEC',
       count: 'width: 120px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #EBEEEC',
       teacher: 'width: 230px; flex: none; display: flex; align-items: center; gap: 10px; padding-left: 16px; box-sizing: border-box; border-left: 1px solid #EBEEEC',
