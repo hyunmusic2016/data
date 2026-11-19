@@ -309,7 +309,7 @@
     if (!A.clogReady) return;
     var seen = known.clog = known.clog || {}, up = [];
     (list || []).forEach(function (e) { if (!e || !e.id || seen[e.id]) return; seen[e.id] = 1; up.push({ local_id: e.id, at: new Date(e.at).toISOString(), who: e.who, tab: e.tab, ym: e.ym, rid: String(e.rid), name: e.name, k: e.k, a: e.a, b: e.b }); });
-    if (up.length) sb.from('cell_log').upsert(up, { onConflict: 'local_id' }).then(function (r) { report(r, '변경 기록'); });
+    if (up.length) sb.from('cell_log').upsert(up, { onConflict: 'local_id', ignoreDuplicates: true }).then(function (r) { report(r, '변경 기록'); });
   }
   function syncPlans(all) {
     var prev = known.tkp || {}, now = {};
