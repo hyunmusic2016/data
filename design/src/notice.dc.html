@@ -52,8 +52,8 @@ html.bwp .printonly .pcell{border-color:#000!important}
         <span style="flex: 1"></span>
         <span class="noexp" style="display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px">
           <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{selTxt}}</span>
-          <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #5E6873">발송 날짜<input id="nt_date" type="date" defaultValue="{{sendDate}}" onChange="{{setDate}}" style="height: 38px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C"></label>
-          <button type="button" onClick="{{bulk}}" disabled="{{bulkOff}}" style="{{bulkStyle}}">선택한 원생 발송 체크</button>
+          <label style="display: inline-flex; align-items: center"><input id="nt_date" aria-label="발송 날짜" type="date" defaultValue="{{sendDate}}" onChange="{{setDate}}" style="height: 38px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C"></label>
+          <button type="button" onClick="{{bulk}}" disabled="{{bulkOff}}" style="{{bulkStyle}}">발송</button>
         </span>
       </div>
 
@@ -63,7 +63,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 16px; height: 16px; accent-color: #00A6AB; cursor: pointer"></span>
             <span role="columnheader" style="{{c.h}}">요일</span>
             <span role="columnheader" style="{{c.h}}">이름</span>
-            <span role="columnheader" style="{{c.h}}">발송</span>
+            <span role="columnheader" style="{{c.h}}">날짜</span>
             <span role="columnheader" style="{{c.h}}">횟수</span>
             <span role="columnheader" style="{{c.h}}">강사</span>
             <span role="columnheader" style="{{c.hl}}">수강</span>
@@ -76,7 +76,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
               <span role="cell" class="noexp" onMouseDown="{{r.dragDown}}" onMouseEnter="{{r.dragOver}}" style="{{c.cc}}; cursor: pointer; user-select: none"><input type="checkbox" tabindex="-1" aria-label="{{r.selLabel}}" checked="{{r.on}}" style="width: 16px; height: 16px; accent-color: #00A6AB; pointer-events: none"></span>
               <span role="cell" style="{{c.cc}}"><sc-for list="{{r.days}}" as="dy" hint-placeholder-count="1"><span style="{{dy.style}}">{{dy.t}}</span></sc-for></span>
               <span role="cell" style="{{c.cc}}; flex-direction: column; gap: 0; font-weight: 600">{{r.name}}<sc-if value="{{r.stTag}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTag}}</span></sc-if></span>
-              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="1"><span style="{{sd.style}}">{{sd.t}}<button type="button" class="noexp" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="발송 기록 지우기" style="width: 18px; height: 18px; padding: 0; border: none; border-radius: 999px; background: transparent; color: inherit; opacity: 0.6; font-family: inherit; font-size: 13px; line-height: 1; cursor: pointer">×</button></span></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
+              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="1"><button type="button" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="눌러서 이 발송 기록 지우기" style="{{sd.style}}">{{sd.t}}</button></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
               <span role="cell" style="{{c.cc}}"><span style="{{r.cntStyle}}">{{r.cnt}}</span></span>
               <span role="cell" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
               <span role="cell" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 3px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
@@ -112,7 +112,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.4</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.5</span>
     </div>
   </main>
 
@@ -416,6 +416,9 @@ class Component extends DCLogic {
     this.installTextInputs();
     this._st = e => { if (/^academy\.(tickets|payNotice|students|menu|employees|staffOrder)$/.test(e.key || '')) this.setState({ tick: Date.now() }); };
     window.addEventListener('storage', this._st);
+    // 체크한 뒤 Enter = '발송' (창이 열려 있거나 글자 칸에 있을 때는 아님)
+    this._ek = e => { if (e.key !== 'Enter' || e.isComposing || this.state.ask || this.state.log || this.state.printOpen) return; const a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'checkbox')) && a.id !== 'nt_date') return; const sel = this.state.sel || {}; if (!Object.keys(sel).length) return; e.preventDefault(); this.bulkSend(); };
+    window.addEventListener('keydown', this._ek);
     this._dbl = () => this.setState({ tick: Date.now() });
     document.addEventListener('academy:data', this._dbl);
   }
@@ -549,7 +552,7 @@ class Component extends DCLogic {
         teacher: r.teacher || '-', tStyle: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; font-weight: 600; background: ' + tc[0] + '; color: ' + tc[1],
         tk: { dotLines: r.tk.dotLines || [], subParts: r.tk.subParts || [{ t: r.tk.text || '', style: '' }], queueTxt: r.tk.queueTxt || '' },
         // 발송 칸은 가장 최근 날짜만 (그 날 요일 색). 전체는 '기록'
-        sends: sends.slice(-1).map(d => { const c = this.dateColor(d); return { t: this.md(d), style: 'display: inline-flex; align-items: center; gap: 1px; height: 22px; padding: 0 2px 0 7px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1], del: () => this.setState({ ask: { kind: 'send', name: r.name, tk: r.tk, d: d } }), delLabel: r.name + ' ' + this.md(d) + ' 발송 기록 지우기' }; }), noSend: !sends.length,
+        sends: sends.slice(-1).map(d => { const c = this.dateColor(d); return { t: this.md(d), style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border: none; border-radius: 999px; font-family: inherit; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1], del: () => this.setState({ ask: { kind: 'send', name: r.name, tk: r.tk, d: d } }), delLabel: r.name + ' ' + this.md(d) + ' 발송 기록 지우기' }; }), noSend: !sends.length,
         logOpen: () => this.setState({ log: { name: r.name, tk: r.tk } }), logOff: !sends.length,
         logStyle: 'height: 26px; padding: 0 8px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 12px; font-weight: 600; ' + (sends.length ? 'color: #3A4450; cursor: pointer' : 'color: #C3CAC6; cursor: default'),
         hide: () => r.grp === 3 ? this.hideRow(r.name, r.tk, false) : this.setState({ ask: { kind: 'hide', name: r.name, tk: r.tk } }), hideLabel: r.name + (r.grp === 3 ? ' 목록으로 복귀' : ' 목록에서 빼기'), hideTxt: r.grp === 3 ? '복귀' : '빼기',
@@ -591,7 +594,7 @@ class Component extends DCLogic {
         cc: 'min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; padding: 2px; box-sizing: border-box; font-size: 14px',
         cl: 'min-height: 36px; display: flex; align-items: center; justify-content: flex-start; padding: 2px 6px; box-sizing: border-box; font-size: 13px; min-width: 0'
       },
-      printHead: ['요일', '이름', '발송', '횟수', '강사', '수강', 'MEMO'],
+      printHead: ['요일', '이름', '날짜', '횟수', '강사', '수강', 'MEMO'],
       printRows: rows.map(r => r.print),
       printDate: d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일',
       printX: () => this.setState({ printOpen: true }),
