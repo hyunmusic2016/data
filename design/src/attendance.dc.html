@@ -222,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.67.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.67.3</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -300,10 +300,10 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     </div>
   </sc-if>
   <sc-if value="{{hist.open}}" hint-placeholder-val="{{ false }}">
-    <div class="noprint noexp" role="dialog" aria-label="변경 기록" style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 42; width: 340px; max-width: 92vw; display: flex; flex-direction: column; background: #FFFFFF; border-left: 1px solid #DDE2DF; box-shadow: -8px 0 24px rgba(23, 32, 28, 0.08)">
+    <div class="noprint noexp" role="dialog" aria-label="변경 기록" style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 1002; width: 340px; max-width: 92vw; display: flex; flex-direction: column; background: #FFFFFF; border-left: 1px solid #DDE2DF; box-shadow: -8px 0 24px rgba(23, 32, 28, 0.08)">
       <div style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 10px">
         <span style="font-size: 17px; font-weight: 600; color: #17201C">변경 기록</span>
-        <button type="button" onClick="{{hist.close}}" aria-label="닫기" style="margin-left: auto; width: 32px; height: 32px; border-radius: 8px; border: none; background: #F3F5F4; color: #5B6670; font-size: 16px; cursor: pointer">×</button>
+        <button type="button" onClick="{{hist.close}}" aria-label="닫기" style="margin-left: auto; display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">닫기 ×</button>
       </div>
       <div style="display: flex; gap: 6px; padding: 0 16px 10px">
         <sc-for list="{{hist.scopes}}" as="sc" hint-placeholder-count="3"><button type="button" onClick="{{sc.pick}}" style="{{sc.style}}">{{sc.label}}</button></sc-for>
@@ -2029,7 +2029,7 @@ class Component extends DCLogic {
     if (e.key === '3') { e.preventDefault(); this.openPop('mk'); return; }
     if (e.key === 'Enter') { e.preventDefault(); const pm = this.state.pop && this.state.pop.mode; if (pm === 'mk') this.saveMakeup(); else if (pm === 'del') this.applyMark(''); else this.openPop('main'); return; }
     if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); this.askDelete(); return; }
-    if (e.key === 'Escape') { e.preventDefault(); if (this.state.pop) this.closePop(); else this.setState({ sel: null }); return; }
+    if (e.key === 'Escape') { e.preventDefault(); if (this.state.pop) this.closePop(); else if (this.state.hist) this.setState({ hist: null }); else this.setState({ sel: null }); return; }
     const D = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1] }[e.key];
     if (!D) return;
     e.preventDefault();
