@@ -21,7 +21,7 @@ button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6
 html.bwp .printonly *{color:#000!important;background-color:transparent!important}
 html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!important}
 @media print{.noprint{display:none!important}.printonly{display:block!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-.flashrow>span{animation:rowflash 3.6s ease-out}
+.flashrow>span{animation:rowblink 1s ease-in-out 30}@keyframes rowblink{0%,100%{background-image:linear-gradient(transparent,transparent)}50%{background-image:linear-gradient(var(--fl),var(--fl)),linear-gradient(var(--fl),var(--fl))}}
 .flash-rest>span{--fl:rgba(224,162,59,.22)}.flash-out>span{--fl:rgba(217,116,108,.2)}.flash-back>span,.flash-reg>span,.flash-new>span{--fl:rgba(0,166,171,.18)}.flash-edit>span{--fl:rgba(138,180,232,.25)}
 @keyframes rowflash{0%,55%{background-image:linear-gradient(var(--fl),var(--fl))}100%{background-image:linear-gradient(transparent,transparent)}}
 .flashtag{animation:tagfade 4s ease-out forwards}
@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.7</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.8</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -852,8 +852,9 @@ class Component extends DCLogic {
     // 처리한 원생이 옮겨 간 탭에서 줄을 잠깐 색으로 표시하고 화면 가운데로 보여준다
     this._flash = { id: id, kind: kind };
     clearTimeout(this._ft);
-    this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 4000);
-    setTimeout(() => { const el = document.querySelector('.flashrow'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
+    // 30초 동안 깜빡이고, 옮겨 간 탭이 그려진 뒤 그 줄로 스크롤
+    this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 30000);
+    [80, 350].forEach(ms => setTimeout(() => { const el = document.querySelector('.flashrow'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, ms));
   }
   diffFields(prev, next) {
     // 바뀐 칸만 '이전 → 이후'로 (수업 정보·수강료·현금영수증·기본 정보 공통)
@@ -1455,7 +1456,7 @@ class Component extends DCLogic {
     };
     const FLT = { rest: ['휴원됨', '#FFF4E0', '#9A5B00'], out: ['퇴원됨', '#FCEBEA', '#B4332B'], back: ['복귀됨', '#E6F6F6', '#007E82'], reg: ['재등록됨', '#E6F6F6', '#007E82'], edit: ['수정됨', '#E3ECFD', '#2952A3'], new: ['새로 등록', '#E6F6F6', '#007E82'] };
     const row = s => {
-      const fl = this._flash && this._flash.id === s.id ? this._flash.kind : '';
+      const fl = this._flash && this._flash.id === s.id && !s.ghost ? this._flash.kind : '';
       const pro = s.cls === 'pro', big = s.flags.t8 || s.flags.t12;
       const bg = pro ? '#F7F4FD' : '#FFFFFF';
       const C = cell + '; background: ' + bg;
