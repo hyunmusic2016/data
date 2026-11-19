@@ -222,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.1</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1772,7 +1772,8 @@ class Component extends DCLogic {
       this.focusSheet();
       return;
     }
-    this.writePays(this.readPays().concat([Object.assign({ id: 'P' + Date.now(), at: Date.now() }, rec)]));
+    // 새 수납: 칸에 ₩가 없는데 같은 날짜 예전 기록이 남아 있으면 먼저 지운다 (지운 수납이 다시 살아나 쌓이지 않게)
+    this.writePays(this.readPays().filter(x => !(x.name === rec.name && x.date === rec.date)).concat([Object.assign({ id: 'P' + Date.now(), at: Date.now() }, rec)]));
     this.setState({ pay: null });
     this.applyMark('V', { noNotice: true });
     // 현금영수증 발급 대상자는 수납한 뒤에도 발급 안내 창을 한 번 더 띄운다 (이번 수납 금액·횟수로)
@@ -1851,6 +1852,7 @@ class Component extends DCLogic {
           cashList.push({ name: s0.name.replace('$', ''), type: (s0.rowBg ? '전문반' : '취미반') + ' · ' + T0 + '회', purpose: '개인 (소득공제)', amount: amt.toLocaleString('ko-KR') + '원', no: s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4) });
         });
       }
+      if (allPaid) this.dropPays(cells, m);
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: allPaid ? '' : true }));
     } else if (!v) {
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'dp' + c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' }))).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })), cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: '' })));
@@ -1869,10 +1871,17 @@ class Component extends DCLogic {
     if (cashList.length) setTimeout(() => { const el = document.getElementById('cashNotice'); if (el) el.focus(); }, 30);
     else this.focusSheet();
   }
+  // 고른 칸들 날짜의 수납 기록(같은 날 여러 건 포함)을 모두 지운다
+  dropPays(cells, m) {
+    const stu = this.students(), del = {};
+    cells.forEach(c => { const s0 = stu.find(x => x.id === c.sid); if (s0) del[s0.name.replace('$', '') + '|' + this.ymK(m) + '-' + String(c.d).padStart(2, '0')] = 1; });
+    const pl = this.readPays(), keep = pl.filter(x => !del[x.name + '|' + x.date]); if (keep.length !== pl.length) this.writePays(keep);
+  }
   clearPart(which) {
     const cells = this.selCells();
     if (!cells.length) return;
     const m = this.sheetList()[this.state.sheet][1] || 11;
+    if (which === 'pay') this.dropPays(cells, m);
     const cur = this.monthEvents(m);
     const items = which === 'pay'
       ? cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'dp' + c.d, v: '' })))
