@@ -215,7 +215,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -285,6 +285,16 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <button type="button" onClick="{{qe.rest}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F0D4A4; background: #FFF4E0; color: #9A5B00; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">휴원</button>
         <button type="button" onClick="{{qe.out}}" style="height: 34px; padding: 0 14px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">퇴원</button>
       </div>
+      <sc-if value="{{qe.showBk}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; background: #FAFBFA; border: 1px dashed #D5DBD8">
+        <span style="font-size: 12px; font-weight: 600; color: #5E6873">{{qe.bkTitle}}</span>
+        <div style="display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap">
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5E6873">{{qe.bkFromLabel}}<input id="qe_bkfrom" type="date" defaultValue="{{qe.bkFrom}}" onChange="{{qe.setBkFrom}}" style="height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></label>
+          <span style="padding-bottom: 8px; color: #8A949E">~</span>
+          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5E6873">{{qe.bkToLabel}}<input id="qe_bkto" type="date" defaultValue="{{qe.bkTo}}" onChange="{{qe.setBkTo}}" style="height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></label>
+          <button type="button" onClick="{{qe.saveBk}}" style="height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9D0CC; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">{{qe.bkBtn}}</button>
+        </div>
+        <span style="font-size: 12px; font-weight: 600; color: #C2410C">{{qe.bkErr}}</span>
+      </div></sc-if>
       <span style="font-size: 13px; font-weight: 600; color: #C2410C">{{qe.err}}</span>
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
@@ -1199,7 +1209,11 @@ class Component extends DCLogic {
     const rows = this.students().filter(x => String(x.sid || x.id).replace(/^K/, '') === key && x.g !== '퇴휴');
     const times = {};
     rows.forEach(x => { const m = /^(\d{1,2}):(\d{2})$/.exec(x.time || ''); if (m) times[x.g] = { h: String((+m[1] % 12) || 12), m: m[2] }; });
-    this.setState({ qe: { rowId: s.id, key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: this.todayYmd(), err: '' } });
+    // 마지막 처리가 복귀·재등록이면 그 전 휴원(퇴원) 기간을 고칠 수 있게
+    const SLq = (this.state.statusList || []).filter(e => e.name === s.name.replace('$', '')).sort((a, b) => (a.at || 0) - (b.at || 0));
+    const lastQ = SLq[SLq.length - 1], prevQ = lastQ && lastQ.kind === 'back' ? SLq.slice(0, -1).filter(e => e.kind === 'rest' || e.kind === 'out').pop() : null;
+    const bk = prevQ ? { fromId: prevQ.id, from: prevQ.date, toId: lastQ.id, to: lastQ.date, rw: prevQ.kind === 'out' ? '퇴원' : '휴원', bw: prevQ.kind === 'out' ? '재등록' : '복귀' } : null;
+    this.setState({ qe: { bk: bk, rowId: s.id, key: key, name: s.name.replace('$', ''), days: rows.map(x => x.g), multi: rows.length > 1, times: times, stick: !!s.stick, date: this.todayYmd(), err: '' } });
     setTimeout(() => { const d = document.getElementById('qeDlg'); if (d) d.focus(); }, 30);
   }
   saveQuick() {
@@ -3090,6 +3104,15 @@ class Component extends DCLogic {
         const upd = p => this.setState({ qe: Object.assign({}, Q, p, { err: '' }) });
         const ORD = ['월', '화', '수', '목', '금', '토', 'R'];
         return {
+          // 지난 휴원(퇴원) 기간 고치기: 마지막이 복귀·재등록이면 그 휴원(퇴원) 날짜 ~ 복귀(재등록) 날짜
+          showBk: !!Q.bk, bkTitle: Q.bk ? '지난 ' + Q.bk.rw + ' 기간 고치기 (이 기간은 출결을 넣을 수 없어요)' : '', bkFromLabel: Q.bk ? Q.bk.rw + ' 날짜' : '', bkToLabel: Q.bk ? Q.bk.bw + ' 날짜' : '',
+          bkFrom: Q.bk ? Q.bk.from : '', bkTo: Q.bk ? Q.bk.to : '', bkBtn: Q.bk && Q.bk.saved ? '고쳤습니다' : '기간 저장', bkErr: Q.bk ? (Q.bk.err || '') : '',
+          setBkFrom: e => { Object.assign(Q.bk, { from2: e.target.value }); }, setBkTo: e => { Object.assign(Q.bk, { to2: e.target.value }); },
+          saveBk: () => { const B = Q.bk, f = B.from2 || B.from, t2 = B.to2 || B.to; if (!/^\d{4}-\d{2}-\d{2}$/.test(f) || !/^\d{4}-\d{2}-\d{2}$/.test(t2)) return; if (t2 < f) { this.setState({ qe: Object.assign({}, Q, { bk: Object.assign({}, B, { err: B.bw + ' 날짜는 ' + B.rw + ' 날짜와 같거나 뒤여야 해요', saved: false }) }) }); return; }
+            const list = this.readStatus(), A = window.academy; [[B.fromId, f], [B.toId, t2]].forEach(p => { const e = list.find(x => x.id === p[0]); if (e && e.date !== p[1]) { e.date = p[1]; if (A && A.updateStatusDate) A.updateStatusDate(e.id, p[1]); } });
+            try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (x) {}
+            this.setState({ statusList: list, qe: Object.assign({}, Q, { bk: Object.assign({}, B, { from: f, to: t2, from2: '', to2: '', saved: true, err: '' }) }) }); },
+
           open: true, name: Q.name, date: Q.date, err: Q.err || '', lock: lock ? 'true' : 'false',
           close: () => { this.setState({ qe: null }); this.focusSheet(); },
           save: () => this.saveQuick(),
