@@ -222,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.7</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1839,7 +1839,15 @@ class Component extends DCLogic {
   }
   // 고른 칸 중 휴원·퇴원 기간(수납만 되는 칸)이 있는지
   selLocked(all) { if (this._force && this._force === JSON.stringify(this.state.sel)) return false; const c = this.selCells(), L = this._rowLock || []; const f = x => !!(L[x.r] && L[x.r](x.d)); return c.length > 0 && (all ? c.every(f) : c.some(f)); }
-  lockNote() { this._force = null; this.setState({ pop: null }); this.openPay(); }
+  lockNote() {
+    this._force = null; this.setState({ pop: null });
+    // 휴원·퇴원 기간: 미납·차액이 없고 그 칸에 수납 기록도 없으면 수납 창을 열지 않는다
+    const c = this.selCells()[0]; if (!c) return;
+    const m = this.sheetList()[this.state.sheet][1] || 11, e = this.monthEvents(m)[c.sid] || {};
+    const owe = ((this._unpaid || {})[c.sid] || 0) + ((this._diff || {})[c.sid] || 0);
+    if (!owe && !e['p' + c.d] && e[c.d] !== 'V' && !e['dp' + c.d]) return;
+    this.openPay();
+  }
   // 휴원·퇴원 기간 칸: 수납 창의 '출결 입력' 버튼으로만 출결을 넣는다
   forceMark(v) {
     this._force = JSON.stringify(this.state.sel);
