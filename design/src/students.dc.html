@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.4</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -414,7 +414,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{sd.dateLabel}}<input id="sd_date" type="date" defaultValue="{{sd.date}}" onChange="{{sd.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       <sc-if value="{{sd.askFresh}}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="재등록 방법" style="display: flex; flex-direction: column; gap: 8px">
         <span style="font-size: 13px; font-weight: 600; color: #5E6873">수강(출결·수납)은 어떻게 할까요?</span>
-        <button type="button" role="radio" aria-checked="{{sd.contOn}}" onClick="{{sd.pickCont}}" style="{{sd.contStyle}}"><b style="font-weight: 600">지난 수강 이어서</b><span style="font-size: 12px; color: #5E6873">미납·남은 회차를 그대로 이어서 계산 (수업완료된 것은 빼고)</span></button>
+        <button type="button" role="radio" aria-checked="{{sd.contOn}}" onClick="{{sd.pickCont}}" style="{{sd.contStyle}}"><b style="font-weight: 600">지난 수강 이어서</b><span style="font-size: 12px; color: #5E6873">{{sd.contSub}}</span></button>
         <button type="button" role="radio" aria-checked="{{sd.freshOn}}" onClick="{{sd.pickFresh}}" style="{{sd.freshStyle}}"><b style="font-weight: 600">새로 시작</b><span style="font-size: 12px; color: #5E6873">신규 원생처럼 처음부터 (재등록 날짜부터, 지난 출석부 기록은 그대로)</span></button>
         <sc-if value="{{sd.freshWarn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: #B4332B">{{sd.freshWarn}}</span></sc-if>
       </div></sc-if>
@@ -830,7 +830,9 @@ class Component extends DCLogic {
   openStatus(kind, s) {
     const t = new Date();
     const tv0 = s.ticketView || {};
-    this.setState({ stat: { kind: kind, oweN: tv0.n || 0, oweDiff: tv0.diffLeft || 0, from: s.status, id: s.id, name: s.name, ticket: s.ticketNow || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
+    // 퇴원 → 재등록: 미납이나 남은 수업이 있을 때만 '지난 수강 이어서'를 고를 수 있음, 없으면 바로 새로 시작
+    const canCont0 = (tv0.n || 0) > 0 || (tv0.diffLeft || 0) > 0 || (tv0.left || 0) > 0;
+    this.setState({ stat: { kind: kind, canCont: canCont0, fresh: kind === 'back' && s.status === 'out' && !canCont0, left: tv0.left || 0, oweN: tv0.n || 0, oweDiff: tv0.diffLeft || 0, from: s.status, id: s.id, name: s.name, ticket: s.ticketNow || '', date: t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'), memo: '' } });
     setTimeout(() => { const d = document.getElementById('statusDlg'); if (d) d.focus(); }, 30);
   }
   flashRow(id, kind) {
@@ -1829,7 +1831,8 @@ class Component extends DCLogic {
           chip: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 8px; font-size: 13px; font-weight: 600; background: ' + K[3] + '; color: ' + K[4],
           goStyle: 'flex: 2; height: 48px; border-radius: 14px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; border: 1px solid ' + K[5] + '; background: ' + K[3] + '; color: ' + K[4],
           // 퇴원 → 재등록: 지난 수강을 이어서 할지, 새로 시작할지 고른다 (새로 시작 = 상태 기록 ticket 'NEW')
-          askFresh: S.kind === 'back' && S.from === 'out', contOn: S.fresh ? 'false' : 'true', freshOn: S.fresh ? 'true' : 'false',
+          contSub: '이어서 계산: ' + [S.oweN ? '미납 ' + S.oweN + '회' : '', S.oweDiff ? '차액 ' + Number(S.oweDiff).toLocaleString('ko-KR') + '원' : '', S.left ? '남은 수업 ' + S.left + '회' : ''].filter(Boolean).join(' · '),
+          askFresh: S.kind === 'back' && S.from === 'out' && !!S.canCont, contOn: S.fresh ? 'false' : 'true', freshOn: S.fresh ? 'true' : 'false',
           pickCont: () => this.setState({ stat: Object.assign({}, S, { fresh: false }) }), pickFresh: () => this.setState({ stat: Object.assign({}, S, { fresh: true }) }),
           contStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (!S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
           freshStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),

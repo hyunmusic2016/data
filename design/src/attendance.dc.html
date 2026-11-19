@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.4</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -411,7 +411,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.dateLabel}}<input id="ad_date" type="date" defaultValue="{{ad.date}}" onChange="{{ad.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
       <sc-if value="{{ad.askFresh}}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="재등록 방법" style="display: flex; flex-direction: column; gap: 8px">
         <span style="font-size: 13px; font-weight: 600; color: #5E6873">수강(출결·수납)은 어떻게 할까요?</span>
-        <button type="button" role="radio" aria-checked="{{ad.contOn}}" onClick="{{ad.pickCont}}" style="{{ad.contStyle}}"><b style="font-weight: 600">지난 수강 이어서</b><span style="font-size: 12px; color: #5E6873">미납·남은 회차를 그대로 이어서 계산 (수업완료된 것은 빼고)</span></button>
+        <button type="button" role="radio" aria-checked="{{ad.contOn}}" onClick="{{ad.pickCont}}" style="{{ad.contStyle}}"><b style="font-weight: 600">지난 수강 이어서</b><span style="font-size: 12px; color: #5E6873">{{ad.contSub}}</span></button>
         <button type="button" role="radio" aria-checked="{{ad.freshOn}}" onClick="{{ad.pickFresh}}" style="{{ad.freshStyle}}"><b style="font-weight: 600">새로 시작</b><span style="font-size: 12px; color: #5E6873">신규 원생처럼 처음부터 (재등록 날짜부터, 지난 출석부 기록은 그대로)</span></button>
         <sc-if value="{{ad.freshWarn}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; font-weight: 600; color: #B4332B">{{ad.freshWarn}}</span></sc-if>
       </div></sc-if>
@@ -1002,7 +1002,10 @@ class Component extends DCLogic {
     // 복귀 날짜 기본값: 오늘 (휴원·퇴원 날짜가 오늘보다 뒤면 그 날짜)
     let dd = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
     if (s.outDate && s.outDate > dd) dd = s.outDate;
-    this.setState({ ast: { kind: 'back', oweN: (this._unpaid || {})[s.id] || 0, oweDiff: (this._diffLeft || {})[s.id] || 0, from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
+    // 퇴원 → 재등록: 미납이나 남은 수업이 있을 때만 '지난 수강 이어서'를 고를 수 있음, 없으면 바로 새로 시작
+    const oweN0 = (this._unpaid || {})[s.id] || 0, oweD0 = (this._diffLeft || {})[s.id] || 0, left0 = (this._remain || {})[s.id] || 0;
+    const canCont0 = oweN0 > 0 || oweD0 > 0 || left0 > 0;
+    this.setState({ ast: { kind: 'back', canCont: canCont0, fresh: !canCont0, left: left0, oweN: oweN0, oweDiff: oweD0, from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
@@ -2456,6 +2459,8 @@ class Component extends DCLogic {
         this._diff = this._diff || {}; this._diff[s.id] = Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         // 미납 횟수 (미납금액 수납 기본 횟수, 없으면 미납금액 수납 버튼을 숨김)
         this._unpaid[s.id] = !r.paid ? r.used : 0;
+        // 남은 수업(낸 수강권 중 아직 안 들은 회차 + 대기 수강권): 퇴원 → 재등록 때 '지난 수강 이어서'를 보여 줄지 정함
+        (this._remain = this._remain || {})[s.id] = r.paid ? Math.max(0, r.T - r.used) + (r.queue || []).reduce((n, c) => n + c, 0) : 0;
         (this._diffLeft = this._diffLeft || {})[s.id] = Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
@@ -2820,7 +2825,7 @@ class Component extends DCLogic {
         const qn = x.queue.reduce((n, c) => n + c, 0);
         const text = (!x.paid ? (x.newReg && x.used === 0 ? '미입금' : '미납 ' + x.used + '회') : Math.min(x.used, x.T) + '/' + x.T + '회 (남은 ' + Math.max(0, x.T - x.used) + '회)') + (qn ? ' +' + qn + ' 대기' : '');
         const tdy = this.todayYmd(), proT = s0.reg != null ? this.proOn(s0, tdy) : !!s0.rowBg;
-        tks[nm] = { n: !x.paid && !(x.newReg && x.used === 0) ? x.used : 0, diffLeft: Math.max(0, (x.diffDue || 0) - (x.diffPaid || 0)), unit: (s0.reg != null && this.unitOn(s0, tdy)) || (proT ? 62500 : 40000), pro: proT, rid: s0.id, sm: sm, text: text, line: v.subParts.map(p => p.t).join('') + (v.lateLine ? ' · ' + v.lateLine : ''),
+        tks[nm] = { left: x.paid ? Math.max(0, x.T - x.used) + x.queue.reduce((n, c) => n + c, 0) : 0, n: !x.paid && !(x.newReg && x.used === 0) ? x.used : 0, diffLeft: Math.max(0, (x.diffDue || 0) - (x.diffPaid || 0)), unit: (s0.reg != null && this.unitOn(s0, tdy)) || (proT ? 62500 : 40000), pro: proT, rid: s0.id, sm: sm, text: text, line: v.subParts.map(p => p.t).join('') + (v.lateLine ? ' · ' + v.lateLine : ''),
           dotLines: v.dotLines.map(l => ({ groups: l.groups.map(g => ({ dots: g.dots.map(d => ({ style: d.style })) })) })),
           subParts: v.subParts, lateLine: v.lateLine, queueTxt: v.queueTxt };
       });
@@ -2994,7 +2999,8 @@ class Component extends DCLogic {
           go: () => this.applyAStatus(),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ ast: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.applyAStatus(); } },
           // 퇴원 → 재등록: 지난 수강을 이어서 할지, 새로 시작할지 고른다 (새로 시작 = 상태 기록 ticket 'NEW')
-          askFresh: S.kind === 'back' && S.from === 'out', contOn: S.fresh ? 'false' : 'true', freshOn: S.fresh ? 'true' : 'false',
+          contSub: '이어서 계산: ' + [S.oweN ? '미납 ' + S.oweN + '회' : '', S.oweDiff ? '차액 ' + Number(S.oweDiff).toLocaleString('ko-KR') + '원' : '', S.left ? '남은 수업 ' + S.left + '회' : ''].filter(Boolean).join(' · '),
+          askFresh: S.kind === 'back' && S.from === 'out' && !!S.canCont, contOn: S.fresh ? 'false' : 'true', freshOn: S.fresh ? 'true' : 'false',
           pickCont: () => upd({ fresh: false }), pickFresh: () => upd({ fresh: true }),
           contStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (!S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
           freshStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
