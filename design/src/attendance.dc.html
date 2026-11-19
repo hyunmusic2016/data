@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.6</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1803,6 +1803,9 @@ class Component extends DCLogic {
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: allPaid ? '' : true }));
     } else if (!v) {
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'dp' + c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' }))).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })), cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: '' })));
+      // Delete로 지우면 그 칸의 수납 기록(같은 날 여러 건 포함)도 모두 지운다
+      { const stu = this.students(), del = {}; cells.forEach(c => { const s0 = stu.find(x => x.id === c.sid); if (s0) del[s0.name.replace('$', '') + '|2026-' + String(m).padStart(2, '0') + '-' + String(c.d).padStart(2, '0')] = 1; });
+        const pl = this.readPays(), keep = pl.filter(x => !del[x.name + '|' + x.date]); if (keep.length !== pl.length) this.writePays(keep); }
     } else {
       const allSame = cells.every(c => (cur[c.sid] || {})[c.d] === v);
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: allSame ? '' : v }));
