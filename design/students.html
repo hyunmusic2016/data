@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.5</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -574,7 +574,7 @@ class Component extends DCLogic {
     const ch = this.state.changes || {}, today = this.todayYmd();
     let TK = {}; try { TK = JSON.parse(localStorage.getItem('academy.tickets') || '{}') || {}; } catch (e) {}
     const RM = this.state.removed || [];
-    return this.baseStudents().concat(this.state.added || []).filter(s => RM.indexOf(s.id) < 0).map(s => {
+    return this.baseStudents().concat(this.state.added || []).filter(s => RM.indexOf(s.id) < 0).reduce((outL, s) => {
       let x = ch[s.id] ? this.mergeRec(s, ch[s.id]) : s;
       this.allHist(s.id, x.name).filter(h => h.from <= today).sort((a, b) => a.from < b.from ? -1 : a.from > b.from ? 1 : 0).forEach(h => { x = this.mergeRec(x, h.patch); });
       // 휴원·퇴원·복귀 (출석부와 같이 쓰는 기록): 가장 나중에 처리한 것
@@ -589,8 +589,18 @@ class Component extends DCLogic {
       const live = TK[x.name];
       const liveTxt = live && typeof live === 'object' ? live.text : live;
       x = Object.assign({}, x, { ticket: liveTxt || x.restTicket || '', ticketNow: liveTxt || x.ticketNow, ticketView: live && typeof live === 'object' ? live : null });
-      return x;
-    });
+      outL.push(x);
+      // 퇴원 뒤 '새로 시작'으로 재등록한 원생: 그 전 퇴원 기간은 퇴원 탭에 따로 한 줄로 남긴다 (DB 원생은 하나, 기록만 보기)
+      const SL = (this.state.statusShared || []).filter(e => e.name === x.name).sort((a, b) => (a.at || 0) - (b.at || 0));
+      SL.forEach((e, i) => {
+        if (e.kind !== 'out') return;
+        const nx = SL.slice(i + 1).find(z => z.kind === 'back');
+        if (!nx || nx.ticket !== 'NEW') return;
+        const m2 = /^(\d{4})-(\d{2})-(\d{2})$/.exec(e.date || ''); const ymd2 = m2 ? m2[1].slice(2) + '.' + m2[2] + '.' + m2[3] : '';
+        outL.push(Object.assign({}, x, { status: 'out', ghost: true, leave: ymd2, leaveReason: e.reason || '', backDate: '', ticket: e.ticket || '', ticketNow: e.ticket || '', ticketView: null }));
+      });
+      return outL;
+    }, []);
   }
   // 수업 요일·시간·드럼스틱 변경은 출석부와 같이 쓰는 기록(이 컴퓨터 브라우저에 저장)에 둔다. 원생은 이름으로 맞춘다
   readStatus() {
@@ -1494,7 +1504,7 @@ class Component extends DCLogic {
       const xcells = cells.slice(nMain).map((x, i) => Object.assign({}, x, { notTk: !x.isTk, cell: x.cell }));
       return { sKey: [s.name, s.guardian, s.phone, s.gphone, String(s.id)].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|'), rowCls: 'srow' + (fl ? ' flashrow flash-' + fl : ''), fill: C + '; padding: 0', allCells: cells, cells: cells.slice(0, nMain), xcells: xcells, pro: pro, big: !!big,
         actCell: C + '; gap: 6px; padding: 0 12px; border-left: 1px solid #EBEEEC',
-        acts: ({ act: ['edit', 'log'], rest: ['edit', 'pay', 'back', 'out', 'log'], out: ['edit', 'pay', 'back', 'log'] }[s.status] || []).filter(k => k !== 'pay' || this.debtOf(s) || this.woOf(s.name)).map(k => ({
+        acts: (s.ghost ? ['log'] : ({ act: ['edit', 'log'], rest: ['edit', 'pay', 'back', 'out', 'log'], out: ['edit', 'pay', 'back', 'log'] }[s.status] || [])).filter(k => k !== 'pay' || this.debtOf(s) || this.woOf(s.name)).map(k => ({
           label: { pay: this.woOf(s.name) ? '미납 정리됨' : '수납', edit: '수정', rest: '휴원', out: '퇴원', back: s.status === 'out' ? '재등록' : '복귀', log: '기록' }[k],
           aria: s.name + ' ' + { pay: '미납 수납', edit: '정보 수정', rest: '휴원 처리', out: '퇴원 처리', back: s.status === 'out' ? '재등록' : '재원으로 복귀', log: '변경 기록 보기' }[k],
           style: ACTB[k],
