@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.9</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.10</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2821,7 +2821,10 @@ class Component extends DCLogic {
         // 휴원·퇴원 원생은 처리한 달(출석부에 마지막으로 나오는 달)의 수강권 칸을 그대로 보여 준다
         const stx = stList.filter(e => e.name === nm).sort((p, q) => (p.at || 0) - (q.at || 0)).pop();
         const sm = stx && (stx.kind === 'rest' || stx.kind === 'out') ? +String(stx.date || '').slice(5, 7) : 0;
-        const mm = sm && sm <= Mx && sm >= M0 ? sm : Mx;
+        // 휴원·퇴원한 달까지 계산하되, 그 뒤 달에도 이 원생 기록(출결·수납)이 있으면 기록이 있는 마지막 달까지 이어서 계산
+        let mm = sm && sm <= Mx && sm >= M0 ? sm : Mx;
+        if (sm) { const ids = baseAll.filter(z => (z.sid || z.id) === (s0.sid || s0.id)).map(z => z.id);
+          for (let m2 = Mx; m2 > mm; m2--) { const evm = this.monthEvents(m2) || {}; if (ids.some(id => evm[id] && Object.keys(evm[id]).some(k => !/^by/.test(k)))) { mm = m2; break; } } }
         const x = calcOf(mm)(s0);
         // 휴원·퇴원 원생이 미납 중이면 수업완료된 지난 수강권은 빼고 미납(빨간 점선)만 보여 준다
         const owe = sm && !x.paid && !(x.newReg && x.used === 0);
