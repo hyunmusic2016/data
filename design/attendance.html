@@ -209,13 +209,20 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     </sc-if>
 
   <nav aria-label="시트" class="noprint" style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: stretch; gap: 2px; background: #FFFFFF; border-top: 1px solid #DDE2DF; padding: 0 12px; box-shadow: 0 -2px 8px rgba(23, 32, 28, 0.04); overflow-x: auto">
+    <sc-if value="{{am.open}}" hint-placeholder-val="{{ false }}"><div class="noprint" onMouseDown="{{am.close}}" style="position: fixed; inset: 0; z-index: 70"></div>
+      <div class="noprint" role="dialog" aria-label="출석부 추가할 달" style="{{am.style}}">
+        <span style="padding: 4px 6px 8px; font-size: 12px; font-weight: 600; color: #5E6873">2026년 · 만들 달을 고르세요</span>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px">
+          <sc-for list="{{am.months}}" as="mo" hint-placeholder-count="12"><button type="button" disabled="{{mo.has}}" onClick="{{mo.pick}}" style="{{mo.style}}">{{mo.label}}</button></sc-for>
+        </div>
+      </div></sc-if>
     <button type="button" onClick="{{addSheet}}" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
     <button type="button" onClick="{{sm.toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.10</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.11</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -648,7 +655,7 @@ class Component extends DCLogic {
         Object.keys(c._ml || {}).forEach(k => { ml[m + '-' + k] = c._ml[k]; });
       });
     });
-    const extra = (this.state && this.state.extra || []).concat(months.filter(m => m > 11)).filter((m, i, a) => a.indexOf(m) === i).sort((a, b) => b - a);
+    const extra = (this.state && this.state.extra || []).concat(months.filter(m => m > 11 || m < 9)).filter((m, i, a) => a.indexOf(m) === i).sort((a, b) => b - a);
     return { ev: ev, evByMonth: bm, mkTimes: mk, mkLinks: ml, extra: extra };
   }
   buildCells() {
@@ -2902,7 +2909,13 @@ class Component extends DCLogic {
       teacherAvatar: 'width: 34px; height: 34px; flex: none; border-radius: 50%; background: ' + curC[0] + '; color: ' + curC[1] + '; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600',
       sm: sm,
       sheetTabs: sheetTabs,
-      addSheet: () => { if (nextM <= 12) this.setState({ extra: [nextM].concat(this.state.extra), sheet: 0 }); },
+      // + : 2026년 1~12월 중 아직 없는 달을 골라 출석부를 만든다
+      addSheet: e => { const r = e && e.currentTarget ? e.currentTarget.getBoundingClientRect() : { left: 20, top: innerHeight - 40 }; this.setState({ addMenu: { x: r.left, y: r.top } }); },
+      am: (() => { const A0 = st.addMenu; if (!A0) return { open: false }; const have = this.sheetList().map(x => x[1]);
+        return { open: true, close: () => this.setState({ addMenu: null }),
+          style: 'position: fixed; z-index: 71; left: ' + Math.max(8, A0.x) + 'px; bottom: ' + Math.max(8, innerHeight - A0.y + 6) + 'px; width: 230px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 14px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.18)',
+          months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(m => { const has = have.indexOf(m) >= 0; return { label: m + '월', has: has ? 'true' : '', style: 'height: 34px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; ' + (has ? 'border: 1px solid #EEF1F0; background: #F7F9F8; color: #B5BDB8; cursor: default' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #17201C; cursor: pointer'),
+            pick: () => { if (has) return; const ex = this.state.extra.concat([m]).sort((a, b) => b - a); this.setState({ extra: ex, addMenu: null }, () => { const i = this.sheetList().findIndex(x => x[1] === m); if (i >= 0) this.setState({ sheet: i }); }); setTimeout(() => { const i = this.sheetList().findIndex(x => x[1] === m); if (i >= 0 && this.state.sheet !== i) this.setState({ sheet: i }); }, 30); } }; }) }; })(),
       isSheet: cur[1] > 0 && !lg.isClass && !lg.isWork,
       isLog: lg.isClass || lg.isWork,
       lg: lg, cl: cl, wl: wl, hd: hd,
