@@ -59,27 +59,30 @@ html.bwp .printonly .pcell{border-color:#000!important}
       </div>
 
       <div id="nt_scroll" class="shellscroll" style="padding: 0 0 8px">
-        <div role="table" aria-label="수납 안내 목록" style="min-width: 820px">
+        <div role="table" aria-label="수납 안내 목록" style="min-width: 880px">
           <div role="row" style="{{gridHead}}">
             <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 16px; height: 16px; accent-color: #00A6AB; cursor: pointer"></span>
             <span role="columnheader" style="{{c.h}}">요일</span>
             <span role="columnheader" style="{{c.h}}">이름</span>
-            <span role="columnheader" style="{{c.hl}}">발송</span>
+            <span role="columnheader" style="{{c.h}}">발송</span>
             <span role="columnheader" style="{{c.h}}">횟수</span>
             <span role="columnheader" style="{{c.h}}">강사</span>
             <span role="columnheader" style="{{c.hl}}">수강</span>
             <span role="columnheader" style="{{c.hl}}">MEMO</span>
+            <span role="columnheader" class="noexp" style="{{c.h}}">관리</span>
           </div>
           <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+            <sc-if value="{{r.grpHead}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 18px; padding: 6px 12px; background: #EEF1F0; border-top: 1px solid #DDE2DF; border-bottom: 1px solid #DDE2DF; font-size: 12px; font-weight: 600; color: #5E6873">{{r.grpHead}}</div></sc-if>
             <div role="row" class="nrow" style="{{r.rowStyle}}">
               <span role="cell" class="noexp" onMouseDown="{{r.dragDown}}" onMouseEnter="{{r.dragOver}}" style="{{c.cc}}; cursor: pointer; user-select: none"><input type="checkbox" tabindex="-1" aria-label="{{r.selLabel}}" checked="{{r.on}}" style="width: 16px; height: 16px; accent-color: #00A6AB; pointer-events: none"></span>
               <span role="cell" style="{{c.cc}}"><sc-for list="{{r.days}}" as="dy" hint-placeholder-count="1"><span style="{{dy.style}}">{{dy.t}}</span></sc-for></span>
-              <span role="cell" style="{{c.cc}}; font-weight: 600">{{r.name}}</span>
-              <span role="cell" style="{{c.cl}}; flex-wrap: wrap; gap: 4px"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="2"><span style="display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 2px 0 7px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 12px; font-weight: 600; white-space: nowrap">{{sd.t}}<button type="button" class="noexp" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="발송 기록 지우기" style="width: 18px; height: 18px; padding: 0; border: none; border-radius: 999px; background: transparent; color: #5E9C9E; font-family: inherit; font-size: 13px; line-height: 1; cursor: pointer">×</button></span></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
+              <span role="cell" style="{{c.cc}}; flex-direction: column; gap: 0; font-weight: 600">{{r.name}}<sc-if value="{{r.stTag}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTag}}</span></sc-if></span>
+              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="1"><span style="{{sd.style}}">{{sd.t}}<button type="button" class="noexp" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="발송 기록 지우기" style="width: 18px; height: 18px; padding: 0; border: none; border-radius: 999px; background: transparent; color: inherit; opacity: 0.6; font-family: inherit; font-size: 13px; line-height: 1; cursor: pointer">×</button></span></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
               <span role="cell" style="{{c.cc}}"><span style="{{r.cntStyle}}">{{r.cnt}}</span></span>
               <span role="cell" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
               <span role="cell" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 3px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
               <span role="cell" style="{{c.cl}}"><input id="{{r.memoId}}" type="text" defaultValue="{{r.memo}}" onChange="{{r.saveMemo}}" aria-label="{{r.memoLabel}}" style="width: 100%; height: 28px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #17201C" class="memoInp"></span>
+              <span role="cell" class="noexp" style="{{c.cc}}; gap: 4px; flex-wrap: nowrap"><button type="button" onClick="{{r.logOpen}}" disabled="{{r.logOff}}" style="{{r.logStyle}}">기록</button><button type="button" onClick="{{r.hide}}" aria-label="{{r.hideLabel}}" title="목록에서 빼기" style="height: 26px; padding: 0 8px; border-radius: 7px; border: 1px solid #F2C6C2; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">빼기</button></span>
             </div>
           </sc-for>
           <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
@@ -110,12 +113,33 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.1</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.2</span>
     </div>
   </main>
 
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 70; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(23, 32, 28, 0.25)">{{toast}}</div>
+  </sc-if>
+  <sc-if value="{{ask.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{ask.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="{{ask.title}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <span style="font-size: 18px; font-weight: 600">{{ask.title}}</span>
+      <span style="font-size: 14px; line-height: 1.5; color: #3A4450">{{ask.text}}</span>
+      <div style="display: flex; gap: 8px">
+        <button type="button" onClick="{{ask.close}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{ask.ok}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{ask.okLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{log.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{log.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="발송 기록" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 340px; max-width: calc(100vw - 32px); max-height: calc(100vh - 60px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600">{{log.name}} 발송 기록<span style="font-size: 13px; color: #007E82">{{log.cnt}}</span></span>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{log.items}}" as="li" hint-placeholder-count="3"><span style="display: flex; align-items: center; gap: 10px"><span style="width: 34px; font-size: 12px; font-weight: 600; color: #8A949E; text-align: right">{{li.no}}</span><span style="{{li.style}}">{{li.t}}</span></span></sc-for>
+      </div>
+      <button type="button" onClick="{{log.close}}" style="height: 44px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">닫기</button>
+    </div>
   </sc-if>
   <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -417,20 +441,26 @@ class Component extends DCLogic {
   noticeOf(PN, name, tk) { const e = PN[name]; return e && e.cyc === tk.cyc ? e : { cyc: tk.cyc, sends: [], memo: '' }; }
   list() {
     const TK = this.readTickets(), DAYS = ['월', '화', '수', '목', '금', '토', 'R'];
+    let WO = []; try { WO = JSON.parse(localStorage.getItem('academy.writeOffs') || '[]') || []; } catch (e) {}
+    const PN = this.readNotice();
     const order = this.staffOrdered().map(e => e.name);
     const out = [];
     Object.keys(TK).forEach(name => {
       const tk = TK[name];
-      if (!tk || !tk.due) return;
+      // 휴원·퇴원생은 남은 미납(수업 미납·차액)이 있을 때만, 미납 정리했으면 뺀다
+      const outOwe = !!(tk && tk.sm && (tk.n > 0 || tk.diffLeft > 0) && !WO.some(w => w.name === name && (w.at || 0) >= (tk.stAt || 0)));
+      if (!tk || !(tk.due || outOwe)) return;
       const info = this.stuInfo(name) || {};
       let days = (tk.days || []).filter(g => DAYS.indexOf(g) >= 0);
       if (!days.length) days = String(info.day || '').split(/[·,\s]+/).map(d => d === '변동' ? 'R' : d.charAt(0)).filter(g => DAYS.indexOf(g) >= 0);
       days = days.filter((g, i) => days.indexOf(g) === i).sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b));
       const teacher = info.teacher || tk.teacher || '';
-      out.push({ name: name, tk: tk, days: days, teacher: teacher, d0: days.length ? DAYS.indexOf(days[0]) : 9, t0: order.indexOf(teacher) < 0 ? 99 : order.indexOf(teacher) });
+      const grp = outOwe && !tk.due ? (tk.stKind === 'out' ? 2 : 1) : 0;
+      if (this.noticeOf(PN, name, tk).hidden) return;
+      out.push({ name: name, tk: tk, grp: grp, days: days, teacher: teacher, d0: days.length ? DAYS.indexOf(days[0]) : 9, t0: order.indexOf(teacher) < 0 ? 99 : order.indexOf(teacher) });
     });
     // 구글시트처럼 요일 → 강사(직원 순서) → 이름
-    out.sort((a, b) => a.d0 - b.d0 || a.t0 - b.t0 || a.name.localeCompare(b.name, 'ko'));
+    out.sort((a, b) => a.grp - b.grp || a.d0 - b.d0 || a.t0 - b.t0 || a.name.localeCompare(b.name, 'ko'));
     return out;
   }
   // 고른 원생들에게 발송 날짜를 한꺼번에 체크
@@ -465,6 +495,12 @@ class Component extends DCLogic {
     e.memo = v; PN[name] = e; this.saveNotice(PN);
   }
   setSel(name, on) { const s2 = Object.assign({}, this.state.sel || {}); if (!!s2[name] === on) return; if (on) s2[name] = 1; else delete s2[name]; this.setState({ sel: s2 }); }
+  // 목록에서 빼기: 이번 수강권(cyc) 동안만 숨김. 수납 뒤 다시 수업완료가 되면 다시 올라옴
+  hideRow(name, tk) { const PN = this.readNotice(); const e = Object.assign({}, this.noticeOf(PN, name, tk)); e.hidden = true; PN[name] = e; this.saveNotice(PN); this.flash(name + ' 원생을 목록에서 뺐습니다'); this.setState({ ask: null, sel: {}, tick: Date.now() }); }
+  // 요일 색 (요일 칸과 같은 색). 날짜는 그 날의 요일 색
+  dayColor(g) { const DC = { '월': ['#F9D9D6', '#9A3A31'], '화': ['#D6E6F7', '#2E5A8A'], '수': ['#FCF1C2', '#7A6200'], '목': ['#D7EFDD', '#2F6B43'], '금': ['#FBE0CC', '#8A4A1C'], '토': ['#E6DFF5', '#5B4A8B'], '일': ['#F9D9D6', '#9A3A31'], 'R': ['#EEF1F0', '#5E6873'] }; return DC[g] || DC.R; }
+  dateColor(d) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return this.dayColor(m ? '일월화수목금토'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay()) : 'R'); }
+  wd(d) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? '일월화수목금토'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay()) : ''; }
   flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
   md(d) { return (+d.slice(5, 7)) + '/' + (+d.slice(8)); }
   doPrint() {
@@ -497,9 +533,8 @@ class Component extends DCLogic {
     const PN = this.readNotice();
     const sel = st.sel || {};
     const nSel = L.filter(r => sel[r.name]).length;
-    const DC = { '월': ['#F9D9D6', '#9A3A31'], '화': ['#D6E6F7', '#2E5A8A'], '수': ['#FCF1C2', '#7A6200'], '목': ['#D7EFDD', '#2F6B43'], '금': ['#FBE0CC', '#8A4A1C'], '토': ['#E6DFF5', '#5B4A8B'], 'R': ['#EEF1F0', '#5E6873'] };
     const DL = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
-    const COLS = 'display: grid; grid-template-columns: 36px 64px 76px 150px 44px 76px 170px minmax(140px, 1fr); align-items: stretch';
+    const COLS = 'display: grid; grid-template-columns: 36px 64px 76px 78px 44px 76px 170px 260px 118px; align-items: stretch';
     const rows = L.map((r, i) => {
       const e = this.noticeOf(PN, r.name, r.tk), sends = e.sends || [];
       const tc = this.teacherColor(r.teacher);
@@ -508,15 +543,21 @@ class Component extends DCLogic {
         // 체크칸을 누른 채 위아래로 끌면 지나가는 줄을 모두 같은 상태(선택/해제)로
         dragDown: ev => { if (ev.button) return; ev.preventDefault(); this._drag = !sel[r.name]; if (!this._dragHook) { this._dragHook = 1; window.addEventListener('mouseup', () => { this._drag = null; }); } this.setSel(r.name, this._drag); },
         dragOver: () => { if (this._drag == null) return; this.setSel(r.name, this._drag); },
-        days: (r.days.length ? r.days : ['R']).map(g => ({ t: DL[g], style: 'display: inline-flex; align-items: center; height: 20px; padding: 0 6px; margin: 1px; border-radius: 5px; font-size: 11px; font-weight: 600; background: ' + DC[g][0] + '; color: ' + DC[g][1] })),
+        days: (r.days.length ? r.days : ['R']).map(g => ({ t: DL[g], style: 'display: inline-flex; align-items: center; height: 20px; padding: 0 6px; margin: 1px; border-radius: 5px; font-size: 11px; font-weight: 600; background: ' + this.dayColor(g)[0] + '; color: ' + this.dayColor(g)[1] })),
         teacher: r.teacher || '-', tStyle: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; font-weight: 600; background: ' + tc[0] + '; color: ' + tc[1],
         tk: { dotLines: r.tk.dotLines || [], subParts: r.tk.subParts || [{ t: r.tk.text || '', style: '' }], queueTxt: r.tk.queueTxt || '' },
-        sends: sends.map(d => ({ t: this.md(d), del: () => this.delSend(r.name, r.tk, d), delLabel: r.name + ' ' + this.md(d) + ' 발송 기록 지우기' })), noSend: !sends.length,
+        // 발송 칸은 가장 최근 날짜만 (그 날 요일 색). 전체는 '기록'
+        sends: sends.slice(-1).map(d => { const c = this.dateColor(d); return { t: this.md(d), style: 'display: inline-flex; align-items: center; gap: 1px; height: 22px; padding: 0 2px 0 7px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1], del: () => this.setState({ ask: { kind: 'send', name: r.name, tk: r.tk, d: d } }), delLabel: r.name + ' ' + this.md(d) + ' 발송 기록 지우기' }; }), noSend: !sends.length,
+        logOpen: () => this.setState({ log: { name: r.name, tk: r.tk } }), logOff: !sends.length,
+        logStyle: 'height: 26px; padding: 0 8px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 12px; font-weight: 600; ' + (sends.length ? 'color: #3A4450; cursor: pointer' : 'color: #C3CAC6; cursor: default'),
+        hide: () => this.setState({ ask: { kind: 'hide', name: r.name, tk: r.tk } }), hideLabel: r.name + ' 목록에서 빼기',
+        grpHead: i === 0 && r.grp ? (r.grp === 2 ? '퇴원생 미납' : '휴원생 미납') : (i > 0 && r.grp !== L[i - 1].grp ? (r.grp === 2 ? '퇴원생 미납' : '휴원생 미납') : ''),
+        stTag: r.grp ? (r.grp === 2 ? '퇴원' : '휴원') + (r.tk.stDate ? ' ' + this.md(r.tk.stDate) : '') : '', stStyle: 'font-size: 11px; font-weight: 600; color: ' + (r.grp === 2 ? '#B4332B' : '#B86E00'),
         cnt: sends.length + '회', cntStyle: 'font-size: 14px; font-weight: 600; color: ' + (sends.length >= 3 ? '#B4332B' : sends.length ? '#17201C' : '#B7C0BC'),
         memo: e.memo || '', memoId: 'nt_memo_' + i, memoLabel: r.name + ' 메모',
         saveMemo: ev => this.saveMemo(r.name, r.tk, ev.target.value),
         rowStyle: COLS + '; border-bottom: 1px solid #EEF1EF; background: ' + (sel[r.name] ? '#F2FAFA' : '#FFFFFF'),
-        print: [DL[r.days[0] || 'R'] + (r.days.length > 1 ? ' 외' : ''), r.name, sends.map(d => this.md(d)).join(', '), sends.length + '회', r.teacher, (r.tk.subParts || []).map(p => p.t).join('') || r.tk.text || '', e.memo || '']
+        print: [DL[r.days[0] || 'R'] + (r.days.length > 1 ? ' 외' : ''), r.name + (r.grp ? (r.grp === 2 ? ' (퇴원)' : ' (휴원)') : ''), sends.map(d => this.md(d)).join(', '), sends.length + '회', r.teacher, (r.tk.subParts || []).map(p => p.t).join('') || r.tk.text || '', e.memo || '']
       };
     });
     const d = new Date();
@@ -532,6 +573,14 @@ class Component extends DCLogic {
       bulk: () => this.bulkSend(), bulkOff: !nSel,
       bulkStyle: 'height: 38px; padding: 0 16px; border-radius: 10px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; ' + (nSel ? 'background: #00A6AB; color: #FFFFFF; cursor: pointer' : 'background: #E3E8E5; color: #8A949E; cursor: default'),
       toast: st.toast || '',
+      ask: st.ask ? { open: true, title: st.ask.kind === 'send' ? '발송 기록 지우기' : '목록에서 빼기',
+        text: st.ask.kind === 'send' ? st.ask.name + ' 원생의 ' + this.md(st.ask.d) + ' (' + this.wd(st.ask.d) + ') 발송 기록을 지울까요?' : st.ask.name + ' 원생을 수납 안내 목록에서 뺄까요? 수납하고 다음에 다시 수업이 끝나면 목록에 다시 올라옵니다.',
+        okLabel: st.ask.kind === 'send' ? '지우기' : '빼기',
+        ok: () => { const a = st.ask; if (a.kind === 'send') { this.delSend(a.name, a.tk, a.d); this.setState({ ask: null }); } else this.hideRow(a.name, a.tk); },
+        close: () => this.setState({ ask: null }) } : { open: false },
+      log: st.log ? (() => { const e = this.noticeOf(this.readNotice(), st.log.name, st.log.tk), ss = (e.sends || []).slice().reverse();
+        return { open: true, name: st.log.name, cnt: ss.length + '회', close: () => this.setState({ log: null }),
+          items: ss.map((d, k) => { const c = this.dateColor(d); return { no: (ss.length - k) + '회', t: (+d.slice(5, 7)) + '월 ' + (+d.slice(8)) + '일 (' + this.wd(d) + ')', style: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: ' + c[0] + '; color: ' + c[1] }; }) }; })() : { open: false },
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
       c: {
         h: 'height: 32px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
