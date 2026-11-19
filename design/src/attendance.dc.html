@@ -218,7 +218,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.5</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -314,6 +314,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <sc-for list="{{pv.recs}}" as="x" hint-placeholder-count="1"><button type="button" aria-pressed="{{x.on}}" onClick="{{x.pick}}" style="{{x.style}}">{{x.label}}</button></sc-for>
         <button type="button" onClick="{{pv.addOn}}" aria-pressed="{{pv.addPressed}}" style="{{pv.addStyle}}">+ 같은 날 추가 수납</button>
       </div></sc-if>
+      <sc-if value="{{pv.hasLockMarks}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #F3F5F4; font-size: 13px; color: #5B6670"><span style="margin-right: auto">휴원·퇴원 기간 · 출결 입력</span><sc-for list="{{pv.lockMarks}}" as="b" hint-placeholder-count="4"><button type="button" onClick="{{b.pick}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9D2CE; background: #fff; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">{{b.label}}</button></sc-for></div></sc-if>
       <sc-if value="{{pv.hasDp}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelDiff}}" style="height: 40px; border-radius: 12px; border: 1.5px solid #F2B880; background: #fff; color: #B45309; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{pv.dpTxt}}</button></sc-if>
       <sc-if value="{{pv.hasDiff}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.payDiff}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; border: 1.5px solid #F2B880; background: #FDEBD8; color: #B45309; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.diffTxt}}<span style="font-size: 12px; font-weight: 500; color: #9A5B00">반 변경 차액 · 수강권은 그대로</span></button></sc-if>
       <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
@@ -1571,7 +1572,7 @@ class Component extends DCLogic {
   openPop(mode) {
     const s = this.state.sel;
     if (!s) return;
-    if (mode === 'mk' && this.selLocked(false)) { this.lockNote(); return; }
+    if ((mode === 'mk' || mode === 'main') && this.selLocked(false)) { this.lockNote(); return; }
     const W = 360, H = mode === 'del' ? (this.delBoth ? 470 : 330) : 470;
     const x = Math.round((window.innerWidth - W) / 2), y = Math.max(8, Math.round((window.innerHeight - H) / 2));
     this.setState({ pop: { x: Math.max(8, x), y: y, mode: mode } });
@@ -1831,8 +1832,14 @@ class Component extends DCLogic {
     this.focusSheet();
   }
   // 고른 칸 중 휴원·퇴원 기간(수납만 되는 칸)이 있는지
-  selLocked(all) { const c = this.selCells(), L = this._rowLock || []; const f = x => !!(L[x.r] && L[x.r](x.d)); return c.length > 0 && (all ? c.every(f) : c.some(f)); }
-  lockNote() { this.setState({ pop: null, mcDlg: { kind: 'lock' } }); }
+  selLocked(all) { if (this._force && this._force === JSON.stringify(this.state.sel)) return false; const c = this.selCells(), L = this._rowLock || []; const f = x => !!(L[x.r] && L[x.r](x.d)); return c.length > 0 && (all ? c.every(f) : c.some(f)); }
+  lockNote() { this._force = null; this.setState({ pop: null }); this.openPay(); }
+  // 휴원·퇴원 기간 칸: 수납 창의 '출결 입력' 버튼으로만 출결을 넣는다
+  forceMark(v) {
+    this._force = JSON.stringify(this.state.sel);
+    this.setState({ pay: null });
+    if (v === '보') this.openPop('mk'); else this.applyMark(v);
+  }
   applyMark(v, opt) {
     if (v && v !== 'V' && this.selLocked(false)) { this.lockNote(); return; }
     const cells = this.selCells();
@@ -2593,7 +2600,7 @@ class Component extends DCLogic {
               // 오늘 날짜면 '오늘'로, 글씨도 진하게
               hint2: (() => { return x.d === TODAY ? '오늘' : this.kM(MON) + '/' + x.d + ' ' + ['일', '월', '화', '수', '목', '금', '토'][new Date(2026, MON - 1, x.d).getDay()]; })(),
               hintStyle: (() => { const td = x.d === TODAY; return 'position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; pointer-events: none; font-size: 9px; font-weight: 600; line-height: 1.15; white-space: nowrap; color: ' + (td ? '#3A4450' : '#A9B1AD'); })(),
-              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + ((() => { const lockD = (this._rowLock[R] && this._rowLock[R](x.d)) || (this._rowHide[R] && this._rowHide[R](x.d)); const L = []; if (inSel) L.push('linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2))'); if (lockD) L.push('repeating-linear-gradient(135deg, rgba(23, 32, 28, 0.07) 0 2px, transparent 2px 7px)'); return L.length ? 'background-image: ' + L.join(', ') + '; ' : ''; })()) + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
+              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + ((() => { const lockD = (this._rowHide[R] && this._rowHide[R](x.d)); const L = []; if (inSel) L.push('linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2))'); if (lockD) L.push('repeating-linear-gradient(135deg, rgba(23, 32, 28, 0.07) 0 2px, transparent 2px 7px)'); return L.length ? 'background-image: ' + L.join(', ') + '; ' : ''; })()) + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
                 ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px ' + (x.upay ? '#E8A9A4' : '#E2C35E')] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
@@ -2988,7 +2995,7 @@ class Component extends DCLogic {
           addOn: () => upd({ add: true, paid: false, recId: null, count: (P.base || P).count, unit: (P.base || P).unit, total: (P.base || P).total, date: P.origDate, cancelAsk: false, err: '' }),
           addStyle: 'height: 32px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (P.add ? 'border: 1px solid #E2C35F; background: #FAEFD2; color: #7A5C12' : 'border: 1px dashed #C9B26A; background: #FFFDF6; color: #7A5C12'),
           open: true, name: P.name, paid: P.paid, notPaid: !P.paid, date: P.date, umode: !!P.umode,
-          hasDp: !!P.dpPaid, dpTxt: P.dpAsk ? '한 번 더 누르면 차액 수납 ' + won(P.dpPaid) + '원 취소' : '차액 수납 ' + won(P.dpPaid) + '원 취소', cancelDiff: () => this.cancelDiff(), hasDiff: !!P.diff && !P.dpPaid, diffTxt: '차액 수납 ' + won(P.diff) + '원', payDiff: () => this.payDiff(),
+          lockMarks: this.selLocked(false) ? [['수', '출석'], ['결', '결석'], ['보', '보강'], ['연', '연기']].map(b => ({ label: b[1], pick: () => this.forceMark(b[0]) })) : [], hasLockMarks: this.selLocked(false), hasDp: !!P.dpPaid, dpTxt: P.dpAsk ? '한 번 더 누르면 차액 수납 ' + won(P.dpPaid) + '원 취소' : '차액 수납 ' + won(P.dpPaid) + '원 취소', cancelDiff: () => this.cancelDiff(), hasDiff: !!P.diff && !P.dpPaid, diffTxt: '차액 수납 ' + won(P.diff) + '원', payDiff: () => this.payDiff(),
           showDate: P.paid || !!P.umode, showDateText: !P.paid && !P.umode, minDate: P.umode ? P.minDate : '',
           dateWord: P.umode ? '결제 일자' : '수납 날짜',
           feeIcon: 'width: 30px; height: 30px; flex: none; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
