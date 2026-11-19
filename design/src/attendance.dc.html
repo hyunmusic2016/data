@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.8</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2759,7 +2759,9 @@ class Component extends DCLogic {
       const t = o.t, i = o.i;
       const on = i === st.sheet, att = t[1] > 0;
       // 출석부 = 파스텔 빨강, 수업일지·업무일지 = 파스텔 파랑
-      const col = att ? '#F2A3A3' : '#9CC3EE';
+      // 출석부 시트 탭 점: 지금 보는 강사 탭의 강사 색
+      const tcol = this.teacherColor((this.tKey() || '').replace(' 원장님', ''));
+      const col = att ? (tcol && tcol[1] && tcol[1] !== '#3A4450' ? tcol[1] : '#F2A3A3') : '#9CC3EE';
       return {
         // 끄는 동안에는 화면을 다시 그리지 않는다 (다시 그리면 끌기가 끊김)
         dragStart: e => { try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', t[0]); } catch (x) {} this._tabDrag = t[0]; if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; },
