@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.11</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.64.12</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1183,6 +1183,7 @@ class Component extends DCLogic {
   // 검색 중에는 화면을 다시 그리지 않고 표의 줄만 숨기거나 보인다
   liveSearch(v) {
     const q = String(v || '').replace(/[-\s]/g, '').toLowerCase();
+    this._q = q;
     const rows = [].slice.call(document.querySelectorAll('.srow[data-s]'));
     let n = 0;
     // 줄의 원래 display(grid)를 기억해 두었다가 되돌린다 (빈 값으로 지우면 표가 깨짐)
@@ -1524,7 +1525,7 @@ class Component extends DCLogic {
     }).map(p => p[0]);
     const curFl = curList.filter(match).filter(pass), curRows = curFl.map(row);
     // 재원 탭: 강사별로 상자를 나눈다 (강사 순서대로 이어져 있을 때만, 다른 칸으로 정렬하면 나누지 않음)
-    if (curSec[0] === 'act' && curFl.length) {
+    if (curSec[0] === 'act' && curFl.length && !this._q) {
       const tn = curFl.map(s => s.teacher || '강사 없음'), runs = tn.filter((t, i) => i === 0 || t !== tn[i - 1]);
       if (runs.length === new Set(tn).size) curFl.forEach((s, i) => { if (i === 0 || tn[i] !== tn[i - 1]) { curRows[i].grpHead = true; curRows[i].grpFirst = i === 0; curRows[i].grpLabel = tn[i] + ' · ' + tn.filter(t => t === tn[i]).length + '명'; } });
     }
