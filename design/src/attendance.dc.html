@@ -86,8 +86,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </div>
         </sc-for>
 
-        <div class="pnote" style="display: grid; grid-template-columns: 132px 304px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
-          <span style="display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; color: #3A4450">MEMO</span>
+        <div class="pnote" style="display: grid; grid-template-columns: 64px minmax(0, 1fr); border-top: 1px solid #E1E6E3; background: #FAFBFA; min-height: 100px">
+          <span style="display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #3A4450">MEMO</span>
           <textarea id="{{attMemo.id}}" class="wltxt" aria-label="출석부 메모" onBlur="{{attMemo.save}}" style="grid-column: 2 / -1; width: 100%; min-height: 100px; box-sizing: border-box; padding: 12px 14px; border: none; border-left: 1px solid #E1E6E3; outline: none; background: transparent; resize: vertical; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{attMemo.text}}</textarea>
         </div>
         <div class="noprint noexp" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border-top: 1px solid #E1E6E3; background: #FFFFFF">
@@ -222,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.12</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.13</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
