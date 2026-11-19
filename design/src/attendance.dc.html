@@ -218,7 +218,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.8</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2568,7 +2568,7 @@ class Component extends DCLogic {
           // 신규: 등록한 달 동안 이름 옆 파란 '신규' (수강생대장 입원 연월일이 이 달이거나, 아직 입금 전 신규)
           // 다른 강사에게서 넘어온 원생(옮긴 달): '신규' 대신 '← 예전 강사'
           isNew: (() => { if (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) return false; if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && (2000 + +m[1] - 2026) * 12 + +m[2] === MON; })(),
-          nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600',
+          nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600' + (((s.status === '휴원' || s.status === '퇴원') && s.outDate) ? '; height: auto; min-height: 58px; padding-top: 7px; padding-bottom: 7px' : ''),
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : ((s.status === '휴원' || s.status === '퇴원') ? '' : (s.status || s.backTag || '')), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : 'display: none'),
           // 휴원·퇴원은 왼쪽 묶음 칸에 이미 보이므로 이름 옆 배지는 없음
           // 넘어온 원생이 복귀·재등록하면 '← 예전 강사' 옆에 복귀·재등록 배지를 따로
