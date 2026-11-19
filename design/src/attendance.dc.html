@@ -218,7 +218,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.2</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2765,8 +2765,8 @@ class Component extends DCLogic {
     const shown = sheets.map((t, i) => ({ t: t, i: i })).filter(o => hidden.indexOf(o.t[0]) < 0);
     // 순서에 없는 새 시트(새 달 추가 등)는 원래 자리 기준으로 끼워 넣는다
     const natural = shown.slice();
-    const tabsOrd = shown.filter(o => tabOrder.indexOf(o.t[0]) >= 0).sort((a, b) => ordIdx(a) - ordIdx(b));
-    natural.forEach((o, k) => { if (tabOrder.indexOf(o.t[0]) < 0) tabsOrd.splice(Math.min(k, tabsOrd.length), 0, o); });
+    // 출석부 시트는 항상 최신 달이 맨 왼쪽 (수업일지·업무일지 같은 다른 시트는 그 뒤에 원래 순서대로)
+    const tabsOrd = shown.filter(o => o.t[1] > 0).sort((a, b) => b.t[1] - a.t[1]).concat(shown.filter(o => !(o.t[1] > 0)));
     const moveTab = (from, to) => {
       const names = tabsOrd.map(o => o.t[0]);
       const a = names.indexOf(from), b = names.indexOf(to);
