@@ -54,6 +54,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         <span class="noexp" style="display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px">
           <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{selTxt}}</span>
           <label style="display: inline-flex; align-items: center"><input id="nt_date" aria-label="발송 날짜" type="date" defaultValue="{{sendDate}}" onChange="{{setDate}}" style="height: 38px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C"></label>
+          <button type="button" onClick="{{undo}}" disabled="{{undoOff}}" title="되돌리기 (Ctrl+Z)" style="{{undoStyle}}">↶ 되돌리기</button>
           <button type="button" onClick="{{bulk}}" disabled="{{bulkOff}}" style="{{bulkStyle}}">발송</button>
         </span>
       </div>
@@ -113,7 +114,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.5</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.6</span>
     </div>
   </main>
 
@@ -422,6 +423,8 @@ class Component extends DCLogic {
     // 체크한 뒤 Enter = '발송' (창이 열려 있거나 글자 칸에 있을 때는 아님)
     this._ek = e => { if (e.key !== 'Enter' || e.isComposing || this.state.ask || this.state.log || this.state.printOpen) return; const a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'checkbox')) && a.id !== 'nt_date') return; const sel = this.state.sel || {}; if (!Object.keys(sel).length) return; e.preventDefault(); this.bulkSend(); };
     window.addEventListener('keydown', this._ek);
+    this._zk = e => { if (!(e.ctrlKey || e.metaKey) || e.altKey) return; const k = (e.key || '').toLowerCase(); if (k !== 'z' && k !== 'y') return; const a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'checkbox'))) return; e.preventDefault(); this.undoRedo(k === 'z' && !e.shiftKey); };
+    window.addEventListener('keydown', this._zk);
     this._dbl = () => this.setState({ tick: Date.now() });
     document.addEventListener('academy:data', this._dbl);
   }
@@ -440,7 +443,16 @@ class Component extends DCLogic {
   // 발송 기록 'academy.payNotice' = { 이름: { cyc, sends: ['2026-11-19', …], memo } } (로그인 사이트는 Supabase app_settings 'payNotice')
   // cyc = 그 원생의 마지막 수납 날짜. 새로 수납하면 cyc가 바뀌어 다음에 목록에 올라올 때 발송 기록이 새로 시작된다
   readNotice() { try { return JSON.parse(localStorage.getItem('academy.payNotice') || '{}') || {}; } catch (e) { return {}; } }
-  saveNotice(o) { try { localStorage.setItem('academy.payNotice', JSON.stringify(o)); } catch (e) {} }
+  // 되돌리기: 바꾸기 전 상태를 쌓아 둠 (Ctrl+Z 되돌리기 / Ctrl+Y·Ctrl+Shift+Z 다시 하기, 이 화면을 연 동안만)
+  saveNotice(o) { const prev = localStorage.getItem('academy.payNotice') || '{}', js = JSON.stringify(o); if (prev === js) return; this._undo = (this._undo || []).concat([prev]).slice(-50); this._redo = []; try { localStorage.setItem('academy.payNotice', js); } catch (e) {} }
+  undoRedo(back) {
+    const from = back ? (this._undo || []) : (this._redo || []);
+    if (!from.length) { this.flash(back ? '되돌릴 것이 없습니다' : '다시 할 것이 없습니다'); return; }
+    const cur = localStorage.getItem('academy.payNotice') || '{}', v = from.pop();
+    (back ? (this._redo = this._redo || []) : (this._undo = this._undo || [])).push(cur);
+    try { localStorage.setItem('academy.payNotice', v); } catch (e) {}
+    this.flash(back ? '되돌렸습니다' : '다시 했습니다'); this.setState({ tick: Date.now() });
+  }
   noticeOf(PN, name, tk) { const e = PN[name]; return e && e.cyc === tk.cyc ? e : { cyc: tk.cyc, sends: [], memo: '' }; }
   list() {
     const TK = this.readTickets(), DAYS = ['월', '화', '수', '목', '금', '토', 'R'];
@@ -579,6 +591,8 @@ class Component extends DCLogic {
       selTxt: nSel ? nSel + '명 선택' : '',
       sendDate: st.sendDate || this.todayYmd(),
       setDate: ev => { this.state.sendDate = ev.target.value; },
+      undo: () => this.undoRedo(true), undoOff: !(this._undo || []).length,
+      undoStyle: 'height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; ' + ((this._undo || []).length ? 'color: #3A4450; cursor: pointer' : 'color: #C3CAC6; cursor: default'),
       bulk: () => this.bulkSend(), bulkOff: !nSel,
       bulkStyle: 'height: 38px; padding: 0 16px; border-radius: 10px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; ' + (nSel ? 'background: #00A6AB; color: #FFFFFF; cursor: pointer' : 'background: #E3E8E5; color: #8A949E; cursor: default'),
       toast: st.toast || '',
