@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.65.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.65.1</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1888,8 +1888,12 @@ class Component extends DCLogic {
       // 검색: 치는 동안에는 화면을 다시 그리지 않고 표의 줄만 바로 숨기거나 보인다 (한글 조합이 깨지지 않음, 맥·윈도우 공통).
       // 검색칸에서 나가거나 Enter를 누르면 그때 검색어를 저장해 인쇄·내보내기·인원수에 반영한다.
       onSearch: e => this.liveSearch(e.target.value),
-      onSearchFocus: e => { if (this.state.q && !this.state.qEdit) { this.keepCaret(e); this.setState({ qEdit: true }); setTimeout(() => { const n = document.getElementById('q'); if (n) this.liveSearch(n.value); }, 0); } },
-      onSearchBlur: e => { const v = e.target.value; setTimeout(() => { const a = document.activeElement; if (a && a.id === 'q') return; if (v !== (this.state.q || '') || this.state.qEdit) this.setState({ q: v, qEdit: false }); }, 0); },
+      onSearchFocus: e => { if (!this._pdHook) { this._pdHook = true; window.addEventListener('pointerdown', () => { this._pd = true; }, true); window.addEventListener('pointerup', () => { setTimeout(() => { this._pd = false; }, 0); }, true); } if (this.state.q && !this.state.qEdit) { this.keepCaret(e); this.setState({ qEdit: true }); setTimeout(() => { const n = document.getElementById('q'); if (n) this.liveSearch(n.value); }, 0); } },
+      // 검색칸에서 나갈 때 검색어 저장(표를 다시 그림)은 누르던 버튼의 클릭이 끝난 뒤에 한다 (그 전에 그리면 첫 클릭이 씹힘)
+      onSearchBlur: e => { const v = e.target.value; const commit = () => { const a = document.activeElement; if (a && a.id === 'q') return; if (v !== (this.state.q || '') || this.state.qEdit) this.setState({ q: v, qEdit: false }); };
+        if (!this._pdHook) { this._pdHook = true; window.addEventListener('pointerdown', () => { this._pd = true; }, true); window.addEventListener('pointerup', () => { setTimeout(() => { this._pd = false; }, 0); }, true); }
+        if (this._pd) { let done = false; const go = () => { if (done) return; done = true; window.removeEventListener('click', h, true); setTimeout(commit, 0); }; const h = () => go(); window.addEventListener('click', h, true); setTimeout(go, 3000); }
+        else setTimeout(commit, 0); },
       onSearchKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } },
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
       gridRow: COLS,
