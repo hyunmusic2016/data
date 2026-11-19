@@ -222,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.1</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1657,7 +1657,8 @@ class Component extends DCLogic {
       if (base[c.id]) { out.push(Object.assign({}, base[c.id], { label: c.label || base[c.id].label, hidden: c.id === 'settings' ? false : !!c.hidden })); delete base[c.id]; }
       else if (c.custom) out.push({ id: c.id, label: c.label || '새 탭', href: '#', builtin: false, custom: true, hidden: !!c.hidden });
     });
-    DEF.forEach(d => { if (base[d[0]]) out.push(base[d[0]]); });
+    // 저장된 순서에 없는 기본 탭(새로 생긴 탭)은 기본 순서에서 바로 앞 탭 뒤에 끼운다
+    DEF.forEach((d, i) => { if (!base[d[0]]) return; let at = -1; for (let j = i - 1; j >= 0 && at < 0; j--) at = out.findIndex(t => t.id === DEF[j][0]); out.splice(at + 1, 0, base[d[0]]); });
     return out;
   }
   menuTabs(cur, cnts) {

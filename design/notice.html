@@ -59,27 +59,27 @@ html.bwp .printonly .pcell{border-color:#000!important}
       </div>
 
       <div id="nt_scroll" class="shellscroll" style="padding: 0 0 8px">
-        <div role="table" aria-label="수납 안내 목록" style="min-width: 980px">
+        <div role="table" aria-label="수납 안내 목록" style="min-width: 820px">
           <div role="row" style="{{gridHead}}">
-            <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 18px; height: 18px; accent-color: #00A6AB; cursor: pointer"></span>
+            <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 16px; height: 16px; accent-color: #00A6AB; cursor: pointer"></span>
             <span role="columnheader" style="{{c.h}}">요일</span>
-            <span role="columnheader" style="{{c.h}}">강사</span>
             <span role="columnheader" style="{{c.h}}">이름</span>
-            <span role="columnheader" style="{{c.hl}}">수강</span>
             <span role="columnheader" style="{{c.hl}}">발송</span>
             <span role="columnheader" style="{{c.h}}">횟수</span>
+            <span role="columnheader" style="{{c.h}}">강사</span>
+            <span role="columnheader" style="{{c.hl}}">수강</span>
             <span role="columnheader" style="{{c.hl}}">MEMO</span>
           </div>
           <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
             <div role="row" class="nrow" style="{{r.rowStyle}}">
-              <span role="cell" class="noexp" style="{{c.cc}}"><input type="checkbox" aria-label="{{r.selLabel}}" checked="{{r.on}}" onChange="{{r.toggle}}" style="width: 18px; height: 18px; accent-color: #00A6AB; cursor: pointer"></span>
+              <span role="cell" class="noexp" onMouseDown="{{r.dragDown}}" onMouseEnter="{{r.dragOver}}" style="{{c.cc}}; cursor: pointer; user-select: none"><input type="checkbox" tabindex="-1" aria-label="{{r.selLabel}}" checked="{{r.on}}" style="width: 16px; height: 16px; accent-color: #00A6AB; pointer-events: none"></span>
               <span role="cell" style="{{c.cc}}"><sc-for list="{{r.days}}" as="dy" hint-placeholder-count="1"><span style="{{dy.style}}">{{dy.t}}</span></sc-for></span>
-              <span role="cell" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
               <span role="cell" style="{{c.cc}}; font-weight: 600">{{r.name}}</span>
-              <span role="cell" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
-              <span role="cell" style="{{c.cl}}; flex-wrap: wrap; gap: 4px"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="2"><span style="display: inline-flex; align-items: center; gap: 2px; height: 24px; padding: 0 4px 0 9px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 12px; font-weight: 600; white-space: nowrap">{{sd.t}}<button type="button" class="noexp" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="발송 기록 지우기" style="width: 18px; height: 18px; padding: 0; border: none; border-radius: 999px; background: transparent; color: #5E9C9E; font-family: inherit; font-size: 13px; line-height: 1; cursor: pointer">×</button></span></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">아직 안 보냄</span></sc-if></span>
+              <span role="cell" style="{{c.cl}}; flex-wrap: wrap; gap: 4px"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="2"><span style="display: inline-flex; align-items: center; gap: 2px; height: 22px; padding: 0 2px 0 7px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 12px; font-weight: 600; white-space: nowrap">{{sd.t}}<button type="button" class="noexp" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="발송 기록 지우기" style="width: 18px; height: 18px; padding: 0; border: none; border-radius: 999px; background: transparent; color: #5E9C9E; font-family: inherit; font-size: 13px; line-height: 1; cursor: pointer">×</button></span></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
               <span role="cell" style="{{c.cc}}"><span style="{{r.cntStyle}}">{{r.cnt}}</span></span>
-              <span role="cell" style="{{c.cl}}"><input id="{{r.memoId}}" type="text" defaultValue="{{r.memo}}" onChange="{{r.saveMemo}}" aria-label="{{r.memoLabel}}" style="width: 100%; height: 32px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #17201C" class="memoInp"></span>
+              <span role="cell" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
+              <span role="cell" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 3px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
+              <span role="cell" style="{{c.cl}}"><input id="{{r.memoId}}" type="text" defaultValue="{{r.memo}}" onChange="{{r.saveMemo}}" aria-label="{{r.memoLabel}}" style="width: 100%; height: 28px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #17201C" class="memoInp"></span>
             </div>
           </sc-for>
           <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
@@ -110,7 +110,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.1</span>
     </div>
   </main>
 
@@ -251,7 +251,8 @@ class Component extends DCLogic {
       if (base[c.id]) { out.push(Object.assign({}, base[c.id], { label: c.label || base[c.id].label, hidden: c.id === 'settings' ? false : !!c.hidden })); delete base[c.id]; }
       else if (c.custom) out.push({ id: c.id, label: c.label || '새 탭', href: '#', builtin: false, custom: true, hidden: !!c.hidden });
     });
-    DEF.forEach(d => { if (base[d[0]]) out.push(base[d[0]]); });
+    // 저장된 순서에 없는 기본 탭(새로 생긴 탭)은 기본 순서에서 바로 앞 탭 뒤에 끼운다
+    DEF.forEach((d, i) => { if (!base[d[0]]) return; let at = -1; for (let j = i - 1; j >= 0 && at < 0; j--) at = out.findIndex(t => t.id === DEF[j][0]); out.splice(at + 1, 0, base[d[0]]); });
     return out;
   }
   menuTabs(cur, cnts) {
@@ -463,6 +464,7 @@ class Component extends DCLogic {
     if ((e.memo || '') === v) return;
     e.memo = v; PN[name] = e; this.saveNotice(PN);
   }
+  setSel(name, on) { const s2 = Object.assign({}, this.state.sel || {}); if (!!s2[name] === on) return; if (on) s2[name] = 1; else delete s2[name]; this.setState({ sel: s2 }); }
   flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
   md(d) { return (+d.slice(5, 7)) + '/' + (+d.slice(8)); }
   doPrint() {
@@ -481,10 +483,10 @@ class Component extends DCLogic {
     const put = (r, c, val, o) => { o = o || {}; ws[X.utils.encode_cell({ r: r, c: c })] = { t: typeof val === 'number' ? 'n' : 's', v: val == null ? '' : val, s: { alignment: { horizontal: o.align || 'center', vertical: 'center', wrapText: true }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold }, fill: o.fill ? { fgColor: { rgb: o.fill } } : undefined, border: o.border === false ? undefined : BOR } }; };
     put(0, 0, '수납 안내 (' + v.printDate + ')', { bold: true, sz: 15, border: false });
     head.forEach((h, i) => put(2, i, h, { bold: true, fill: 'EEF2EE' }));
-    rows.forEach((r, i) => r.forEach((val, k) => put(3 + i, k, val, { align: k === 3 || k === 6 ? 'left' : 'center' })));
+    rows.forEach((r, i) => r.forEach((val, k) => put(3 + i, k, val, { align: k === 2 || k === 5 || k === 6 ? 'left' : 'center' })));
     ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 2 + Math.max(rows.length, 1), c: head.length - 1 } });
     ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: head.length - 1 } }];
-    ws['!cols'] = [8, 10, 10, 30, 24, 8, 36].map(w => ({ wch: w }));
+    ws['!cols'] = [8, 10, 24, 8, 10, 30, 36].map(w => ({ wch: w }));
     const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, '수납 안내');
     const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     await this.saveBlob(this.xlsName(), new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
@@ -497,22 +499,24 @@ class Component extends DCLogic {
     const nSel = L.filter(r => sel[r.name]).length;
     const DC = { '월': ['#F9D9D6', '#9A3A31'], '화': ['#D6E6F7', '#2E5A8A'], '수': ['#FCF1C2', '#7A6200'], '목': ['#D7EFDD', '#2F6B43'], '금': ['#FBE0CC', '#8A4A1C'], '토': ['#E6DFF5', '#5B4A8B'], 'R': ['#EEF1F0', '#5E6873'] };
     const DL = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
-    const COLS = 'display: grid; grid-template-columns: 48px 92px 96px 110px minmax(200px, 1.1fr) minmax(200px, 1.2fr) 64px minmax(180px, 1fr); align-items: stretch';
+    const COLS = 'display: grid; grid-template-columns: 36px 64px 76px 150px 44px 76px 170px minmax(140px, 1fr); align-items: stretch';
     const rows = L.map((r, i) => {
       const e = this.noticeOf(PN, r.name, r.tk), sends = e.sends || [];
       const tc = this.teacherColor(r.teacher);
       return {
         name: r.name, on: !!sel[r.name], selLabel: r.name + ' 선택',
-        toggle: () => { const s2 = Object.assign({}, this.state.sel || {}); if (s2[r.name]) delete s2[r.name]; else s2[r.name] = 1; this.setState({ sel: s2 }); },
-        days: (r.days.length ? r.days : ['R']).map(g => ({ t: DL[g], style: 'display: inline-flex; align-items: center; height: 24px; padding: 0 8px; margin: 1px; border-radius: 6px; font-size: 12px; font-weight: 600; background: ' + DC[g][0] + '; color: ' + DC[g][1] })),
-        teacher: r.teacher || '-', tStyle: 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + tc[0] + '; color: ' + tc[1],
+        // 체크칸을 누른 채 위아래로 끌면 지나가는 줄을 모두 같은 상태(선택/해제)로
+        dragDown: ev => { if (ev.button) return; ev.preventDefault(); this._drag = !sel[r.name]; if (!this._dragHook) { this._dragHook = 1; window.addEventListener('mouseup', () => { this._drag = null; }); } this.setSel(r.name, this._drag); },
+        dragOver: () => { if (this._drag == null) return; this.setSel(r.name, this._drag); },
+        days: (r.days.length ? r.days : ['R']).map(g => ({ t: DL[g], style: 'display: inline-flex; align-items: center; height: 20px; padding: 0 6px; margin: 1px; border-radius: 5px; font-size: 11px; font-weight: 600; background: ' + DC[g][0] + '; color: ' + DC[g][1] })),
+        teacher: r.teacher || '-', tStyle: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; font-weight: 600; background: ' + tc[0] + '; color: ' + tc[1],
         tk: { dotLines: r.tk.dotLines || [], subParts: r.tk.subParts || [{ t: r.tk.text || '', style: '' }], queueTxt: r.tk.queueTxt || '' },
         sends: sends.map(d => ({ t: this.md(d), del: () => this.delSend(r.name, r.tk, d), delLabel: r.name + ' ' + this.md(d) + ' 발송 기록 지우기' })), noSend: !sends.length,
         cnt: sends.length + '회', cntStyle: 'font-size: 14px; font-weight: 600; color: ' + (sends.length >= 3 ? '#B4332B' : sends.length ? '#17201C' : '#B7C0BC'),
         memo: e.memo || '', memoId: 'nt_memo_' + i, memoLabel: r.name + ' 메모',
         saveMemo: ev => this.saveMemo(r.name, r.tk, ev.target.value),
         rowStyle: COLS + '; border-bottom: 1px solid #EEF1EF; background: ' + (sel[r.name] ? '#F2FAFA' : '#FFFFFF'),
-        print: [DL[r.days[0] || 'R'] + (r.days.length > 1 ? ' 외' : ''), r.teacher, r.name, (r.tk.subParts || []).map(p => p.t).join('') || r.tk.text || '', sends.map(d => this.md(d)).join(', '), sends.length + '회', e.memo || '']
+        print: [DL[r.days[0] || 'R'] + (r.days.length > 1 ? ' 외' : ''), r.name, sends.map(d => this.md(d)).join(', '), sends.length + '회', r.teacher, (r.tk.subParts || []).map(p => p.t).join('') || r.tk.text || '', e.memo || '']
       };
     });
     const d = new Date();
@@ -530,12 +534,12 @@ class Component extends DCLogic {
       toast: st.toast || '',
       gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
       c: {
-        h: 'height: 40px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
-        hl: 'height: 40px; display: flex; align-items: center; justify-content: flex-start; padding-left: 10px; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
-        cc: 'min-height: 46px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; padding: 4px; box-sizing: border-box; font-size: 14px',
-        cl: 'min-height: 46px; display: flex; align-items: center; justify-content: flex-start; padding: 4px 10px; box-sizing: border-box; font-size: 13px; min-width: 0'
+        h: 'height: 32px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
+        hl: 'height: 32px; display: flex; align-items: center; justify-content: flex-start; padding-left: 6px; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
+        cc: 'min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; padding: 2px; box-sizing: border-box; font-size: 14px',
+        cl: 'min-height: 36px; display: flex; align-items: center; justify-content: flex-start; padding: 2px 6px; box-sizing: border-box; font-size: 13px; min-width: 0'
       },
-      printHead: ['요일', '강사', '이름', '수강', '발송', '횟수', 'MEMO'],
+      printHead: ['요일', '이름', '발송', '횟수', '강사', '수강', 'MEMO'],
       printRows: rows.map(r => r.print),
       printDate: d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일',
       printX: () => this.setState({ printOpen: true }),
