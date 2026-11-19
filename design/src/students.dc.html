@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.65.6</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.65.7</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -410,6 +410,17 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{spv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <sc-if value="{{spv.notWo}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{spv.go}}" style="flex: 2; height: 50px; border-radius: 14px; border: none; background: #E2C35F; color: #3D2E05; font-family: inherit; font-size: 16px; font-weight: 600; cursor: pointer">수납하기</button></sc-if>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{sc.open}}" hint-placeholder-val="{{ false }}">
+    <div onMouseDown="{{sc.close}}" style="position: fixed; inset: 0; z-index: 50; background: rgba(23, 32, 28, 0.28)"></div>
+    <div role="dialog" aria-label="{{sc.title}}" onKeyDown="{{sc.key}}" tabIndex="-1" id="stConfDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 51; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); outline: none">
+      <span style="font-size: 18px; font-weight: 600; color: #17201C">{{sc.title}}</span>
+      <div style="padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5; font-size: 14px; line-height: 1.6; color: #3A4450; white-space: pre-line; word-break: keep-all">{{sc.msg}}</div>
+      <div style="display: flex; gap: 8px">
+        <button type="button" onClick="{{sc.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{sc.ok}}" style="flex: 1; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">네, 맞습니다</button>
       </div>
     </div>
   </sc-if>
@@ -994,9 +1005,12 @@ class Component extends DCLogic {
     this.setState({ histView: id, hvMsg: {}, hvErr: {} });
     setTimeout(() => { const d = document.getElementById('histDlg'); if (d) d.focus(); }, 30);
   }
-  applyStatus() {
+  applyStatus(ok) {
     const S = this.state.stat;
     if (!S) return;
+    // 처리하기 전에 날짜가 맞는지 한 번 물어본다
+    if (!ok) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(S.date || ''); if (!m) return; const lb = S.kind === 'rest' ? '휴원' : S.kind === 'out' ? '퇴원' : (S.from === 'out' ? '재등록' : '복귀');
+      this.setState({ stConf: { label: lb, text: S.name + ' 원생을 ' + m[1] + '년 ' + (+m[2]) + '월 ' + (+m[3]) + '일부로 ' + lb + ' 처리합니다.\n\n이 날짜가 맞습니까?' } }); setTimeout(() => { const d = document.getElementById('stConfDlg'); if (d) d.focus(); }, 30); return; }
     const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(S.date || '');
     const ymd = m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : '';
     const why = S.memo.trim();
@@ -1884,6 +1898,8 @@ class Component extends DCLogic {
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } }
         };
       })(),
+      sc: (() => { const C = st.stConf; if (!C) return { open: false }; const close = () => this.setState({ stConf: null });
+        return { open: true, title: C.label + ' 날짜 확인', msg: C.text, close: close, ok: () => { this.setState({ stConf: null }); this.applyStatus(true); }, key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } } }; })(),
       sd: (() => {
         const S = st.stat;
         if (!S) return { open: false };
