@@ -218,7 +218,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.4</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -314,6 +314,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <sc-for list="{{pv.recs}}" as="x" hint-placeholder-count="1"><button type="button" aria-pressed="{{x.on}}" onClick="{{x.pick}}" style="{{x.style}}">{{x.label}}</button></sc-for>
         <button type="button" onClick="{{pv.addOn}}" aria-pressed="{{pv.addPressed}}" style="{{pv.addStyle}}">+ 같은 날 추가 수납</button>
       </div></sc-if>
+      <sc-if value="{{pv.hasDp}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelDiff}}" style="height: 40px; border-radius: 12px; border: 1.5px solid #F2B880; background: #fff; color: #B45309; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{pv.dpTxt}}</button></sc-if>
       <sc-if value="{{pv.hasDiff}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.payDiff}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; border: 1.5px solid #F2B880; background: #FDEBD8; color: #B45309; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.diffTxt}}<span style="font-size: 12px; font-weight: 500; color: #9A5B00">반 변경 차액 · 수강권은 그대로</span></button></sc-if>
       <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
         <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3A4450">수강생대장 정보<span style="font-size: 11px; font-weight: 600; color: #8A949E">{{pv.src}}</span></span>
@@ -1694,8 +1695,9 @@ class Component extends DCLogic {
     const base = { count: count, unit: unit, total: total };
     if (paid && rec) { count = rec.count || count; unit = rec.unit || unit; total = rec.total || rec.amount || total; }
     const diff = late || umode ? 0 : ((this._diff || {})[c0.sid] || 0);
+    const dpPaid = late ? 0 : (+((cur[c0.sid] || {})['dp' + c0.d]) || 0);
     const outRow = s0.g === '퇴휴' && (s0.status === '휴원' || s0.status === '퇴원');
-    this.setState({ pop: null, pay: { outRow: outRow, debtN: (this._unpaid || {})[c0.sid] || 0, debtDiff: (this._diffLeft || {})[c0.sid] || 0, recIds: recs.map(x => x.id), recId: rec ? rec.id : null, base: base, diff: diff, name: name, sid: c0.sid, d: c0.d, m: m, date: paid ? recDate : newDate, origDate: recDate, paid: paid, umode: umode, late: !!late, minDate: this.ymK(m) + '-01', pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
+    this.setState({ pop: null, pay: { outRow: outRow, debtN: (this._unpaid || {})[c0.sid] || 0, debtDiff: (this._diffLeft || {})[c0.sid] || 0, recIds: recs.map(x => x.id), recId: rec ? rec.id : null, base: base, diff: diff, dpPaid: dpPaid, name: name, sid: c0.sid, d: c0.d, m: m, date: paid ? recDate : newDate, origDate: recDate, paid: paid, umode: umode, late: !!late, minDate: this.ymK(m) + '-01', pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
       cash: info ? !!info.cashOn : s0.name.indexOf('$') >= 0, cashType: info ? info.cashType : 'person', cashNo: (info && info.cashNo) || s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4),
       teacher: info ? info.teacher : '', part: info ? info.part : '', sched: info ? (info.day + (info.timeTxt ? ' ' + info.timeTxt : '')) : (s0.g + (s0.time ? ' ' + s0.time : '')), phone: info ? (info.gphone || info.phone) : '' } });
     setTimeout(() => { const d = document.getElementById('payDlg'); if (d) d.focus(); }, 30);
@@ -1779,6 +1781,14 @@ class Component extends DCLogic {
   payDiff() {
     const P = this.state.pay; if (!P || !P.diff) return;
     const patch = this.writeCells([{ m: P.m, sid: P.sid, d: P.d, key: 'dp' + P.d, v: P.diff }], '');
+    patch.pay = null;
+    this.commit(patch);
+    this.focusSheet();
+  }
+  cancelDiff() {
+    const P = this.state.pay; if (!P || !P.dpPaid) return;
+    if (!P.dpAsk) { this.setState({ pay: Object.assign({}, P, { dpAsk: true }) }); return; }
+    const patch = this.writeCells([{ m: P.m, sid: P.sid, d: P.d, key: 'dp' + P.d, v: '' }], '');
     patch.pay = null;
     this.commit(patch);
     this.focusSheet();
@@ -2978,7 +2988,7 @@ class Component extends DCLogic {
           addOn: () => upd({ add: true, paid: false, recId: null, count: (P.base || P).count, unit: (P.base || P).unit, total: (P.base || P).total, date: P.origDate, cancelAsk: false, err: '' }),
           addStyle: 'height: 32px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (P.add ? 'border: 1px solid #E2C35F; background: #FAEFD2; color: #7A5C12' : 'border: 1px dashed #C9B26A; background: #FFFDF6; color: #7A5C12'),
           open: true, name: P.name, paid: P.paid, notPaid: !P.paid, date: P.date, umode: !!P.umode,
-          hasDiff: !!P.diff, diffTxt: '차액 수납 ' + won(P.diff) + '원', payDiff: () => this.payDiff(),
+          hasDp: !!P.dpPaid, dpTxt: P.dpAsk ? '한 번 더 누르면 차액 수납 ' + won(P.dpPaid) + '원 취소' : '차액 수납 ' + won(P.dpPaid) + '원 취소', cancelDiff: () => this.cancelDiff(), hasDiff: !!P.diff && !P.dpPaid, diffTxt: '차액 수납 ' + won(P.diff) + '원', payDiff: () => this.payDiff(),
           showDate: P.paid || !!P.umode, showDateText: !P.paid && !P.umode, minDate: P.umode ? P.minDate : '',
           dateWord: P.umode ? '결제 일자' : '수납 날짜',
           feeIcon: 'width: 30px; height: 30px; flex: none; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; ' + (P.umode ? 'background: #FBE3E1; color: #B4332B' : 'background: #F3E6C4; color: #7A5C12'),
