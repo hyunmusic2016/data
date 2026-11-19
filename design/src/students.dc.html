@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.66.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.66.3</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1720,7 +1720,7 @@ class Component extends DCLogic {
         ages: ['학생', '성인'].map(g => ropt(g, R.age === g, () => this.setReg({ age: g }), AGE[g])),
         teacherOpts: [{ v: '', label: '강사 선택', sel: !R.teacher }].concat(Object.keys(TEACH).map(t => ({ v: t, label: t + (ROLE[t] === '원장' ? ' 원장님' : ' 강사') + (TEACH[t].length ? ' · ' + TEACH[t].join('·') : ''), sel: R.teacher === t }))),
         partOpts: parts.map(p => ropt(p, R.part === p, () => this.setReg({ part: p }), PART[p])),
-        partHint: !R.teacher ? '강사를 먼저 선택하세요' : parts.length === 1 ? '자동 선택됨' : '가르치는 과목 중 선택',
+        partHint: !R.teacher ? '강사를 먼저 선택하세요' : '',
         days: [['월요일', '월'], ['화요일', '화'], ['수요일', '수'], ['목요일', '목'], ['금요일', '금'], ['토요일', '토'], ['변동', 'R']].map(d => ropt(d[1], R.days.indexOf(d[0]) >= 0, () => {
           const on = R.days.indexOf(d[0]) >= 0;
           // 중복 선택이 꺼져 있으면 한 요일만
@@ -1741,7 +1741,7 @@ class Component extends DCLogic {
             setH: e => { const r0 = this.state.reg; r0.times = Object.assign({}, r0.times, { [x]: Object.assign({ h: '', m: '00' }, r0.times[x] || {}, { h: e.target.value }) }); }, setM: e => { const r0 = this.state.reg; r0.times = Object.assign({}, r0.times, { [x]: Object.assign({ h: '', m: '00' }, r0.times[x] || {}, { m: e.target.value }) }); },
             chip: 'display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; flex: none; border-radius: 12px; font-size: 15px; font-weight: 600; background: ' + DAY[x][0] + '; color: ' + DAY[x][1] };
         }),
-        feeNote: (R.cls === 'pro' ? '전문반' : '취미반') + ' 기준 기본값',
+        feeNote: '',
         sumLine: R.count + '회 × ' + fmtN(R.unit) + '원 = ' + fmtN(R.total) + '원  ·  1회 ' + (R.dur || 0) + '분',
         card: 'display: flex; flex-direction: column; gap: 18px; padding: 22px 24px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E3E8E5; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.04)',
         secIcon: 'width: 32px; height: 32px; flex: none; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center',
