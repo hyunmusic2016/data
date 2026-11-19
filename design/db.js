@@ -423,6 +423,8 @@
       A.busy = Math.max(0, A.busy - 1); rerender();
     }, function () { A.busy = Math.max(0, A.busy - 1); });
   };
+  // 휴원·퇴원 날짜 고치기
+  A.updateStatusDate = function (localId, date) { dbIdOf(localId).then(function (n) { if (n) sb.from('status_changes').update({ date: date }).eq('id', n).then(function (r) { report(r, '휴원·퇴원 날짜 고치기'); }); }); };
   A.deleteTerm = function (hid) { dbIdOf(hid).then(function (n) { if (n) sb.from('student_terms').delete().eq('id', n).then(function (r) { report(r, '예정 취소'); }); }); };
   // 원생 삭제: 수업 정보·휴원/퇴원·출결·수납·수강권 계획은 표 연결(on delete cascade)로 같이 지워진다. 변경 기록도 지운 뒤 전체를 다시 불러온다
   A.deleteStudent = function (reg) {

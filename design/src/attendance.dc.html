@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.64.13</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -409,6 +409,10 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       </div>
       <span style="font-size: 15px; color: #3A4450; line-height: 1.5"><b style="font-weight: 600; color: #17201C">{{ad.name}}</b> 원생을 {{ad.kindLabel}} 처리합니다.</span>
       <label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{ad.dateLabel}}<input id="ad_date" type="date" defaultValue="{{ad.date}}" onChange="{{ad.setDate}}" style="height: 44px; padding: 0 12px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; color: #17201C"></label>
+      <sc-if value="{{ad.showEdit}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: flex-end; gap: 8px; padding: 12px 14px; border-radius: 12px; background: #FAFBFA; border: 1px dashed #D5DBD8">
+        <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873">{{ad.editLabel}}<input id="ad_editdate" type="date" defaultValue="{{ad.editDate}}" onChange="{{ad.setEditDate}}" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 14px"></label>
+        <button type="button" onClick="{{ad.saveEdit}}" style="height: 38px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9D0CC; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">{{ad.editBtn}}</button>
+      </div></sc-if>
       <sc-if value="{{ad.askFresh}}" hint-placeholder-val="{{ false }}"><div role="radiogroup" aria-label="재등록 방법" style="display: flex; flex-direction: column; gap: 8px">
         <span style="font-size: 13px; font-weight: 600; color: #5E6873">수강(출결·수납)은 어떻게 할까요?</span>
         <button type="button" role="radio" aria-checked="{{ad.contOn}}" onClick="{{ad.pickCont}}" style="{{ad.contStyle}}"><b style="font-weight: 600">지난 수강 이어서</b><span style="font-size: 12px; color: #5E6873">{{ad.contSub}}</span></button>
@@ -676,6 +680,22 @@ class Component extends DCLogic {
     else if (w0) list = list.filter(w => w.id !== w0.id);
     try { localStorage.setItem('academy.writeOffs', JSON.stringify(list)); } catch (e) {}
     this.setState({});
+  }
+  // 휴원·퇴원 날짜 고치기: 같은 기록의 날짜만 바꾼다 (DB는 academy.updateStatusDate)
+  saveStatusDate(S, date) {
+    const list = this.readStatus(), e = list.find(x => x.id === S.editId); if (!e) return;
+    e.date = date;
+    try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (x) {}
+    const A = window.academy; if (A && A.updateStatusDate) A.updateStatusDate(e.id, date);
+    this.setState({ statusList: list, ast: Object.assign({}, S, { editDate: date, editDate2: '', editSaved: true }) });
+  }
+  // 휴원·퇴원 기간 [시작, 끝(복귀·재등록 날짜, 없으면 null)] — 처리한 순서대로
+  statusLocks(name) {
+    const L = (this.state.statusList || []).filter(e => e.name === name).sort((a, b) => (a.at || 0) - (b.at || 0));
+    const out = []; let open = null;
+    L.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') { if (!open) open = e.date; } else if (e.kind === 'back' && open) { out.push([open, e.date]); open = null; } });
+    if (open) out.push([open, null]);
+    return out;
   }
   readCloses() { try { return JSON.parse(localStorage.getItem('academy.monthClose') || '{}') || {}; } catch (e) { return {}; } }
   saveClose(ck, on) {
@@ -1005,7 +1025,8 @@ class Component extends DCLogic {
     // 퇴원 → 재등록: 미납이나 남은 수업이 있을 때만 '지난 수강 이어서'를 고를 수 있음, 없으면 바로 새로 시작
     const oweN0 = (this._unpaid || {})[s.id] || 0, oweD0 = (this._diffLeft || {})[s.id] || 0, left0 = (this._remain || {})[s.id] || 0;
     const canCont0 = oweN0 > 0 || oweD0 > 0 || left0 > 0;
-    this.setState({ ast: { kind: 'back', canCont: canCont0, fresh: !canCont0, left: left0, oweN: oweN0, oweDiff: oweD0, from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
+    const stE = (this.state.statusList || []).filter(e => e.name === s.name.replace('$', '') && (e.kind === 'rest' || e.kind === 'out')).sort((a, b) => (a.at || 0) - (b.at || 0)).pop();
+    this.setState({ ast: { editId: stE ? stE.id : '', editDate: stE ? stE.date : '', kind: 'back', canCont: canCont0, fresh: !canCont0, left: left0, oweN: oweN0, oweDiff: oweD0, from: s.status === '퇴원' ? 'out' : 'rest', rowId: s.id, name: s.name.replace('$', ''), key: String(s.sid || s.id).replace(/^K/, ''), ticket: '', date: dd, memo: '' } });
     setTimeout(() => { const d = document.getElementById('astDlg'); if (d) d.focus(); }, 30);
   }
   applyAStatus() {
@@ -1530,6 +1551,7 @@ class Component extends DCLogic {
   openPop(mode) {
     const s = this.state.sel;
     if (!s) return;
+    if (mode === 'mk' && this.selLocked(false)) { this.lockNote(); return; }
     const W = 360, H = mode === 'del' ? (this.delBoth ? 470 : 330) : 470;
     const x = Math.round((window.innerWidth - W) / 2), y = Math.max(8, Math.round((window.innerHeight - H) / 2));
     this.setState({ pop: { x: Math.max(8, x), y: y, mode: mode } });
@@ -1778,7 +1800,11 @@ class Component extends DCLogic {
     this.setState({ tkp: null });
     this.focusSheet();
   }
+  // 고른 칸 중 휴원·퇴원 기간(수납만 되는 칸)이 있는지
+  selLocked(all) { const c = this.selCells(), L = this._rowLock || []; const f = x => !!(L[x.r] && L[x.r](x.d)); return c.length > 0 && (all ? c.every(f) : c.some(f)); }
+  lockNote() { this.setState({ pop: null, mcDlg: { kind: 'lock' } }); }
   applyMark(v, opt) {
+    if (v && v !== 'V' && this.selLocked(false)) { this.lockNote(); return; }
     const cells = this.selCells();
     if (!cells.length) return;
     const m = this.sheetList()[this.state.sheet][1] || 11;
@@ -2422,6 +2448,7 @@ class Component extends DCLogic {
     let rowIdx = 0;
     this._rowSids = [];
     this._rowHide = [];
+    this._rowLock = [];
     this._nd = ND;
     this._exp = [];
     this._unpaid = {};
@@ -2442,6 +2469,9 @@ class Component extends DCLogic {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
         this._rowHide[R] = s.mvT ? (d => !this.cellMine(s, EV[s.id] || {}, MON, d)) : null;
+        // 휴원·퇴원 기간(처리 날짜 ~ 복귀·재등록 전날): 출결은 못 넣고 수납만
+        { const LK = this.statusLocks(s.name.replace('$', '')), ymdD = d => '2026-' + String(MON).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+          (this._rowLock = this._rowLock || [])[R] = LK.length ? (d => LK.some(p => ymdD(d) >= p[0] && (!p[1] || ymdD(d) < p[1]))) : null; }
         const r0 = calc(s);
         this._tk = this._tk || {};
         // 휴원·퇴원할 때 저장하는 '그 당시 수강': 수강 칸과 같은 말로 (미납이면 미납 N회, 남은 차액도)
@@ -2523,7 +2553,7 @@ class Component extends DCLogic {
               // 오늘 날짜면 '오늘'로, 글씨도 진하게
               hint2: (() => { return x.d === TODAY ? '오늘' : MON + '/' + x.d + ' ' + ['일', '월', '화', '수', '목', '금', '토'][new Date(2026, MON - 1, x.d).getDay()]; })(),
               hintStyle: (() => { const td = x.d === TODAY; return 'position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; pointer-events: none; font-size: 9px; font-weight: 600; line-height: 1.15; white-space: nowrap; color: ' + (td ? '#3A4450' : '#A9B1AD'); })(),
-              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + (inSel ? 'background-image: linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2)); ' : '') + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
+              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + ((() => { const lockD = (this._rowLock[R] && this._rowLock[R](x.d)) || (this._rowHide[R] && this._rowHide[R](x.d)); const L = []; if (inSel) L.push('linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2))'); if (lockD) L.push('repeating-linear-gradient(135deg, rgba(23, 32, 28, 0.07) 0 2px, transparent 2px 7px)'); return L.length ? 'background-image: ' + L.join(', ') + '; ' : ''; })()) + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
                 ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px ' + (x.upay ? '#E8A9A4' : '#E2C35E')] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
@@ -2608,9 +2638,9 @@ class Component extends DCLogic {
       monLabel: MON + '월',
       dayLabel: first ? String(first.d) : '',
       cls: popCells.length === 1 && firstStu ? (firstStu.rowBg ? '전문반' : '취미반') : '',
-      sub: !first ? '' : popCells.length === 1 ? (lt12 ? '수업 시간 ' + lt12 : '') : '같은 표시가 한 번에 들어갑니다',
+      sub: this.selLocked(true) ? '휴원·퇴원 기간 · 수납만 할 수 있어요' : !first ? '' : popCells.length === 1 ? (lt12 ? '수업 시간 ' + lt12 : '') : '같은 표시가 한 번에 들어갑니다',
       style: 'position: fixed; left: ' + (P ? P.x : 0) + 'px; top: ' + (P ? P.y : 0) + 'px; z-index: 41; width: 360px; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)',
-      btns: popBtns,
+      btns: this.selLocked(true) ? [] : popBtns,
       payStyle: popU ? '--sh: #EBB5B0; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #B4332B' : '1px solid #F2C6C2') + '; background: linear-gradient(180deg, #FFFFFF 0%, #FCE6E4 55%); color: #B4332B; font-family: inherit; cursor: pointer; margin-bottom: 4px'
         : '--sh: #E0CB8F; position: relative; display: flex; align-items: center; justify-content: center; height: 60px; border-radius: 18px; border: ' + (curPay ? '2px solid #7A5C12' : '1px solid #EAD9A6') + '; background: linear-gradient(180deg, #FFFFFF 0%, #F7EED3 55%); color: #7A5C12; font-family: inherit; cursor: pointer; margin-bottom: 4px',
       // 휴원·퇴원 원생은 '수납' 대신 '미납금액 수납' (빨강). 미납금액이 없으면 버튼이 생기지 않음 (이미 넣은 수납 수정은 가능)
@@ -2967,6 +2997,7 @@ class Component extends DCLogic {
         const fd = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate(); };
         const TT = { close: [MON + '월 출석부 마감', MON + '월 출석부를 마감할까요?\n\n지금 원생들의 수강권 상태(회차·미납·차액)를 저장합니다. 마감한 뒤에 ' + MON + '월 출석부를 고쳐도 ' + MON + '월 안에서만 바뀌고, 다음 달과 그 뒤 출석부에는 영향을 주지 않습니다.', '마감하기'],
           open: [MON + '월 마감 풀기', MON + '월 마감을 풀까요?\n\n마감을 풀면 ' + MON + '월 출석부 내용이 다시 다음 달부터의 수강권 계산에 이어집니다. 그동안 ' + MON + '월에서 고친 내용이 다음 달에도 반영됩니다.', '마감 풀기'],
+          lock: ['입력할 수 없는 날', '휴원·퇴원 기간에는 출결(출석·결석·보강·연기)을 넣을 수 없습니다.\n\n수납은 할 수 있어요. 기간이 잘못됐으면 휴원·퇴원 줄의 이름을 눌러 날짜를 고쳐 주세요.', '확인'],
           note: ['마감된 달', MON + '월은 마감된 출석부입니다.\n\n여기서 고친 내용은 ' + MON + '월 안에서만 바뀌고, 다음 달과 그 뒤 출석부에는 영향을 주지 않습니다.', '확인'] };
         const tx = D ? TT[D.kind] : ['', '', ''];
         return {
@@ -2974,7 +3005,7 @@ class Component extends DCLogic {
           btn: C ? '2026년 ' + MON + '월 마감 풀기' : '2026년 ' + MON + '월 마감', ask: () => this.setState({ mcDlg: { kind: C ? 'open' : 'close' } }),
           btnStyle: 'height: 36px; padding: 0 16px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (C ? 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450' : 'border: none; background: #00A6AB; color: #FFFFFF'),
           hint: C ? '' : (owner ? '마감하면 이 달을 고쳐도 다음 달에 영향을 주지 않습니다' : ''),
-          open: !!D, title: tx[0], msg: tx[1], okLabel: tx[2], hasOk: !!D && D.kind !== 'note', close: close,
+          open: !!D, title: tx[0], msg: tx[1], okLabel: tx[2], hasOk: !!D && D.kind !== 'note' && D.kind !== 'lock', close: close,
           ok: () => { if (!D) return; if (D.kind === 'close') this.saveClose(ck, true); else if (D.kind === 'open') this.saveClose(ck, false); else close(); },
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } }
         };
@@ -3016,6 +3047,10 @@ class Component extends DCLogic {
           contStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (!S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
           freshStyle: 'display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 14px; border-radius: 12px; text-align: left; font-family: inherit; font-size: 14px; color: #17201C; cursor: pointer; ' + (S.fresh ? 'border: 2px solid #00A6AB; background: #F2FBFB' : 'border: 1px solid #DDE2DF; background: #FFFFFF'),
           freshWarn: S.fresh && (S.oweN > 0 || S.oweDiff > 0) ? '남은 미납(' + [S.oweN ? S.oweN + '회' : '', S.oweDiff ? '차액 ' + Number(S.oweDiff).toLocaleString('ko-KR') + '원' : ''].filter(Boolean).join(' · ') + ')은 이어지지 않습니다. 필요하면 먼저 수납하거나 미납 정리를 해 주세요.' : '',
+          // 휴원·퇴원 날짜 고치기 (지금 휴원·퇴원 기록의 날짜를 바꿈, 막힌 기간도 같이 바뀜)
+          showEdit: S.kind === 'back' && !!S.editId, editLabel: (S.from === 'out' ? '퇴원' : '휴원') + ' 날짜 고치기', editDate: S.editDate || '', editBtn: S.editSaved ? '고쳤습니다' : '날짜 저장',
+          setEditDate: e => { Object.assign(S, { editDate2: e.target.value }); },
+          saveEdit: () => { const v = S.editDate2 || S.editDate; if (/^\d{4}-\d{2}-\d{2}$/.test(v || '')) this.saveStatusDate(S, v); },
           setDate: e => upd({ date: e.target.value }),
           setMemo: e => { Object.assign(S, { memo: e.target.value }); }
         };
