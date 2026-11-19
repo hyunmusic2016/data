@@ -211,7 +211,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.9</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2761,7 +2761,8 @@ class Component extends DCLogic {
       // 출석부 = 파스텔 빨강, 수업일지·업무일지 = 파스텔 파랑
       // 출석부 시트 탭 점: 지금 보는 강사 탭의 강사 색
       const tcol = this.teacherColor((this.tKey() || '').replace(' 원장님', ''));
-      const col = att ? (tcol && tcol[1] && tcol[1] !== '#3A4450' ? tcol[1] : '#F2A3A3') : '#9CC3EE';
+      const tOk = att && tcol && tcol[0] && tcol[1] !== '#3A4450';
+      const col = tOk ? tcol[0] : att ? '#F2A3A3' : '#9CC3EE';
       return {
         // 끄는 동안에는 화면을 다시 그리지 않는다 (다시 그리면 끌기가 끊김)
         dragStart: e => { try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', t[0]); } catch (x) {} this._tabDrag = t[0]; if (e.currentTarget) e.currentTarget.style.opacity = '0.45'; },
@@ -2782,7 +2783,7 @@ class Component extends DCLogic {
         name: t[0], on: on ? 'true' : 'false',
         pick: () => this.setState({ sheet: i, sheetCtx: null, sheetList: false, logView: null }),
         ctx: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ sheetCtx: { i: i, x: e.clientX, y: e.clientY }, sheetList: false }); },
-        dot: 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
+        dot: tOk ? 'width: 9px; height: 9px; box-sizing: border-box; border-radius: 50%; flex: none; background: ' + tcol[0] + '; border: 1.5px solid ' + tcol[1] : 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
         style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? col : 'transparent') + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' +
           (on ? 'background: ' + (att ? '#FDF1F1' : '#EEF4FC') + '; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500')
       };
