@@ -112,7 +112,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.3</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.69.4</span>
     </div>
   </main>
 
@@ -542,8 +542,9 @@ class Component extends DCLogic {
           // Shift + 체크: 마지막으로 누른 줄부터 이 줄까지 한 번에 같은 상태로
           const a = L.findIndex(x => x.name === this._lastSel);
           if (ev.shiftKey && a >= 0) { const on = !!sel[this._lastSel], s2 = Object.assign({}, sel); L.slice(Math.min(a, i), Math.max(a, i) + 1).forEach(x => { if (on) s2[x.name] = 1; else delete s2[x.name]; }); this._lastSel = r.name; this.setState({ sel: s2 }); return; }
-          this._lastSel = r.name; this._drag = !sel[r.name]; if (!this._dragHook) { this._dragHook = 1; window.addEventListener('mouseup', () => { this._drag = null; }); } this.setSel(r.name, this._drag); },
-        dragOver: () => { if (this._drag == null) return; this.setSel(r.name, this._drag); },
+          this._lastSel = r.name; this._drag = !sel[r.name]; this._dragBase = Object.assign({}, sel); this._dragA = i; if (!this._dragHook) { this._dragHook = 1; window.addEventListener('mouseup', () => { this._drag = null; }); } this.setSel(r.name, this._drag); },
+        // 끄는 동안: 시작 줄부터 지금 줄까지만 바뀜 → 다시 거슬러 올라가면 지나온 줄은 원래대로
+        dragOver: () => { if (this._drag == null) return; const s2 = Object.assign({}, this._dragBase || {}); L.slice(Math.min(this._dragA, i), Math.max(this._dragA, i) + 1).forEach(x => { if (this._drag) s2[x.name] = 1; else delete s2[x.name]; }); this.setState({ sel: s2 }); },
         days: (r.days.length ? r.days : ['R']).map(g => ({ t: DL[g], style: 'display: inline-flex; align-items: center; height: 20px; padding: 0 6px; margin: 1px; border-radius: 5px; font-size: 11px; font-weight: 600; background: ' + this.dayColor(g)[0] + '; color: ' + this.dayColor(g)[1] })),
         teacher: r.teacher || '-', tStyle: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; font-weight: 600; background: ' + tc[0] + '; color: ' + tc[1],
         tk: { dotLines: r.tk.dotLines || [], subParts: r.tk.subParts || [{ t: r.tk.text || '', style: '' }], queueTxt: r.tk.queueTxt || '' },
