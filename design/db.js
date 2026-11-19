@@ -237,8 +237,42 @@
   function dbIdOf(localId) { if (/^T\d+$/.test(localId) || /^S\d+$/.test(localId)) return Promise.resolve(+localId.slice(1)); return idMap[localId] || Promise.resolve(null); }
 
   // 화면이 localStorage에 쓰는 기록을 받아 Supabase에 저장
+  // 변경 기록(출석부 '변경 기록' 칸)에 수업·상태 변경도 한 줄씩 남긴다. k = 'EV', b = 설명
+  function evTeacher(name) { var r = A.data && (A.data.students || []).find(function (x) { return x.name === name; }); return (r && r.teacher) || ''; }
+  function addEv(name, text, date) {
+    var L = []; try { L = JSON.parse(localStorage.getItem('academy.cellLog') || '[]') || []; } catch (e) {}
+    var now = Date.now(), d = /^\d{4}-\d{2}/.test(date || '') ? date : new Date().toISOString().slice(0, 10);
+    L.push({ id: 'E' + now + '-' + Math.random().toString(36).slice(2, 6), at: now, who: (A.staff && A.staff.name) || '', tab: evTeacher(name), ym: d.slice(0, 7), rid: '', name: name, k: 'EV', a: '', b: text });
+    localStorage.setItem('academy.cellLog', JSON.stringify(L.slice(-20000)));
+  }
+  A.addEv = addEv;
+  function md(d) { var m = /^\d{4}-(\d{2})-(\d{2})/.exec(d || ''); return m ? (+m[1]) + '/' + (+m[2]) : (d || ''); }
+  function h12(t) { var m = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return m ? ((+m[1] % 12) || 12) + ':' + m[2] : ''; }
+  function dayTxt(days, times) { return (days || []).map(function (g) { var h = h12((times || {})[g]); return g + (h ? ' ' + h : ''); }).join(', '); }
+  function evDiff(k, oldV, newV) {
+    var a = [], b = []; try { a = JSON.parse(oldV || '[]') || []; } catch (e) {} try { b = JSON.parse(newV || '[]') || []; } catch (e) {}
+    var byId = {}; a.forEach(function (e) { if (e && e.id) byId[e.id] = e; });
+    var KN = { rest: '휴원', out: '퇴원', back: '복귀' };
+    b.forEach(function (e) {
+      if (!e || !e.id) return; var o = byId[e.id]; delete byId[e.id];
+      if (k === 'academy.lessonChanges') {
+        if (o && JSON.stringify(o) === JSON.stringify(e)) return;
+        var pv = e.prev || {}, txt = [];
+        if (e.days) txt.push('수업 ' + (pv.days ? dayTxt(pv.days, pv.times) + ' → ' : '') + dayTxt(e.days, e.times));
+        if (pv.stick !== undefined && e.stick !== undefined && !!pv.stick !== !!e.stick) txt.push('드럼스틱 보관 ' + (e.stick ? '함' : '안 함'));
+        addEv(e.name, (o ? '수업 변경 고침' : '수업 변경') + ' (' + md(e.from) + '부터) ' + (txt.join(' · ') || ''), e.from);
+      } else {
+        var lb = e.kind === 'back' && e.ticket ? (KN.back) : (KN[e.kind] || e.kind);
+        if (!o) addEv(e.name, lb + ' 처리 (' + md(e.date) + ')' + (e.reason ? ' · 사유: ' + e.reason : ''), e.date);
+        else if (o.date !== e.date) addEv(e.name, lb + ' 날짜 고침 ' + md(o.date) + ' → ' + md(e.date), e.date);
+      }
+    });
+    Object.keys(byId).forEach(function (id) { var o = byId[id]; addEv(o.name, (k === 'academy.lessonChanges' ? '수업 변경 취소 (' + md(o.from) + '부터)' : (KN[o.kind] || o.kind) + ' 기록 지움 (' + md(o.date) + ')'), o.from || o.date); });
+  }
   Storage.prototype.setItem = function (k, v) {
+    var evOld = (this === window.localStorage && A.data && (k === 'academy.lessonChanges' || k === 'academy.statusChanges')) ? this.getItem(k) : null;
     origSet.call(this, k, v);
+    if (evOld !== null) { try { evDiff(k, evOld, v); } catch (e) {} }
     if (this !== window.localStorage || !A.data) return;
     try {
       if (k === 'academy.lessonChanges') syncList(JSON.parse(v || '[]'), 'shared', saveLesson, 'student_terms');
@@ -404,6 +438,7 @@
     try { var c = JSON.parse(e.newValue); if (c && c.data) { A.data = c.data; document.dispatchEvent(new CustomEvent('academy:data')); rerender(); } } catch (x) {}
   });
   A.addStudent = function (rec) {
+    try { addEv(rec.name, '신규 등록 (' + md(anyToYmd(rec.join) || '') + ') · ' + (rec.teacher || '') + ' ' + dayTxt(rec.days || [], (rec.extra || {}).times), anyToYmd(rec.join)); } catch (e) {}
     var raw = Object.assign({}, rec, { dbId: null });
     A.data.students.push(raw);
     A.busy++;
@@ -420,6 +455,7 @@
   A.saveEdit = function (reg, basic, newHist, dropHids) {
     var sid = sidOfReg(reg); if (!sid) return;
     var raw = A.data.students.find(function (x) { return x.id === reg; });
+    try { var SN = { lesson: '수업 정보', fee: '수강료·반', cash: '현금영수증' }; addEv((basic && basic.name) || (raw && raw.name) || '', '원생 정보 수정' + ((newHist || []).length ? ' · ' + newHist.map(function (h) { return (SN[h.sec] || h.sec) + ' 변경 (' + md(h.from) + '부터)'; }).join(', ') : '') + ((dropHids || []).length ? ' · 예정 변경 취소' : ''), (newHist && newHist[0] && newHist[0].from) || ''); } catch (e) {}
     if (raw) { var keep = Object.assign({}, raw.extra); Object.assign(raw, mergeRec(raw, basic)); raw.extra = Object.assign(keep, (basic || {}).extra); }
     var row = studentRow(Object.assign({}, raw || {}, basic, { id: reg, extra: Object.assign({}, (raw || {}).extra, (basic || {}).extra) }));
     delete row.reg_no;
@@ -443,6 +479,7 @@
   // 원생 삭제: 수업 정보·휴원/퇴원·출결·수납·수강권 계획은 표 연결(on delete cascade)로 같이 지워진다. 변경 기록도 지운 뒤 전체를 다시 불러온다
   A.deleteStudent = function (reg) {
     var sid = sidOfReg(reg); if (!sid) return Promise.resolve(false);
+    try { var rr = A.data.students.find(function (x) { return x.id === reg; }); if (rr) addEv(rr.name, '원생 삭제'); } catch (e) {}
     return sb.from('activity_log').delete().eq('student_id', sid)
       .then(function () { return sb.from('students').delete().eq('id', sid); })
       .then(function (r) { if (report(r, '원생 삭제').error) return false; return Promise.resolve(A.load()).then(function () { return true; }); });

@@ -222,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.67.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.68.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2238,20 +2238,21 @@ class Component extends DCLogic {
   histVersions() {
     const H = this.state.hist || {}, scope = H.scope || 'me', MON = this.sheetList()[this.state.sheet][1] || 11, ym = this.ymK(MON), tab = this.tKey() || '';
     let L = this.readCellLog();
-    if (scope === 'me') L = L.filter(e => e.tab === tab && e.ym === ym);
+    const tn = x => String(x || '').replace(' 원장님', '');
+    if (scope === 'me') L = L.filter(e => tn(e.tab) === tn(tab) && e.ym === ym);
     else if (scope === 'all') L = L.filter(e => e.ym === ym);
     else L = L.filter(e => H.stu && e.name === H.stu);
     L = L.slice().sort((x, y) => x.at - y.at);
     const V = [];
     L.forEach(e => { const last = V[V.length - 1];
-      if (last && last.who === e.who && last.tab === e.tab && last.ym === e.ym && e.at - last.end < 3 * 60 * 1000) { last.list.push(e); last.end = e.at; }
+      if (last && last.who === e.who && tn(last.tab) === tn(e.tab) && last.ym === e.ym && e.at - last.end < 3 * 60 * 1000) { last.list.push(e); last.end = e.at; }
       else V.push({ id: e.id, who: e.who, tab: e.tab, ym: e.ym, start: e.at, end: e.at, list: [e] }); });
     return V.reverse();
   }
   histPick(v) {
     const hl = {}; v.list.forEach(e => { const d = (/(\d+)$/.exec(e.k) || [])[1]; if (d) hl[e.rid + '|' + this.kOf(e.ym + '-01') + '|' + d] = true; });
     const patch = { hist: Object.assign({}, this.state.hist, { sel: v.id, hl: hl }) };
-    const ti = this.teacherList().findIndex(t => t[0] === v.tab);
+    const ti = this.teacherList().findIndex(t => String(t[0]).replace(' 원장님', '') === String(v.tab || '').replace(' 원장님', ''));
     if (ti >= 0 && ti !== (this.state.teacher || 0)) Object.assign(patch, { teacher: ti, sel: null, sheetCtx: null, logView: null }, this.sheetFor(ti));
     const m = this.kOf(v.ym + '-01'), si = this.sheetList().findIndex(t => t[1] === m);
     if (si >= 0) { patch.sheet = si; patch.logView = null; }
@@ -2266,9 +2267,9 @@ class Component extends DCLogic {
     let lastDay = '';
     const items = V.slice(0, 300).map(v => { const d = new Date(v.start), day = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
       const showDay = day !== lastDay; lastDay = day; const on = H.sel === v.id;
-      const lines = v.list.slice(0, on ? 50 : 3).map(e => { const dd = (/(\d+)$/.exec(e.k) || [])[1]; return e.name + ' ' + (+e.ym.slice(5)) + '/' + dd + '  ' + this.cellWhat(e.k, e.a) + ' → ' + this.cellWhat(e.k, e.b); });
+      const lines = v.list.slice(0, on ? 50 : 3).map(e => { if (e.k === 'EV') return e.name + '  ' + e.b; const dd = (/(\d+)$/.exec(e.k) || [])[1]; return e.name + ' ' + (+e.ym.slice(5)) + '/' + dd + '  ' + this.cellWhat(e.k, e.a) + ' → ' + this.cellWhat(e.k, e.b); });
       if (!on && v.list.length > 3) lines.push('… 외 ' + (v.list.length - 3) + '칸');
-      return { day: showDay ? day : '', time: ((d.getHours() % 12) || 12) + ':' + p2(d.getMinutes()), who: v.who, count: '칸 ' + v.list.length + '개',
+      return { day: showDay ? day : '', time: ((d.getHours() % 12) || 12) + ':' + p2(d.getMinutes()), who: v.who, count: v.list.every(e => e.k === 'EV') ? '' : '칸 ' + v.list.filter(e => e.k !== 'EV').length + '개',
         where: (H.scope || 'me') !== 'me' ? v.tab.replace(' 원장님', '') + ' 탭 · ' + this.kLabel(this.kOf(v.ym + '-01')) : '', lines: lines,
         style: 'padding: 10px 10px; margin: 2px 0; border-radius: 10px; cursor: pointer; border: 1px solid ' + (on ? '#7FCF95' : 'transparent') + '; background: ' + (on ? '#E6F6EA' : '#FFFFFF'),
         pick: () => this.histPick(v) }; });
