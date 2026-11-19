@@ -215,7 +215,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.65.4</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1543,6 +1543,9 @@ class Component extends DCLogic {
   }
   selDown(e, r, c) {
     if (e && e.preventDefault) e.preventDefault();
+    // 강사 이동으로 가려진 칸(빗금): 출결·보강·연기·수납 모두 그 강사 탭에서
+    const hd = (this._rowHide || [])[r];
+    if (hd && hd(c)) { const t = (this._rowMv || [])[r]; this.setState({ sel: null, pop: null, mcDlg: { kind: 'moved', who: t ? (t.me === t.to ? t.prev : t.to) : '' } }); return; }
     this.focusSheet();
     this.mouseIsDown = true;
     const n = this.normSel();
@@ -2469,6 +2472,7 @@ class Component extends DCLogic {
     this._rowSids = [];
     this._rowHide = [];
     this._rowLock = [];
+    this._rowMv = [];
     this._nd = ND;
     this._exp = [];
     this._unpaid = {};
@@ -2489,6 +2493,7 @@ class Component extends DCLogic {
         const R = rowIdx++;
         this._rowSids[R] = s.id;
         this._rowHide[R] = s.mvT ? (d => !this.cellMine(s, EV[s.id] || {}, MON, d)) : null;
+        (this._rowMv = this._rowMv || [])[R] = s.mvT || null;
         // 휴원·퇴원 기간(처리 날짜 ~ 복귀·재등록 전날): 출결은 못 넣고 수납만
         { const LK = this.statusLocks(s.name.replace('$', '')), ymdD = d => '2026-' + String(MON).padStart(2, '0') + '-' + String(d).padStart(2, '0');
           (this._rowLock = this._rowLock || [])[R] = LK.length ? (d => LK.some(p => ymdD(d) >= p[0] && (!p[1] || ymdD(d) < p[1]))) : null; }
@@ -3017,6 +3022,7 @@ class Component extends DCLogic {
         const fd = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate(); };
         const TT = { close: [MON + '월 출석부 마감', MON + '월 출석부를 마감할까요?\n\n지금 원생들의 수강권 상태(회차·미납·차액)를 저장합니다. 마감한 뒤에 ' + MON + '월 출석부를 고쳐도 ' + MON + '월 안에서만 바뀌고, 다음 달과 그 뒤 출석부에는 영향을 주지 않습니다.', '마감하기'],
           open: [MON + '월 마감 풀기', MON + '월 마감을 풀까요?\n\n마감을 풀면 ' + MON + '월 출석부 내용이 다시 다음 달부터의 수강권 계산에 이어집니다. 그동안 ' + MON + '월에서 고친 내용이 다음 달에도 반영됩니다.', '마감 풀기'],
+          moved: ['다른 강사 칸', ((D && D.who) || '다른') + ' 강사님 출석부 칸입니다.\n\n강사 이동 전후 칸이라 여기서는 출결·보강·연기·수납을 넣을 수 없어요. ' + ((D && D.who) || '그') + ' 강사님 탭에서 입력·수정해 주세요.', '확인'],
           lock: ['입력할 수 없는 날', '휴원·퇴원 기간에는 출결(출석·결석·보강·연기)을 넣을 수 없습니다.\n\n수납은 할 수 있어요. 기간이 잘못됐으면 휴원·퇴원 줄의 이름을 눌러 날짜를 고쳐 주세요.', '확인'],
           note: ['마감된 달', MON + '월은 마감된 출석부입니다.\n\n여기서 고친 내용은 ' + MON + '월 안에서만 바뀌고, 다음 달과 그 뒤 출석부에는 영향을 주지 않습니다.', '확인'] };
         const tx = D ? TT[D.kind] : ['', '', ''];
@@ -3025,7 +3031,7 @@ class Component extends DCLogic {
           btn: C ? '2026년 ' + MON + '월 마감 풀기' : '2026년 ' + MON + '월 마감', ask: () => this.setState({ mcDlg: { kind: C ? 'open' : 'close' } }),
           btnStyle: 'height: 36px; padding: 0 16px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (C ? 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450' : 'border: none; background: #00A6AB; color: #FFFFFF'),
           hint: C ? '' : (owner ? '마감하면 이 달을 고쳐도 다음 달에 영향을 주지 않습니다' : ''),
-          open: !!D, title: tx[0], msg: tx[1], okLabel: tx[2], hasOk: !!D && D.kind !== 'note' && D.kind !== 'lock', close: close,
+          open: !!D, title: tx[0], msg: tx[1], okLabel: tx[2], hasOk: !!D && D.kind !== 'note' && D.kind !== 'lock' && D.kind !== 'moved', close: close,
           ok: () => { if (!D) return; if (D.kind === 'close') this.saveClose(ck, true); else if (D.kind === 'open') this.saveClose(ck, false); else close(); },
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { e.preventDefault(); close(); } }
         };
