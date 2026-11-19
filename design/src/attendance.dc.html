@@ -101,6 +101,10 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; align-items: center; gap: 8px">
       </div>
       <div class="noprint" style="display: flex; align-items: center; gap: 8px">
+      <button type="button" onClick="{{hist.toggle}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"></path></svg>
+        변경 기록
+      </button>
       <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
@@ -218,7 +222,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.66.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.67.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -292,6 +296,29 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{qe.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{qe.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">저장하기</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{hist.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint noexp" role="dialog" aria-label="변경 기록" style="position: fixed; top: 0; right: 0; bottom: 0; z-index: 42; width: 340px; max-width: 92vw; display: flex; flex-direction: column; background: #FFFFFF; border-left: 1px solid #DDE2DF; box-shadow: -8px 0 24px rgba(23, 32, 28, 0.08)">
+      <div style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 10px">
+        <span style="font-size: 17px; font-weight: 600; color: #17201C">변경 기록</span>
+        <button type="button" onClick="{{hist.close}}" aria-label="닫기" style="margin-left: auto; width: 32px; height: 32px; border-radius: 8px; border: none; background: #F3F5F4; color: #5B6670; font-size: 16px; cursor: pointer">×</button>
+      </div>
+      <div style="display: flex; gap: 6px; padding: 0 16px 10px">
+        <sc-for list="{{hist.scopes}}" as="sc" hint-placeholder-count="3"><button type="button" onClick="{{sc.pick}}" style="{{sc.style}}">{{sc.label}}</button></sc-for>
+      </div>
+      <div style="padding: 0 16px 8px; font-size: 12px; color: #8A949E">{{hist.note}}</div>
+      <div id="histList" style="flex: 1; overflow: auto; padding: 0 10px 16px">
+        <sc-if value="{{hist.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 24px 8px; text-align: center; font-size: 13px; color: #8A949E">기록이 없습니다</div></sc-if>
+        <sc-for list="{{hist.items}}" as="h" hint-placeholder-count="4">
+          <sc-if value="{{h.day}}" hint-placeholder-val="{{ false }}"><div style="padding: 12px 6px 4px; font-size: 12px; font-weight: 600; color: #8A949E">{{h.day}}</div></sc-if>
+          <div onClick="{{h.pick}}" style="{{h.style}}">
+            <div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{h.time}}</span><span style="font-size: 12px; color: #5B6670">{{h.who}}</span><span style="margin-left: auto; font-size: 11px; color: #8A949E">{{h.count}}</span></div>
+            <sc-if value="{{h.where}}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: #2952A3">{{h.where}}</div></sc-if>
+            <sc-for list="{{h.lines}}" as="ln" hint-placeholder-count="2"><div style="font-size: 12px; color: #3A4450; line-height: 1.5">{{ln}}</div></sc-for>
+          </div>
+        </sc-for>
       </div>
     </div>
   </sc-if>
@@ -752,7 +779,7 @@ class Component extends DCLogic {
       const js = JSON.stringify(this.buildCells());
       let cur = '';
       try { cur = localStorage.getItem('academy.attCells') || ''; } catch (e) {}
-      if (js !== cur) { try { localStorage.setItem('academy.attCells', js); } catch (e) {} }
+      if (js !== cur) { this.logCells(cur, js); try { localStorage.setItem('academy.attCells', js); } catch (e) {} }
     }, 250);
   }
   // 맨 아래 시트 탭은 강사마다 따로 기억한다: 보고 있던 시트·숨긴 시트(이 브라우저 'attendance.sheetByTeacher'), 탭 순서('attendance.tabOrder.강사')
@@ -2183,9 +2210,80 @@ class Component extends DCLogic {
     a.href = url; a.download = fname; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
   }
+  // ---------- 변경 기록: 출결·수납 칸이 바뀔 때마다 한 줄씩 'academy.cellLog'에 남긴다 (db.js → Supabase cell_log) ----------
+  readCellLog() { try { const v = JSON.parse(localStorage.getItem('academy.cellLog') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  logCells(oldJs, newJs) {
+    let a = {}, b = {};
+    try { a = JSON.parse(oldJs || '{}') || {}; } catch (e) {}
+    try { b = JSON.parse(newJs || '{}') || {}; } catch (e) {}
+    const KEY = /^(?:p|s|u|dp|L|LD)?\d+$/, out = [], now = Date.now(), who = this.writerName() || '원장님', tab = this.tKey() || '';
+    const nameOf = rid => { const s = this.students().find(x => String(x.id) === String(rid)); return s ? s.name.replace('$', '') : rid; };
+    const keys = (x, y) => Object.keys(Object.assign({}, x || {}, y || {}));
+    keys(a, b).forEach(ym => keys(a[ym], b[ym]).forEach(sk => { const A0 = (a[ym] || {})[sk] || {}, B0 = (b[ym] || {})[sk] || {};
+      keys(A0, B0).forEach(rid => { if (rid === '_mk' || rid === '_ml') return; const r1 = A0[rid] || {}, r2 = B0[rid] || {};
+        keys(r1, r2).forEach(k => { if (!KEY.test(k)) return; const v1 = r1[k] == null ? '' : String(r1[k]), v2 = r2[k] == null ? '' : String(r2[k]);
+          if (v1 !== v2) out.push({ id: 'C' + now + '-' + out.length, at: now, who: who, tab: tab, ym: ym, rid: rid, name: nameOf(rid), k: k, a: v1, b: v2 }); }); }); }));
+    if (!out.length) return;
+    const all = this.readCellLog().concat(out).slice(-20000);
+    try { localStorage.setItem('academy.cellLog', JSON.stringify(all)); } catch (e) {}
+  }
+  cellWhat(k, v) {
+    if (!v || v === 'false') return '빈칸';
+    const pre = (/^([a-zA-Z]*)/.exec(k) || [])[1] || '';
+    if (pre === 'p' || pre === 'L') return '수납';
+    if (pre === 'dp' || pre === 'LD') return '차액 수납 ' + (+v || 0).toLocaleString('ko-KR') + '원';
+    if (pre) return v === 'true' ? '표시' : v;
+    return ({ '수': '출석', '결': '결석', '보': '보강', '연': '연기', 'V': '수납' })[v] || v;
+  }
+  histVersions() {
+    const H = this.state.hist || {}, scope = H.scope || 'me', MON = this.sheetList()[this.state.sheet][1] || 11, ym = this.ymK(MON), tab = this.tKey() || '';
+    let L = this.readCellLog();
+    if (scope === 'me') L = L.filter(e => e.tab === tab && e.ym === ym);
+    else if (scope === 'all') L = L.filter(e => e.ym === ym);
+    else L = L.filter(e => H.stu && e.name === H.stu);
+    L = L.slice().sort((x, y) => x.at - y.at);
+    const V = [];
+    L.forEach(e => { const last = V[V.length - 1];
+      if (last && last.who === e.who && last.tab === e.tab && last.ym === e.ym && e.at - last.end < 3 * 60 * 1000) { last.list.push(e); last.end = e.at; }
+      else V.push({ id: e.id, who: e.who, tab: e.tab, ym: e.ym, start: e.at, end: e.at, list: [e] }); });
+    return V.reverse();
+  }
+  histPick(v) {
+    const hl = {}; v.list.forEach(e => { const d = (/(\d+)$/.exec(e.k) || [])[1]; if (d) hl[e.rid + '|' + this.kOf(e.ym + '-01') + '|' + d] = true; });
+    const patch = { hist: Object.assign({}, this.state.hist, { sel: v.id, hl: hl }) };
+    const ti = this.teacherList().findIndex(t => t[0] === v.tab);
+    if (ti >= 0 && ti !== (this.state.teacher || 0)) Object.assign(patch, { teacher: ti, sel: null, sheetCtx: null, logView: null }, this.sheetFor(ti));
+    const m = this.kOf(v.ym + '-01'), si = this.sheetList().findIndex(t => t[1] === m);
+    if (si >= 0) { patch.sheet = si; patch.logView = null; }
+    this.setState(patch);
+  }
+  histBlock() {
+    const st = this.state, H = st.hist || {}, own = this.isOwner();
+    const scopeL = [['me', '이 출석부']].concat(own ? [['all', '모든 강사 (이 달)']] : []).concat([['stu', '이 원생']]);
+    const curStu = (() => { const c = (this.selCells() || [])[0]; if (!c) return ''; const s = this.students().find(x => x.id === c.sid); return s ? s.name.replace('$', '') : ''; })();
+    const V = H.open ? this.histVersions() : [];
+    const p2 = n => String(n).padStart(2, '0');
+    let lastDay = '';
+    const items = V.slice(0, 300).map(v => { const d = new Date(v.start), day = (d.getMonth() + 1) + '월 ' + d.getDate() + '일 ' + ['일', '월', '화', '수', '목', '금', '토'][d.getDay()] + '요일';
+      const showDay = day !== lastDay; lastDay = day; const on = H.sel === v.id;
+      const lines = v.list.slice(0, on ? 50 : 3).map(e => { const dd = (/(\d+)$/.exec(e.k) || [])[1]; return e.name + ' ' + (+e.ym.slice(5)) + '/' + dd + '  ' + this.cellWhat(e.k, e.a) + ' → ' + this.cellWhat(e.k, e.b); });
+      if (!on && v.list.length > 3) lines.push('… 외 ' + (v.list.length - 3) + '칸');
+      return { day: showDay ? day : '', time: ((d.getHours() % 12) || 12) + ':' + p2(d.getMinutes()), who: v.who, count: '칸 ' + v.list.length + '개',
+        where: (H.scope || 'me') !== 'me' ? v.tab.replace(' 원장님', '') + ' 탭 · ' + this.kLabel(this.kOf(v.ym + '-01')) : '', lines: lines,
+        style: 'padding: 10px 10px; margin: 2px 0; border-radius: 10px; cursor: pointer; border: 1px solid ' + (on ? '#7FCF95' : 'transparent') + '; background: ' + (on ? '#E6F6EA' : '#FFFFFF'),
+        pick: () => this.histPick(v) }; });
+    return {
+      open: !!H.open, empty: H.open && !items.length, items: items,
+      note: (H.scope || 'me') === 'stu' ? (H.stu ? H.stu + ' 원생의 모든 기록' : '출석부에서 원생 칸을 하나 고른 뒤 다시 누르세요') : (H.scope === 'all' ? '이 달 모든 강사 탭의 기록' : '지금 보는 출석부의 기록') + ' · 누르면 바뀐 칸이 초록색',
+      scopes: scopeL.map(s => ({ label: s[1], style: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid ' + ((H.scope || 'me') === s[0] ? '#00A6AB; background: #E6F6F6; color: #007E82' : '#D9DEE3; background: #FFFFFF; color: #3A4450'),
+        pick: () => this.setState({ hist: Object.assign({}, H, { scope: s[0], sel: null, hl: null, stu: s[0] === 'stu' ? (curStu || H.stu || '') : H.stu }) }) })),
+      toggle: () => this.setState({ hist: H.open ? null : { open: true, scope: 'me' } }),
+      close: () => this.setState({ hist: null })
+    };
+  }
   renderVals() {
     const st = this.state;
-    if (this.dbMode()) this.persistCells(); else this.stampCells();
+    if (this.dbMode()) this.persistCells(); else { this.stampCells(); const ac0 = {}; [[11, this.state.ev]].concat(Object.keys(this.state.evByMonth || {}).filter(m => +m !== 11).map(m => [+m, this.state.evByMonth[m]])).forEach(p => { (ac0[this.ymK(p[0])] = {}).X = p[1] || {}; }); const js = JSON.stringify(ac0); if (this._lc !== undefined && js !== this._lc) this.logCells(this._lc, js); this._lc = js; }
     const INK = '#17201C', MUTED = '#5E6873', GRID = '#F0F2F1', ROW = '#EBEEEC', SPLIT = '#D5DBD8';
     // 이름·수강 칸 폭: 강사 탭·달마다 따로 조정 ('attendance.colW' {'강사|2026-11': {name, tk}}), 다른 달에는 영향 없음
     const cwS = this.sheetList()[Math.min(st.sheet, this.sheetList().length - 1)] || [], cwMon = cwS[1] || cwS[3] || 11;
@@ -2609,7 +2707,7 @@ class Component extends DCLogic {
               // 오늘 날짜면 '오늘'로, 글씨도 진하게
               hint2: (() => { return x.d === TODAY ? '오늘' : this.kM(MON) + '/' + x.d + ' ' + ['일', '월', '화', '수', '목', '금', '토'][new Date(2026, MON - 1, x.d).getDay()]; })(),
               hintStyle: (() => { const td = x.d === TODAY; return 'position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; overflow: hidden; pointer-events: none; font-size: 9px; font-weight: 600; line-height: 1.15; white-space: nowrap; color: ' + (td ? '#3A4450' : '#A9B1AD'); })(),
-              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + bg + '; ' + ((() => { const lockD = (this._rowHide[R] && this._rowHide[R](x.d)); const L = []; if (inSel) L.push('linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2))'); if (lockD) L.push('repeating-linear-gradient(135deg, rgba(23, 32, 28, 0.07) 0 2px, transparent 2px 7px)'); return L.length ? 'background-image: ' + L.join(', ') + '; ' : ''; })()) + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
+              style: base + 'position: relative; overflow: visible; user-select: none; background: ' + ((st.hist && st.hist.hl && st.hist.hl[s.id + '|' + MON + '|' + x.d]) ? '#BDEBC8' : bg) + '; ' + ((() => { const lockD = (this._rowHide[R] && this._rowHide[R](x.d)); const L = []; if (inSel) L.push('linear-gradient(rgba(138, 180, 232, 0.2), rgba(138, 180, 232, 0.2))'); if (lockD) L.push('repeating-linear-gradient(135deg, rgba(23, 32, 28, 0.07) 0 2px, transparent 2px 7px)'); return L.length ? 'background-image: ' + L.join(', ') + '; ' : ''; })()) + 'border: none; border-bottom: 1px solid ' + ROW + '; border-left: 1px solid ' + GRID + '; padding: 0; cursor: ' + (SEL && SEL.r1 === SEL.r2 && SEL.c1 === SEL.c2 && inSel ? 'pointer' : 'cell') + '; font-family: inherit; ' +
                 ((edges.length || x.pay) ? 'box-shadow: ' + edges.concat(x.pay ? ['inset 0 0 0 2px ' + (x.upay ? '#E8A9A4' : '#E2C35E')] : []).join(', ') + '; z-index: ' + (corner ? 3 : 2) : '')
             };
           })
@@ -2980,6 +3078,7 @@ class Component extends DCLogic {
         xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
       },
       printX: () => this.printSheet(),
+      hist: this.histBlock(),
       pv: (() => {
         const P = st.pay;
         if (!P) return { open: false };

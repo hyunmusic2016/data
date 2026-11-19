@@ -183,8 +183,15 @@
         sb.from('subjects').select('*').order('sort'),
         sb.from('attendance_cells').select('student_id,ym,cells'),
         sb.from('payments').select('*').order('id'),
-        sb.from('ticket_plans').select('student_id,plan_date')
+        sb.from('ticket_plans').select('student_id,plan_date'),
+        sb.from('cell_log').select('local_id,at,who,tab,ym,rid,name,k,a,b').order('at', { ascending: false }).limit(20000)
       ]).then(function (qs) {
+        // 출석부 변경 기록 (009 SQL). 표가 없으면 이 브라우저에만 남김
+        if (!qs[6].error) {
+          A.clogReady = true;
+          var cl = (qs[6].data || []).slice().reverse().map(function (r) { return { id: r.local_id, at: Date.parse(r.at), who: r.who, tab: r.tab, ym: r.ym, rid: r.rid, name: r.name, k: r.k, a: r.a || '', b: r.b || '' }; });
+          rawSet('academy.cellLog', JSON.stringify(cl)); known.clog = {}; cl.forEach(function (e) { known.clog[e.id] = 1; });
+        }
         // 출석부 저장 (008 SQL). 출결 칸은 'academy.attCells' = { '2026-11': { 'D원생번호': 칸 내용 } }
         A.attTried = true;
         if (!qs[3].error) {
@@ -243,6 +250,7 @@
         sb.from('app_settings').upsert({ key: 'menu', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '메뉴 탭 설정'); });
       }
       else if (k === 'academy.attCells') syncAtt(JSON.parse(v || '{}'));
+      else if (k === 'academy.cellLog') syncClog(JSON.parse(v || '[]'));
       else if (k === 'academy.payments') syncPays(JSON.parse(v || '[]'));
       else if (k === 'academy.ticketPlans') syncPlans(JSON.parse(v || '{}'));
       else if (k === 'academy.attMemo') {
@@ -296,6 +304,12 @@
     Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('payments').delete().eq('local_id', id).then(function (r) { report(r, '수납 취소'); }); });
     if (up.length) sb.from('payments').upsert(up, { onConflict: 'local_id' }).then(function (r) { report(r, '수납 저장'); });
     known.pay = now;
+  }
+  function syncClog(list) {
+    if (!A.clogReady) return;
+    var seen = known.clog = known.clog || {}, up = [];
+    (list || []).forEach(function (e) { if (!e || !e.id || seen[e.id]) return; seen[e.id] = 1; up.push({ local_id: e.id, at: new Date(e.at).toISOString(), who: e.who, tab: e.tab, ym: e.ym, rid: String(e.rid), name: e.name, k: e.k, a: e.a, b: e.b }); });
+    if (up.length) sb.from('cell_log').upsert(up, { onConflict: 'local_id' }).then(function (r) { report(r, '변경 기록'); });
   }
   function syncPlans(all) {
     var prev = known.tkp || {}, now = {};
