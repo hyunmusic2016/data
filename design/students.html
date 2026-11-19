@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.65.5</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.65.6</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -327,14 +327,17 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
         <span style="flex: 1"></span>
         <button type="button" onClick="{{hv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
-      <sc-if value="{{hv.showPer}}" hint-placeholder-val="{{ false }}"><div style="margin: 14px 22px 0; padding: 12px 14px; border-radius: 12px; background: #FAFBFA; border: 1px dashed #D5DBD8; display: flex; flex-direction: column; gap: 8px">
-        <span style="font-size: 13px; font-weight: 600; color: #3A4450">{{hv.perTitle}}<span style="margin-left: 6px; font-size: 11px; font-weight: 500; color: #8A949E">이 기간은 출석부에 출결을 넣을 수 없어요</span></span>
-        <div style="display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap">
-          <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5E6873">{{hv.fromLabel}}<input id="hv_from" type="date" defaultValue="{{hv.from}}" onChange="{{hv.setFrom}}" style="height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></label>
-          <sc-if value="{{hv.hasTo}}" hint-placeholder-val="{{ true }}"><span style="padding-bottom: 8px; color: #8A949E">~</span><label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5E6873">{{hv.toLabel}}<input id="hv_to" type="date" defaultValue="{{hv.to}}" onChange="{{hv.setTo}}" style="height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></label></sc-if>
-          <button type="button" onClick="{{hv.savePer}}" style="height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9D0CC; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">{{hv.perBtn}}</button>
-        </div>
-        <span style="font-size: 12px; font-weight: 600; color: #C2410C">{{hv.perErr}}</span>
+      <sc-if value="{{hv.showPer}}" hint-placeholder-val="{{ false }}"><div style="margin: 14px 22px 0; padding: 12px 14px; border-radius: 12px; background: #FAFBFA; border: 1px dashed #D5DBD8; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 13px; font-weight: 600; color: #3A4450">휴원·퇴원 기간 고치기<span style="margin-left: 6px; font-size: 11px; font-weight: 500; color: #8A949E">이 기간은 출석부에 출결을 넣을 수 없어요</span></span>
+        <sc-for list="{{hv.pers}}" as="pp" hint-placeholder-count="1">
+          <div style="display: flex; align-items: flex-end; gap: 8px; flex-wrap: wrap">
+            <label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5E6873">{{pp.fromLabel}}<input id="{{pp.fromId}}" type="date" defaultValue="{{pp.from}}" onChange="{{pp.setFrom}}" style="height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></label>
+            <sc-if value="{{pp.hasTo}}" hint-placeholder-val="{{ true }}"><span style="padding-bottom: 8px; color: #8A949E">~</span><label style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #5E6873">{{pp.toLabel}}<input id="{{pp.toId}}" type="date" defaultValue="{{pp.to}}" onChange="{{pp.setTo}}" style="height: 36px; padding: 0 8px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></label></sc-if>
+            <sc-if value="{{pp.noTo}}" hint-placeholder-val="{{ false }}"><span style="padding-bottom: 10px; font-size: 12px; color: #8A949E">~ 지금까지</span></sc-if>
+            <button type="button" onClick="{{pp.save}}" style="height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid #C9D0CC; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">{{pp.btn}}</button>
+            <span style="padding-bottom: 10px; font-size: 12px; font-weight: 600; color: #C2410C">{{pp.err}}</span>
+          </div>
+        </sc-for>
       </div></sc-if>
       <ol id="histBody" style="margin: 0; padding: 16px 22px 20px; list-style: none; overflow: auto; display: flex; flex-direction: column; gap: 0">
         <sc-for list="{{hv.items}}" as="e" hint-placeholder-count="4">
@@ -910,11 +913,17 @@ class Component extends DCLogic {
     const logs = (this.state.log || {})[s.id] || [];
     const ev = [];
     const jd = ymd(s.join); if (jd) ev.push({ d: jd, kind: 'join', title: '입원', lines: [] });
-    const has = k => logs.some(l => l.kind === k);
+    // 휴원·퇴원·복귀는 출석부와 같이 쓰는 기록(statusShared)을 그대로 보여 준다 (출석부에서 처리한 것·날짜 고친 것 포함)
+    const SLt = (this.state.statusShared || []).filter(e => e.name === s.name && (e.kind === 'rest' || e.kind === 'out' || e.kind === 'back'));
+    if (SLt.length) {
+      SLt.forEach(e => ev.push({ d: e.date, kind: e.kind, at: e.at || 0, title: { rest: '휴원', out: '퇴원', back: '복귀' }[e.kind],
+        lines: [e.reason ? '사유: ' + e.reason : '', (e.kind === 'rest' || e.kind === 'out') && e.ticket ? '그 당시 수강권: ' + e.ticket : '', e.kind === 'back' && e.ticket === 'NEW' ? '새로 시작 (지난 수강 이어지지 않음)' : ''].filter(Boolean) }));
+    }
+    const has = k => SLt.length > 0 || logs.some(l => l.kind === k);
     if (s.backDate && !has('back')) ev.push({ d: ymd(s.backDate), kind: 'back', title: '복귀', lines: [] });
     if (s.status === 'rest' && !has('rest') && s.restDate) ev.push({ d: ymd(s.restDate), kind: 'rest', title: '휴원', lines: [s.restReason ? '사유: ' + s.restReason : '', s.restTicket ? '그 당시 수강권: ' + s.restTicket : ''].filter(Boolean) });
     if (s.status === 'out' && !has('out') && s.leave) ev.push({ d: ymd(s.leave), kind: 'out', title: '퇴원', lines: [s.leaveReason ? '사유: ' + s.leaveReason : ''].filter(Boolean) });
-    logs.forEach(l => ev.push(l));
+    logs.filter(l => !(SLt.length && (l.kind === 'rest' || l.kind === 'out' || l.kind === 'back'))).forEach(l => ev.push(l));
     this.allHist(s.id, s.name).forEach(h => ev.push({ d: h.from, kind: 'change', title: SECN[h.sec] + ' 변경', future: h.from > td, diffs: this.diffFields(h.prev || {}, h.patch), at: 0 }));
     return ev.sort((a, b) => a.d < b.d ? 1 : a.d > b.d ? -1 : (b.at || 0) - (a.at || 0));
   }
@@ -984,8 +993,8 @@ class Component extends DCLogic {
     done(false);
   }
   openHist(id) {
-    this._hvF = ''; this._hvT = '';
-    this.setState({ histView: id, hvMsg: '', hvErr: '' });
+    this._hvF = {}; this._hvT = {};
+    this.setState({ histView: id, hvMsg: {}, hvErr: {} });
     setTimeout(() => { const d = document.getElementById('histDlg'); if (d) d.focus(); }, 30);
   }
   applyStatus() {
@@ -1791,19 +1800,24 @@ class Component extends DCLogic {
         if (id == null) return { open: false };
         const s = all.find(x => x.id === id);
         if (!s) return { open: false };
-        // 휴원(퇴원) 기간 고치기: 가장 최근 휴원·퇴원 기록과 그 뒤 복귀·재등록 기록의 날짜
+        // 휴원·퇴원 기간 고치기: 처리한 순서대로 휴원(퇴원) ~ 복귀(재등록) 기간마다 한 줄 (최근 것이 위)
         const SLh = (st.statusShared || []).filter(e => e.name === s.name).sort((a, b) => (a.at || 0) - (b.at || 0));
-        const E1 = SLh.filter(e => e.kind === 'rest' || e.kind === 'out').pop(), E2 = E1 ? SLh.find(e => e.kind === 'back' && (e.at || 0) > (E1.at || 0)) : null;
-        const rwH = E1 && E1.kind === 'out' ? '퇴원' : '휴원', bwH = E1 && E1.kind === 'out' ? '재등록' : '복귀';
+        const PER = []; let openE = null;
+        SLh.forEach(e => { if (e.kind === 'rest' || e.kind === 'out') { if (!openE) openE = e; } else if (e.kind === 'back' && openE) { PER.push([openE, e]); openE = null; } });
+        if (openE) PER.push([openE, null]);
+        this._hvF = this._hvF || {}; this._hvT = this._hvT || {};
         const per = {
-          showPer: !!E1, perTitle: rwH + ' 기간 고치기', fromLabel: rwH + ' 날짜', toLabel: bwH + ' 날짜', hasTo: !!E2, from: E1 ? E1.date : '', to: E2 ? E2.date : '',
-          perBtn: st.hvMsg || '기간 저장', perErr: st.hvErr || '',
-          setFrom: e => { this._hvF = e.target.value; }, setTo: e => { this._hvT = e.target.value; },
-          savePer: () => { const f = this._hvF || (E1 && E1.date), t2 = E2 ? (this._hvT || E2.date) : ''; if (!/^\d{4}-\d{2}-\d{2}$/.test(f || '')) return;
-            if (t2 && t2 < f) { this.setState({ hvErr: bwH + ' 날짜는 ' + rwH + ' 날짜와 같거나 뒤여야 해요', hvMsg: '' }); return; }
-            const list = this.readStatus(), A = window.academy; [[E1 && E1.id, f], [E2 && E2.id, t2]].forEach(p => { if (!p[0] || !p[1]) return; const e = list.find(x => x.id === p[0]); if (e && e.date !== p[1]) { e.date = p[1]; if (A && A.updateStatusDate) A.updateStatusDate(e.id, p[1]); } });
-            try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (x) {}
-            this._hvF = ''; this._hvT = ''; this.setState({ statusShared: list, hvMsg: '고쳤습니다', hvErr: '' }); }
+          showPer: PER.length > 0,
+          pers: PER.slice().reverse().map((pr, i) => { const E1 = pr[0], E2 = pr[1], rwH = E1.kind === 'out' ? '퇴원' : '휴원', bwH = E1.kind === 'out' ? '재등록' : '복귀', k = E1.id;
+            return { fromLabel: rwH + ' 날짜', toLabel: bwH + ' 날짜', hasTo: !!E2, noTo: !E2, from: E1.date, to: E2 ? E2.date : '', fromId: 'hv_from_' + i, toId: 'hv_to_' + i,
+              btn: (st.hvMsg || {})[k] ? '고쳤습니다' : '기간 저장', err: (st.hvErr || {})[k] || '',
+              setFrom: e => { this._hvF[k] = e.target.value; }, setTo: e => { this._hvT[k] = e.target.value; },
+              save: () => { const f = this._hvF[k] || E1.date, t2 = E2 ? (this._hvT[k] || E2.date) : ''; if (!/^\d{4}-\d{2}-\d{2}$/.test(f || '')) return;
+                if (t2 && t2 < f) { this.setState({ hvErr: Object.assign({}, st.hvErr, { [k]: bwH + ' 날짜는 ' + rwH + ' 날짜와 같거나 뒤여야 해요' }), hvMsg: Object.assign({}, st.hvMsg, { [k]: false }) }); return; }
+                const list = this.readStatus(), A = window.academy; [[E1.id, f], [E2 && E2.id, t2]].forEach(p => { if (!p[0] || !p[1]) return; const e = list.find(x => x.id === p[0]); if (e && e.date !== p[1]) { e.date = p[1]; if (A && A.updateStatusDate) A.updateStatusDate(e.id, p[1]); } });
+                try { localStorage.setItem('academy.statusChanges', JSON.stringify(list)); } catch (x) {}
+                delete this._hvF[k]; delete this._hvT[k];
+                this.setState({ statusShared: list, hvMsg: Object.assign({}, st.hvMsg, { [k]: true }), hvErr: Object.assign({}, st.hvErr, { [k]: '' }) }); } }; })
         };
         const K = { join: ['입원', '#E6F6F6', '#007E82'], rest: ['휴원', '#FFF4E0', '#9A5B00'], out: ['퇴원', '#FCEBEA', '#B4332B'], back: ['복귀', '#E6F6F6', '#007E82'], edit: ['수정', '#EEF1F0', '#3A4450'], change: ['변경', '#E3ECFD', '#2952A3'] };
         const fmt = d => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1] + '.' + m[2] + '.' + m[3] : (d || ''); };
