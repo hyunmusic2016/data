@@ -226,7 +226,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.10</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.69.11</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2325,7 +2325,7 @@ class Component extends DCLogic {
     const c = {
       title: base + span(13) + 'border-bottom: none; height: 76px; justify-content: flex-start; gap: 14px; padding-left: 22px',
       logo: 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 166, 171, 0.32)',
-      titleText: 'font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: ' + INK + '; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #BFEAEB 62%, #BFEAEB 92%, transparent 92%)',
+      titleText: 'font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: ' + INK + '; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, ' + this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))[0] + ' 62%, ' + this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))[0] + ' 92%, transparent 92%)',
       divider: 'width: 1px; height: 22px; background: #D5DBD8; margin: 0 2px',
       month: 'font-size: 16px; font-weight: 600; color: #5E6873; letter-spacing: -0.01em',
       spacer: base + span(6) + 'border-bottom: none; height: 76px',
