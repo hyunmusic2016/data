@@ -80,10 +80,9 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">고정 지출</div>
             <div style="{{hFx.row}}"><sc-for list="{{hFx.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{fix}}" as="r" hint-placeholder-count="6">
-              <div data-rg="fx" data-rid="{{r.fid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span title="누른 채 위아래로 끌어 순서 바꾸기" style="{{cl}}; cursor: grab; user-select: none">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
+              <div data-rg="fx" data-rid="{{r.fid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span title="누른 채 위아래로 끌어 순서 바꾸기" style="{{cl}}; cursor: grab; user-select: none">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" title="항목 삭제" aria-label="항목 삭제" style="{{delBtn}}">×</button></div>
             </sc-for>
             <div class="noexp" style="display: flex; gap: 6px; padding: 8px 10px"><input id="mo_newfix" type="text" defaultValue="" onKeyDown="{{fixKey}}" aria-label="새 고정 지출 항목" placeholder="새 항목 이름" style="flex: 1; min-width: 0; height: 32px; padding: 0 10px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FAFBFA; font-family: inherit; font-size: 13px"><button type="button" onClick="{{addFix}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #9A3A31; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">+ 항목</button></div>
-            <sc-if value="{{hiddenFix}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 10px 10px; font-size: 12px; color: #8A949E">숨긴 항목<sc-for list="{{hiddenFix}}" as="h" hint-placeholder-count="1"><button type="button" onClick="{{h.show}}" title="다시 보이기" style="height: 24px; padding: 0 8px; border-radius: 999px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">{{h.name}} +</button></sc-for></div></sc-if>
           </div>
 
           <div style="{{box}}; position: relative; overflow: visible"><span class="colgrip noexp" onMouseDown="{{bVa.resize}}" onDblClick="{{bVa.reset}}" title="끌어서 상자 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -10px; width: 8px; cursor: col-resize; z-index: 3"></span>
@@ -124,12 +123,23 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.2</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.3</span>
     </div>
   </main>
 
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 70; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; font-weight: 600">{{toast}}</div>
+  </sc-if>
+  <sc-if value="{{ask.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{ask.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="삭제 확인" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); font-family: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C">
+      <span style="font-size: 18px; font-weight: 600">삭제하시겠습니까?</span>
+      <span style="font-size: 14px; line-height: 1.5; color: #3A4450">{{ask.text}}</span>
+      <div style="display: flex; gap: 8px">
+        <button type="button" onClick="{{ask.close}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{ask.ok}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">삭제</button>
+      </div>
+    </div>
   </sc-if>
   <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
@@ -555,22 +565,22 @@ class Component extends DCLogic {
     const orph = auto.filter(r => r.orphan && r.pid);
     const incSum = auto.filter(r => !r.orphan).reduce((n, r) => n + r.amt, 0) + M.extra.reduce((n, r) => n + (+r.amt || 0), 0);
     // 고정 지출
-    let items = this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt));
+    // 그 달에 보이는 항목: 추가한 달(from)부터, 삭제한 달(until) 전까지 (지난 달 기록은 그대로)
+    let items = this.fixItems().filter(x => (!x.from || x.from <= ym) && (!x.until || ym < x.until) && (!x.hidden || (M.fix[x.id] && +M.fix[x.id].amt)));
     items = this.dragOrder('fx', items, x => x.id);
     const saveFx = o => { const L = this.fixItems(), vis = {}; o.forEach(k => { vis[k] = 1; }); let q = 0; this.saveItems(L.map(x => { if (!vis[x.id]) return x; const id = o[q++]; return L.find(y => y.id === id) || x; })); };
     const fix = items.map(it => { const f = M.fix[it.id] || {};
       const set = k => e => put(m => { const x = Object.assign({}, m.fix[it.id] || {}); x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); m.fix[it.id] = x; });
       const key = it.id.replace(/[^A-Za-z0-9가-힣]/g, '_');
       return { fid: it.id, grab: e => this.rowDrag('fx', it.id, e, saveFx), item: it.name, d: f.d || '', amtTxt: this.won(+f.amt || 0), memo: f.memo || '', row: ROWF + this.dragStyle('fx', it.id), amtLabel: it.name + ' 금액', idD: 'mf_d_' + key, idA: 'mf_a_' + key, idM: 'mf_m_' + key, setD: set('d'), setA: set('amt'), setM: set('memo'),
-        canHide: true, noHide: false, hide: () => this.saveItems(this.fixItems().map(x => x.id === it.id ? Object.assign({}, x, { hidden: true }) : x)) }; });
+        del: () => this.setState({ ask: { text: "'" + it.name + "' 항목을 " + (+ym.slice(5, 7)) + '월부터 고정 지출에서 뺍니다. 지난 달 기록은 그대로 남습니다.', ok: () => { this.saveItems(this.fixItems().map(x => x.id === it.id ? Object.assign({}, x, { until: ym }) : x)); put(m => { delete m.fix[it.id]; }); this.setState({ ask: null }); } } }) }; });
     const fixSum = items.reduce((n, it) => n + (+((M.fix[it.id] || {}).amt) || 0), 0);
-    const hiddenFix = this.fixItems().filter(x => x.hidden).map(x => ({ name: x.name, show: () => this.saveItems(this.fixItems().map(y => y.id === x.id ? Object.assign({}, y, { hidden: false }) : y)) }));
-    const addFix = () => { const el = document.getElementById('mo_newfix'); const nm = ((el && el.value) || '').trim(); if (!nm) return; const L = this.fixItems(); if (L.some(x => x.name === nm)) { this.flash('같은 항목이 있습니다'); return; } L.push({ id: 'F' + Date.now(), name: nm, hidden: false }); if (el) el.value = ''; this.saveItems(L); };
+    const addFix = () => { const el = document.getElementById('mo_newfix'); const nm = ((el && el.value) || '').trim(); if (!nm) return; const L = this.fixItems(); if (L.some(x => x.name === nm && (!x.until || ym < x.until))) { this.flash('같은 항목이 있습니다'); return; } L.push({ id: 'F' + Date.now(), name: nm, hidden: false, from: ym }); if (el) el.value = ''; this.saveItems(L); };
     // 변동 지출
     const vars = this.dragOrder('va', M.vars, r => r.id).map(r => {
       const set = k => e => put(m => { const x = m.vars.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
       return { rid: r.id, grab: e => this.rowDrag('va', r.id, e, o => put(m => { m.vars = o.map(k => m.vars.find(z => z.id === k)).filter(Boolean).concat(m.vars.filter(z => o.indexOf(z.id) < 0)); })), d: r.d || '', item: r.item || '', shop: r.shop || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW5 + this.dragStyle('va', r.id), idD: 'mv_d_' + r.id, idI: 'mv_i_' + r.id, idS: 'mv_s_' + r.id, idA: 'mv_a_' + r.id, idM: 'mv_m_' + r.id,
-        setD: set('d'), setI: set('item'), setS: set('shop'), setA: set('amt'), setM: set('memo'), del: () => put(m => { m.vars = m.vars.filter(z => z.id !== r.id); }) };
+        setD: set('d'), setI: set('item'), setS: set('shop'), setA: set('amt'), setM: set('memo'), del: () => this.setState({ ask: { text: "변동 지출 '" + (r.item || '(항목 없음)') + "' 줄을 지웁니다.", ok: () => { put(m => { m.vars = m.vars.filter(z => z.id !== r.id); }); this.setState({ ask: null }); } } }) };
     });
     const varSum = M.vars.reduce((n, r) => n + (+r.amt || 0), 0);
     const net = incSum - fixSum - varSum;
@@ -596,7 +606,7 @@ class Component extends DCLogic {
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
       delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropPays(orph.map(r => r.pid)); },
       addExtra: () => put(m => { m.extra.push({ id: 'X' + Date.now(), d: dNow, item: '', amt: 0, memo: '' }); }),
-      fix: fix, hiddenFix: hiddenFix.length ? hiddenFix : null, addFix: addFix, fixKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addFix(); } },
+      fix: fix, addFix: addFix, fixKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addFix(); } },
       vars: vars, varEmpty: !vars.length,
       addVar: () => put(m => { m.vars.push({ id: 'V' + Date.now(), d: dNow, item: '', shop: '', amt: 0, memo: '' }); }),
       sum: [S('수입', incSum, '#D6E6F7', '#2E5A8A'), S('고정 지출', fixSum, '#F9D9D6', '#9A3A31'), S('변동 지출', varSum, '#F9D9D6', '#9A3A31'), S('합', net, '#E6DFF5', '#3A2E5B', true, '(수입 − 지출)')],
@@ -611,6 +621,7 @@ class Component extends DCLogic {
       delBtn: 'width: 22px; height: 22px; padding: 0; border: none; border-radius: 6px; background: transparent; color: #B7C0BC; font-family: inherit; font-size: 14px; cursor: pointer',
       addBtn: 'margin: 8px 10px 10px; height: 34px; border-radius: 9px; border: 1px dashed #B7C0BC; background: #FAFBFA; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer',
       empty: 'padding: 18px 10px; text-align: center; font-size: 12px; color: #A9B1AD',
+      ask: st.ask ? { open: true, text: st.ask.text, ok: st.ask.ok, close: () => this.setState({ ask: null }) } : { open: false },
       toast: st.toast || '',
       printBoxes: [
         { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
