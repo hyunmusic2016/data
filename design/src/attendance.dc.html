@@ -236,7 +236,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.6</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2733,7 +2733,7 @@ class Component extends DCLogic {
           tkClick: () => { if (r.latePaid) this.openPay({ sid: r.latePaid.sid, date: r.latePaid.date }); else if (canPlan) this.openTkPlan(s, plan); },
           tkTitle: canPlan ? '눌러서 레슨시작일(예정) 직접 넣기' : '',
           tkCls: canPlan || r.latePaid ? 'qname' : '',
-          lastStyle: base + 'background: ' + (s.rowBg ? rowBg : '#F7F8F8') + '; border-left: 1px solid ' + GRID,
+          lastStyle: base + 'background: #F7F8F8; border-left: 1px solid ' + GRID,
           cells: r.cells.map(x => {
             const w = (x.d - 1 + FIRST) % 7;
             const inSel = !!SEL && R >= SEL.r1 && R <= SEL.r2 && x.d >= SEL.c1 && x.d <= SEL.c2;
