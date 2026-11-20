@@ -67,8 +67,8 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{hIn.row}}"><sc-for list="{{hIn.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
               <div style="{{r.row}}">
-                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><span style="{{r.memoStyle}}">{{r.memo}}</span><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
-                <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
+                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
+                <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
               </div>
             </sc-for>
             <sc-if value="{{orphanN}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #FCEBEA; color: #B4332B; font-size: 12px; font-weight: 600"><span style="flex: 1">출석부 칸에 ₩ 표시가 없는 수납 기록 {{orphanN}}건 (예전에 지워지지 않고 남은 기록)</span><button type="button" onClick="{{delOrphans}}" style="height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E8A9A4; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{delOrphansLabel}}</button></div></sc-if>
@@ -80,7 +80,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">고정 지출</div>
             <div style="{{hFx.row}}"><sc-for list="{{hFx.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{fix}}" as="r" hint-placeholder-count="6">
-              <div style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span style="{{cl}}">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
+              <div style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span style="{{cl}}">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
             </sc-for>
             <div class="noexp" style="display: flex; gap: 6px; padding: 8px 10px"><input id="mo_newfix" type="text" defaultValue="" onKeyDown="{{fixKey}}" aria-label="새 고정 지출 항목" placeholder="새 항목 이름" style="flex: 1; min-width: 0; height: 32px; padding: 0 10px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FAFBFA; font-family: inherit; font-size: 13px"><button type="button" onClick="{{addFix}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #9A3A31; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">+ 항목</button></div>
             <sc-if value="{{hiddenFix}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 10px 10px; font-size: 12px; color: #8A949E">숨긴 항목<sc-for list="{{hiddenFix}}" as="h" hint-placeholder-count="1"><button type="button" onClick="{{h.show}}" title="다시 보이기" style="height: 24px; padding: 0 8px; border-radius: 999px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">{{h.name}} +</button></sc-for></div></sc-if>
@@ -90,7 +90,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">변동 지출</div>
             <div style="{{hVa.row}}"><sc-for list="{{hVa.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{vars}}" as="r" hint-placeholder-count="4">
-              <div style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idS}}" type="text" data-noclear="1" defaultValue="{{r.shop}}" onChange="{{r.setS}}" aria-label="구입처" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></div>
+              <div style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idS}}" type="text" data-noclear="1" defaultValue="{{r.shop}}" onChange="{{r.setS}}" aria-label="구입처" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></div>
             </sc-for>
             <sc-if value="{{varEmpty}}" hint-placeholder-val="{{ false }}"><div style="{{empty}}">아직 변동 지출이 없습니다</div></sc-if>
             <button type="button" class="noexp" onClick="{{addVar}}" style="{{addBtn}}">+ 지출</button>
@@ -124,7 +124,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.6</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.0</span>
     </div>
   </main>
 
@@ -410,13 +410,15 @@ class Component extends DCLogic {
   rd(k, def) { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? def : v; } catch (e) { return def; } }
   // 장부 'academy.ledger' = { '2026-12': { fix: { 항목id: { d, amt, memo } }, vars: [{ id, d, item, shop, amt, memo }], extra: [{ id, d, item, amt, memo }] } } (로그인 사이트는 app_settings 'ledger')
   ledger() { const v = this.rd('academy.ledger', {}); return v && typeof v === 'object' ? v : {}; }
-  month(ym) { const L = this.ledger(), m = L[ym] || {}; return { fix: Object.assign({}, m.fix || {}), vars: (m.vars || []).slice(), extra: (m.extra || []).slice() }; }
+  month(ym) { const L = this.ledger(), m = L[ym] || {}; return { fix: Object.assign({}, m.fix || {}), vars: (m.vars || []).slice(), extra: (m.extra || []).slice(), incMemo: Object.assign({}, m.incMemo || {}) }; }
   saveMonth(ym, m) { const L = this.ledger(); L[ym] = m; try { localStorage.setItem('academy.ledger', JSON.stringify(L)); } catch (e) {} this.setState({ tick: Date.now() }); }
   // 고정 지출 항목 'academy.ledgerItems' = [{ id, name, hidden }] (app_settings 'ledgerItems'). 강사월급은 직원명부에서 저절로
   fixItems() {
     const v = this.rd('academy.ledgerItems', null);
-    if (Array.isArray(v) && v.length) return v;
-    return ['전기요금', '월세', '카드 단말기', '인터넷', '정수기렌탈', '세무대행', '사업소득세', '근로소득세', '지방세', '건강보험'].map((n, i) => ({ id: 'F' + (i + 1), name: n, hidden: false }));
+    const base = Array.isArray(v) && v.length ? v.slice() : ['전기요금', '월세', '카드 단말기', '인터넷', '정수기렌탈', '세무대행', '사업소득세', '근로소득세', '지방세', '건강보험'].map((n, i) => ({ id: 'F' + (i + 1), name: n, hidden: false }));
+    // 강사월급 줄도 일반 항목: 목록에 강사월급이 하나도 없으면 지금 강사들로 한 번 채워 둠 (그 뒤엔 이름 그대로 두고 ×로 숨기기·'+ 항목'으로 추가)
+    if (!base.some(x => /^강사월급/.test(x.name || '')) && !(v && v.some && v.some(x => x && x.tSeeded))) return this.teacherRows().map(t => ({ id: t.id, name: t.name, hidden: false, tSeeded: 1 })).concat(base);
+    return base;
   }
   saveItems(list) { try { localStorage.setItem('academy.ledgerItems', JSON.stringify(list)); } catch (e) {} this.setState({ tick: Date.now() }); }
   // 강사월급 줄: 직원명부에서 직명에 강사가 있고 해임 안 된 직원 (직원 순서)
@@ -513,7 +515,9 @@ class Component extends DCLogic {
     const ROW5 = this.gridOf('va') + '; min-height: 30px; border-bottom: 1px solid #EEF1EF';
     // 수입
     const auto = this.incomeAuto(ym);
-    const inc = auto.map((r, i) => ({ auto: true, manual: false, d: i && auto[i - 1].d === r.d ? '' : r.d, item: r.item, amtTxt: this.won(r.amt), memo: r.memo, row: ROW4.replace('border-bottom: 1px solid #EEF1EF', (i + 1 < auto.length && auto[i + 1].d === r.d ? 'border-bottom: 1px dotted #EEF1EF' : 'border-bottom: 1px solid #D5DBD8')) + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
+    const mkey = r => r.pid || (r.d + '|' + r.item + '|' + r.amt + '|' + r.memo);
+    const inc = auto.map((r, i) => ({ auto: true, manual: false, d: i && auto[i - 1].d === r.d ? '' : r.d, item: r.item, amtTxt: this.won(r.amt), memo: (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo,
+      idM: 'mi_m_' + String(mkey(r)).replace(/[^A-Za-z0-9가-힣]/g, '_'), setM: e => put(m => { m.incMemo = Object.assign({}, m.incMemo || {}, { [mkey(r)]: e.target.value.trim() }); }), row: ROW4.replace('border-bottom: 1px solid #EEF1EF', (i + 1 < auto.length && auto[i + 1].d === r.d ? 'border-bottom: 1px dotted #EEF1EF' : 'border-bottom: 1px solid #D5DBD8')) + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
       memoStyle: 'font-size: 11px; ' + (r.orphan ? 'color: #B4332B; font-weight: 600; text-decoration: none' : 'color: #8A949E'),
       del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropPays([r.pid]); } })).concat(M.extra.map((r, i) => {
       const set = k => e => put(m => { const x = m.extra.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
@@ -523,12 +527,12 @@ class Component extends DCLogic {
     const orph = auto.filter(r => r.orphan && r.pid);
     const incSum = auto.filter(r => !r.orphan).reduce((n, r) => n + r.amt, 0) + M.extra.reduce((n, r) => n + (+r.amt || 0), 0);
     // 고정 지출
-    const items = this.teacherRows().concat(this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt)));
+    const items = this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt));
     const fix = items.map(it => { const f = M.fix[it.id] || {};
       const set = k => e => put(m => { const x = Object.assign({}, m.fix[it.id] || {}); x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); m.fix[it.id] = x; });
       const key = it.id.replace(/[^A-Za-z0-9가-힣]/g, '_');
       return { item: it.name, d: f.d || '', amtTxt: this.won(+f.amt || 0), memo: f.memo || '', row: ROWF, amtLabel: it.name + ' 금액', idD: 'mf_d_' + key, idA: 'mf_a_' + key, idM: 'mf_m_' + key, setD: set('d'), setA: set('amt'), setM: set('memo'),
-        canHide: it.id.charAt(0) !== 'T', noHide: it.id.charAt(0) === 'T', hide: () => this.saveItems(this.fixItems().map(x => x.id === it.id ? Object.assign({}, x, { hidden: true }) : x)) }; });
+        canHide: true, noHide: false, hide: () => this.saveItems(this.fixItems().map(x => x.id === it.id ? Object.assign({}, x, { hidden: true }) : x)) }; });
     const fixSum = items.reduce((n, it) => n + (+((M.fix[it.id] || {}).amt) || 0), 0);
     const hiddenFix = this.fixItems().filter(x => x.hidden).map(x => ({ name: x.name, show: () => this.saveItems(this.fixItems().map(y => y.id === x.id ? Object.assign({}, y, { hidden: false }) : y)) }));
     const addFix = () => { const el = document.getElementById('mo_newfix'); const nm = ((el && el.value) || '').trim(); if (!nm) return; const L = this.fixItems(); if (L.some(x => x.name === nm)) { this.flash('같은 항목이 있습니다'); return; } L.push({ id: 'F' + Date.now(), name: nm, hidden: false }); if (el) el.value = ''; this.saveItems(L); };
@@ -556,6 +560,8 @@ class Component extends DCLogic {
       // 상자 폭은 안 칸들의 합보다 좁아지지 않음 (칸이 상자 밖으로 넘치지 않게)
       boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => { if (k === 'sum') return this.boxW(k) + 'px'; const c = this.colW(k); const need = c.reduce((n, w) => n + w, 0) + 60 + 22 + 4 * (c.length + 2) + 16 + 4; return Math.max(this.boxW(k), need) + 'px'; }).join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
       hIn: this.heads('in', ['일', '항목', '금액', '비고']), hFx: this.heads('fx', ['일', '항목', '금액', '비고']), hVa: this.heads('va', ['일', '항목', '구입처', '금액', '비고']),
+      // 금액 칸: 치는 동안 1,000 단위 쉼표 (커서 자리 유지)
+      commaIn: e => { const el = e.target, v = el.value, pos = el.selectionStart || 0; const neg = /^\s*-/.test(v); const dBefore = v.slice(0, pos).replace(/[^0-9]/g, '').length; const digits = v.replace(/[^0-9]/g, ''); const out = (neg ? '-' : '') + (digits ? (+digits).toLocaleString('ko-KR') : ''); if (out === v) return; el.value = out; let k = 0, c = neg ? 1 : 0; while (c < out.length && k < dBefore) { if (/[0-9]/.test(out[c])) k++; c++; } try { el.setSelectionRange(c, c); } catch (x) {} },
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
       delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropPays(orph.map(r => r.pid)); },
@@ -577,7 +583,7 @@ class Component extends DCLogic {
       empty: 'padding: 18px 10px; text-align: center; font-size: 12px; color: #A9B1AD',
       toast: st.toast || '',
       printBoxes: [
-        { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
+        { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
         { title: '고정 지출', span: 4, head: ['일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
         { title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.slice().sort((a, b) => (+a.d || 99) - (+b.d || 99)).map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
         { title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
