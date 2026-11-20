@@ -124,7 +124,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.3</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.4</span>
     </div>
   </main>
 
@@ -457,13 +457,22 @@ class Component extends DCLogic {
         window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); },
       reset: () => { const all = Object.assign({}, this.state.bw2 || this.rd('money.boxW', {}) || {}); delete all[k]; try { localStorage.setItem('money.boxW', JSON.stringify(all)); } catch (x) {} this.setState({ bw2: all }); } };
   }
-  gridOf(k) { const T = { in: '40px minmax(0, 1.4fr) 100px minmax(0, 1fr) 22px', fx: '40px minmax(0, 1.4fr) 100px minmax(0, 1fr) 22px', va: '40px minmax(0, 1.3fr) minmax(0, 1fr) 100px minmax(0, 1fr) 22px' }; return 'display: grid; grid-template-columns: ' + T[k] + '; align-items: center; gap: 4px; padding: 2px 8px'; }
+  // 상자 안 칸 폭: 머리글 칸 사이 세로줄을 끌어 그 상자 칸만 조정(다른 상자는 그대로), 두 번 누르면 원래 폭. 비고 칸은 남는 폭을 채움 'money.colW' = { in: [일, 항목, 금액], fx: [..], va: [일, 항목, 구입처, 금액] }
+  colDef() { return { in: [40, 140, 100], fx: [40, 160, 100], va: [40, 140, 100, 100] }; }
+  colW(k) { const d = this.colDef()[k], v = (this.state.cw || this.rd('money.colW', {}) || {})[k]; return d.map((w, i) => (Array.isArray(v) && +v[i] >= 30 ? +v[i] : w)); }
+  gridOf(k) { return 'display: grid; grid-template-columns: ' + this.colW(k).map(w => w + 'px').join(' ') + ' minmax(40px, 1fr) 22px; align-items: center; gap: 4px; padding: 2px 8px'; }
   heads(k, labels) {
-    return { row: this.gridOf(k) + '; height: 34px; padding-top: 0; padding-bottom: 0; background: #F7F9F8; border-bottom: 1px solid #E1E6E3', cells: labels.map(l => ({ label: l, grip: false,
-      style: 'display: flex; align-items: center; justify-content: center; height: 34px; font-size: 12px; font-weight: 600; color: #5E6873; text-align: center' })).concat([{ label: '', grip: false, style: '' }]) };
+    const n = this.colDef()[k].length;
+    return { row: this.gridOf(k) + '; height: 34px; padding-top: 0; padding-bottom: 0; background: #F7F9F8; border-bottom: 1px solid #E1E6E3', cells: labels.map((l, i) => ({ label: l, grip: i < n,
+      style: 'position: relative; display: flex; align-items: center; justify-content: center; height: 34px; font-size: 12px; font-weight: 600; color: #5E6873; text-align: center',
+      resize: e => { e.preventDefault(); const x0 = e.clientX, w0 = this.colW(k)[i], all = Object.assign({}, this.rd('money.colW', {}) || {});
+        const mv = ev => { const ws = this.colW(k).slice(); ws[i] = Math.max(30, Math.round(w0 + ev.clientX - x0)); this.setState({ cw: Object.assign({}, all, this.state.cw || {}, { [k]: ws }) }); };
+        const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); try { localStorage.setItem('money.colW', JSON.stringify(this.state.cw || all)); } catch (x) {} };
+        window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); },
+      resetW: () => { const all = Object.assign({}, this.state.cw || this.rd('money.colW', {}) || {}); const ws = this.colW(k).slice(); ws[i] = this.colDef()[k][i]; all[k] = ws; try { localStorage.setItem('money.colW', JSON.stringify(all)); } catch (x) {} this.setState({ cw: all }); } })).concat([{ label: '', grip: false, style: '' }]) };
   }
   num(v) { const s = String(v == null ? '' : v).replace(/[^0-9-]/g, ''); if (!s || s === '-') return 0; return parseInt(s, 10) || 0; }
-  won(n) { return n ? (n < 0 ? '-' : '') + '₩' + Math.abs(n).toLocaleString('ko-KR') : ''; }
+  won(n) { return n ? (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ko-KR') : ''; }
   flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
   doPrint() {
     this.setState({ printOpen: false });
@@ -477,7 +486,7 @@ class Component extends DCLogic {
     const v = this.renderVals();
     const LINE = { style: 'thin', color: { rgb: 'C9D0CC' } }, BOR = { top: LINE, bottom: LINE, left: LINE, right: LINE };
     const ws = {};
-    const put = (r, c, val, o) => { o = o || {}; ws[X.utils.encode_cell({ r: r, c: c })] = { t: typeof val === 'number' ? 'n' : 's', v: val == null ? '' : val, z: o.money ? '"₩"#,##0' : undefined, s: { alignment: { horizontal: o.align || 'center', vertical: 'center' }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold }, fill: o.fill ? { fgColor: { rgb: o.fill } } : undefined, border: o.border === false ? undefined : BOR } }; };
+    const put = (r, c, val, o) => { o = o || {}; ws[X.utils.encode_cell({ r: r, c: c })] = { t: typeof val === 'number' ? 'n' : 's', v: val == null ? '' : val, z: o.money ? '#,##0' : undefined, s: { alignment: { horizontal: o.align || 'center', vertical: 'center' }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold }, fill: o.fill ? { fgColor: { rgb: o.fill } } : undefined, border: o.border === false ? undefined : BOR } }; };
     put(0, 0, '수입 · 지출 내역부  ' + v.monthLabel, { bold: true, sz: 15, border: false, align: 'left' });
     let c0 = 0, maxR = 2;
     v.printBoxes.forEach((b, bi) => {
@@ -533,7 +542,7 @@ class Component extends DCLogic {
     const net = incSum - fixSum - varSum;
     const today = this.todayYmd(), dNow = today.slice(0, 7) === ym ? +today.slice(8, 10) : '';
     const prev = this.month(this.ymShift(ym, -1));
-    const S = (label, amt, bg, fg, big, sub) => ({ label: label, sub: sub || '', amt: this.won(amt) || '₩0', row: 'display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: ' + (big ? 72 : 56) + 'px; padding: 0 14px; border-bottom: 1px solid #FFFFFF; background: ' + bg + '; color: ' + fg,
+    const S = (label, amt, bg, fg, big, sub) => ({ label: label, sub: sub || '', amt: this.won(amt) || '0', row: 'display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: ' + (big ? 72 : 56) + 'px; padding: 0 14px; border-bottom: 1px solid #FFFFFF; background: ' + bg + '; color: ' + fg,
       lbl: 'font-size: ' + (big ? 16 : 14) + 'px; font-weight: 600', val: 'font-size: ' + (big ? 20 : 16) + 'px; font-weight: 600' + (amt < 0 ? '; color: #B4332B' : '') });
     const d = new Date();
     return {
