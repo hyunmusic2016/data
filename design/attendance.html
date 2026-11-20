@@ -240,7 +240,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.9</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3175,7 +3175,7 @@ class Component extends DCLogic {
           cancelPay: () => this.cancelPay(),
           cancelLabel: P.cancelAsk ? '한 번 더 누르면 취소' : '수납 취소',
           // 레슨 유형 고르기 → 반·횟수·시간·회당·합계 채움 (이번 수납에만)
-          ltOpts: this.lessonTypes().map(t => { const on = (t.cls === 'pro') === !!P.pro && +t.count === +P.count && (+t.dur || 60) === (+P.dur || 60) && +t.unit === +P.unit;
+          ltOpts: this.lessonTypes().filter(t => !t.off || ((t.cls === 'pro') === !!P.pro && +t.count === +P.count && (+t.dur || 60) === (+P.dur || 60) && +t.unit === +P.unit)).map(t => { const on = (t.cls === 'pro') === !!P.pro && +t.count === +P.count && (+t.dur || 60) === (+P.dur || 60) && +t.unit === +P.unit;
             const c = t.bg ? [t.bg, t.fg] : t.cls === 'pro' ? ['#EDE6FA', '#7A5FBF'] : ['#E6F6F6', '#007E82'];
             return { label: this.ltName(t), on: on ? 'true' : 'false', pick: () => upd({ pro: t.cls === 'pro', count: +t.count, dur: +t.dur || 60, unit: +t.unit, pay: Math.round(+t.unit * 0.5), total: +t.count * +t.unit }),
               style: 'height: 30px; padding: 0 12px; border-radius: 9px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 2px solid ' + c[1] + '; background: ' + c[0] + '; color: ' + c[1] : 'border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450') }; }),
