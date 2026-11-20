@@ -6,7 +6,7 @@
 <title>설정</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.69.0"></script>
+<script src="db.js?v=0.70.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -100,6 +100,40 @@ html.bwp .printonly .pcell{border-color:#000!important}
           </div>
         </sc-if>
 
+        <sc-if value="{{viewLT}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1180px; padding: 20px 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
+            <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">레슨 유형은 원장님만 바꿀 수 있습니다.</div></sc-if>
+            <div style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: auto">
+              <div style="{{ltHead}}">
+                <span style="{{lc.h}}">순서</span><span style="{{lc.h}}">유형</span><span style="{{lc.h}}">반</span><span style="{{lc.h}}">횟수</span><span style="{{lc.h}}">시간(분)</span><span style="{{lc.h}}">회당</span><span style="{{lc.h}}">합계</span><span style="{{lc.h}}">색</span><span class="noexp" style="{{lc.h}}"></span>
+              </div>
+              <sc-for list="{{ltRows}}" as="t" hint-placeholder-count="2">
+                <div class="menurow" style="{{t.rowStyle}}">
+                  <span style="{{lc.c}}; font-size: 13px; font-weight: 600; color: #8A949E">{{t.no}}</span>
+                  <span style="{{lc.c}}"><span style="{{t.chip}}">{{t.name}}</span></span>
+                  <span style="{{lc.c}}; gap: 4px"><sc-for list="{{t.cls}}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{o.pick}}" disabled="{{t.lock}}" style="{{o.style}}">{{o.label}}</button></sc-for></span>
+                  <span style="{{lc.c}}"><input id="{{t.idCount}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{t.count}}" disabled="{{t.lock}}" onBlur="{{t.setCount}}" onKeyDown="{{t.key}}" aria-label="횟수" style="{{lc.inp}}"></span>
+                  <span style="{{lc.c}}"><input id="{{t.idDur}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{t.dur}}" disabled="{{t.lock}}" onBlur="{{t.setDur}}" onKeyDown="{{t.key}}" aria-label="시간(분)" style="{{lc.inp}}"></span>
+                  <span style="{{lc.c}}"><input id="{{t.idUnit}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{t.unit}}" disabled="{{t.lock}}" onBlur="{{t.setUnit}}" onKeyDown="{{t.key}}" aria-label="회당 수강료" style="{{lc.inpW}}"></span>
+                  <span style="{{lc.c}}; font-size: 14px; font-weight: 600">{{t.total}}</span>
+                  <span class="noexp" style="{{lc.c}}; gap: 3px; flex-wrap: nowrap"><sc-for list="{{t.colors}}" as="cl" hint-placeholder-count="11"><button type="button" onClick="{{cl.pick}}" disabled="{{t.lock}}" aria-label="{{cl.label}}" title="{{cl.label}}" style="{{cl.style}}">{{cl.x}}</button></sc-for></span>
+                  <span class="noexp" style="{{lc.c}}; gap: 4px">
+                    <button type="button" onClick="{{t.up}}" disabled="{{t.lockUp}}" aria-label="위로" style="{{t.arrowStyle}}">▲</button>
+                    <button type="button" onClick="{{t.down}}" disabled="{{t.lockDown}}" aria-label="아래로" style="{{t.arrowStyle}}">▼</button>
+                    <button type="button" onClick="{{t.del}}" disabled="{{t.lock}}" style="{{t.delStyle}}">{{t.delLabel}}</button>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}">
+              <div class="noexp" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
+                <button type="button" onClick="{{ltAdd}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ 레슨 유형 추가</button>
+                <span style="font-size: 12px; color: #8A949E">유형 이름은 반·횟수·시간으로 저절로 붙습니다. 합계 = 횟수 × 회당.</span>
+                <span style="font-size: 13px; font-weight: 600; color: #B4332B">{{err}}</span>
+              </div>
+            </sc-if>
+          </div>
+        </sc-if>
         <sc-if value="{{viewStaff}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
@@ -255,7 +289,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.69.19</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.70.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -534,7 +568,7 @@ class Component extends DCLogic {
   features() {
     return [
       { title: '화면·메뉴', items: [{ id: 'menu', label: '메뉴 탭', ready: true }] },
-      { title: '수업', items: [{ id: 'subjects', label: '수강과목', ready: true }] },
+      { title: '수업', items: [{ id: 'subjects', label: '수강과목', ready: true }, { id: 'ltypes', label: '레슨 유형', ready: true }] },
       // 직원명부는 원장님만 (강사 계정에는 보이지 않음)
       { title: '직원', items: this.isTeacherUser() ? [] : [{ id: 'staff', label: '직원명부', ready: true }] }
     ].filter(g => g.items.length);
@@ -546,6 +580,31 @@ class Component extends DCLogic {
   openView(id) {
     try { if (id === 'hub') history.replaceState(null, '', location.pathname + location.search); else location.hash = id; } catch (e) {}
     this.setState({ view: id, err: '', resetAsk: false });
+  }
+  // ---------- 레슨 유형 (설정 > 수업) ----------
+  // 'academy.lessonTypes' = [{ id, cls: 'hobby'|'pro', count, dur, unit, bg, fg }] (로그인 사이트는 app_settings 'lessonTypes'). 이름은 반·횟수·시간으로 저절로
+  lessonTypes() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.lessonTypes') || 'null'); } catch (e) {}
+    if (Array.isArray(v) && v.length) return v;
+    return [{ id: 'L1', cls: 'hobby', count: 4, dur: 60, unit: 40000, bg: '', fg: '' }, { id: 'L2', cls: 'pro', count: 4, dur: 60, unit: 62500, bg: '#E6DFF5', fg: '#5B4A8B' }];
+  }
+  ltName(t) { return (t.cls === 'pro' ? '전문' : '취미') + ' ' + (+t.count || 0) + '회' + ((+t.dur || 60) !== 60 ? ' ' + (+t.dur) + '분' : ''); }
+  saveLT(list) {
+    try { localStorage.setItem('academy.lessonTypes', JSON.stringify(list.map(t => ({ id: t.id, cls: t.cls === 'pro' ? 'pro' : 'hobby', count: +t.count || 1, dur: +t.dur || 60, unit: +t.unit || 0, bg: t.bg || '', fg: t.fg || '' })))); } catch (e) {}
+    this.setState({ tick: Date.now(), err: '' });
+  }
+  setLT(id, patch) {
+    const L = this.lessonTypes().map(t => t.id === id ? Object.assign({}, t, patch) : t);
+    const me = L.find(t => t.id === id);
+    if (L.some(t => t.id !== id && this.ltName(t) === this.ltName(me))) { this.setState({ err: '같은 유형(' + this.ltName(me) + ')이 이미 있습니다.', tick: Date.now() }); return; }
+    this.saveLT(L);
+  }
+  addLT() {
+    const L = this.lessonTypes();
+    let n = 4; while (L.some(t => t.cls === 'hobby' && +t.count === n && (+t.dur || 60) === 60)) n++;
+    L.push({ id: 'L' + Date.now(), cls: 'hobby', count: n, dur: 60, unit: 40000, bg: '', fg: '' });
+    this.saveLT(L);
   }
   // ---------- 수강과목 ----------
   palette() {
@@ -896,6 +955,33 @@ class Component extends DCLogic {
     // ---------- 수강과목 화면 ----------
     const SUB = this.subjectList(), EMPS = this.employeeList();
     const usedBy = nm => EMPS.filter(e => (e.subjects || []).indexOf(nm) >= 0).length;
+    const LTS = this.lessonTypes();
+    const LTC = 'display: grid; grid-template-columns: 48px 120px 120px 76px 86px 110px 110px 296px 150px; min-width: 1116px; align-items: center';
+    const numOk = (v, min) => { const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return isNaN(n) || n < min ? null : n; };
+    const ltRows = LTS.map((t, i) => {
+      const nb = (key, min) => e => { const n = numOk(e.target.value, min); if (n == null) { e.target.value = key === 'unit' ? (+t[key]).toLocaleString('ko-KR') : t[key]; return; } if (n !== +t[key]) this.setLT(t.id, { [key]: n }); else if (key === 'unit') e.target.value = n.toLocaleString('ko-KR'); };
+      return {
+        no: i + 1, name: this.ltName(t), lock: !can,
+        chip: 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; ' + (t.bg ? 'background: ' + t.bg + '; color: ' + t.fg : 'background: #FFFFFF; color: #3A4450; border: 1px solid #D5DBD8'),
+        cls: [['hobby', '취미'], ['pro', '전문']].map(o => ({ label: o[1], pick: () => { if (can && t.cls !== o[0]) this.setLT(t.id, { cls: o[0] }); },
+          style: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; ' + ((t.cls === 'pro' ? 'pro' : 'hobby') === o[0] ? (o[0] === 'pro' ? 'border: 1px solid #C9B8EE; background: #EDE6FA; color: #7A5FBF' : 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82') : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #8A949E') })),
+        idCount: 'lt_c_' + i, idDur: 'lt_d_' + i, idUnit: 'lt_u_' + i,
+        count: t.count, dur: t.dur || 60, unit: (+t.unit || 0).toLocaleString('ko-KR'),
+        total: ((+t.count || 0) * (+t.unit || 0)).toLocaleString('ko-KR') + '원',
+        setCount: nb('count', 1), setDur: nb('dur', 10), setUnit: nb('unit', 0),
+        key: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); e.target.blur(); } },
+        colors: [['', '']].concat(this.palette()).map(p0 => ({ label: p0[0] ? '색 고르기' : '색 없음', x: p0[0] ? '' : '×', pick: () => { if (can) this.setLT(t.id, { bg: p0[0], fg: p0[1] }); },
+          style: 'width: 20px; height: 20px; padding: 0; border-radius: 50%; font-family: inherit; font-size: 11px; line-height: 1; color: #8A949E; cursor: ' + (can ? 'pointer' : 'default') + '; background: ' + (p0[0] || '#FFFFFF') + '; border: ' + ((t.bg || '') === p0[0] ? '2px solid ' + (p0[1] || '#5E6873') : '1px solid #DDE2DF') })),
+        lockUp: !can || i === 0, lockDown: !can || i === LTS.length - 1,
+        arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer',
+        up: () => { if (!can || !i) return; const L = this.lessonTypes(); const x = L.splice(i, 1)[0]; L.splice(i - 1, 0, x); this.saveLT(L); },
+        down: () => { if (!can || i === LTS.length - 1) return; const L = this.lessonTypes(); const x = L.splice(i, 1)[0]; L.splice(i + 1, 0, x); this.saveLT(L); },
+        delLabel: st.ltDel === t.id ? '한 번 더' : '삭제',
+        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; ' + (can && LTS.length > 1 ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'visibility: hidden'),
+        del: () => { if (!can || LTS.length <= 1) return; if (st.ltDel !== t.id) { this.setState({ ltDel: t.id }); return; } this.setState({ ltDel: null }); this.saveLT(this.lessonTypes().filter(x => x.id !== t.id)); },
+        rowStyle: LTC + '; min-height: 52px; border-bottom: 1px solid #EBEEEC; background: #FFFFFF'
+      };
+    });
     const subjRows = SUB.map((s, i) => {
       const inputId = 'sj_' + i;
       const cnt = usedBy(s.name);
@@ -1094,6 +1180,8 @@ class Component extends DCLogic {
       tabs: this.menuTabs('settings'),
       groups: groups, viewHub: V === 'hub', viewSub: V !== 'hub', viewMenu: V === 'menu', viewSoon: !!(F && !F.ready),
       viewSubj: V === 'subjects', viewStaff: V === 'staff', viewSOrder: V === 'sorder', soRows: soRows, soEmpty: !SO.length,
+      viewLT: V === 'ltypes', ltRows: ltRows, ltAdd: () => this.addLT(), ltHead: LTC + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
+      lc: { h: 'height: 36px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #5E6873', c: 'display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box', inp: 'width: 56px; height: 32px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 14px; text-align: center; color: #17201C', inpW: 'width: 92px; height: 32px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 14px; text-align: right; color: #17201C' },
       subjRows: subjRows, addSubj: () => this.addSubject(), subjKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); this.addSubject(); } },
       empHeads: empHeads,
       empGrid: empGrid, empRows: empRows, staffHidNote: HID.filter(id => EMPS.some(e => e.id === id)).length ? '(숨긴 직원 ' + HID.filter(id => EMPS.some(e => e.id === id)).length + '명)' : '', staffCount: SHOWN.length, staffEmpty: !SHOWN.length, staffEmptyTxt: EMPS.length ? '필터에 맞는 직원이 없습니다.' : '등록된 직원이 없습니다.', sf: sfVals, sq: sqVals, scfg: scfgVals, staffNote: EMPS.some(e => e.sample) ? '(시안 샘플)' : '',
