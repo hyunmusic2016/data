@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.4</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -201,7 +201,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600">{{colsCfg.orderTitle}}</span><span style="font-size: 12px; color: #8A949E">{{colsCfg.count}}개</span></span>
           <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
             <sc-for list="{{colsCfg.order}}" as="o" hint-placeholder-count="12">
-              <li draggable="true" data-ord="{{o.label}}" onDragStart="{{o.dragStart}}" onDragOver="{{o.dragOver}}" onDrop="{{o.drop}}" style="{{o.style}}">
+              <li draggable="true" data-ord="{{o.label}}" onDragStart="{{o.dragStart}}" onDragOver="{{o.dragOver}}" onDragLeave="{{o.dragLeave}}" onDragEnd="{{o.dragEnd}}" onDrop="{{o.drop}}" style="{{o.style}}">
                 <span aria-hidden="true" style="color: #B9C2BD; font-size: 14px; letter-spacing: -2px; cursor: grab">⋮⋮</span>
                 <span style="width: 22px; font-size: 12px; font-weight: 600; color: #8A949E; text-align: right">{{o.n}}</span>
                 <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #17201C">{{o.label}}</span>
@@ -1656,9 +1656,11 @@ class Component extends DCLogic {
         first: i === 0 ? 'true' : 'false', last: i === list.length - 1 ? 'true' : 'false',
         upLabel: labelOf(k) + ' 위로', downLabel: labelOf(k) + ' 아래로',
         up: () => move(k, i - 1), down: () => move(k, i + 1),
-        dragStart: e => { this._dragCol = k; try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k); } catch (er) {} },
-        dragOver: e => { e.preventDefault(); },
-        drop: e => { e.preventDefault(); const from = this._dragCol; this._dragCol = null; if (!from || from === k || list.indexOf(from) < 0) return; const l = list.filter(x => x !== from); l.splice(l.indexOf(k) + (list.indexOf(from) < i ? 1 : 0), 0, from); const ul = e.currentTarget.parentNode, q = () => [...document.querySelectorAll('li[data-ord]')], before = {}; q().forEach(el => { before[el.dataset.ord] = el.getBoundingClientRect().top; }); saveList(l); setTimeout(() => q().forEach(el => { const b = before[el.dataset.ord]; if (b == null) return; const d = b - el.getBoundingClientRect().top; if (!d) return; el.style.transition = 'none'; el.style.transform = 'translateY(' + d + 'px)'; el.offsetHeight; el.style.transition = 'transform .18s ease'; el.style.transform = ''; setTimeout(() => { el.style.transition = ''; }, 200); }), 0); },
+        dragStart: e => { this._dragCol = k; const me = e.currentTarget; setTimeout(() => { me.style.opacity = '.35'; }, 0); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k); } catch (er) {} },
+        dragOver: e => { e.preventDefault(); const from = this._dragCol; if (!from || from === k) return; e.currentTarget.style.boxShadow = list.indexOf(from) < i ? '0 3px 0 #00A6AB' : '0 -3px 0 #00A6AB'; },
+        dragLeave: e => { e.currentTarget.style.boxShadow = ''; },
+        dragEnd: () => { this._dragCol = null; document.querySelectorAll('li[data-ord]').forEach(el => { el.style.opacity = ''; el.style.boxShadow = ''; }); },
+        drop: e => { e.preventDefault(); const from = this._dragCol; this._dragCol = null; if (!from || from === k || list.indexOf(from) < 0) return; const l = list.filter(x => x !== from); l.splice(l.indexOf(k) + (list.indexOf(from) < i ? 1 : 0), 0, from); const ul = e.currentTarget.parentNode, q = () => [...document.querySelectorAll('li[data-ord]')], before = {}; q().forEach(el => { before[el.dataset.ord] = el.getBoundingClientRect().top; }); saveList(l); setTimeout(() => q().forEach(el => { const b = before[el.dataset.ord]; if (b == null) return; const d = b - el.getBoundingClientRect().top; if (!d) return; el.style.transition = 'none'; el.style.transform = 'translateY(' + d + 'px)'; el.offsetHeight; el.style.transition = 'transform .18s ease'; el.style.transform = ''; setTimeout(() => { el.style.transition = ''; }, 200); }) || q().forEach(el => { el.style.opacity = ''; el.style.boxShadow = ''; if (el.dataset.ord !== labelOf(from)) return; el.style.transition = 'none'; el.style.background = '#D5F1F1'; el.style.borderColor = '#00A6AB'; el.style.transform = 'scale(1.03)'; el.offsetHeight; el.style.transition = 'transform .25s ease, background 1.2s ease .3s, border-color 1.2s ease .3s'; el.style.transform = ''; el.style.background = ''; el.style.borderColor = ''; setTimeout(() => { el.style.transition = ''; }, 1600); }), 0); },
         style: 'display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 8px 0 10px; box-sizing: border-box; border-radius: 11px; background: #FAFBFA; border: 1px solid #E1E6E3; cursor: grab',
         arrow: 'width: 30px; height: 30px; flex: none; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 10px; cursor: pointer'
       }))
