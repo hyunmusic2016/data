@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>수입·지출 시트</title>
+<style>
+:root{--grid:#E2E3E3;--head:#F8F9FA;--ink:#1F1F1F;--muted:#5F6368}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#FFFFFF;color:var(--ink);font-family:Arial,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px}
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;background:#FFFFFF;border-bottom:1px solid var(--grid)}
+.bar b{font-size:15px}
+.bar .sp{flex:1}
+.bar button{height:32px;padding:0 14px;border-radius:8px;border:1px solid #C6CDC7;background:#FFFFFF;color:#1F1F1F;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.bar button.pri{border-color:#00A6AB;background:#00A6AB;color:#FFFFFF}
+.bar .note{font-size:12px;color:var(--muted)}
+.wrap{overflow:auto;height:calc(100% - 48px)}
+table{border-collapse:collapse;table-layout:fixed}
+th.col,th.row{background:var(--head);color:var(--muted);font-weight:400;font-size:11px;border:1px solid #C7C7C7;user-select:none}
+th.col{height:20px;position:sticky;top:0;z-index:3}
+th.row{width:40px;position:sticky;left:0;z-index:2;text-align:center}
+th.corner{position:sticky;left:0;top:0;z-index:4;background:var(--head);border:1px solid #C7C7C7;width:40px}
+td{height:24px;padding:0 5px;border:1px solid var(--grid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+td.num{text-align:right}
+td.c{text-align:center}
+td.title{font-size:20px;font-weight:700;text-align:center;height:56px;background:#D9E7EA}
+td.month{font-size:15px;text-align:center;height:34px;background:#F3F3F3}
+td.bh{font-weight:700;text-align:center;height:34px;font-size:14px}
+td.hd{font-weight:700;text-align:center;background:#F3F3F3}
+td.neg{color:#C5221F}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:#1F1F1F;color:#FFFFFF;font-size:13px;font-weight:600;display:none}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b id="ttl">수입·지출 시트</b>
+  <span class="note">보기 전용 · 수입·지출 화면에서 고치면 여기도 바로 바뀝니다 · 칸을 끌어 골라 복사(Ctrl+C)해도 됩니다</span>
+  <span class="sp"></span>
+  <button type="button" class="pri" id="copyAll">표 전체 복사</button>
+</div>
+<div class="wrap"><table id="t"></table></div>
+<div class="toast" id="toast"></div>
+<script>
+// 수입·지출 화면(money.html)이 그때그때 'money.sheet'에 써 두는 표 내용을 구글시트 모양으로 보여 준다 (보기 전용)
+const BOX = [['in', '수입', '#CFE2F3', 4], ['fx', '고정 지출', '#F4CCCC', 4], ['va', '변동 지출', '#F4CCCC', 5], ['sum', '합계', '#EFEFEF', 2]];
+const W = { in: [36, 120, 90, 90], fx: [36, 140, 90, 90], va: [36, 150, 100, 90, 90], sum: [110, 110] };
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const colName = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+let GRID = [];
+function build() {
+  let d = null; try { d = JSON.parse(localStorage.getItem('money.sheet') || 'null'); } catch (e) {}
+  const t = document.getElementById('t');
+  if (!d) { t.innerHTML = '<tr><td style="padding:24px;border:none">수입·지출 화면을 먼저 열어 주세요.</td></tr>'; return; }
+  document.getElementById('ttl').textContent = '수입·지출 시트 · ' + d.month;
+  // 열 배치: 상자마다 칸들 + 사이 빈 칸 하나
+  const start = {}, widths = []; let c = 0;
+  BOX.forEach((b, i) => { start[b[0]] = c; W[b[0]].forEach(w => widths.push(w)); c += b[3]; if (i < BOX.length - 1) { widths.push(14); c++; } });
+  const NC = widths.length;
+  const boxes = {}; (d.boxes || []).forEach(b => { boxes[b.key] = b; });
+  const maxRows = Math.max(1, ...BOX.map(b => ((boxes[b[0]] || {}).raw || []).length));
+  // GRID[r][c] = { v, cls, span, bg }
+  const rows = [];
+  const blank = () => Array.from({ length: NC }, () => ({ v: '' }));
+  const r0 = blank(); r0[0] = { v: '수입 · 지출 내역부', cls: 'title', span: NC }; rows.push(r0);
+  const r1 = blank(); r1[0] = { v: d.month, cls: 'month', span: NC }; rows.push(r1);
+  rows.push(blank());
+  const rT = blank(), rH = blank();
+  BOX.forEach(b => { const s = start[b[0]]; rT[s] = { v: b[1], cls: 'bh', span: b[3], bg: b[2] }; ((boxes[b[0]] || {}).head || []).forEach((h, k) => { rH[s + k] = { v: h, cls: 'hd' }; }); });
+  rows.push(rT, rH);
+  for (let i = 0; i < maxRows; i++) {
+    const r = blank();
+    BOX.forEach(b => { const raw = ((boxes[b[0]] || {}).raw || [])[i]; if (!raw) return; raw.forEach((v, k) => { const isN = typeof v === 'number'; r[start[b[0]] + k] = { v: v, cls: (isN ? 'num' : (k === 0 && b[0] !== 'sum' ? 'c' : '')) + (isN && v < 0 ? ' neg' : '') + (b[0] === 'sum' && k === 0 ? ' hd' : '') }; }); });
+    rows.push(r);
+  }
+  GRID = rows;
+  let h = '<colgroup><col style="width:40px">' + widths.map(w => '<col style="width:' + w + 'px">').join('') + '</colgroup>';
+  h += '<tr><th class="corner"></th>' + widths.map((w, i) => '<th class="col">' + colName(i) + '</th>').join('') + '</tr>';
+  rows.forEach((r, ri) => {
+    h += '<tr><th class="row">' + (ri + 1) + '</th>';
+    for (let ci = 0; ci < NC; ci++) {
+      const x = r[ci]; if (x.skip) continue;
+      if (x.span) for (let k = 1; k < x.span; k++) r[ci + k].skip = true;
+      const txt = typeof x.v === 'number' ? (x.v ? x.v.toLocaleString('ko-KR') : '0') : esc(x.v);
+      h += '<td' + (x.span ? ' colspan="' + x.span + '"' : '') + (x.cls ? ' class="' + x.cls + '"' : '') + (x.bg ? ' style="background:' + x.bg + '"' : '') + '>' + txt + '</td>';
+    }
+    h += '</tr>';
+  });
+  t.innerHTML = h;
+}
+// 표 전체 복사: 구글시트 A1 칸에 붙이면 같은 모양(칸 나뉨)으로 들어감. 금액은 숫자 그대로
+document.getElementById('copyAll').addEventListener('click', async () => {
+  const tsv = GRID.map(r => r.map(x => x.skip ? '' : (typeof x.v === 'number' ? String(x.v) : String(x.v == null ? '' : x.v).replace(/[\t\n]/g, ' '))).join('\t')).join('\n');
+  let ok = false;
+  try { await navigator.clipboard.writeText(tsv); ok = true; } catch (e) {
+    const ta = document.createElement('textarea'); ta.value = tsv; document.body.appendChild(ta); ta.select(); try { ok = document.execCommand('copy'); } catch (x) {} ta.remove();
+  }
+  const el = document.getElementById('toast'); el.textContent = ok ? '복사했습니다 · 구글시트 칸을 고르고 붙여넣기(Ctrl+V) 하세요' : '복사하지 못했습니다'; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2600);
+});
+window.addEventListener('storage', e => { if (e.key === 'money.sheet') build(); });
+build();
+</script>
+</body>
+</html>

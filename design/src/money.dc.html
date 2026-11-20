@@ -58,6 +58,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </span>
         <span style="flex: 1"></span>
         <sc-if value="{{reOn}}" hint-placeholder-val="{{ false }}"><span class="noexp" style="font-size: 13px; font-weight: 600; color: #007E82">줄을 누른 채 위아래로 끌어 순서를 바꾸세요</span></sc-if>
+        <a href="money-sheet.html" target="_blank" rel="noopener" class="noexp" style="display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; box-sizing: border-box; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; text-decoration: none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg>시트로 보기</a>
         <button type="button" class="noexp" onClick="{{reToggle}}" aria-pressed="{{reOnStr}}" style="{{reBtn}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"></path></svg>{{reLabel}}</button>
       </div>
 
@@ -125,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.76.2</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.77.0</span>
     </div>
   </main>
 
@@ -626,7 +627,7 @@ class Component extends DCLogic {
     const S = (label, amt, bg, fg, big, sub) => ({ label: label, sub: sub || '', amt: this.won(amt) || '0', row: 'display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: ' + (big ? 72 : 56) + 'px; padding: 0 14px; border-bottom: 1px solid #FFFFFF; background: ' + bg + '; color: ' + fg,
       lbl: 'font-size: ' + (big ? 16 : 14) + 'px; font-weight: 600', val: 'font-size: ' + (big ? 20 : 16) + 'px; font-weight: 600' + (amt < 0 ? '; color: #B4332B' : '') });
     const d = new Date();
-    return {
+    const V = {
       noAccess: this.isTeacherUser(),
       tabs: this.menuTabs('money'),
       monthLabel: ym.slice(0, 4) + '년 ' + (+ym.slice(5, 7)) + '월',
@@ -665,10 +666,10 @@ class Component extends DCLogic {
       ask: st.ask ? { open: true, text: st.ask.text, ok: st.ask.ok, close: () => this.setState({ ask: null }) } : { open: false },
       toast: st.toast || '',
       printBoxes: [
-        { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
-        { title: '고정 지출', span: 4, head: ['일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
-        { title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
-        { title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
+        { key: 'in', title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
+        { key: 'fx', title: '고정 지출', span: 4, head: ['일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
+        { key: 'va', title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
+        { key: 'sum', title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
       ].map(b => Object.assign(b, { rows: b.raw.map(r => r.map(x => typeof x === 'number' ? this.won(x) : x)) })),
       printX: () => this.setState({ printOpen: true }),
       pr: {
@@ -682,6 +683,9 @@ class Component extends DCLogic {
         img: () => this.exportImage(), pdf: () => this.exportPdf(), xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
       }
     };
+    // '시트로 보기' 새 창(money-sheet.html)이 읽는 표 내용 (보기 전용, 이 브라우저에만)
+    try { const js = JSON.stringify({ month: V.monthLabel, boxes: V.printBoxes.map(b => ({ key: b.key, head: b.head, raw: b.raw })) }); if (js !== this._sheetJs) { this._sheetJs = js; localStorage.setItem('money.sheet', js); } } catch (e) {}
+    return V;
   }
 }
 </script>
