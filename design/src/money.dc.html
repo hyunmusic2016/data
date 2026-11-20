@@ -60,9 +60,9 @@ html.bwp .printonly .pcell{border-color:#000!important}
       </div>
 
       <div id="mo_scroll" class="shellscroll" style="padding: 18px 22px 22px">
-        <div style="display: grid; grid-template-columns: max-content max-content max-content 230px; gap: 14px; align-items: start; justify-content: start">
+        <div style="display: grid; {{boxCols}}; gap: 14px; align-items: start; justify-content: start">
 
-          <div style="{{box}}">
+          <div style="{{box}}; position: relative; overflow: visible"><span class="colgrip noexp" onMouseDown="{{bIn.resize}}" onDblClick="{{bIn.reset}}" title="끌어서 상자 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -10px; width: 8px; cursor: col-resize; z-index: 3"></span>
             <div style="{{boxHead}}; background: #D6E6F7; color: #2E5A8A">수입</div>
             <div style="{{hIn.row}}"><sc-for list="{{hIn.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
@@ -76,7 +76,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <button type="button" class="noexp" onClick="{{addExtra}}" style="{{addBtn}}">+ 기타 수입</button>
           </div>
 
-          <div style="{{box}}">
+          <div style="{{box}}; position: relative; overflow: visible"><span class="colgrip noexp" onMouseDown="{{bFx.resize}}" onDblClick="{{bFx.reset}}" title="끌어서 상자 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -10px; width: 8px; cursor: col-resize; z-index: 3"></span>
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">고정 지출</div>
             <div style="{{hIn.row}}"><sc-for list="{{hIn.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{fix}}" as="r" hint-placeholder-count="6">
@@ -86,7 +86,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-if value="{{hiddenFix}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 10px 10px; font-size: 12px; color: #8A949E">숨긴 항목<sc-for list="{{hiddenFix}}" as="h" hint-placeholder-count="1"><button type="button" onClick="{{h.show}}" title="다시 보이기" style="height: 24px; padding: 0 8px; border-radius: 999px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">{{h.name}} +</button></sc-for></div></sc-if>
           </div>
 
-          <div style="{{box}}">
+          <div style="{{box}}; position: relative; overflow: visible"><span class="colgrip noexp" onMouseDown="{{bVa.resize}}" onDblClick="{{bVa.reset}}" title="끌어서 상자 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -10px; width: 8px; cursor: col-resize; z-index: 3"></span>
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">변동 지출</div>
             <div style="{{hVa.row}}"><sc-for list="{{hVa.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{vars}}" as="r" hint-placeholder-count="4">
@@ -96,7 +96,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <button type="button" class="noexp" onClick="{{addVar}}" style="{{addBtn}}">+ 지출</button>
           </div>
 
-          <div style="{{box}}">
+          <div style="{{box}}; position: relative; overflow: visible"><span class="colgrip noexp" onMouseDown="{{bSum.resize}}" onDblClick="{{bSum.reset}}" title="끌어서 상자 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -10px; width: 8px; cursor: col-resize; z-index: 3"></span>
             <div style="{{boxHead}}; background: #EEF1F0; color: #3A4450">합계</div>
             <sc-for list="{{sum}}" as="s" hint-placeholder-count="4"><div style="{{s.row}}"><span style="{{s.lbl}}">{{s.label}}<sc-if value="{{s.sub}}" hint-placeholder-val="{{ false }}"><span style="display: block; font-size: 11px; font-weight: 500; opacity: 0.8">{{s.sub}}</span></sc-if></span><span style="{{s.val}}">{{s.amt}}</span></div></sc-for>
           </div>
@@ -124,7 +124,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.2</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.3</span>
     </div>
   </main>
 
@@ -447,18 +447,20 @@ class Component extends DCLogic {
     return !Object.keys(cells).some(rid => rid.charAt(0) !== '_' && cells[rid] && (cells[rid]['p' + d] || cells[rid][d] === 'V' || cells[rid][String(d)] === 'V'));
   }
   dropPays(ids) { if (!ids.length) return; const L = this.rd('academy.payments', []).filter(x => !(x && ids.indexOf(x.id) >= 0)); try { localStorage.setItem('academy.payments', JSON.stringify(L)); } catch (e) {} this.flash('수납 기록 ' + ids.length + '건을 지웠습니다'); this.setState({ tick: Date.now(), orphAsk: false, delAsk: null }); }
-  // 칸 폭 (머리글 칸 사이 세로줄을 끌어 조정, 두 번 누르면 원래 폭) 'money.colW' = { in: [..], fx: [..], va: [..] } (이 브라우저에만)
-  colDef() { return { in: [44, 130, 100, 90], fx: [44, 160, 100, 90], va: [44, 130, 90, 100, 90] }; }
-  colW(k) { const d = this.colDef()[k], v = (this.state.cw || this.rd('money.colW', {}) || {})[k]; return d.map((w, i) => (Array.isArray(v) && +v[i] >= 30 ? +v[i] : w)); }
-  gridOf(k) { return 'display: grid; grid-template-columns: ' + this.colW(k).map(w => w + 'px').join(' ') + ' 22px; align-items: center; gap: 4px; padding: 2px 8px'; }
-  heads(k, labels) {
-    return { row: this.gridOf(k) + '; height: 34px; padding-top: 0; padding-bottom: 0; background: #F7F9F8; border-bottom: 1px solid #E1E6E3', cells: labels.map((l, i) => ({ label: l, grip: true,
-      style: 'position: relative; display: flex; align-items: center; justify-content: center; height: 34px; font-size: 12px; font-weight: 600; color: #5E6873; text-align: center',
-      resize: e => { e.preventDefault(); const x0 = e.clientX, w0 = this.colW(k)[i]; const all = Object.assign({}, this.rd('money.colW', {}) || {});
-        const mv = ev => { const ws = this.colW(k).slice(); ws[i] = Math.max(30, Math.round(w0 + ev.clientX - x0)); this.setState({ cw: Object.assign({}, all, this.state.cw || {}, { [k]: ws }) }); };
-        const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); try { localStorage.setItem('money.colW', JSON.stringify(this.state.cw || all)); } catch (x) {} };
+  // 상자 폭 (상자 오른쪽 테두리 바깥 세로줄을 끌어 조정, 두 번 누르면 원래 폭) 'money.boxW' = { in, fx, va, sum } (이 브라우저에만). 상자 안 칸은 상자 폭에 맞춰 늘고 줆
+  boxDef() { return { in: 360, fx: 400, va: 480, sum: 230 }; }
+  boxW(k) { const v = (this.state.bw2 || this.rd('money.boxW', {}) || {})[k]; return +v >= 200 ? +v : this.boxDef()[k]; }
+  boxGrip(k) {
+    return { resize: e => { e.preventDefault(); const x0 = e.clientX, w0 = this.boxW(k), all = Object.assign({}, this.rd('money.boxW', {}) || {});
+        const mv = ev => this.setState({ bw2: Object.assign({}, all, this.state.bw2 || {}, { [k]: Math.max(200, Math.round(w0 + ev.clientX - x0)) }) });
+        const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); try { localStorage.setItem('money.boxW', JSON.stringify(this.state.bw2 || all)); } catch (x) {} };
         window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); },
-      resetW: () => { const all = Object.assign({}, this.state.cw || this.rd('money.colW', {}) || {}); const ws = this.colW(k).slice(); ws[i] = this.colDef()[k][i]; all[k] = ws; try { localStorage.setItem('money.colW', JSON.stringify(all)); } catch (x) {} this.setState({ cw: all }); } })).concat([{ label: '', grip: false, style: '' }]) };
+      reset: () => { const all = Object.assign({}, this.state.bw2 || this.rd('money.boxW', {}) || {}); delete all[k]; try { localStorage.setItem('money.boxW', JSON.stringify(all)); } catch (x) {} this.setState({ bw2: all }); } };
+  }
+  gridOf(k) { const T = { in: '40px minmax(0, 1.4fr) 100px minmax(0, 1fr) 22px', fx: '40px minmax(0, 1.4fr) 100px minmax(0, 1fr) 22px', va: '40px minmax(0, 1.3fr) minmax(0, 1fr) 100px minmax(0, 1fr) 22px' }; return 'display: grid; grid-template-columns: ' + T[k] + '; align-items: center; gap: 4px; padding: 2px 8px'; }
+  heads(k, labels) {
+    return { row: this.gridOf(k) + '; height: 34px; padding-top: 0; padding-bottom: 0; background: #F7F9F8; border-bottom: 1px solid #E1E6E3', cells: labels.map(l => ({ label: l, grip: false,
+      style: 'display: flex; align-items: center; justify-content: center; height: 34px; font-size: 12px; font-weight: 600; color: #5E6873; text-align: center' })).concat([{ label: '', grip: false, style: '' }]) };
   }
   num(v) { const s = String(v == null ? '' : v).replace(/[^0-9-]/g, ''); if (!s || s === '-') return 0; return parseInt(s, 10) || 0; }
   won(n) { return n ? (n < 0 ? '-' : '') + '₩' + Math.abs(n).toLocaleString('ko-KR') : ''; }
@@ -542,6 +544,7 @@ class Component extends DCLogic {
       navBtn: 'width: 32px; height: 32px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 16px; cursor: pointer',
       canCopy: Object.keys(prev.fix).some(k => +(prev.fix[k] || {}).amt),
       copyPrev: () => { let n = 0; put(m => { Object.keys(prev.fix).forEach(k => { const p = prev.fix[k] || {}; if (!+p.amt) return; const cur = m.fix[k] || {}; if (+cur.amt) return; m.fix[k] = Object.assign({}, cur, { amt: +p.amt, d: cur.d || p.d || '' }); n++; }); }); this.flash(n ? '고정 지출 ' + n + '줄을 지난달 금액으로 채웠습니다' : '채울 빈 칸이 없습니다'); },
+      boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => this.boxW(k) + 'px').join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
       hIn: this.heads('in', ['일', '항목', '금액', '비고']), hFx: this.heads('fx', ['일', '항목', '금액', '비고']), hVa: this.heads('va', ['일', '항목', '구입처', '금액', '비고']),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
