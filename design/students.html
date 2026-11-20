@@ -170,7 +170,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.5</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -202,12 +202,10 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           <span style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600">{{colsCfg.orderTitle}}</span><span style="font-size: 12px; color: #8A949E">{{colsCfg.count}}개</span></span>
           <ol style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px">
             <sc-for list="{{colsCfg.order}}" as="o" hint-placeholder-count="12">
-              <li draggable="true" data-ord="{{o.label}}" onDragStart="{{o.dragStart}}" onDragOver="{{o.dragOver}}" onDragLeave="{{o.dragLeave}}" onDragEnd="{{o.dragEnd}}" onDrop="{{o.drop}}" style="{{o.style}}">
+              <li data-rg="ord" onMouseDown="{{o.grab}}" style="{{o.style}}">
                 <span aria-hidden="true" style="color: #B9C2BD; font-size: 14px; letter-spacing: -2px; cursor: grab">⋮⋮</span>
                 <span style="width: 22px; font-size: 12px; font-weight: 600; color: #8A949E; text-align: right">{{o.n}}</span>
                 <span style="flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: #17201C">{{o.label}}</span>
-                <button type="button" onClick="{{o.up}}" disabled="{{o.first}}" aria-label="{{o.upLabel}}" style="{{o.arrow}}">▲</button>
-                <button type="button" onClick="{{o.down}}" disabled="{{o.last}}" aria-label="{{o.downLabel}}" style="{{o.arrow}}">▼</button>
               </li>
             </sc-for>
           </ol>
@@ -643,6 +641,24 @@ class Component extends DCLogic {
   }
   // 모든 팝업(role=dialog/alertdialog)을 마우스로 끌어 옮기기. 입력칸·버튼 위에서는 끌지 않음.
   // 화면을 다시 그려도 옮긴 자리를 유지하고(aria-label별), 팝업이 닫히면 다음에 다시 가운데서 열림.
+  // 줄 순서 끌어 바꾸기(수입·지출과 같은 방식): 줄을 누른 채 위아래로 6px 넘게 끌면 시작, 지나가는 줄이 0.18초 비켜 줌, 놓으면 done(새 자리) 후 옮긴 줄 청록으로 잠깐 강조. 묶음 = data-rg
+  listDrag(e, rg, i0, done) {
+    if (e.button || (e.target.closest && e.target.closest('input,textarea,select,button,a,label'))) return;
+    const y0 = e.clientY, rows = [...document.querySelectorAll('[data-rg="' + rg + '"]')], row = rows[i0]; if (!row) return;
+    let on = false, to = i0, R = null, step = 0;
+    const mv = ev => { const dy = ev.clientY - y0;
+      if (!on) { if (Math.abs(dy) < 6) return; on = true; R = rows.map(r => r.getBoundingClientRect()); step = rows.length > 1 ? (R[1].top - R[0].top) : R[0].height;
+        rows.forEach(r => { if (r !== row) r.style.transition = 'transform .18s ease'; }); row.style.position = 'relative'; row.style.zIndex = '5'; row.style.boxShadow = '0 4px 14px rgba(23, 32, 28, 0.18)'; row.style.background = '#EAF6F6'; document.body.style.cursor = 'grabbing'; try { window.getSelection().removeAllRanges(); } catch (x) {} }
+      ev.preventDefault(); row.style.transform = 'translateY(' + dy + 'px)';
+      const c = R[i0].top + R[i0].height / 2 + dy; to = i0; R.forEach((r, j) => { const m = r.top + r.height / 2; if (j > i0 && c > m) to++; if (j < i0 && c < m) to--; });
+      rows.forEach((r, j) => { if (j === i0) return; r.style.transform = (j > i0 && j <= to) ? 'translateY(' + (-step) + 'px)' : (j < i0 && j >= to) ? 'translateY(' + step + 'px)' : ''; }); };
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); if (!on) return; document.body.style.cursor = '';
+      const stop = ev => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click', stop, true); }; window.addEventListener('click', stop, true); setTimeout(() => window.removeEventListener('click', stop, true), 0);
+      rows.forEach(r => { r.style.transition = ''; r.style.transform = ''; r.style.position = ''; r.style.zIndex = ''; r.style.boxShadow = ''; r.style.background = ''; });
+      if (to !== i0) done(to);
+      setTimeout(() => { const el = document.querySelectorAll('[data-rg="' + rg + '"]')[to]; if (!el) return; el.style.transition = 'none'; el.style.background = '#D5F1F1'; el.offsetHeight; el.style.transition = 'background 1.2s ease .3s'; el.style.background = ''; setTimeout(() => { el.style.transition = ''; }, 1600); }, 0); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
   installPopupDrag() {
     if (window.__popDrag) return; window.__popDrag = 1;
     const off = {}; let drag = null;
@@ -1658,7 +1674,7 @@ class Component extends DCLogic {
         n: i + 1, label: labelOf(k),
         first: i === 0 ? 'true' : 'false', last: i === list.length - 1 ? 'true' : 'false',
         upLabel: labelOf(k) + ' 위로', downLabel: labelOf(k) + ' 아래로',
-        up: () => move(k, i - 1), down: () => move(k, i + 1),
+        up: () => move(k, i - 1), down: () => move(k, i + 1), grab: e => this.listDrag(e, 'ord', i, to => move(k, to)),
         dragStart: e => { this._dragCol = k; const me = e.currentTarget; setTimeout(() => { me.style.opacity = '.35'; }, 0); try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', k); } catch (er) {} },
         dragOver: e => { e.preventDefault(); const from = this._dragCol; if (!from || from === k) return; e.currentTarget.style.boxShadow = list.indexOf(from) < i ? '0 3px 0 #00A6AB' : '0 -3px 0 #00A6AB'; },
         dragLeave: e => { e.currentTarget.style.boxShadow = ''; },

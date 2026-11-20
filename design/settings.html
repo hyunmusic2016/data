@@ -74,7 +74,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">수강과목은 원장님만 바꿀 수 있습니다.</div></sc-if>
             <div style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: hidden">
               <sc-for list="{{subjRows}}" as="m" hint-placeholder-count="6">
-                <div class="menurow" data-id="{{m.id}}" draggable="{{m.drag}}" onDragStart="{{m.dragStart}}" onDragOver="{{m.dragOver}}" onDragLeave="{{m.dragLeave}}" onDrop="{{m.drop}}" onDragEnd="{{m.dragEnd}}" style="{{m.rowStyle}}">
+                <div class="menurow" data-rg="subj" onMouseDown="{{m.grab}}" data-id="{{m.id}}" style="{{m.rowStyle}}">
                   <span class="noexp" style="{{m.gripStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
                   <span style="width: 22px; flex: none; font-size: 13px; font-weight: 600; color: #8A949E; text-align: center">{{m.no}}</span>
                   <span style="{{m.chip}}">{{m.name}}</span>
@@ -84,8 +84,6 @@ html.bwp .printonly .pcell{border-color:#000!important}
                   </span>
                   <span style="flex: 1"></span>
                   <span style="font-size: 12px; color: #8A949E; white-space: nowrap">{{m.usedTxt}}</span>
-                  <button type="button" class="noexp" onClick="{{m.up}}" disabled="{{m.lockUp}}" aria-label="위로" style="{{m.arrowStyle}}">▲</button>
-                  <button type="button" class="noexp" onClick="{{m.down}}" disabled="{{m.lockDown}}" aria-label="아래로" style="{{m.arrowStyle}}">▼</button>
                   <button type="button" class="noexp" onClick="{{m.del}}" disabled="{{m.lock}}" style="{{m.delStyle}}">{{m.delLabel}}</button>
                 </div>
               </sc-for>
@@ -108,7 +106,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
                 <span style="{{lc.h}}">순서</span><span style="{{lc.h}}">유형</span><span style="{{lc.h}}">반</span><span style="{{lc.h}}">횟수</span><span style="{{lc.h}}">시간(분)</span><span style="{{lc.h}}">회당</span><span style="{{lc.h}}">합계</span><span style="{{lc.h}}">색</span><span class="noexp" style="{{lc.h}}"></span>
               </div>
               <sc-for list="{{ltRows}}" as="t" hint-placeholder-count="2">
-                <div class="menurow" style="{{t.rowStyle}}">
+                <div class="menurow" data-rg="lt" onMouseDown="{{t.grab}}" style="{{t.rowStyle}}">
                   <span style="{{lc.c}}; font-size: 13px; font-weight: 600; color: #8A949E">{{t.no}}</span>
                   <span style="{{lc.c}}; flex-direction: column; gap: 2px"><span style="{{t.chip}}">{{t.name}}</span><sc-if value="{{t.offTag}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; color: #8A949E; white-space: nowrap">{{t.offTag}}</span></sc-if></span>
                   <span style="{{lc.c}}; gap: 4px"><sc-for list="{{t.cls}}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{o.pick}}" disabled="{{t.lock}}" style="{{o.style}}">{{o.label}}</button></sc-for></span>
@@ -118,8 +116,6 @@ html.bwp .printonly .pcell{border-color:#000!important}
                   <span style="{{lc.c}}; font-size: 14px; font-weight: 600">{{t.total}}</span>
                   <span class="noexp" style="{{lc.c}}; gap: 3px; flex-wrap: nowrap"><sc-for list="{{t.colors}}" as="cl" hint-placeholder-count="11"><button type="button" onClick="{{cl.pick}}" disabled="{{t.lock}}" aria-label="{{cl.label}}" title="{{cl.label}}" style="{{cl.style}}">{{cl.x}}</button></sc-for></span>
                   <span class="noexp" style="{{lc.c}}; gap: 4px">
-                    <button type="button" onClick="{{t.up}}" disabled="{{t.lockUp}}" aria-label="위로" style="{{t.arrowStyle}}">▲</button>
-                    <button type="button" onClick="{{t.down}}" disabled="{{t.lockDown}}" aria-label="아래로" style="{{t.arrowStyle}}">▼</button>
                     <button type="button" onClick="{{t.del}}" disabled="{{t.lock}}" style="{{t.delStyle}}">{{t.delLabel}}</button>
                   </span>
                 </div>
@@ -205,7 +201,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
               </div></sc-if>
               <sc-if value="{{scfg.showOrder}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E8E5">
                 <span style="font-size: 12px; font-weight: 600; color: #5E6873; margin-bottom: 4px">{{scfg.orderTitle}}</span>
-                <sc-for list="{{scfg.order}}" as="o" hint-placeholder-count="6"><div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 8px; border-radius: 9px; background: #F7F9F8"><sc-if value="{{o.hasCheck}}" hint-placeholder-val="{{ false }}"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.toggle}}" aria-label="직원명부에 보이기" style="display: inline-flex; padding: 0; border: none; background: transparent; cursor: pointer"><span style="{{o.box}}">✓</span></button></sc-if><span style="flex: 1; font-size: 13px; font-weight: 600">{{o.label}}</span><button type="button" onClick="{{o.up}}" disabled="{{o.first}}" aria-label="위로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▲</button><button type="button" onClick="{{o.down}}" disabled="{{o.last}}" aria-label="아래로" style="width: 26px; height: 26px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-size: 10px; cursor: pointer">▼</button></div></sc-for>
+                <sc-for list="{{scfg.order}}" as="o" hint-placeholder-count="6"><div data-rg="scfg" onMouseDown="{{o.grab}}" style="cursor: grab; display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 8px; border-radius: 9px; background: #F7F9F8"><sc-if value="{{o.hasCheck}}" hint-placeholder-val="{{ false }}"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.toggle}}" aria-label="직원명부에 보이기" style="display: inline-flex; padding: 0; border: none; background: transparent; cursor: pointer"><span style="{{o.box}}">✓</span></button></sc-if><span style="flex: 1; font-size: 13px; font-weight: 600">{{o.label}}</span></div></sc-for>
               </div></sc-if>
             </div>
             <sc-if value="{{scfg.isGlobal}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 10px">
@@ -213,7 +209,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">직원 순서는 원장님만 바꿀 수 있습니다.</div></sc-if>
             <div style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: hidden">
               <sc-for list="{{soRows}}" as="m" hint-placeholder-count="5">
-                <div class="menurow" data-id="{{m.id}}" draggable="{{m.drag}}" onDragStart="{{m.dragStart}}" onDragOver="{{m.dragOver}}" onDragLeave="{{m.dragLeave}}" onDrop="{{m.drop}}" onDragEnd="{{m.dragEnd}}" style="{{m.rowStyle}}">
+                <div class="menurow" data-rg="so" onMouseDown="{{m.grab}}" data-id="{{m.id}}" style="{{m.rowStyle}}">
                   <span class="noexp" style="{{m.gripStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
                   <span style="width: 22px; flex: none; font-size: 13px; font-weight: 600; color: #8A949E; text-align: center">{{m.no}}</span>
                   <span style="font-size: 15px; font-weight: 600">{{m.name}}</span>
@@ -221,8 +217,6 @@ html.bwp .printonly .pcell{border-color:#000!important}
                   <span style="font-size: 12px; color: #B4332B">{{m.out}}</span>
                   <span style="flex: 1"></span>
                   <button type="button" class="noexp" role="switch" aria-checked="{{m.useOn}}" onClick="{{m.toggleUse}}" disabled="{{m.lockUse}}" style="{{m.useStyle}}">{{m.useLabel}}</button>
-                  <button type="button" class="noexp" onClick="{{m.up}}" disabled="{{m.lockUp}}" aria-label="위로" style="{{m.arrowStyle}}">▲</button>
-                  <button type="button" class="noexp" onClick="{{m.down}}" disabled="{{m.lockDown}}" aria-label="아래로" style="{{m.arrowStyle}}">▼</button>
                 </div>
               </sc-for>
               <sc-if value="{{soEmpty}}" hint-placeholder-val="{{ false }}"><div style="padding: 26px; text-align: center; font-size: 14px; color: #8A949E">직원명부에 등록된 직원이 없습니다.</div></sc-if>
@@ -241,15 +235,13 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">메뉴 탭은 원장님만 바꿀 수 있습니다.</div></sc-if>
           <div id="menuList" style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: hidden">
             <sc-for list="{{items}}" as="m" hint-placeholder-count="6">
-              <div class="menurow" data-id="{{m.id}}" draggable="{{m.drag}}" onDragStart="{{m.dragStart}}" onDragOver="{{m.dragOver}}" onDragLeave="{{m.dragLeave}}" onDrop="{{m.drop}}" onDragEnd="{{m.dragEnd}}" style="{{m.rowStyle}}">
+              <div class="menurow" data-rg="menu" onMouseDown="{{m.grab}}" data-id="{{m.id}}" style="{{m.rowStyle}}">
                 <span class="noexp" title="끌어서 순서 바꾸기" style="{{m.gripStyle}}"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></span>
                 <span style="width: 22px; flex: none; font-size: 13px; font-weight: 600; color: #8A949E; text-align: center">{{m.no}}</span>
                 <input id="{{m.inputId}}" type="text" defaultValue="{{m.label}}" disabled="{{m.lockName}}" onInput="{{m.setName}}" onBlur="{{m.saveName}}" onKeyDown="{{m.nameKey}}" aria-label="탭 이름" style="{{m.inputStyle}}">
                 <span style="{{m.kindStyle}}">{{m.kind}}</span>
                 <span style="flex: 1"></span>
                 <button type="button" class="noexp" onClick="{{m.toggle}}" disabled="{{m.lockHide}}" role="switch" aria-checked="{{m.shown}}" style="{{m.toggleStyle}}">{{m.toggleLabel}}</button>
-                <button type="button" class="noexp" onClick="{{m.up}}" disabled="{{m.lockUp}}" aria-label="위로" style="{{m.arrowStyle}}">▲</button>
-                <button type="button" class="noexp" onClick="{{m.down}}" disabled="{{m.lockDown}}" aria-label="아래로" style="{{m.arrowStyle}}">▼</button>
                 <button type="button" class="noexp" onClick="{{m.del}}" disabled="{{m.lockDel}}" style="{{m.delStyle}}">{{m.delLabel}}</button>
               </div>
             </sc-for>
@@ -289,7 +281,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.5</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -387,6 +379,24 @@ class Component extends DCLogic {
   }
   // 모든 팝업(role=dialog/alertdialog)을 마우스로 끌어 옮기기. 입력칸·버튼 위에서는 끌지 않음.
   // 화면을 다시 그려도 옮긴 자리를 유지하고(aria-label별), 팝업이 닫히면 다음에 다시 가운데서 열림.
+  // 줄 순서 끌어 바꾸기(수입·지출과 같은 방식): 줄을 누른 채 위아래로 6px 넘게 끌면 시작, 지나가는 줄이 0.18초 비켜 줌, 놓으면 done(새 자리) 후 옮긴 줄 청록으로 잠깐 강조. 묶음 = data-rg
+  listDrag(e, rg, i0, done) {
+    if (e.button || (e.target.closest && e.target.closest('input,textarea,select,button,a,label'))) return;
+    const y0 = e.clientY, rows = [...document.querySelectorAll('[data-rg="' + rg + '"]')], row = rows[i0]; if (!row) return;
+    let on = false, to = i0, R = null, step = 0;
+    const mv = ev => { const dy = ev.clientY - y0;
+      if (!on) { if (Math.abs(dy) < 6) return; on = true; R = rows.map(r => r.getBoundingClientRect()); step = rows.length > 1 ? (R[1].top - R[0].top) : R[0].height;
+        rows.forEach(r => { if (r !== row) r.style.transition = 'transform .18s ease'; }); row.style.position = 'relative'; row.style.zIndex = '5'; row.style.boxShadow = '0 4px 14px rgba(23, 32, 28, 0.18)'; row.style.background = '#EAF6F6'; document.body.style.cursor = 'grabbing'; try { window.getSelection().removeAllRanges(); } catch (x) {} }
+      ev.preventDefault(); row.style.transform = 'translateY(' + dy + 'px)';
+      const c = R[i0].top + R[i0].height / 2 + dy; to = i0; R.forEach((r, j) => { const m = r.top + r.height / 2; if (j > i0 && c > m) to++; if (j < i0 && c < m) to--; });
+      rows.forEach((r, j) => { if (j === i0) return; r.style.transform = (j > i0 && j <= to) ? 'translateY(' + (-step) + 'px)' : (j < i0 && j >= to) ? 'translateY(' + step + 'px)' : ''; }); };
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); if (!on) return; document.body.style.cursor = '';
+      const stop = ev => { ev.stopPropagation(); ev.preventDefault(); window.removeEventListener('click', stop, true); }; window.addEventListener('click', stop, true); setTimeout(() => window.removeEventListener('click', stop, true), 0);
+      rows.forEach(r => { r.style.transition = ''; r.style.transform = ''; r.style.position = ''; r.style.zIndex = ''; r.style.boxShadow = ''; r.style.background = ''; });
+      if (to !== i0) done(to);
+      setTimeout(() => { const el = document.querySelectorAll('[data-rg="' + rg + '"]')[to]; if (!el) return; el.style.transition = 'none'; el.style.background = '#D5F1F1'; el.offsetHeight; el.style.transition = 'background 1.2s ease .3s'; el.style.background = ''; setTimeout(() => { el.style.transition = ''; }, 1600); }, 0); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
   installPopupDrag() {
     if (window.__popDrag) return; window.__popDrag = 1;
     const off = {}; let drag = null;
@@ -944,6 +954,7 @@ class Component extends DCLogic {
         toggle: () => { if (!can || fixed) return; const L = this.menuItems(); L[i].hidden = !L[i].hidden; this.saveMenu(L); },
         lockUp: !can || i === 0, lockDown: !can || i === n - 1,
         arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer; opacity: 1',
+        grab: e => { if (can) this.listDrag(e, 'menu', i, to => this.moveMenu(t.id, items[to].id)); },
         up: () => { if (can && i > 0) this.moveMenu(t.id, items[i - 1].id); },
         down: () => { if (can && i < n - 1) this.moveMenu(t.id, items[i + 1].id); },
         lockDel: !can || !t.custom, delLabel: '삭제',
@@ -979,6 +990,7 @@ class Component extends DCLogic {
           style: 'width: 20px; height: 20px; padding: 0; border-radius: 50%; font-family: inherit; font-size: 11px; line-height: 1; color: #8A949E; cursor: ' + (can ? 'pointer' : 'default') + '; background: ' + (p0[0] || (t.cls === 'pro' ? '#EDE6FA' : '#E6F6F6')) + '; border: ' + ((t.bg || '') === p0[0] ? '2px solid ' + (p0[1] || '#5E6873') : '1px solid #DDE2DF') })),
         lockUp: !can || i === 0, lockDown: !can || i === LTS.length - 1,
         arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer',
+        grab: e => { if (can) this.listDrag(e, 'lt', i, to => { const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(to, 0, x); this.saveLT(L); }); },
         up: () => { if (!can || !i) return; const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(i - 1, 0, x); this.saveLT(L); },
         down: () => { if (!can || i === LTS.length - 1) return; const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(i + 1, 0, x); this.saveLT(L); },
         // 숨기기 = 고르는 목록에서만 빼기(off). 그 유형이던 원생·지난 출석부는 이름·색 그대로. '보이기'로 다시 목록에
@@ -1004,6 +1016,7 @@ class Component extends DCLogic {
         usedTxt: cnt ? '직원 ' + cnt + '명' : '',
         lockUp: !can || i === 0, lockDown: !can || i === SUB.length - 1,
         arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer',
+        grab: e => { if (can) this.listDrag(e, 'subj', i, to => { const L = this.subjectList(); const x = L.splice(i, 1)[0]; L.splice(to, 0, x); this.saveSubjects(L); }); },
         up: () => { if (!can || !i) return; const L = this.subjectList(); const t = L.splice(i, 1)[0]; L.splice(i - 1, 0, t); this.saveSubjects(L); },
         down: () => { if (!can || i === SUB.length - 1) return; const L = this.subjectList(); const t = L.splice(i, 1)[0]; L.splice(i + 1, 0, t); this.saveSubjects(L); },
         delLabel: st.subjDel === s.id ? '한 번 더' : '삭제',
@@ -1107,6 +1120,7 @@ class Component extends DCLogic {
         box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; ' + (HID.indexOf(k) < 0 ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
         toggle: () => { const H = HID.indexOf(k) < 0 ? HID.concat([k]) : HID.filter(x => x !== k); this.saveStaffCfg('staff.hidden', H); },
         first: i === 0 || (isOrd && !can), last: i === cfgKeys.length - 1 || (isOrd && !can),
+        grab: e => { if (isOrd && !can) return; this.listDrag(e, 'scfg', i, to => { const L = cfgKeys.slice(); const x = L.splice(i, 1)[0]; L.splice(to, 0, x); if (isOrd) this.reorderEmp(L); else this.saveStaffCfg(cfgKey, L); }); },
         up: () => { if (!i) return; const L = cfgKeys.slice(); const t = L.splice(i, 1)[0]; L.splice(i - 1, 0, t); if (isOrd) this.reorderEmp(L); else this.saveStaffCfg(cfgKey, L); },
         down: () => { if (i === cfgKeys.length - 1) return; const L = cfgKeys.slice(); const t = L.splice(i, 1)[0]; L.splice(i + 1, 0, t); if (isOrd) this.reorderEmp(L); else this.saveStaffCfg(cfgKey, L); } }))
     };
@@ -1166,6 +1180,7 @@ class Component extends DCLogic {
       useStyle: 'height: 30px; padding: 0 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: ' + (can ? 'pointer' : 'default') + '; ' + (e.use ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #F3F5F4; color: #8A949E'),
       toggleUse: () => { if (!can) return; const L = this.staffOrdered(); L[i].use = !L[i].use; this.saveStaffOrder(L); },
       arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer',
+      grab: e => { if (can) this.listDrag(e, 'so', i, to => { const L = this.staffOrdered(); const x = L.splice(i, 1)[0]; L.splice(to, 0, x); this.saveStaffOrder(L); }); },
       up: () => { if (!can || !i) return; const L = this.staffOrdered(); const t = L.splice(i, 1)[0]; L.splice(i - 1, 0, t); this.saveStaffOrder(L); },
       down: () => { if (!can || i === SO.length - 1) return; const L = this.staffOrdered(); const t = L.splice(i, 1)[0]; L.splice(i + 1, 0, t); this.saveStaffOrder(L); },
       dragStart: ev => { if (!can) { ev.preventDefault(); return; } try { ev.dataTransfer.effectAllowed = 'move'; ev.dataTransfer.setData('text/plain', e.id); } catch (x) {} this._odrag = e.id; if (ev.currentTarget) ev.currentTarget.style.opacity = '0.45'; },
