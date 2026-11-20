@@ -126,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.5</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.6</span>
     </div>
   </main>
 
@@ -557,7 +557,8 @@ class Component extends DCLogic {
       navBtn: 'width: 32px; height: 32px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 16px; cursor: pointer',
       canCopy: Object.keys(prev.fix).some(k => +(prev.fix[k] || {}).amt),
       copyPrev: () => { let n = 0; put(m => { Object.keys(prev.fix).forEach(k => { const p = prev.fix[k] || {}; if (!+p.amt) return; const cur = m.fix[k] || {}; if (+cur.amt) return; m.fix[k] = Object.assign({}, cur, { amt: +p.amt, d: cur.d || p.d || '' }); n++; }); }); this.flash(n ? '고정 지출 ' + n + '줄을 지난달 금액으로 채웠습니다' : '채울 빈 칸이 없습니다'); },
-      boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => this.boxW(k) + 'px').join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
+      // 상자 폭은 안 칸들의 합보다 좁아지지 않음 (칸이 상자 밖으로 넘치지 않게)
+      boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => { if (k === 'sum') return this.boxW(k) + 'px'; const c = this.colW(k); const need = c.reduce((n, w) => n + w, 0) + 60 + 22 + 4 * (c.length + 2) + 16 + 4; return Math.max(this.boxW(k), need) + 'px'; }).join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
       hIn: this.heads('in', ['일', '항목', '금액', '비고']), hFx: this.heads('fx', ['일', '항목', '금액', '비고']), hVa: this.heads('va', ['일', '항목', '구입처', '금액', '비고']),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
