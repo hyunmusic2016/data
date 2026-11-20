@@ -60,7 +60,6 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </span>
         <span style="flex: 1"></span>
         <sc-if value="{{reOn}}" hint-placeholder-val="{{ false }}"><span class="noexp" style="font-size: 13px; font-weight: 600; color: #007E82">줄을 누른 채 위아래로 끌어 순서를 바꾸세요</span></sc-if>
-        <a href="money-sheet.html" target="_blank" rel="noopener" class="noexp" style="display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; box-sizing: border-box; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 13px; font-weight: 600; text-decoration: none"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg>시트로 보기</a>
         <button type="button" class="noexp" onClick="{{reToggle}}" aria-pressed="{{reOnStr}}" style="{{reBtn}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"></path></svg>{{reLabel}}</button>
       </div>
 
@@ -110,6 +109,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </section>
 
     <div class="noprint" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px">
+      <a href="money-sheet.html" target="_blank" rel="noopener" class="noexp" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; box-sizing: border-box; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; text-decoration: none"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg>시트로 보기</a>
       <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
@@ -128,7 +128,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.77.1</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.77.2</span>
     </div>
   </main>
 
