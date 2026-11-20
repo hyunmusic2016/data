@@ -240,7 +240,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.12</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.13</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -378,7 +378,6 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span style="font-size: 16px; font-weight: 600; color: #17201C">수강료</span>
           <span style="font-size: 12px; font-weight: 600; color: #8A949E">이번 수납에만 적용</span>
         </div>
-        <div role="radiogroup" aria-label="레슨 유형" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px"><sc-for list="{{pv.ltOpts}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for><sc-if value="{{pv.ltCustom}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 30px; padding: 0 10px; border-radius: 9px; border: 2px dashed #B7C0BC; color: #5E6873; font-size: 12px; font-weight: 600">직접 입력</span></sc-if></div>
         <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
           <sc-for list="{{pv.fees}}" as="x" hint-placeholder-count="5">
             <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873; min-width: 0">{{x.label}}<span style="{{x.wrap}}"><input id="{{x.id}}" type="text" inputmode="numeric" defaultValue="{{x.val}}" onInput="{{x.set}}" style="{{x.inp}}"><span>{{x.unit}}</span></span></label>
