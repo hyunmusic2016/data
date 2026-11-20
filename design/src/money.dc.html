@@ -66,10 +66,11 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{headRow}}; grid-template-columns: 40px minmax(0, 1fr) 96px minmax(50px, 0.45fr) 22px"><span style="{{hc}}">일</span><span style="{{hc}}">항목</span><span style="{{hc}}">금액</span><span style="{{hc}}">비고</span><span></span></div>
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
               <div style="{{r.row}}">
-                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><span style="{{cl}}; color: #8A949E; font-size: 11px">{{r.memo}}</span><span></span></sc-if>
+                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><span style="{{r.memoStyle}}">{{r.memo}}</span><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
                 <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
               </div>
             </sc-for>
+            <sc-if value="{{orphanN}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #FCEBEA; color: #B4332B; font-size: 12px; font-weight: 600"><span style="flex: 1">출석부 칸에 ₩ 표시가 없는 수납 기록 {{orphanN}}건 (예전에 지워지지 않고 남은 기록)</span><button type="button" onClick="{{delOrphans}}" style="height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E8A9A4; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{delOrphansLabel}}</button></div></sc-if>
             <sc-if value="{{incEmpty}}" hint-placeholder-val="{{ false }}"><div style="{{empty}}">이 달 수납 기록이 없습니다</div></sc-if>
             <button type="button" class="noexp" onClick="{{addExtra}}" style="{{addBtn}}">+ 기타 수입</button>
           </div>
@@ -122,7 +123,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.1</span>
     </div>
   </main>
 
@@ -424,7 +425,7 @@ class Component extends DCLogic {
   // 이 달 수입: 출석부·수강생대장 수납 기록(academy.payments) + 차액 수납(출석부 칸 dp·LD)
   incomeAuto(ym) {
     const out = [];
-    this.rd('academy.payments', []).forEach(p => { if (p && String(p.date || '').slice(0, 7) === ym && +p.amount) out.push({ d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: p.kind === 'late' ? '미납 수납' : '' }); });
+    this.rd('academy.payments', []).forEach(p => { if (p && String(p.date || '').slice(0, 7) === ym && +p.amount) { const o = this.orphanPay(p); out.push({ d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: o ? '출석부에 없음' : p.kind === 'late' ? '미납 수납' : '', pid: p.id, orphan: o }); } });
     const AC = this.rd('academy.attCells', {}), A = window.academy, S = (A && A.data && A.data.students) || [];
     const nameOf = sk => { const r = S.find(x => 'D' + x.dbId === sk); return r ? r.name : sk; };
     Object.keys(AC || {}).forEach(ym0 => Object.keys(AC[ym0] || {}).forEach(sk => { const c = AC[ym0][sk] || {};
@@ -436,6 +437,15 @@ class Component extends DCLogic {
           if (date && date.slice(0, 7) === ym) out.push({ d: +date.slice(8, 10), item: nameOf(sk), amt: v, memo: '차액 수납' }); }); }); }));
     return out.sort((a, b) => a.d - b.d || String(a.item).localeCompare(String(b.item), 'ko'));
   }
+  // 수납 기록인데 출석부 그날 칸에 ₩ 표시(p+날짜 또는 'V')가 없으면 남은 찌꺼기 (로그인 사이트에서만 판단, 미납 수납(late)은 빼고)
+  orphanPay(p) {
+    const A = window.academy; if (!(A && A.data && Array.isArray(A.data.students)) || p.kind === 'late') return false;
+    const nm = String(p.name || '').replace('$', ''), st = A.data.students.find(x => String(x.name || '').replace('$', '') === nm); if (!st) return false;
+    const ym = String(p.date).slice(0, 7), d = +String(p.date).slice(8, 10);
+    const cells = ((this.rd('academy.attCells', {}) || {})[ym] || {})['D' + st.dbId] || {};
+    return !Object.keys(cells).some(rid => rid.charAt(0) !== '_' && cells[rid] && (cells[rid]['p' + d] || cells[rid][d] === 'V' || cells[rid][String(d)] === 'V'));
+  }
+  dropPays(ids) { if (!ids.length) return; const L = this.rd('academy.payments', []).filter(x => !(x && ids.indexOf(x.id) >= 0)); try { localStorage.setItem('academy.payments', JSON.stringify(L)); } catch (e) {} this.flash('수납 기록 ' + ids.length + '건을 지웠습니다'); this.setState({ tick: Date.now(), orphAsk: false, delAsk: null }); }
   num(v) { const s = String(v == null ? '' : v).replace(/[^0-9-]/g, ''); if (!s || s === '-') return 0; return parseInt(s, 10) || 0; }
   won(n) { return n ? (n < 0 ? '-' : '') + '₩' + Math.abs(n).toLocaleString('ko-KR') : ''; }
   flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
@@ -478,12 +488,15 @@ class Component extends DCLogic {
     const ROW5 = 'display: grid; grid-template-columns: 40px minmax(0, 1fr) minmax(70px, 0.6fr) 96px minmax(56px, 0.6fr) 22px; align-items: center; gap: 4px; min-height: 30px; padding: 2px 8px; border-bottom: 1px solid #EEF1EF';
     // 수입
     const auto = this.incomeAuto(ym);
-    const inc = auto.map(r => ({ auto: true, manual: false, d: r.d, item: r.item, amtTxt: this.won(r.amt), memo: r.memo, row: ROW4 })).concat(M.extra.map((r, i) => {
+    const inc = auto.map(r => ({ auto: true, manual: false, d: r.d, item: r.item, amtTxt: this.won(r.amt), memo: r.memo, row: ROW4 + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
+      memoStyle: 'font-size: 11px; ' + (r.orphan ? 'color: #B4332B; font-weight: 600; text-decoration: none' : 'color: #8A949E'),
+      del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropPays([r.pid]); } })).concat(M.extra.map((r, i) => {
       const set = k => e => put(m => { const x = m.extra.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
       return { auto: false, manual: true, d: r.d || '', item: r.item || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW4 + '; background: #F5F9FE', idD: 'mx_d_' + r.id, idI: 'mx_i_' + r.id, idA: 'mx_a_' + r.id, idM: 'mx_m_' + r.id,
         setD: set('d'), setI: set('item'), setA: set('amt'), setM: set('memo'), del: () => put(m => { m.extra = m.extra.filter(z => z.id !== r.id); }) };
     }));
-    const incSum = auto.reduce((n, r) => n + r.amt, 0) + M.extra.reduce((n, r) => n + (+r.amt || 0), 0);
+    const orph = auto.filter(r => r.orphan && r.pid);
+    const incSum = auto.filter(r => !r.orphan).reduce((n, r) => n + r.amt, 0) + M.extra.reduce((n, r) => n + (+r.amt || 0), 0);
     // 고정 지출
     const items = this.teacherRows().concat(this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt)));
     const fix = items.map(it => { const f = M.fix[it.id] || {};
@@ -515,7 +528,9 @@ class Component extends DCLogic {
       navBtn: 'width: 32px; height: 32px; border-radius: 9px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 16px; cursor: pointer',
       canCopy: Object.keys(prev.fix).some(k => +(prev.fix[k] || {}).amt),
       copyPrev: () => { let n = 0; put(m => { Object.keys(prev.fix).forEach(k => { const p = prev.fix[k] || {}; if (!+p.amt) return; const cur = m.fix[k] || {}; if (+cur.amt) return; m.fix[k] = Object.assign({}, cur, { amt: +p.amt, d: cur.d || p.d || '' }); n++; }); }); this.flash(n ? '고정 지출 ' + n + '줄을 지난달 금액으로 채웠습니다' : '채울 빈 칸이 없습니다'); },
-      inc: inc, incEmpty: !inc.length,
+      inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
+      delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
+      delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropPays(orph.map(r => r.pid)); },
       addExtra: () => put(m => { m.extra.push({ id: 'X' + Date.now(), d: dNow, item: '', amt: 0, memo: '' }); }),
       fix: fix, hiddenFix: hiddenFix.length ? hiddenFix : null, addFix: addFix, fixKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addFix(); } },
       vars: vars, varEmpty: !vars.length,
@@ -534,7 +549,7 @@ class Component extends DCLogic {
       empty: 'padding: 18px 10px; text-align: center; font-size: 12px; color: #A9B1AD',
       toast: st.toast || '',
       printBoxes: [
-        { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.map(r => [r.d, r.item, r.amt, r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
+        { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
         { title: '고정 지출', span: 4, head: ['일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
         { title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.slice().sort((a, b) => (+a.d || 99) - (+b.d || 99)).map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
         { title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
