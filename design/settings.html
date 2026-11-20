@@ -128,7 +128,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-if value="{{canEdit}}" hint-placeholder-val="{{ true }}">
               <div class="noexp" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap">
                 <button type="button" onClick="{{ltAdd}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">+ 레슨 유형 추가</button>
-                <span style="font-size: 12px; color: #8A949E">유형 이름은 반·횟수·시간으로 저절로 붙습니다. 합계 = 횟수 × 회당.</span>
+                <span style="flex: 1"></span><span style="{{ltMsgStyle}}">{{ltSaveMsg}}</span><sc-if value="{{ltDirty}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{ltCancel}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">취소</button></sc-if><button type="button" onClick="{{ltSave}}" disabled="{{ltOff}}" style="{{ltSaveStyle}}">저장하기</button>
                 <span style="font-size: 13px; font-weight: 600; color: #B4332B">{{err}}</span>
               </div>
             </sc-if>
@@ -289,7 +289,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.73.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.73.5</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -590,18 +590,23 @@ class Component extends DCLogic {
     return [{ id: 'L1', cls: 'hobby', count: 4, dur: 60, unit: 40000, bg: '', fg: '' }, { id: 'L2', cls: 'pro', count: 4, dur: 60, unit: 62500, bg: '', fg: '' }];
   }
   ltName(t) { return (t.cls === 'pro' ? '전문' : '취미') + ' ' + (+t.count || 0) + '회' + ((+t.dur || 60) !== 60 ? ' ' + (+t.dur) + '분' : ''); }
-  saveLT(list) {
-    try { localStorage.setItem('academy.lessonTypes', JSON.stringify(list.map(t => ({ id: t.id, cls: t.cls === 'pro' ? 'pro' : 'hobby', count: +t.count || 1, dur: +t.dur || 60, unit: +t.unit || 0, bg: t.bg || '', fg: t.fg || '' })))); } catch (e) {}
-    this.setState({ tick: Date.now(), err: '' });
+  // 고치는 동안은 화면에만(ltDraft), '저장하기'를 눌러야 저장. '취소'는 저장된 상태로 되돌림
+  ltEdit() { return (this.state.ltDraft || this.lessonTypes()).map(t => Object.assign({}, t)); }
+  saveLT(list) { this.setState({ ltDraft: list.map(t => ({ id: t.id, cls: t.cls === 'pro' ? 'pro' : 'hobby', count: +t.count || 1, dur: +t.dur || 60, unit: +t.unit || 0, bg: t.bg || '', fg: t.fg || '' })), err: '' }); }
+  commitLT() {
+    if (!this.state.ltDraft) return;
+    try { localStorage.setItem('academy.lessonTypes', JSON.stringify(this.state.ltDraft)); } catch (e) {}
+    this.setState({ ltDraft: null, err: '', ltSaved: Date.now() });
+    clearTimeout(this._lts); this._lts = setTimeout(() => this.setState({ ltSaved: 0 }), 2500);
   }
   setLT(id, patch) {
-    const L = this.lessonTypes().map(t => t.id === id ? Object.assign({}, t, patch) : t);
+    const L = this.ltEdit().map(t => t.id === id ? Object.assign({}, t, patch) : t);
     const me = L.find(t => t.id === id);
     if (L.some(t => t.id !== id && this.ltName(t) === this.ltName(me))) { this.setState({ err: '같은 유형(' + this.ltName(me) + ')이 이미 있습니다.', tick: Date.now() }); return; }
     this.saveLT(L);
   }
   addLT() {
-    const L = this.lessonTypes();
+    const L = this.ltEdit();
     let n = 4; while (L.some(t => t.cls === 'hobby' && +t.count === n && (+t.dur || 60) === 60)) n++;
     L.push({ id: 'L' + Date.now(), cls: 'hobby', count: n, dur: 60, unit: 40000, bg: '', fg: '' });
     this.saveLT(L);
@@ -955,7 +960,7 @@ class Component extends DCLogic {
     // ---------- 수강과목 화면 ----------
     const SUB = this.subjectList(), EMPS = this.employeeList();
     const usedBy = nm => EMPS.filter(e => (e.subjects || []).indexOf(nm) >= 0).length;
-    const LTS = this.lessonTypes();
+    const LTS = this.ltEdit();
     const LTC = 'display: grid; grid-template-columns: 48px 120px 120px 76px 86px 110px 110px 296px 150px; min-width: 1116px; align-items: center';
     const numOk = (v, min) => { const n = parseInt(String(v).replace(/[^0-9]/g, ''), 10); return isNaN(n) || n < min ? null : n; };
     const ltRows = LTS.map((t, i) => {
@@ -974,11 +979,11 @@ class Component extends DCLogic {
           style: 'width: 20px; height: 20px; padding: 0; border-radius: 50%; font-family: inherit; font-size: 11px; line-height: 1; color: #8A949E; cursor: ' + (can ? 'pointer' : 'default') + '; background: ' + (p0[0] || (t.cls === 'pro' ? '#EDE6FA' : '#E6F6F6')) + '; border: ' + ((t.bg || '') === p0[0] ? '2px solid ' + (p0[1] || '#5E6873') : '1px solid #DDE2DF') })),
         lockUp: !can || i === 0, lockDown: !can || i === LTS.length - 1,
         arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer',
-        up: () => { if (!can || !i) return; const L = this.lessonTypes(); const x = L.splice(i, 1)[0]; L.splice(i - 1, 0, x); this.saveLT(L); },
-        down: () => { if (!can || i === LTS.length - 1) return; const L = this.lessonTypes(); const x = L.splice(i, 1)[0]; L.splice(i + 1, 0, x); this.saveLT(L); },
+        up: () => { if (!can || !i) return; const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(i - 1, 0, x); this.saveLT(L); },
+        down: () => { if (!can || i === LTS.length - 1) return; const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(i + 1, 0, x); this.saveLT(L); },
         delLabel: st.ltDel === t.id ? '한 번 더' : '삭제',
         delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; ' + (can && LTS.length > 1 ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'visibility: hidden'),
-        del: () => { if (!can || LTS.length <= 1) return; if (st.ltDel !== t.id) { this.setState({ ltDel: t.id }); return; } this.setState({ ltDel: null }); this.saveLT(this.lessonTypes().filter(x => x.id !== t.id)); },
+        del: () => { if (!can || LTS.length <= 1) return; if (st.ltDel !== t.id) { this.setState({ ltDel: t.id }); return; } this.setState({ ltDel: null }); this.saveLT(this.ltEdit().filter(x => x.id !== t.id)); },
         rowStyle: LTC + '; min-height: 52px; border-bottom: 1px solid #EBEEEC; background: #FFFFFF'
       };
     });
@@ -1180,6 +1185,9 @@ class Component extends DCLogic {
       tabs: this.menuTabs('settings'),
       groups: groups, viewHub: V === 'hub', viewSub: V !== 'hub', viewMenu: V === 'menu', viewSoon: !!(F && !F.ready),
       viewSubj: V === 'subjects', viewStaff: V === 'staff', viewSOrder: V === 'sorder', soRows: soRows, soEmpty: !SO.length,
+      ltOff: !st.ltDraft, ltDirty: !!st.ltDraft, ltSaveMsg: st.ltDraft ? '저장하지 않은 변경이 있습니다' : st.ltSaved ? '저장했습니다' : '', ltSave: () => this.commitLT(), ltCancel: () => this.setState({ ltDraft: null, err: '' }),
+      ltSaveStyle: 'height: 40px; padding: 0 22px; border-radius: 10px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; ' + (st.ltDraft ? 'background: #00A6AB; color: #FFFFFF; cursor: pointer' : 'background: #E3E8E5; color: #8A949E; cursor: default'),
+      ltMsgStyle: 'font-size: 13px; font-weight: 600; color: ' + (st.ltDraft ? '#9A5B00' : '#007E82'),
       viewLT: V === 'ltypes', ltRows: ltRows, ltAdd: () => this.addLT(), ltHead: LTC + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
       lc: { h: 'height: 36px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #5E6873', c: 'display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box', inp: 'width: 56px; height: 32px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 14px; text-align: center; color: #17201C', inpW: 'width: 92px; height: 32px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 14px; text-align: right; color: #17201C' },
       subjRows: subjRows, addSubj: () => this.addSubject(), subjKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); this.addSubject(); } },
