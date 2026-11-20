@@ -280,7 +280,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.5</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.79.6</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -413,7 +413,7 @@ class Component extends DCLogic {
     document.addEventListener('mousedown', e => {
       if (e.button !== 0) return;
       const el = e.target.closest && e.target.closest(SEL); if (!el) return;
-      if (e.target.closest('input,textarea,select,button,a,label,option,[contenteditable="true"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[draggable="true"]')) return;
+      if (e.target.closest('input,textarea,select,button,a,label,option,[contenteditable="true"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[draggable="true"],[data-rg]')) return;
       const k = keyOf(el), o = off[k] || [0, 0];
       drag = { k: k, x: e.clientX, y: e.clientY, ox: o[0], oy: o[1] };
       e.preventDefault();
