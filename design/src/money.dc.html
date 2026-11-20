@@ -27,6 +27,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 .nrow:hover>*{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
+.reorder [data-rg] input,.reorder [data-rg] button{pointer-events:none}.reorder [data-rg]{cursor:grab;user-select:none}.reorder [data-rg]:hover{background:#F2FAFA!important}
 .colgrip{background:linear-gradient(#D5DBD8,#D5DBD8) center/1px 45% no-repeat}.colgrip:hover,.colgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}
 [aria-label="수입·지출"] input:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}[aria-label="수입·지출"] input:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
 </style>
@@ -44,7 +45,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
 
   <main class="shellmain" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 18px 28px 40px; box-sizing: border-box">
 
-    <section aria-label="수입·지출" class="shellsec" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+    <section aria-label="수입·지출" class="shellsec {{reCls}}" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
         <span style="display: inline-flex; align-items: center; gap: 14px">
           <span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #5B86C9; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(91, 134, 201, 0.32)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h18v12H3z"></path><path d="M3 11h18M7 15h4"></path><path d="M6 7V5h12v2"></path></svg></span>
@@ -56,6 +57,8 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <button type="button" class="noexp" onClick="{{nextM}}" aria-label="다음 달" style="{{navBtn}}">›</button>
         </span>
         <span style="flex: 1"></span>
+        <sc-if value="{{reOn}}" hint-placeholder-val="{{ false }}"><span class="noexp" style="font-size: 13px; font-weight: 600; color: #007E82">줄을 누른 채 위아래로 끌어 순서를 바꾸세요</span></sc-if>
+        <button type="button" class="noexp" onClick="{{reToggle}}" aria-pressed="{{reOnStr}}" style="{{reBtn}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"></path></svg>{{reLabel}}</button>
       </div>
 
       <div id="mo_scroll" class="shellscroll" style="padding: 18px 22px 22px">
@@ -122,7 +125,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.6</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.7</span>
     </div>
   </main>
 
@@ -510,7 +513,7 @@ class Component extends DCLogic {
   // 줄 순서 바꾸기 (고정 지출·변동 지출·수입): 줄을 누른 채 위아래로 6px 넘게 끌면 시작(글 칸을 눌러도 됨), 지나가는 같은 묶음 줄과 자리를 바꾸며 0.18초 움직임, 놓으면 저장.
   // 수입은 같은 날 안에서만 바뀜(날짜 순서는 그대로). 묶음 = data-rg, 줄 = data-rid
   rowDrag(rg, id, e, save) {
-    if (e.button) return;
+    if (e.button || !this.state.reorder) return; e.preventDefault();
     const y0 = e.clientY; let on = false;
     const sel = '[data-rg="' + rg + '"]';
     const ids = () => [...document.querySelectorAll(sel)].map(el => el.getAttribute('data-rid'));
@@ -626,6 +629,10 @@ class Component extends DCLogic {
       hIn: this.heads('in', ['일', '항목', '금액', '비고']), hFx: this.heads('fx', ['일', '항목', '금액', '비고']), hVa: this.heads('va', ['일', '항목', '구입처', '금액', '비고']),
       // 금액 칸: 치는 동안 1,000 단위 쉼표 (커서 자리 유지)
       commaIn: e => { const el = e.target, v = el.value, pos = el.selectionStart || 0; const neg = /^\s*-/.test(v); const dBefore = v.slice(0, pos).replace(/[^0-9]/g, '').length; const digits = v.replace(/[^0-9]/g, ''); const out = (neg ? '-' : '') + (digits ? (+digits).toLocaleString('ko-KR') : ''); if (out === v) return; el.value = out; let k = 0, c = neg ? 1 : 0; while (c < out.length && k < dBefore) { if (/[0-9]/.test(out[c])) k++; c++; } try { el.setSelectionRange(c, c); } catch (x) {} },
+      // 순서 바꾸기 스위치: 켜면 글 칸이 잠기고 줄을 끌어 순서를 바꿈, 다시 누르면 평소대로
+      reOn: !!st.reorder, reOnStr: st.reorder ? 'true' : 'false', reCls: st.reorder ? 'reorder' : '', reLabel: st.reorder ? '순서 바꾸기 끝내기' : '순서 바꾸기',
+      reToggle: () => { const a = document.activeElement; if (a && a.blur) a.blur(); this.setState({ reorder: !st.reorder }); },
+      reBtn: 'display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (st.reorder ? 'border: 2px solid #00A6AB; background: #00A6AB; color: #FFFFFF' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450'),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
       delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropPays(orph.map(r => r.pid)); },
