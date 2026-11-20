@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.2</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -253,7 +253,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; gap: 10px"><label style="{{tr.lab}}; flex: 1"><span style="{{tr.labT}}">날짜</span><input id="trDate" type="date" defaultValue="{{tr.date}}" style="{{tr.inp}}"></label><label style="{{tr.lab}}; width: 120px"><span style="{{tr.labT}}">시간</span><input id="trTime" data-noclear="1" defaultValue="{{tr.time}}" placeholder="4:30" autocomplete="off" style="{{tr.inp}}"></label></div>
       <div style="{{tr.lab}}"><span style="{{tr.labT}}">과목</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{tr.subjects}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.name}}</button></sc-for></div></div>
       <div style="{{tr.lab}}"><span style="{{tr.labT}}">요금</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{tr.kinds}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.name}}</button></sc-for></div></div>
-      <label style="{{tr.feeLab}}"><span style="{{tr.labT}}">금액 (원)</span><input id="trFee" data-noclear="1" defaultValue="{{tr.fee}}" inputMode="numeric" placeholder="{{tr.feePh}}" disabled="{{tr.free}}" autocomplete="off" style="{{tr.inp}}"></label>
+      <label style="{{tr.feeLab}}"><span style="{{tr.labT}}">정상 금액 (원)</span><input id="trFee" data-noclear="1" defaultValue="{{tr.fee}}" onInput="{{tr.feeIn}}" inputMode="numeric" placeholder="{{tr.feePh}}" autocomplete="off" style="{{tr.inp}}"><span id="trFeeNote" style="font-size: 13px; font-weight: 600; color: #007E82">{{tr.feeNote}}</span></label>
       <sc-if value="{{tr.err}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; font-weight: 600; color: #B4332B">{{tr.err}}</div></sc-if>
       <div style="display: flex; align-items: center; gap: 8px; padding-top: 4px">
         <sc-if value="{{tr.edit}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.remove}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{tr.delLabel}}</button></sc-if>
@@ -1053,19 +1053,20 @@ class Component extends DCLogic {
   openTrial(t) {
     const SC = this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [], MON = SC[1] || SC[3] || 11, td = this.todayYmd();
     const tm = t && /^(\d{1,2}):(\d{2})$/.exec(t.time || '');
-    this.setState({ tr: t ? { id: t.id, name: t.name || '', phone: t.phone || '', date: t.date || td, time: tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '', subject: t.subject || '', kind: t.kind || 'hobby', fee: t.kind === 'free' ? '' : String(t.fee == null ? '' : t.fee), reg: t.reg || '', err: '', del: false, n: Date.now() }
+    this.setState({ tr: t ? { id: t.id, name: t.name || '', phone: t.phone || '', date: t.date || td, time: tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '', subject: t.subject || '', kind: t.kind || 'hobby', fee: String(t.base != null ? t.base : t.fee == null ? '' : t.fee), reg: t.reg || '', err: '', del: false, n: Date.now() }
       : { id: null, name: '', phone: '', date: this.kOf(td) === MON ? td : this.ymK(MON) + '-01', time: '', subject: '', kind: 'hobby', fee: '', reg: '', err: '', del: false, n: Date.now() } });
     setTimeout(() => { const d = document.getElementById(t ? 'trDlg' : 'trName'); if (d) d.focus(); }, 30);
   }
+  trNote(fv, kind) { const b = +String(fv || '').replace(/[^\d]/g, '') || 0, f = kind === 'free' ? 0 : kind === 'half' ? Math.round(b / 2) : b; return '받을 금액 ' + f.toLocaleString('ko-KR') + '원' + (kind === 'free' ? ' (무료)' : kind === 'half' ? ' (50%)' : ''); }
   trialForm() {
     const T = this.state.tr; if (!T) return null;
     const v = id => { const el = document.getElementById(id); return el ? String(el.value || '').trim() : ''; };
-    const name = v('trName'), date = v('trDate'), tt = v('trTime').replace(/\s/g, ''), fee = +v('trFee').replace(/[^\d]/g, '') || 0;
+    const name = v('trName'), date = v('trDate'), tt = v('trTime').replace(/\s/g, ''), base = +v('trFee').replace(/[^\d]/g, '') || 0, fee = T.kind === 'free' ? 0 : T.kind === 'half' ? Math.round(base / 2) : base;
     let time = '';
     if (tt) { const m = /^(\d{1,2})(?::(\d{1,2}))?$/.exec(tt.replace('시', ':').replace(/분$/, '').replace(/:$/, '')); if (!m || +m[1] < 1 || +m[1] > 12 || +(m[2] || 0) > 59) return { err: '시간은 4:30처럼 입력해 주세요.' }; const h = +m[1] === 12 ? 12 : +m[1] + 12; time = String(h).padStart(2, '0') + ':' + String(+(m[2] || 0)).padStart(2, '0'); }
     if (!name) return { err: '이름을 입력해 주세요.' };
     if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { err: '날짜를 골라 주세요.' };
-    return { name: name, phone: v('trPhone'), date: date, time: time, subject: T.subject || '', kind: T.kind, fee: T.kind === 'free' ? 0 : fee };
+    return { name: name, phone: v('trPhone'), date: date, time: time, subject: T.subject || '', kind: T.kind, fee: fee, base: base };
   }
   saveTrial() {
     const T = this.state.tr, f = this.trialForm(); if (!T || !f) return;
@@ -3209,11 +3210,11 @@ class Component extends DCLogic {
       tr: st.tr ? (() => { const T = st.tr, chip = (on, bg, fg) => 'height: 32px; padding: 0 12px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid ' + (on ? fg : '#DDE2DF') + '; background: ' + (on ? bg : '#FFFFFF') + '; color: ' + (on ? fg : '#5E6873');
         const set = p => { const g = id => { const el = document.getElementById(id); return el ? el.value : undefined; }, cur = {}; [['name', 'trName'], ['phone', 'trPhone'], ['date', 'trDate'], ['time', 'trTime'], ['fee', 'trFee']].forEach(q => { const v = g(q[1]); if (v !== undefined) cur[q[0]] = v; }); this.setState({ tr: Object.assign({}, this.state.tr, cur, p, { err: '' }) }); };
         return { open: true, title: T.id ? '체험레슨 · ' + T.name : '체험레슨 추가', edit: !!T.id, canReg: !!T.id && this.isOwner(), regTxt: T.reg ? '정식 등록 ' + (+T.reg.slice(5, 7)) + '/' + (+T.reg.slice(8, 10)) : '',
-          name: T.name, phone: T.phone, date: T.date, time: T.time, fee: T.fee, err: T.err || '', free: T.kind === 'free', feePh: T.kind === 'free' ? '무료' : '금액 입력',
+          name: T.name, phone: T.phone, date: T.date, time: T.time, fee: T.fee, err: T.err || '', free: false, feePh: '정상 금액 (예: 40000)', feeNote: this.trNote(T.fee, T.kind), feeIn: e => { const n = document.getElementById('trFeeNote'); if (n) n.textContent = this.trNote(e.target.value, (this.state.tr || {}).kind); },
           lab: 'display: flex; flex-direction: column; gap: 5px', labT: 'font-size: 12px; font-weight: 600; color: #5E6873',
-          feeLab: 'display: flex; flex-direction: column; gap: 5px' + (T.kind === 'free' ? '; opacity: 0.5' : ''),
+          feeLab: 'display: flex; flex-direction: column; gap: 5px',
           inp: 'height: 38px; padding: 0 10px; border: 1px solid #DDE2DF; border-radius: 10px; font-family: inherit; font-size: 14px; color: #17201C; box-sizing: border-box; width: 100%; background: #FFFFFF',
-          subjects: this.subjectList().map(sj => { const nm = sj.name || sj, pc = this.partColors()[nm] || ['#E6F6F6', '#007E82']; return { name: nm, on: T.subject === nm ? 'true' : 'false', style: chip(T.subject === nm, pc[0], pc[1]), pick: () => set({ subject: T.subject === nm ? '' : nm }) }; }),
+          subjects: (() => { const me = this.trialMe(), em = this.employeeList().find(e => e.name === me), mine = em && Array.isArray(em.subjects) ? em.subjects : []; const L = this.subjectList().filter(sj => mine.indexOf(sj.name || sj) >= 0); return L.length ? L : this.subjectList(); })().map(sj => { const nm = sj.name || sj, pc = this.partColors()[nm] || ['#E6F6F6', '#007E82']; return { name: nm, on: T.subject === nm ? 'true' : 'false', style: chip(T.subject === nm, pc[0], pc[1]), pick: () => set({ subject: T.subject === nm ? '' : nm }) }; }),
           kinds: this.trialKinds().map(k => ({ name: k[1], on: T.kind === k[0] ? 'true' : 'false', style: chip(T.kind === k[0], k[2], k[3]), pick: () => set({ kind: k[0] }) })),
           delLabel: T.del ? '한 번 더 누르면 삭제' : '삭제',
           close: () => this.setState({ tr: null }), save: () => this.saveTrial(), remove: () => this.deleteTrial(), reg: () => this.regTrial(),
