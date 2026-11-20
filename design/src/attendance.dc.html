@@ -29,10 +29,15 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
 </helmet>
   <sc-if value="{{ltInfo.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ltInfo.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
-    <div class="noprint" role="dialog" aria-label="레슨 유형" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 440px; max-width: calc(100vw - 32px); max-height: calc(100vh - 60px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 12px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
-      <span style="font-size: 18px; font-weight: 600">레슨 유형</span>
-      <sc-for list="{{ltInfo.rows}}" as="r" hint-placeholder-count="2"><div style="display: flex; align-items: center; gap: 10px; font-size: 13px"><span style="{{r.chip}}">{{r.name}}</span><span style="flex: 1; color: #5E6873">{{r.desc}}</span><span style="font-weight: 600">{{r.n}}</span></div></sc-for>
-      <span style="font-size: 12px; color: #8A949E">유형은 설정 › 수업 › 레슨 유형에서 바꿉니다. 오른쪽 숫자는 이 출석부의 이번 달 레슨 횟수.</span>
+    <div class="noprint" role="dialog" aria-label="레슨 유형별 횟수" style="font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; font-variant-numeric: tabular-nums; color: #17201C; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 400px; max-width: calc(100vw - 32px); max-height: calc(100vh - 60px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; font-weight: 600; color: #8A949E">{{ltInfo.sub}}</span><span style="font-size: 18px; font-weight: 600; color: #17201C">레슨횟수</span></span>
+        <span style="display: inline-flex; align-items: baseline; gap: 3px"><span style="font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -0.03em; color: #17201C">{{ltInfo.total}}</span><span style="font-size: 15px; font-weight: 600; color: #5E6873">회</span></span>
+      </div>
+      <div style="display: flex; height: 10px; border-radius: 999px; overflow: hidden; background: #EEF1F0; gap: 2px"><sc-for list="{{ltInfo.rows}}" as="r" hint-placeholder-count="2"><span style="{{r.bar}}"></span></sc-for></div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <sc-for list="{{ltInfo.rows}}" as="r" hint-placeholder-count="2"><div style="{{r.card}}"><span style="display: flex; flex-direction: column; gap: 3px; min-width: 0"><span style="font-size: 15px; font-weight: 600">{{r.name}}</span><span style="font-size: 12px; opacity: 0.75">{{r.desc}}</span></span><span style="flex: 1"></span><span style="display: inline-flex; align-items: baseline; gap: 2px"><span style="font-size: 28px; font-weight: 600; line-height: 1">{{r.n}}</span><span style="font-size: 13px; font-weight: 600">회</span></span><span style="width: 44px; text-align: right; font-size: 12px; font-weight: 600; opacity: 0.75">{{r.pct}}</span></div></sc-for>
+      </div>
       <button type="button" onClick="{{ltInfo.close}}" style="height: 44px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">닫기</button>
     </div>
   </sc-if>
@@ -232,7 +237,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.4</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3353,7 +3358,11 @@ class Component extends DCLogic {
       },
       lessonCount: lessonCount,
       ltInfoOpen: () => this.setState({ ltInfo: true }),
-      ltInfo: st.ltInfo ? { open: true, close: () => this.setState({ ltInfo: false }), rows: this.lessonTypes().map(t => { const c = t.bg ? [t.bg, t.fg] : t.cls === 'pro' ? ['#EDE6FA', '#7A5FBF'] : ['#E6F6F6', '#007E82']; const b = lessonBy[t.id]; return { name: this.ltName(t), desc: '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원', n: b ? b.n + '회' : '', chip: 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1] }; }).concat(Object.keys(lessonBy).filter(k => k === 'xh' || k === 'xp').map(k => ({ name: lessonBy[k].name, desc: '설정에 없는 수강료', n: lessonBy[k].n + '회', chip: 'display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 600; background: ' + lessonBy[k].bg + '; color: ' + lessonBy[k].fg }))) } : { open: false },
+      // 레슨횟수 칸을 누르면: 이 강사 탭 이번 달에 수업이 있는 유형만, 횟수를 크게
+      ltInfo: st.ltInfo ? (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); const tot = ks.reduce((n, k) => n + lessonBy[k].n, 0);
+        return { open: true, close: () => this.setState({ ltInfo: false }), total: tot, sub: this.kLabel(MON) + ' · ' + String(curT[0] || '').replace(' 원장님', ' 원장님'),
+          rows: ks.map(k => { const b = lessonBy[k], t = this.lessonTypes().find(x => x.id === k); return { name: b.name, n: b.n, pct: tot ? Math.round(b.n / tot * 100) + '%' : '', desc: t ? '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원' : '설정에 없는 수강료',
+            card: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: ' + b.bg + '; color: ' + b.fg, bar: 'flex: ' + b.n + ' 0 0; background: ' + b.fg }; }) }; })() : { open: false },
       // MEMO 위 범례 한 줄 (이번 달 수업이 있는 유형, 인쇄·내보내기에도)
       ltLegend: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return { show: ks.length > 0, items: ks.map(k => ({ t: lessonBy[k].name + ' ' + lessonBy[k].n + '회', style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-weight: 600; background: ' + lessonBy[k].bg + '; color: ' + lessonBy[k].fg })) }; })(),
       // 레슨횟수 유형별 칩 (그 달 수업이 있는 유형만, 마우스 올리면 유형 이름)
