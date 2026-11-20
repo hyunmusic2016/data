@@ -236,7 +236,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.9</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.73.10</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2636,8 +2636,6 @@ class Component extends DCLogic {
       : ['', ''];
     if (r.diffDue > 0 && dLeft > 0 && r.diffCur && r.paid) dots.forEach((x, i) => { if (i >= r.diffIdx && i < r.diffT) x.style += '; box-shadow: 0 0 0 1.5px #F59E0B'; });
     const subParts = [];
-    // 기본 4회가 아닌 유형이면 레슨시작일 앞에 '8회' 칩
-    if (LTs.short) subParts.push({ t: LTs.short, style: 'display: inline-block; padding: 0 4px; margin-right: 3px; border-radius: 4px; font-weight: 600; background: ' + LTs.bg + '; color: ' + LTs.fg });
     if (starts.length) subParts.push({ t: starts.join(', ') + (tkUse[0] ? (/\(예정\)$/.test(tkUse[0]) ? ', ' : ' ') : ''), style: 'color: #8A949E' });
     if (tkUse[0]) subParts.push({ t: tkUse[0], style: tkUse[1] });
     // 미납 정리한 휴원·퇴원 원생: 수강 칸에 회색 '미납 정리 (날짜)'
