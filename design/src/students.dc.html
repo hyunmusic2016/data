@@ -146,6 +146,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </section>
 
     <div style="display: flex; justify-content: flex-end; gap: 8px">
+      <button type="button" class="noexp" onClick="{{openSheet}}" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg>시트로 보기</button>
       <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
@@ -168,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.77.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.78.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1387,6 +1388,19 @@ class Component extends DCLogic {
     while (used.indexOf(n) >= 0) n++;
     return n;
   }
+  // 시트로 보기 (모든 페이지 공통): 지금 화면 내용을 'sheet.<이름>'에 써 두고 sheet.html 새 창으로. 창이 열려 있는 동안 1.5초마다 바뀐 내용을 다시 써서 따라가게 함
+  openSheet() {
+    const k = this.sheetKey();
+    const put = () => { try { const js = JSON.stringify(this.sheetData()); if (js !== this._shJs) { this._shJs = js; localStorage.setItem('sheet.' + k, js); } } catch (e) {} };
+    put(); this._shWin = window.open('sheet.html?k=' + k, '_blank');
+    clearInterval(this._shT); this._shT = setInterval(() => { if (!this._shWin || this._shWin.closed) { clearInterval(this._shT); return; } put(); }, 1500);
+  }
+  sheetKey() { return 'students'; }
+  sheetData() {
+    const D = this._xdata || { heads: [], rows: [], widths: [] };
+    return { title: '수강생대장', sub: (D.tab || '') + (D.info ? ' · ' + D.info : ''), widths: (D.widths || []).map(w => Math.max(50, w * 8)),
+      grid: [D.heads.map(x => ({ v: x, b: true, bg: '#EFEFEF', al: 'c' }))].concat(D.rows.map(r => r.cells.map(v => (v == null ? '' : v)))) };
+  }
   renderVals() {
     const st = this.state;
     const PART = { '원장': ['#F3E6C4', '#7A5C12'], '보컬': ['#FCF1C2', '#7A6200'], '기타': ['#F9D9D6', '#9A3A31'], '베이스': ['#D6E6F7', '#2E5A8A'], '드럼': ['#D7EFDD', '#2F6B43'], '피아노': ['#E6DFF5', '#5B4A8B'], '우쿨렐레': ['#EADDD0', '#6B4A2E'] };
@@ -1808,7 +1822,7 @@ class Component extends DCLogic {
     });
     const tabs = this.menuTabs('students', { students: cnt('act') + '명' });
     return {
-      noAccess: this.isTeacherUser(), attHref: 'Main.dc.html',
+      openSheet: () => this.openSheet(), noAccess: this.isTeacherUser(), attHref: 'Main.dc.html',
       // 제목 아이콘 = 지금 탭 색 (재원 청록 · 휴원 주황 · 퇴원 빨강)
       titleHL: 'font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, ' + ({ act: '#BFEAEB', rest: '#F6DDAE', out: '#F4C9C5' }[curSec[0]]) + ' 62%, ' + ({ act: '#BFEAEB', rest: '#F6DDAE', out: '#F4C9C5' }[curSec[0]]) + ' 92%, transparent 92%)',
       titleLogo: 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + curSec[3] + '; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px ' + curSec[3] + '52',

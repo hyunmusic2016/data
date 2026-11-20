@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>시트</title>
+<style>
+:root{--grid:#E2E3E3;--head:#F8F9FA;--ink:#1F1F1F;--muted:#5F6368}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#FFFFFF;color:var(--ink);font-family:Arial,'Malgun Gothic','Apple SD Gothic Neo',sans-serif;font-size:13px}
+.bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:10px;height:48px;padding:0 14px;background:#FFFFFF;border-bottom:1px solid var(--grid)}
+.bar b{font-size:15px}
+.bar .sp{flex:1}
+.bar button{height:32px;padding:0 14px;border-radius:8px;border:1px solid #C6CDC7;background:#FFFFFF;color:#1F1F1F;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer}
+.bar button.pri{border-color:#00A6AB;background:#00A6AB;color:#FFFFFF}
+.bar .note{font-size:12px;color:var(--muted)}
+.wrap{overflow:auto;height:calc(100% - 78px)}
+table{border-collapse:collapse;table-layout:fixed}
+th.col,th.row{background:var(--head);color:var(--muted);font-weight:400;font-size:11px;border:1px solid #C7C7C7;user-select:none}
+th.col{height:20px;position:sticky;top:0;z-index:3}
+th.row{width:40px;position:sticky;left:0;z-index:2;text-align:center}
+th.corner{position:sticky;left:0;top:0;z-index:4;background:var(--head);border:1px solid #C7C7C7;width:40px}
+td{height:24px;padding:0 5px;border:1px solid var(--grid);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;vertical-align:middle}
+td.num{text-align:right}
+td.c{text-align:center}
+td.title{font-size:20px;font-weight:700;text-align:center;height:56px;background:#D9E7EA}
+td.month{font-size:15px;text-align:center;height:34px;background:#F3F3F3}
+td.bh{font-weight:700;text-align:center;height:34px;font-size:14px}
+td.hd{font-weight:700;text-align:center;background:#F3F3F3}
+td.neg{color:#C5221F}
+#t{user-select:none;cursor:cell}
+td.sel{background-image:linear-gradient(rgba(26,115,232,.12),rgba(26,115,232,.12))}
+td.act{outline:2px solid #1A73E8;outline-offset:-2px}
+th.col.on,th.row.on{background:#D3E3FD;color:#0B57D0;font-weight:700}
+th.col,th.row,th.corner{cursor:pointer}
+.fbar{position:sticky;top:48px;z-index:5;display:flex;align-items:center;gap:0;height:30px;background:#FFFFFF;border-bottom:1px solid var(--grid)}
+.fbar .nm{width:90px;height:100%;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--grid);font-size:12px;color:#1F1F1F}
+.fbar .fx{padding:0 10px;color:#5F6368;font-style:italic;font-size:12px}
+.fbar .val{padding:0 8px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fbar .sp{flex:1}.fbar .agg{padding:0 14px;font-size:12px;color:#3C4043}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:#1F1F1F;color:#FFFFFF;font-size:13px;font-weight:600;display:none}
+</style>
+</head>
+<body>
+<div class="bar">
+  <b id="ttl">시트</b>
+  <span class="note">보기 전용 · 칸을 누르거나 끌어서 고르고 Ctrl+C로 복사 · Shift+방향키로 넓히기 · 열 글자·줄 번호를 누르면 한 줄 전체</span>
+  <span class="sp"></span>
+  <button type="button" class="pri" id="copyAll">표 전체 복사</button>
+</div>
+<div class="fbar"><span class="nm" id="nm"></span><span class="fx">fx</span><span class="val" id="val"></span><span class="sp"></span><span class="agg" id="agg"></span></div>
+<div class="wrap" id="wrap"><table id="t"></table></div>
+<div class="toast" id="toast"></div>
+<script>
+// 공통 시트 보기 (보기 전용): 각 페이지가 'sheet.<이름>'에 { title, sub, widths, grid: [[칸]] }을 써 두고 sheet.html?k=<이름>으로 연다.
+// 칸 = 글자·숫자, 또는 { v, bg, b(굵게), span(가로 합치기), al('c'|'r') }
+const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const colName = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+const KEY = 'sheet.' + (new URLSearchParams(location.search).get('k') || '');
+let GRID = [], NC_ = 0, SEL = { r1: 0, c1: 0, r2: 0, c2: 0 }, ANC = { r: 0, c: 0 }, dragging = false;
+function build() {
+  let d = null; try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  const t = document.getElementById('t');
+  if (!d || !Array.isArray(d.grid)) { t.innerHTML = '<tr><td style="padding:24px;border:none">원래 화면에서 \'시트로 보기\'를 다시 눌러 주세요.</td></tr>'; return; }
+  document.title = (d.title || '시트') + ' · 시트'; document.getElementById('ttl').textContent = (d.title || '시트') + (d.sub ? ' · ' + d.sub : '');
+  const NC = Math.max(1, ...d.grid.map(r => r.reduce((n, x) => n + ((x && x.span) || 1), 0)));
+  const widths = Array.from({ length: NC }, (_, i) => (d.widths || [])[i] || 90);
+  GRID = d.grid.map(r => { const row = []; r.forEach(x => { const o = x && typeof x === 'object' ? Object.assign({}, x) : { v: x }; row.push(o); for (let k = 1; k < (o.span || 1); k++) row.push({ v: '', skip: true }); }); while (row.length < NC) row.push({ v: '' }); return row; });
+  let h = '<colgroup><col style="width:40px">' + widths.map(w => '<col style="width:' + w + 'px">').join('') + '</colgroup>';
+  h += '<tr><th class="corner" data-all="1"></th>' + widths.map((w, i) => '<th class="col" data-col="' + i + '">' + colName(i) + '</th>').join('') + '</tr>';
+  GRID.forEach((r, ri) => {
+    h += '<tr><th class="row" data-row="' + ri + '">' + (ri + 1) + '</th>';
+    r.forEach((x, ci) => { if (x.skip) return; const isN = typeof x.v === 'number';
+      const st = (x.bg ? 'background:' + x.bg + ';' : '') + (x.b ? 'font-weight:700;' : '') + (x.fg ? 'color:' + x.fg + ';' : '') + (x.al === 'c' ? 'text-align:center;' : x.al === 'r' || isN ? 'text-align:right;' : '');
+      h += '<td data-r="' + ri + '" data-c="' + ci + '"' + (x.span > 1 ? ' colspan="' + x.span + '"' : '') + (st ? ' style="' + st + '"' : '') + '>' + (isN ? x.v.toLocaleString('ko-KR') : esc(x.v)) + '</td>'; });
+    h += '</tr>';
+  });
+  t.innerHTML = h; NC_ = NC; SEL = { r1: Math.min(SEL.r1, GRID.length - 1), c1: Math.min(SEL.c1, NC - 1), r2: Math.min(SEL.r2, GRID.length - 1), c2: Math.min(SEL.c2, NC - 1) }; paint();
+}
+// 표 전체 복사: 구글시트 A1 칸에 붙이면 같은 모양(칸 나뉨)으로 들어감. 금액은 숫자 그대로
+document.getElementById('copyAll').addEventListener('click', async () => {
+  const tsv = GRID.map(r => r.map(x => x.skip ? '' : (typeof x.v === 'number' ? String(x.v) : String(x.v == null ? '' : x.v).replace(/[\t\n]/g, ' '))).join('\t')).join('\n');
+  let ok = false;
+  try { await navigator.clipboard.writeText(tsv); ok = true; } catch (e) {
+    const ta = document.createElement('textarea'); ta.value = tsv; document.body.appendChild(ta); ta.select(); try { ok = document.execCommand('copy'); } catch (x) {} ta.remove();
+  }
+  const el = document.getElementById('toast'); el.textContent = ok ? '복사했습니다 · 구글시트 칸을 고르고 붙여넣기(Ctrl+V) 하세요' : '복사하지 못했습니다'; el.style.display = 'block'; setTimeout(() => { el.style.display = 'none'; }, 2600);
+});
+// ---------- 칸 고르기 (구글시트처럼) ----------
+const nR = () => GRID.length;
+const clampR = r => Math.max(0, Math.min(nR() - 1, r)), clampC = c => Math.max(0, Math.min(NC_ - 1, c));
+// 합쳐진 칸(제목 등)은 그 칸 전체를 하나로
+const owner = (r, c) => { const row = GRID[r] || []; for (let k = c; k >= 0; k--) { const x = row[k]; if (x && !x.skip) return (x.span && k + x.span > c) || k === c ? k : c; } return c; };
+const rng = () => ({ r1: Math.min(SEL.r1, SEL.r2), r2: Math.max(SEL.r1, SEL.r2), c1: Math.min(SEL.c1, SEL.c2), c2: Math.max(SEL.c1, SEL.c2) });
+const valAt = (r, c) => { const x = (GRID[r] || [])[c]; return !x || x.skip ? '' : x.v; };
+function paint() {
+  const R = rng();
+  document.querySelectorAll('#t td').forEach(td => { const r = +td.dataset.r, c = +td.dataset.c, span = +(td.getAttribute('colspan') || 1);
+    const inR = r >= R.r1 && r <= R.r2 && c + span - 1 >= R.c1 && c <= R.c2;
+    td.classList.toggle('sel', inR && !(R.r1 === R.r2 && R.c1 === R.c2)); td.classList.toggle('act', r === SEL.r2 && c === owner(SEL.r2, SEL.c2)); });
+  document.querySelectorAll('#t th.col').forEach(th => th.classList.toggle('on', +th.dataset.col >= R.c1 && +th.dataset.col <= R.c2));
+  document.querySelectorAll('#t th.row').forEach(th => th.classList.toggle('on', +th.dataset.row >= R.r1 && +th.dataset.row <= R.r2));
+  const one = R.r1 === R.r2 && R.c1 === R.c2;
+  document.getElementById('nm').textContent = colName(R.c1) + (R.r1 + 1) + (one ? '' : ':' + colName(R.c2) + (R.r2 + 1));
+  const v = valAt(SEL.r2, owner(SEL.r2, SEL.c2)); document.getElementById('val').textContent = v === '' || v == null ? '' : String(v);
+  let sum = 0, cnt = 0, num = 0; for (let r = R.r1; r <= R.r2; r++) for (let c = R.c1; c <= R.c2; c++) { const x = valAt(r, c); if (x === '' || x == null) continue; cnt++; if (typeof x === 'number') { sum += x; num++; } }
+  document.getElementById('agg').textContent = one ? '' : (num ? '합계: ' + sum.toLocaleString('ko-KR') + '   ' : '') + '개수: ' + cnt;
+}
+const cellOf = el => { const td = el && el.closest && el.closest('#t td[data-r]'); return td ? { r: +td.dataset.r, c: +td.dataset.c } : null; };
+const t0 = document.getElementById('t');
+t0.addEventListener('mousedown', e => {
+  if (e.button) return; e.preventDefault();
+  const th = e.target.closest('th');
+  if (th) { if (th.dataset.all) SEL = { r1: 0, c1: 0, r2: nR() - 1, c2: NC_ - 1 };
+    else if (th.dataset.col != null) { const c = +th.dataset.col; SEL = e.shiftKey ? { r1: 0, c1: ANC.c, r2: nR() - 1, c2: c } : { r1: 0, c1: c, r2: nR() - 1, c2: c }; if (!e.shiftKey) ANC = { r: 0, c: c }; }
+    else if (th.dataset.row != null) { const r = +th.dataset.row; SEL = e.shiftKey ? { r1: ANC.r, c1: 0, r2: r, c2: NC_ - 1 } : { r1: r, c1: 0, r2: r, c2: NC_ - 1 }; if (!e.shiftKey) ANC = { r: r, c: 0 }; }
+    paint(); return; }
+  const p = cellOf(e.target); if (!p) return;
+  if (e.shiftKey) SEL = { r1: ANC.r, c1: ANC.c, r2: p.r, c2: p.c }; else { ANC = p; SEL = { r1: p.r, c1: p.c, r2: p.r, c2: p.c }; }
+  dragging = true; paint();
+});
+t0.addEventListener('mouseover', e => { if (!dragging) return; const p = cellOf(e.target); if (!p) return; SEL = { r1: ANC.r, c1: ANC.c, r2: p.r, c2: p.c }; paint(); });
+window.addEventListener('mouseup', () => { dragging = false; });
+document.addEventListener('keydown', e => {
+  const k = e.key, mv = { ArrowUp: [-1, 0], ArrowDown: [1, 0], ArrowLeft: [0, -1], ArrowRight: [0, 1], Enter: [1, 0], Tab: [0, e.shiftKey ? -1 : 1] }[k];
+  if ((e.ctrlKey || e.metaKey) && (k === 'a' || k === 'A')) { e.preventDefault(); SEL = { r1: 0, c1: 0, r2: nR() - 1, c2: NC_ - 1 }; paint(); return; }
+  if (!mv) return; e.preventDefault();
+  const ext = e.shiftKey && k !== 'Tab' && k !== 'Enter';
+  let r = SEL.r2, c = SEL.c2;
+  if (mv[1] > 0) { const x = (GRID[r] || [])[owner(r, c)]; c = owner(r, c) + ((x && x.span) || 1); } else c = owner(r, c) + mv[1];
+  r = clampR(r + mv[0]); c = clampC(c);
+  if (ext) SEL = { r1: ANC.r, c1: ANC.c, r2: r, c2: c }; else { ANC = { r: r, c: c }; SEL = { r1: r, c1: c, r2: r, c2: c }; }
+  paint();
+  const td = document.querySelector('#t td[data-r="' + r + '"][data-c="' + owner(r, c) + '"]'); if (td) td.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+});
+// Ctrl+C: 고른 칸들을 구글시트에 그대로 붙도록 (글자는 탭·줄바꿈, 금액은 숫자) + 표(html)
+const rangeData = R => { const out = []; for (let r = R.r1; r <= R.r2; r++) { const row = []; for (let c = R.c1; c <= R.c2; c++) { const v = valAt(r, c); row.push(v == null ? '' : v); } out.push(row); } return out; };
+document.addEventListener('copy', e => {
+  const D = rangeData(rng());
+  const tsv = D.map(r => r.map(v => String(v).replace(/[\t\n]/g, ' ')).join('\t')).join('\n');
+  const html = '<table>' + D.map(r => '<tr>' + r.map(v => '<td>' + esc(v) + '</td>').join('') + '</tr>').join('') + '</table>';
+  e.preventDefault(); e.clipboardData.setData('text/plain', tsv); e.clipboardData.setData('text/html', html);
+  const el = document.getElementById('toast'); el.textContent = '복사했습니다 (' + D.length + '줄 × ' + (D[0] || []).length + '칸)'; el.style.display = 'block'; clearTimeout(window._tt); window._tt = setTimeout(() => { el.style.display = 'none'; }, 1800);
+});
+window.addEventListener('storage', e => { if (e.key === KEY) build(); });
+build();
+</script>
+</body>
+</html>

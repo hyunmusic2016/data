@@ -119,6 +119,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"></path></svg>
         기록
       </button>
+      <button type="button" class="noexp" onClick="{{openSheet}}" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg>시트로 보기</button>
       <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
@@ -236,7 +237,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.77.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.78.0</span>
   </nav>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2328,6 +2329,23 @@ class Component extends DCLogic {
       close: () => this.setState({ hist: null })
     };
   }
+  // 시트로 보기 (모든 페이지 공통): 지금 화면 내용을 'sheet.<이름>'에 써 두고 sheet.html 새 창으로. 창이 열려 있는 동안 1.5초마다 바뀐 내용을 다시 써서 따라가게 함
+  openSheet() {
+    const k = this.sheetKey();
+    const put = () => { try { const js = JSON.stringify(this.sheetData()); if (js !== this._shJs) { this._shJs = js; localStorage.setItem('sheet.' + k, js); } } catch (e) {} };
+    put(); this._shWin = window.open('sheet.html?k=' + k, '_blank');
+    clearInterval(this._shT); this._shT = setInterval(() => { if (!this._shWin || this._shWin.closed) { clearInterval(this._shT); return; } put(); }, 1500);
+  }
+  sheetKey() { return 'attendance'; }
+  sheetData() {
+    const m = this._meta || {}, ND = m.nd || 31, rows = this._exp || [];
+    const head = ['요일', '이름', '결산', '레슨시작일'].concat(Array.from({ length: ND }, (_, i) => String(i + 1))).map(x => ({ v: x, b: true, bg: '#EFEFEF', al: 'c' }));
+    let prev = null; const grid = [head];
+    rows.forEach(x => { const r = [x.g === prev ? '' : { v: x.label, b: true, al: 'c' }, { v: x.name, b: true, bg: x.pro ? '#F7F4FD' : undefined }, x.sum || '', x.since || ''];
+      for (let d = 1; d <= ND; d++) { const c = (x.cells || [])[d - 1]; r.push({ v: c ? String(c.text || '').replace('!', '') : '', al: 'c', bg: c && c.pay ? '#FAEFD2' : undefined }); }
+      prev = x.g; grid.push(r); });
+    return { title: '출석부 · ' + String(m.teacher || '').replace(' 원장님', ' 원장님'), sub: m.mon ? this.kLabel(m.mon) : '', widths: [50, 90, 50, 120].concat(Array(ND).fill(40)), grid: grid };
+  }
   renderVals() {
     const st = this.state;
     if (this.dbMode()) this.persistCells(); else { this.stampCells(); const ac0 = {}; [[11, this.state.ev]].concat(Object.keys(this.state.evByMonth || {}).filter(m => +m !== 11).map(m => [+m, this.state.evByMonth[m]])).forEach(p => { (ac0[this.ymK(p[0])] = {}).X = p[1] || {}; }); const js = JSON.stringify(ac0); if (this._lc !== undefined && js !== this._lc) this.logCells(this._lc, js); this._lc = js; }
@@ -3353,7 +3371,7 @@ class Component extends DCLogic {
         colors: [['color', '컬러', '화면 색 그대로'], ['bw', '흑백', '모든 내용을 검정으로']].map(o => opt(o, (st.printBW ? 'bw' : 'color') === o[0], () => this.setState({ printBW: o[0] === 'bw' })))
       },
       lessonCount: lessonCount,
-      ltInfoOpen: () => this.setState({ ltInfo: true }),
+      openSheet: () => this.openSheet(), ltInfoOpen: () => this.setState({ ltInfo: true }),
       // 레슨횟수 칸을 누르면: 이 강사 탭 이번 달에 수업이 있는 유형만, 횟수를 크게
       ltInfo: st.ltInfo ? (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); const tot = ks.reduce((n, k) => n + lessonBy[k].n, 0);
         return { open: true, close: () => this.setState({ ltInfo: false }), total: tot, sub: this.kLabel(MON) + ' · ' + String(curT[0] || '').replace(' 원장님', ' 원장님'),

@@ -93,6 +93,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </section>
 
     <div class="noprint" style="display: flex; justify-content: flex-end; align-items: center; gap: 8px">
+      <button type="button" class="noexp" onClick="{{openSheet}}" style="display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4zM4 10h16M4 15h16M10 4v16"></path></svg>시트로 보기</button>
       <button type="button" onClick="{{printX}}" style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6M6 18H4a1 1 0 0 1-1-1v-6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6a1 1 0 0 1-1 1h-2M6 14h12v7H6z"></path></svg>
         인쇄
@@ -112,7 +113,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.77.2</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.78.0</span>
     </div>
   </main>
 
@@ -540,6 +541,19 @@ class Component extends DCLogic {
     const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     await this.saveBlob(this.xlsName(), new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   }
+  // 시트로 보기 (모든 페이지 공통): 지금 화면 내용을 'sheet.<이름>'에 써 두고 sheet.html 새 창으로. 창이 열려 있는 동안 1.5초마다 바뀐 내용을 다시 써서 따라가게 함
+  openSheet() {
+    const k = this.sheetKey();
+    const put = () => { try { const js = JSON.stringify(this.sheetData()); if (js !== this._shJs) { this._shJs = js; localStorage.setItem('sheet.' + k, js); } } catch (e) {} };
+    put(); this._shWin = window.open('sheet.html?k=' + k, '_blank');
+    clearInterval(this._shT); this._shT = setInterval(() => { if (!this._shWin || this._shWin.closed) { clearInterval(this._shT); return; } put(); }, 1500);
+  }
+  sheetKey() { return 'notice'; }
+  sheetData() {
+    const v = this.renderVals();
+    return { title: '수납 안내', sub: v.printDate, widths: [70, 110, 130, 50, 80, 260, 220],
+      grid: [v.printHead.map(x => ({ v: x, b: true, bg: '#EFEFEF', al: 'c' }))].concat(v.printRows) };
+  }
   renderVals() {
     const st = this.state;
     const L = this.list();
@@ -581,7 +595,7 @@ class Component extends DCLogic {
     });
     const d = new Date();
     return {
-      noAccess: this.isTeacherUser(),
+      openSheet: () => this.openSheet(), noAccess: this.isTeacherUser(),
       tabs: this.menuTabs('notice', { notice: L.length ? L.length + '명' : '' }),
       count: L.length, rows: rows, empty: !L.length,
       allOn: L.length > 0 && nSel === L.length,
