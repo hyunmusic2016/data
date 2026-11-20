@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>수납 안내 (목록)</title>
+<script src="./support.js"></script>
+<script src="/_blob/d362ec134415b0d7cc446ad841566554"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>.expitem:hover{background:#F2F5F3!important}
+body{margin:0;background:#F3F5F4}
+a{color:#007E82}a:hover{color:#005F62}
+button,input{font-family:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid #00A6AB;outline-offset:1px}
+@page{size:A4 landscape;margin:8mm}
+.printonly{display:none}
+html.bwp .printonly *{color:#000!important;background-color:transparent!important}
+html.bwp .printonly .pcell{border-color:#000!important}
+@media print{.noprint{display:none!important}.printonly{display:block!important}html,body{background:#FFFFFF!important}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+.menurow:last-child{border-bottom:none!important}.menurow:hover{background-color:#F7FAFA!important}
+.menurow button[disabled]{cursor:default!important}
+.hubitem:hover{background:#F7FAFA!important}
+@keyframes rowflash2{0%,55%{background-color:#E6F6F6}100%{background-color:#FFFFFF}}
+.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
+@media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
+.nrow:hover>*{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
+.memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
+</style>
+</helmet>
+<sc-if value="{{noAccess}}" hint-placeholder-val="{{ false }}"><div class="noprint" style="position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #F3F5F4; font-family: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"><span style="font-size: 18px; font-weight: 600; color: #17201C">수납 안내는 원장님만 볼 수 있습니다.</span><a href="attendance.html" style="height: 44px; padding: 0 20px; display: inline-flex; align-items: center; border-radius: 12px; background: #00A6AB; color: #FFFFFF; font-size: 15px; font-weight: 600; text-decoration: none">출석부로 가기</a></div></sc-if>
+<div class="noprint shell" style="display: flex; flex-direction: column; min-height: 100vh; font-family: 'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C; background: #F3F5F4; font-variant-numeric: tabular-nums">
+
+
+  <main class="shellmain" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 18px 28px 40px; box-sizing: border-box">
+
+    <section aria-label="수납 안내" class="shellsec" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
+        <span style="display: inline-flex; align-items: center; gap: 14px">
+          <span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #FEE500; color: #3C1E1E; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(254, 229, 0, 0.45)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5c-5.25 0-9.5 3.3-9.5 7.38 0 2.62 1.75 4.92 4.4 6.22l-.95 3.48c-.08.3.26.54.52.37l4.15-2.74c.45.05.91.07 1.38.07 5.25 0 9.5-3.3 9.5-7.4S17.25 3.5 12 3.5z"></path></svg></span>
+          <span style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #FFF0A0 62%, #FFF0A0 92%, transparent 92%)">현실용음악학원 수납 안내</span>
+        </span>
+        <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 14px; font-weight: 600">{{count}}명</span>
+        <span style="flex: 1"></span>
+        <span class="noexp" style="display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{selTxt}}</span>
+          <label style="display: inline-flex; align-items: center"><input id="nt_date" aria-label="발송 날짜" type="date" defaultValue="{{sendDate}}" onChange="{{setDate}}" style="height: 38px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C"></label>
+          <button type="button" onClick="{{bulk}}" disabled="{{bulkOff}}" style="{{bulkStyle}}">발송</button>
+        </span>
+      </div>
+
+      <div id="nt_scroll" class="shellscroll" style="padding: 0 0 8px">
+        <div role="table" aria-label="수납 안내 목록" style="min-width: 760px">
+          <div role="row" style="{{gridHead}}">
+            <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 16px; height: 16px; accent-color: #00A6AB; cursor: pointer"></span>
+            <span role="columnheader" style="{{c.h}}">요일</span>
+            <span role="columnheader" style="{{c.h}}">이름</span>
+            <span role="columnheader" style="{{c.h}}">날짜</span>
+            <span role="columnheader" style="{{c.h}}">횟수</span>
+            <span role="columnheader" style="{{c.h}}">강사</span>
+            <span role="columnheader" style="{{c.hl}}">수강</span>
+            <span role="columnheader" style="{{c.hl}}">MEMO</span>
+          </div>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+            <sc-if value="{{r.grpHead}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 18px; padding: 6px 12px; background: #EEF1F0; border-top: 1px solid #DDE2DF; border-bottom: 1px solid #DDE2DF; font-size: 12px; font-weight: 600; color: #5E6873">{{r.grpHead}}</div></sc-if>
+            <div role="row" class="nrow" style="{{r.rowStyle}}">
+              <span role="cell" class="noexp" onMouseDown="{{r.dragDown}}" onMouseEnter="{{r.dragOver}}" style="{{c.cc}}; cursor: pointer; user-select: none"><input type="checkbox" tabindex="-1" aria-label="{{r.selLabel}}" checked="{{r.on}}" style="width: 16px; height: 16px; accent-color: #00A6AB; pointer-events: none"></span>
+              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.days}}" as="dy" hint-placeholder-count="1"><span style="{{dy.style}}">{{dy.t}}</span></sc-for></span>
+              <span role="cell" style="{{c.cc}}; flex-direction: column; gap: 0; font-weight: 600">{{r.name}}<sc-if value="{{r.stTag}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTag}}</span></sc-if></span>
+              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="1"><button type="button" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="눌러서 이 발송 기록 지우기" style="{{sd.style}}">{{sd.t}}</button></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
+              <span role="cell" style="{{c.cc}}"><span style="{{r.cntStyle}}">{{r.cnt}}</span></span>
+              <span role="cell" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
+              <span role="cell" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 3px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
+              <span role="cell" style="{{c.cl}}"><input id="{{r.memoId}}" type="text" defaultValue="{{r.memo}}" onChange="{{r.saveMemo}}" aria-label="{{r.memoLabel}}" style="width: 100%; height: 28px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #17201C" class="memoInp"></span>
+            </div>
+          </sc-for>
+          <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 48px 22px; text-align: center; font-size: 15px; font-weight: 600; color: #8A949E">수납 안내할 원생이 없습니다.</div>
+          </sc-if>
+        </div>
+      </div>
+      <div class="noexp" style="padding: 10px 22px 14px; border-top: 1px solid #EBEEEC; font-size: 12px; color: #8A949E">출석부에서 마지막 회차를 출석하면 이 목록에 올라오고, 수납하면 빠집니다. 수강 상태는 출석부를 연 브라우저에서 계산한 그대로입니다.</div>
+    </section>
+  </main>
+
+
+  <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 70; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; font-weight: 600; box-shadow: 0 12px 30px rgba(23, 32, 28, 0.25)">{{toast}}</div>
+  </sc-if>
+  <sc-if value="{{ask.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{ask.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="{{ask.title}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <span style="font-size: 18px; font-weight: 600">{{ask.title}}</span>
+      <span style="font-size: 14px; line-height: 1.5; color: #3A4450">{{ask.text}}</span>
+      <div style="display: flex; gap: 8px">
+        <button type="button" onClick="{{ask.close}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{ask.ok}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{ask.okLabel}}</button>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{log.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{log.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="발송 기록" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 340px; max-width: calc(100vw - 32px); max-height: calc(100vh - 60px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 600">{{log.name}} 발송 기록<span style="font-size: 13px; color: #007E82">{{log.cnt}}</span></span>
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <sc-for list="{{log.items}}" as="li" hint-placeholder-count="3"><span style="display: flex; align-items: center; gap: 10px"><span style="width: 34px; font-size: 12px; font-weight: 600; color: #8A949E; text-align: right">{{li.no}}</span><span style="{{li.style}}">{{li.t}}</span></span></sc-for>
+      </div>
+      <button type="button" onClick="{{log.close}}" style="height: 44px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">닫기</button>
+    </div>
+  </sc-if>
+  <sc-if value="{{pr.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{pr.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="인쇄 설정" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 360px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <span style="font-size: 18px; font-weight: 600">인쇄</span>
+      <span style="font-size: 13px; color: #5E6873">A4 가로</span>
+      <div style="display: flex; gap: 8px">
+        <sc-for list="{{pr.opts}}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
+      </div>
+      <div style="display: flex; gap: 8px">
+        <button type="button" onClick="{{pr.close}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
+        <button type="button" onClick="{{pr.go}}" style="flex: 2; height: 46px; border-radius: 13px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">인쇄하기</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+<div class="printonly" style="font-family: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C">
+  <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px">현실용음악학원 수납 안내</div>
+  <div style="font-size: 11px; color: #5E6873; margin-bottom: 10px">{{printDate}}</div>
+  <table style="border-collapse: collapse; width: 100%; font-size: 12px">
+    <thead><tr><sc-for list="{{printHead}}" as="h" hint-placeholder-count="4"><th class="pcell" style="font-weight: 600; border: 1px solid #C9D0CC; padding: 6px; background: #EEF2EE">{{h}}</th></sc-for></tr></thead>
+    <tbody><sc-for list="{{printRows}}" as="pr0" hint-placeholder-count="6"><tr><sc-for list="{{pr0}}" as="v" hint-placeholder-count="4"><td class="pcell" style="border: 1px solid #C9D0CC; padding: 6px; text-align: center">{{v}}</td></sc-for></tr></sc-for></tbody>
+  </table>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tick: 0, sel: {}, sendDate: '', toast: '', printOpen: false, bw: true, expOpen: false };
+  }
+  installPopupDrag() {
+    if (window.__popDrag) return; window.__popDrag = 1;
+    const off = {}; let drag = null;
+    const st = document.createElement('style');
+    st.textContent = '[role="dialog"],[role="alertdialog"]{cursor:move}[role="dialog"] input,[role="dialog"] textarea,[role="dialog"] select,[role="alertdialog"] input,[role="alertdialog"] textarea,[role="alertdialog"] select{cursor:auto}[role="dialog"] button,[role="alertdialog"] button,[role="dialog"] label,[role="alertdialog"] label{cursor:pointer}';
+    document.head.appendChild(st);
+    const SEL = '[role="dialog"],[role="alertdialog"]';
+    const keyOf = el => el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') || 'popup';
+    const find = k => [].slice.call(document.querySelectorAll(SEL)).filter(el => keyOf(el) === k)[0];
+    const put = (el, o) => { const v = o ? o[0] + 'px ' + o[1] + 'px' : ''; if (el.style.translate !== v) el.style.translate = v; };
+    const sync = () => {
+      const seen = {};
+      [].slice.call(document.querySelectorAll(SEL)).forEach(el => { const k = keyOf(el); seen[k] = 1; put(el, off[k]); });
+      Object.keys(off).forEach(k => { if (!seen[k] && !(drag && drag.k === k)) delete off[k]; });
+    };
+    new MutationObserver(sync).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+    document.addEventListener('mousedown', e => {
+      if (e.button !== 0) return;
+      const el = e.target.closest && e.target.closest(SEL); if (!el) return;
+      if (e.target.closest('input,textarea,select,button,a,label,option,[contenteditable="true"],[role="checkbox"],[role="radio"],[role="switch"],[role="tab"],[role="menuitem"],[draggable="true"]')) return;
+      const k = keyOf(el), o = off[k] || [0, 0];
+      drag = { k: k, x: e.clientX, y: e.clientY, ox: o[0], oy: o[1] };
+      e.preventDefault();
+    }, true);
+    document.addEventListener('mousemove', e => {
+      if (!drag) return;
+      const el = find(drag.k); if (!el) return;
+      let nx = drag.ox + e.clientX - drag.x, ny = drag.oy + e.clientY - drag.y;
+      off[drag.k] = [nx, ny]; put(el, off[drag.k]);
+      // 화면 밖으로 다 나가지 않게: 위쪽은 화면 안, 좌우·아래는 80px 이상 보이게
+      const r = el.getBoundingClientRect();
+      if (r.top < 0) ny -= r.top;
+      if (r.top > window.innerHeight - 60) ny -= r.top - (window.innerHeight - 60);
+      if (r.left > window.innerWidth - 80) nx -= r.left - (window.innerWidth - 80);
+      if (r.right < 80) nx += 80 - r.right;
+      off[drag.k] = [nx, ny]; put(el, off[drag.k]);
+    });
+    document.addEventListener('mouseup', () => { drag = null; });
+  }
+  installTextInputs() {
+    if (window.__txIn) return; window.__txIn = 1;
+    const OK = { text: 1, search: 1, tel: 1, email: 1, url: 1 };
+    const isTx = el => !!el && el.tagName === 'INPUT' && !el.readOnly && !el.disabled && !!OK[(el.getAttribute('type') || 'text').toLowerCase()] && !el.hasAttribute('data-noclear');
+    const btn = document.createElement('button');
+    btn.type = 'button'; btn.className = 'noprint noexp'; btn.setAttribute('aria-label', '입력 지우기'); btn.textContent = '×';
+    btn.style.cssText = 'position: fixed; z-index: 100000; display: none; width: 20px; height: 20px; padding: 0; border: none; border-radius: 50%; background: #DDE2DF; color: #5E6873; font-family: inherit; font-size: 14px; line-height: 20px; text-align: center; cursor: pointer';
+    document.body.appendChild(btn);
+    const sty = document.createElement('style');
+    sty.textContent = 'input[data-xon] { padding-right: 32px !important; box-sizing: border-box !important }';
+    document.head.appendChild(sty);
+    let cur = null, hov = null, down = null, raf = 0, pos = '';
+    const hide = () => { if (btn.style.display !== 'none') btn.style.display = 'none'; if (cur) { cur.removeAttribute('data-xon'); cur = null; } };
+    const tick = () => {
+      raf = 0;
+      const el = isTx(document.activeElement) ? document.activeElement : (hov && document.body.contains(hov) && isTx(hov) ? hov : null);
+      const r = el ? el.getBoundingClientRect() : null;
+      if (!el || !el.value || r.width < 110 || r.height < 14) { hide(); return; }
+      if (cur && cur !== el) cur.removeAttribute('data-xon');
+      cur = el;
+      if (el.getAttribute('data-xon') !== '1') el.setAttribute('data-xon', '1');
+      const p = Math.round(r.right - 26) + ',' + Math.round(r.top + (r.height - 20) / 2);
+      if (p !== pos) { pos = p; const q = p.split(','); btn.style.left = q[0] + 'px'; btn.style.top = q[1] + 'px'; }
+      if (btn.style.display !== 'block') btn.style.display = 'block';
+      raf = requestAnimationFrame(tick);
+    };
+    const kick = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    document.addEventListener('focusin', kick);
+    document.addEventListener('input', kick);
+    document.addEventListener('mouseover', e => { if (isTx(e.target)) { hov = e.target; kick(); } });
+    document.addEventListener('mouseout', e => { if (hov && e.target === hov && e.relatedTarget !== btn) { hov = null; kick(); } });
+    btn.addEventListener('mouseleave', e => { if (e.relatedTarget !== hov) { hov = null; kick(); } });
+    btn.addEventListener('mousedown', e => e.preventDefault());
+    const live = el => (el && el.id && document.getElementById(el.id)) || el;
+    btn.addEventListener('click', () => {
+      const el = live(cur); if (!el) return;
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(el, '');
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+      el.focus(); kick();
+      setTimeout(() => { const e2 = live(el); if (e2 && e2 !== document.activeElement) e2.focus(); kick(); }, 40);
+    });
+    document.addEventListener('mousedown', e => { down = (e.button === 0 && isTx(e.target) && document.activeElement !== e.target) ? { el: e.target, x: e.clientX, y: e.clientY } : null; }, true);
+    document.addEventListener('mouseup', e => {
+      const d = down; down = null;
+      if (!d || !(e.target === d.el || (d.el.id && e.target.id === d.el.id)) || Math.abs(e.clientX - d.x) + Math.abs(e.clientY - d.y) > 4) return;
+      const v0 = d.el.value;
+      const go = () => { const el = live(d.el); if (el && document.activeElement === el && isTx(el) && el.value === v0 && el.selectionStart === el.selectionEnd) el.select(); };
+      go(); [0, 80, 250, 500].forEach(t => setTimeout(go, t));
+    }, true);
+  }
+  menuItems() {
+    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
+    const base = {};
+    DEF.forEach(d => { base[d[0]] = { id: d[0], label: d[1], href: d[2], builtin: true, custom: false, hidden: false }; });
+    const out = [];
+    (Array.isArray(cfg) ? cfg : []).forEach(c => {
+      if (!c || !c.id) return;
+      if (base[c.id]) { out.push(Object.assign({}, base[c.id], { label: c.label || base[c.id].label, hidden: c.id === 'settings' ? false : !!c.hidden })); delete base[c.id]; }
+      else if (c.custom) out.push({ id: c.id, label: c.label || '새 탭', href: '#', builtin: false, custom: true, hidden: !!c.hidden });
+    });
+    // 저장된 순서에 없는 기본 탭(새로 생긴 탭)은 기본 순서에서 바로 앞 탭 뒤에 끼운다
+    DEF.forEach((d, i) => { if (!base[d[0]]) return; let at = -1; for (let j = i - 1; j >= 0 && at < 0; j--) at = out.findIndex(t => t.id === DEF[j][0]); out.splice(at + 1, 0, base[d[0]]); });
+    return out;
+  }
+  menuTabs(cur, cnts) {
+    // 강사 계정은 수강생대장을 볼 수 없다
+    return this.menuItems().filter(t => !t.hidden && !((t.id === 'students' || t.id === 'notice') && this.isTeacherUser())).map(t => ({
+      label: (t.id === 'settings' ? '⚙ ' : '') + t.label, cnt: (cnts || {})[t.id] || '', href: t.href,
+      style: 'display: inline-flex; align-items: center; padding: 8px 14px; border-radius: 8px 8px 0 0; font-size: 14px; white-space: nowrap; text-decoration: none; position: relative; top: 1px; ' +
+        (t.id === 'settings' ? 'margin-left: 14px; ' : '') + (t.id === cur ? 'background: #F3F5F4; color: ' + (t.id === 'settings' ? '#007E82' : '#17201C') + '; font-weight: 600; border: 1px solid #C6CDC7; border-bottom: 1px solid #F3F5F4' : t.id === 'settings' ? 'background: #E6F6F6; color: #007E82; font-weight: 600; border: 1px solid #BFE3E4' : 'color: #66716A; font-weight: 500; border: 1px solid transparent')
+    }));
+  }
+  subjectList() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.subjects') || 'null'); } catch (e) {}
+    if (Array.isArray(v) && v.length) return v;
+    return [['드럼', '#D7EFDD', '#2F6B43'], ['보컬', '#FCF1C2', '#7A6200'], ['기타', '#F9D9D6', '#9A3A31'], ['베이스', '#D6E6F7', '#2E5A8A'], ['피아노', '#E6DFF5', '#5B4A8B'], ['우쿨렐레', '#EADDD0', '#6B4A2E']]
+      .map((s, i) => ({ id: 'S' + (i + 1), name: s[0], bg: s[1], fg: s[2], sort: i + 1, preset: true }));
+  }
+  partColors() {
+    const o = { '원장': ['#F3E6C4', '#7A5C12'] };
+    this.subjectList().forEach(s => { o[s.name] = [s.bg || '#EEF1F0', s.fg || '#3A4450']; });
+    return o;
+  }
+  employeeList() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.employees') || 'null'); } catch (e) {}
+    const A = window.academy;
+    if (Array.isArray(v) && v.length) return v.slice().sort((a, b) => (a.seq || 0) - (b.seq || 0));
+    if (A && A.sb) return [];
+    // 시안(로그인 없는 화면)용 가짜 샘플
+    return [['원장', '김도윤', ['기타', '우쿨렐레']], ['강사', '이하늘', ['보컬']], ['강사', '박서준', ['드럼']], ['강사', '최민재', ['베이스']], ['강사', '정우진', ['피아노']]]
+      .map((e, i) => ({ id: 'X' + (i + 1), seq: i + 1, role: e[0], name: e[1], subjects: e[2], tab: true, hire: '2016-04-04', leave: '', phone: '', addr: '', memo: '', email: '', sample: true }));
+  }
+  isDismissed(e) { const t = new Date(), td = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); return !!(e && e.leave && e.leave <= td); }
+  staffOrdered() {
+    const E = this.employeeList();
+    let cfg = null;
+    try { cfg = JSON.parse(localStorage.getItem('academy.staffOrder') || 'null'); } catch (e) {}
+    const out = [], seen = {};
+    (Array.isArray(cfg) ? cfg : []).forEach(c => { const e = E.find(x => x.id === c.id); if (e && !seen[e.id]) { seen[e.id] = 1; out.push(Object.assign({}, e, { use: c.use !== false })); } });
+    E.forEach(e => { if (!seen[e.id]) out.push(Object.assign({}, e, { use: true })); });
+    return out;
+  }
+  // 강사 이름 색 (직원명부 등록·수정에서 고름). 고르지 않으면 자동 = 원장은 금색, 강사는 첫 번째 교습과목 색. 직원명부에 없는 이름은 회색
+  teacherColor(name) {
+    const P = this.partColors();
+    const e = this.employeeList().find(x => x.name === name);
+    if (!e) return ['#EEF1F0', '#3A4450'];
+    const c = String(e.color || '').split('|');
+    if (/^#[0-9A-Fa-f]{6}$/.test(c[0]) && /^#[0-9A-Fa-f]{6}$/.test(c[1] || '')) return c;
+    const own = (Array.isArray(e.titles) && e.titles.length ? e.titles : [e.role]).indexOf('원장') >= 0;
+    return (own ? P['원장'] : P[(e.subjects || [])[0]]) || ['#EEF1F0', '#3A4450'];
+  }
+  isTeacherUser() { const A = window.academy; return !!(A && A.staff && A.staff.role !== 'owner'); }
+  loadLib(src, name) {
+    return new Promise((res, rej) => {
+      if (window[name]) { res(window[name]); return; }
+      const sc = document.createElement('script'); sc.src = src; sc.onload = () => res(window[name]); sc.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(sc);
+    });
+  }
+  async saveBlob(fname, blob) {
+    try {
+      if (window.claude && window.claude.use) {
+        const dl = await window.claude.use('downloads');
+        if (dl) { await dl.save({ filename: fname, data: blob }); return; }
+      }
+    } catch (err) { if (err && err.code === 'declined') return; }
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = fname; document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1000);
+  }
+  async snapCanvas() {
+    const h2c = await this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'html2canvas');
+    const SEL = 'section[aria-label="수납 안내"]';
+    // 화면을 다시 그린 뒤에 찍는다 (다시 그리면 요소가 바뀌므로 그 다음에 찾음)
+    this.setState({ expBusy: true });
+    await new Promise(r => setTimeout(r, 60));
+    const el = document.querySelector(SEL);
+    if (!el) { this.setState({ expBusy: false }); throw new Error('no section'); }
+    try {
+      return await h2c(el, {
+        scale: 2, backgroundColor: '#FFFFFF', useCORS: true, logging: false,
+        // 표 안의 메뉴·버튼(noprint)만 뺀다 (표를 감싼 바깥 틀은 그대로)
+        ignoreElements: e => !!(e.classList && (e.classList.contains('noprint') || e.classList.contains('noexp')) && e !== el && el.contains(e)),
+        onclone: doc => {
+          const st = doc.createElement('style');
+          st.textContent = '.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important;overflow:visible!important}.shellscroll{overflow:visible!important}';
+          doc.head.appendChild(st);
+          const sec = doc.querySelector(SEL);
+          if (!sec) return;
+          [sec].concat([].slice.call(sec.querySelectorAll('*'))).forEach(x => {
+            const cs = doc.defaultView.getComputedStyle(x);
+            if (cs.position === 'sticky') x.style.setProperty('position', 'static', 'important');
+            if (/auto|scroll/.test(cs.overflowX + ' ' + cs.overflowY)) x.style.setProperty('overflow', 'visible', 'important');
+            // 안쪽 테두리 그림자(오늘 요일 테두리, 수납 칸 테두리)는 이미지 도구가 칠해 버리므로 테두리로 바꾸고, 선택 표시는 뺀다
+            const bs = cs.boxShadow;
+            if (bs && bs !== 'none' && /inset/.test(bs)) {
+              const m = /(rgba?\([^)]*\)) 0px 0px 0px ([\d.]+)px inset/.exec(bs);
+              x.style.setProperty('box-shadow', 'none', 'important');
+              if (m) { x.style.setProperty('border', m[2] + 'px solid ' + m[1], 'important'); x.style.setProperty('box-sizing', 'border-box', 'important'); }
+            }
+          });
+          sec.style.setProperty('overflow', 'visible', 'important');
+          sec.style.setProperty('width', 'max-content', 'important');
+          sec.style.setProperty('min-width', el.getBoundingClientRect().width + 'px', 'important');
+        }
+      });
+    } finally { this.setState({ expBusy: false }); }
+  }
+  async exportImage() {
+    this.setState({ expOpen: false });
+    try {
+      const cv = await this.snapCanvas();
+      const blob = await new Promise(r => cv.toBlob(r, 'image/png'));
+      await this.saveBlob(this.expName('png'), blob);
+    } catch (e) { window.console && console.warn('이미지로 내보내지 못했습니다', e); }
+  }
+  async exportPdf() {
+    this.setState({ expOpen: false });
+    try {
+      const cv = await this.snapCanvas();
+      const lib = await this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js', 'jspdf');
+      const pdf = new lib.jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      // A4 가로에 폭을 맞추고, 길면 여러 장으로 나눈다
+      const M = 7, PW = 297 - M * 2, PH = 210 - M * 2;
+      const pxPerMm = cv.width / PW;
+      const sliceH = Math.floor(PH * pxPerMm);
+      for (let y = 0, page = 0; y < cv.height; y += sliceH, page++) {
+        const h = Math.min(sliceH, cv.height - y);
+        const pc = document.createElement('canvas'); pc.width = cv.width; pc.height = h;
+        const g = pc.getContext('2d'); g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, pc.width, h); g.drawImage(cv, 0, y, cv.width, h, 0, 0, cv.width, h);
+        if (page) pdf.addPage();
+        pdf.addImage(pc.toDataURL('image/jpeg', 0.92), 'JPEG', M, M, PW, h / pxPerMm);
+      }
+      await this.saveBlob(this.expName('pdf'), pdf.output('blob'));
+    } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
+  }
+  componentDidMount() {
+    this.installPopupDrag();
+    this.installTextInputs();
+    this._st = e => { if (/^academy\.(tickets|payNotice|students|menu|employees|staffOrder)$/.test(e.key || '')) this.setState({ tick: Date.now() }); };
+    window.addEventListener('storage', this._st);
+    // 체크한 뒤 Enter = '발송' (창이 열려 있거나 글자 칸에 있을 때는 아님)
+    this._ek = e => { if (e.key !== 'Enter' || e.isComposing || this.state.ask || this.state.log || this.state.printOpen) return; const a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'checkbox')) && a.id !== 'nt_date') return; const sel = this.state.sel || {}; if (!Object.keys(sel).length) return; e.preventDefault(); this.bulkSend(); };
+    window.addEventListener('keydown', this._ek);
+    this._zk = e => { if (!(e.ctrlKey || e.metaKey) || e.altKey) return; const k = (e.key || '').toLowerCase(); if (k !== 'z' && k !== 'y') return; const a = document.activeElement; if (a && (a.tagName === 'TEXTAREA' || (a.tagName === 'INPUT' && a.type !== 'checkbox'))) return; e.preventDefault(); this.undoRedo(k === 'z' && !e.shiftKey); };
+    window.addEventListener('keydown', this._zk);
+    this._dbl = () => this.setState({ tick: Date.now() });
+    document.addEventListener('academy:data', this._dbl);
+  }
+  todayYmd() { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }
+  // 원생 정보 (수강생대장이 저장해 둔 'academy.students', 로그인 사이트는 Supabase 원생)
+  stuInfo(name) {
+    let hit = null;
+    try { const v = JSON.parse(localStorage.getItem('academy.students') || '[]'); hit = (Array.isArray(v) ? v : []).find(x => x.name === name) || null; } catch (e) {}
+    const A = window.academy;
+    if (hit || !(A && A.data && Array.isArray(A.data.students))) return hit;
+    const r = A.data.students.find(x => x.name === name);
+    return r ? { name: r.name, teacher: r.teacher || '', day: r.day || (r.days || []).join('·') } : null;
+  }
+  // 출석부가 계산해 둔 수강권 ('academy.tickets', 이름별). due = 수업완료 또는 미납 중인 재원생
+  readTickets() { try { return JSON.parse(localStorage.getItem('academy.tickets') || '{}') || {}; } catch (e) { return {}; } }
+  // 발송 기록 'academy.payNotice' = { 이름: { cyc, sends: ['2026-11-19', …], memo } } (로그인 사이트는 Supabase app_settings 'payNotice')
+  // cyc = 그 원생의 마지막 수납 날짜. 새로 수납하면 cyc가 바뀌어 다음에 목록에 올라올 때 발송 기록이 새로 시작된다
+  readNotice() { try { return JSON.parse(localStorage.getItem('academy.payNotice') || '{}') || {}; } catch (e) { return {}; } }
+  // 되돌리기: 바꾸기 전 상태를 쌓아 둠 (Ctrl+Z 되돌리기 / Ctrl+Y·Ctrl+Shift+Z 다시 하기, 이 화면을 연 동안만)
+  saveNotice(o) { const prev = localStorage.getItem('academy.payNotice') || '{}', js = JSON.stringify(o); if (prev === js) return; this._undo = (this._undo || []).concat([prev]).slice(-50); this._redo = []; try { localStorage.setItem('academy.payNotice', js); } catch (e) {} }
+  undoRedo(back) {
+    const from = back ? (this._undo || []) : (this._redo || []);
+    if (!from.length) { this.flash(back ? '되돌릴 것이 없습니다' : '다시 할 것이 없습니다'); return; }
+    const cur = localStorage.getItem('academy.payNotice') || '{}', v = from.pop();
+    (back ? (this._redo = this._redo || []) : (this._undo = this._undo || [])).push(cur);
+    try { localStorage.setItem('academy.payNotice', v); } catch (e) {}
+    this.flash(back ? '되돌렸습니다' : '다시 했습니다'); this.setState({ tick: Date.now() });
+  }
+  noticeOf(PN, name, tk) { const e = PN[name]; return e && e.cyc === tk.cyc ? e : { cyc: tk.cyc, sends: [], memo: '' }; }
+  list() {
+    const TK = this.readTickets(), DAYS = ['월', '화', '수', '목', '금', '토', 'R'];
+    let WO = []; try { WO = JSON.parse(localStorage.getItem('academy.writeOffs') || '[]') || []; } catch (e) {}
+    const PN = this.readNotice();
+    const order = this.staffOrdered().map(e => e.name);
+    const out = [];
+    Object.keys(TK).forEach(name => {
+      const tk = TK[name];
+      // 휴원·퇴원생은 남은 미납(수업 미납·차액)이 있을 때만, 미납 정리했으면 뺀다
+      const outOwe = !!(tk && tk.sm && (tk.n > 0 || tk.diffLeft > 0) && !WO.some(w => w.name === name && (w.at || 0) >= (tk.stAt || 0)));
+      if (!tk || !(tk.due || outOwe)) return;
+      const info = this.stuInfo(name) || {};
+      let days = (tk.days || []).filter(g => DAYS.indexOf(g) >= 0);
+      if (!days.length) days = String(info.day || '').split(/[·,\s]+/).map(d => d === '변동' ? 'R' : d.charAt(0)).filter(g => DAYS.indexOf(g) >= 0);
+      days = days.filter((g, i) => days.indexOf(g) === i).sort((a, b) => DAYS.indexOf(a) - DAYS.indexOf(b));
+      const teacher = info.teacher || tk.teacher || '';
+      const grp = outOwe && !tk.due ? (tk.stKind === 'out' ? 2 : 1) : 0;
+      // 뺀 원생은 맨 아래 '목록에서 뺀 원생' 묶음 (수납하면 cyc가 바뀌어 저절로 사라짐)
+      // 이 페이지는 목록만: 뺀 원생은 보이지 않음
+      if (this.noticeOf(PN, name, tk).hidden) return;
+      out.push({ name: name, tk: tk, grp: grp, sg: grp, days: days, teacher: teacher, d0: days.length ? DAYS.indexOf(days[0]) : 9, t0: order.indexOf(teacher) < 0 ? 99 : order.indexOf(teacher) });
+    });
+    // 구글시트처럼 요일 → 강사(직원 순서) → 이름
+    out.sort((a, b) => a.grp - b.grp || a.d0 - b.d0 || a.t0 - b.t0 || a.name.localeCompare(b.name, 'ko'));
+    return out;
+  }
+  // 고른 원생들에게 발송 날짜를 한꺼번에 체크
+  bulkSend() {
+    const el = document.getElementById('nt_date');
+    const d = (el && el.value) || this.state.sendDate || this.todayYmd();
+    const sel = this.state.sel || {};
+    const L = this.list().filter(r => sel[r.name]);
+    if (!L.length) return;
+    const PN = this.readNotice();
+    let n = 0;
+    L.forEach(r => {
+      const e = Object.assign({}, this.noticeOf(PN, r.name, r.tk));
+      e.sends = (e.sends || []).slice();
+      if (e.sends.indexOf(d) < 0) { e.sends.push(d); e.sends.sort(); n++; }
+      PN[r.name] = e;
+    });
+    this.saveNotice(PN);
+    this.flash(n ? n + '명에게 ' + (+d.slice(5, 7)) + '/' + (+d.slice(8)) + ' 발송을 체크했습니다' : '이미 그 날짜로 체크되어 있습니다');
+    this.setState({ sel: {}, tick: Date.now() });
+  }
+  delSend(name, tk, d) {
+    const PN = this.readNotice();
+    const e = Object.assign({}, this.noticeOf(PN, name, tk));
+    e.sends = (e.sends || []).filter(x => x !== d);
+    PN[name] = e; this.saveNotice(PN); this.setState({ tick: Date.now() });
+  }
+  saveMemo(name, tk, v) {
+    const PN = this.readNotice();
+    const e = Object.assign({}, this.noticeOf(PN, name, tk));
+    if ((e.memo || '') === v) return;
+    e.memo = v; PN[name] = e; this.saveNotice(PN);
+  }
+  setSel(name, on) { const s2 = Object.assign({}, this.state.sel || {}); if (!!s2[name] === on) return; if (on) s2[name] = 1; else delete s2[name]; this.setState({ sel: s2 }); }
+  // 목록에서 빼기: 이번 수강권(cyc) 동안만 숨김. 수납 뒤 다시 수업완료가 되면 다시 올라옴
+  hideRow(name, tk, on) { const PN = this.readNotice(); const e = Object.assign({}, this.noticeOf(PN, name, tk)); e.hidden = on !== false; PN[name] = e; this.saveNotice(PN); this.flash(name + (e.hidden ? ' 원생을 목록에서 뺐습니다' : ' 원생을 목록에 다시 넣었습니다')); this.setState({ ask: null, sel: {}, tick: Date.now() }); }
+  // 요일 색 (요일 칸과 같은 색). 날짜는 그 날의 요일 색
+  dayColor(g) { const DC = { '월': ['#F9D9D6', '#9A3A31'], '화': ['#D6E6F7', '#2E5A8A'], '수': ['#FCF1C2', '#7A6200'], '목': ['#D7EFDD', '#2F6B43'], '금': ['#FBE0CC', '#8A4A1C'], '토': ['#E6DFF5', '#5B4A8B'], '일': ['#F9D9D6', '#9A3A31'], 'R': ['#EEF1F0', '#5E6873'] }; return DC[g] || DC.R; }
+  dateColor(d) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return this.dayColor(m ? '일월화수목금토'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay()) : 'R'); }
+  wd(d) { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? '일월화수목금토'.charAt(new Date(+m[1], +m[2] - 1, +m[3]).getDay()) : ''; }
+  flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
+  md(d) { return (+d.slice(5, 7)) + '/' + (+d.slice(8)); }
+  doPrint() {
+    this.setState({ printOpen: false });
+    document.documentElement.classList.toggle('bwp', !!this.state.bw);
+    setTimeout(() => { window.print(); document.documentElement.classList.remove('bwp'); }, 60);
+  }
+  xlsName() { const d = new Date(); return '수납안내_' + d.getFullYear() + '년' + (d.getMonth() + 1) + '월' + d.getDate() + '일.xlsx'; }
+  expName(ext) { return this.xlsName().replace(/\.xlsx$/, '') + '.' + ext; }
+  async exportExcel() {
+    const X = window.XLSX; if (!X) return;
+    const v = this.renderVals();
+    const head = v.printHead, rows = v.printRows;
+    const LINE = { style: 'thin', color: { rgb: 'C9D0CC' } }, BOR = { top: LINE, bottom: LINE, left: LINE, right: LINE };
+    const ws = {};
+    const put = (r, c, val, o) => { o = o || {}; ws[X.utils.encode_cell({ r: r, c: c })] = { t: typeof val === 'number' ? 'n' : 's', v: val == null ? '' : val, s: { alignment: { horizontal: o.align || 'center', vertical: 'center', wrapText: true }, font: { name: '맑은 고딕', sz: o.sz || 10, bold: !!o.bold }, fill: o.fill ? { fgColor: { rgb: o.fill } } : undefined, border: o.border === false ? undefined : BOR } }; };
+    put(0, 0, '수납 안내 (' + v.printDate + ')', { bold: true, sz: 15, border: false });
+    head.forEach((h, i) => put(2, i, h, { bold: true, fill: 'EEF2EE' }));
+    rows.forEach((r, i) => r.forEach((val, k) => put(3 + i, k, val, { align: k === 2 || k === 5 || k === 6 ? 'left' : 'center' })));
+    ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: 2 + Math.max(rows.length, 1), c: head.length - 1 } });
+    ws['!merges'] = [{ s: { r: 0, c: 0 }, e: { r: 0, c: head.length - 1 } }];
+    ws['!cols'] = [8, 10, 24, 8, 10, 30, 36].map(w => ({ wch: w }));
+    const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, '수납 안내');
+    const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
+    await this.saveBlob(this.xlsName(), new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
+  }
+  renderVals() {
+    const st = this.state;
+    const L = this.list();
+    const PN = this.readNotice();
+    const sel = st.sel || {};
+    const nSel = L.filter(r => sel[r.name]).length;
+    const DL = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
+    const COLS = 'display: grid; grid-template-columns: 36px 64px 76px 78px 44px 76px 170px minmax(160px, 1fr); align-items: stretch';
+    const rows = L.map((r, i) => {
+      const e = this.noticeOf(PN, r.name, r.tk), sends = e.sends || [];
+      const tc = this.teacherColor(r.teacher);
+      return {
+        name: r.name, on: !!sel[r.name], selLabel: r.name + ' 선택',
+        // 체크칸을 누른 채 위아래로 끌면 지나가는 줄을 모두 같은 상태(선택/해제)로
+        dragDown: ev => { if (ev.button) return; ev.preventDefault();
+          // Shift + 체크: 마지막으로 누른 줄부터 이 줄까지 한 번에 같은 상태로
+          const a = L.findIndex(x => x.name === this._lastSel);
+          if (ev.shiftKey && a >= 0) { const on = !!sel[this._lastSel], s2 = Object.assign({}, sel); L.slice(Math.min(a, i), Math.max(a, i) + 1).forEach(x => { if (on) s2[x.name] = 1; else delete s2[x.name]; }); this._lastSel = r.name; this.setState({ sel: s2 }); return; }
+          this._lastSel = r.name; this._drag = !sel[r.name]; this._dragBase = Object.assign({}, sel); this._dragA = i; if (!this._dragHook) { this._dragHook = 1; window.addEventListener('mouseup', () => { this._drag = null; }); } this.setSel(r.name, this._drag); },
+        // 끄는 동안: 시작 줄부터 지금 줄까지만 바뀜 → 다시 거슬러 올라가면 지나온 줄은 원래대로
+        dragOver: () => { if (this._drag == null) return; const s2 = Object.assign({}, this._dragBase || {}); L.slice(Math.min(this._dragA, i), Math.max(this._dragA, i) + 1).forEach(x => { if (this._drag) s2[x.name] = 1; else delete s2[x.name]; }); this.setState({ sel: s2 }); },
+        days: (r.days.length ? r.days : ['R']).map(g => ({ t: DL[g], style: 'display: inline-flex; align-items: center; height: 20px; padding: 0 6px; margin: 1px; border-radius: 5px; font-size: 11px; font-weight: 600; background: ' + this.dayColor(g)[0] + '; color: ' + this.dayColor(g)[1] })),
+        teacher: r.teacher || '-', tStyle: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 999px; font-size: 11px; white-space: nowrap; font-weight: 600; background: ' + tc[0] + '; color: ' + tc[1],
+        tk: { dotLines: r.tk.dotLines || [], subParts: r.tk.subParts || [{ t: r.tk.text || '', style: '' }], queueTxt: r.tk.queueTxt || '' },
+        // 발송 칸은 가장 최근 날짜만 (그 날 요일 색). 전체는 '기록'
+        sends: sends.slice(-1).map(d => { const c = this.dateColor(d); return { t: this.md(d), style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 9px; border: none; border-radius: 999px; font-family: inherit; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + c[0] + '; color: ' + c[1], del: () => this.setState({ ask: { kind: 'send', name: r.name, tk: r.tk, d: d } }), delLabel: r.name + ' ' + this.md(d) + ' 발송 기록 지우기' }; }), noSend: !sends.length,
+        logOpen: () => this.setState({ log: { name: r.name, tk: r.tk } }), logOff: !sends.length,
+        logStyle: 'height: 26px; padding: 0 8px; border-radius: 7px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 12px; font-weight: 600; ' + (sends.length ? 'color: #3A4450; cursor: pointer' : 'color: #C3CAC6; cursor: default'),
+        hide: () => r.grp === 3 ? this.hideRow(r.name, r.tk, false) : this.setState({ ask: { kind: 'hide', name: r.name, tk: r.tk } }), hideLabel: r.name + (r.grp === 3 ? ' 목록으로 복귀' : ' 목록에서 빼기'), hideTxt: r.grp === 3 ? '복귀' : '빼기',
+        hideStyle: 'height: 26px; padding: 0 8px; border-radius: 7px; background: #FFFFFF; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; ' + (r.grp === 3 ? 'border: 1px solid #A9DCDE; color: #007E82' : 'border: 1px solid #F2C6C2; color: #B4332B'),
+        grpHead: r.grp && (i === 0 || r.grp !== L[i - 1].grp) ? ['', '휴원생 미납', '퇴원생 미납', '목록에서 뺀 원생'][r.grp] : '',
+        stTag: r.sg ? (r.sg === 2 ? '퇴원' : '휴원') + (r.tk.stDate ? ' ' + this.md(r.tk.stDate) : '') : '', stStyle: 'font-size: 11px; font-weight: 600; color: ' + (r.sg === 2 ? '#B4332B' : '#B86E00'),
+        cnt: sends.length + '회', cntStyle: 'font-size: 14px; font-weight: 600; color: ' + (sends.length >= 3 ? '#B4332B' : sends.length ? '#17201C' : '#B7C0BC'),
+        memo: e.memo || '', memoId: 'nt_memo_' + i, memoLabel: r.name + ' 메모',
+        saveMemo: ev => this.saveMemo(r.name, r.tk, ev.target.value),
+        rowStyle: COLS + '; border-bottom: 1px solid #EEF1EF; background: ' + (sel[r.name] ? '#F2FAFA' : '#FFFFFF') + (r.grp === 3 ? '; opacity: 0.6' : ''),
+        print: [DL[r.days[0] || 'R'] + (r.days.length > 1 ? ' 외' : ''), r.name + (r.sg ? (r.sg === 2 ? ' (퇴원)' : ' (휴원)') : '') + (r.grp === 3 ? ' (뺌)' : ''), sends.map(d => this.md(d)).join(', '), sends.length + '회', r.teacher, (r.tk.subParts || []).map(p => p.t).join('') || r.tk.text || '', e.memo || '']
+      };
+    });
+    const d = new Date();
+    return {
+      noAccess: this.isTeacherUser(),
+      tabs: this.menuTabs('notice', { notice: L.length ? L.length + '명' : '' }),
+      count: L.length, rows: rows, empty: !L.length,
+      allOn: L.length > 0 && nSel === L.length,
+      toggleAll: () => { const s2 = {}; if (nSel !== L.length) L.forEach(r => { s2[r.name] = 1; }); this.setState({ sel: s2 }); },
+      selTxt: nSel ? nSel + '명 선택' : '',
+      sendDate: st.sendDate || this.todayYmd(),
+      setDate: ev => { this.state.sendDate = ev.target.value; },
+      undo: () => this.undoRedo(true), undoOff: !(this._undo || []).length,
+      undoStyle: 'height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; ' + ((this._undo || []).length ? 'color: #3A4450; cursor: pointer' : 'color: #C3CAC6; cursor: default'),
+      bulk: () => this.bulkSend(), bulkOff: !nSel,
+      bulkStyle: 'height: 38px; padding: 0 16px; border-radius: 10px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; ' + (nSel ? 'background: #00A6AB; color: #FFFFFF; cursor: pointer' : 'background: #E3E8E5; color: #8A949E; cursor: default'),
+      toast: st.toast || '',
+      ask: st.ask ? { open: true, title: st.ask.kind === 'send' ? '발송 기록 지우기' : '목록에서 빼기',
+        text: st.ask.kind === 'send' ? st.ask.name + ' 원생의 ' + this.md(st.ask.d) + ' (' + this.wd(st.ask.d) + ') 발송 기록을 지울까요?' : st.ask.name + ' 원생을 수납 안내 목록에서 뺄까요? 수납하고 다음에 다시 수업이 끝나면 목록에 다시 올라옵니다.',
+        okLabel: st.ask.kind === 'send' ? '지우기' : '빼기',
+        ok: () => { const a = st.ask; if (a.kind === 'send') { this.delSend(a.name, a.tk, a.d); this.setState({ ask: null }); } else this.hideRow(a.name, a.tk); },
+        close: () => this.setState({ ask: null }) } : { open: false },
+      log: st.log ? (() => { const e = this.noticeOf(this.readNotice(), st.log.name, st.log.tk), ss = (e.sends || []).slice().reverse();
+        return { open: true, name: st.log.name, cnt: ss.length + '회', close: () => this.setState({ log: null }),
+          items: ss.map((d, k) => { const c = this.dateColor(d); return { no: (ss.length - k) + '회', t: (+d.slice(5, 7)) + '월 ' + (+d.slice(8)) + '일 (' + this.wd(d) + ')', style: 'display: inline-flex; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 600; background: ' + c[0] + '; color: ' + c[1] }; }) }; })() : { open: false },
+      gridHead: COLS + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3; position: sticky; top: 0; z-index: 4',
+      c: {
+        h: 'height: 32px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
+        hl: 'height: 32px; display: flex; align-items: center; justify-content: flex-start; padding-left: 6px; font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap',
+        cc: 'min-height: 36px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; padding: 2px; box-sizing: border-box; font-size: 14px',
+        cl: 'min-height: 36px; display: flex; align-items: center; justify-content: flex-start; padding: 2px 6px; box-sizing: border-box; font-size: 13px; min-width: 0'
+      },
+      printHead: ['요일', '이름', '날짜', '횟수', '강사', '수강', 'MEMO'],
+      printRows: rows.map(r => r.print),
+      printDate: d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일',
+      printX: () => this.setState({ printOpen: true }),
+      pr: {
+        open: !!st.printOpen,
+        close: () => this.setState({ printOpen: false }),
+        go: () => this.doPrint(),
+        opts: [[false, '컬러'], [true, '흑백']].map(o => ({ label: o[1], pick: () => this.setState({ bw: o[0] }), style: 'flex: 1; height: 42px; border-radius: 11px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (!!st.bw === o[0] ? 'border: 2px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }))
+      },
+      exp: {
+        open: !!st.expOpen, openStr: st.expOpen ? 'true' : 'false', label: st.expBusy ? '내보내는 중…' : '내보내기',
+        btnStyle: 'display: inline-flex; align-items: center; gap: 8px; height: 32px; padding: 0 12px; border-radius: 9px; border: 1px solid ' + (st.expOpen ? '#8AB4E8' : '#D9DEE3') + '; background: ' + (st.expOpen ? '#F3F7FD' : '#FFFFFF') + '; color: #17201C; font-size: 13px; font-weight: 600; cursor: pointer',
+        toggle: () => this.setState({ expOpen: !st.expOpen }),
+        close: () => this.setState({ expOpen: false }),
+        img: () => this.exportImage(),
+        pdf: () => this.exportPdf(),
+        xls: () => { this.setState({ expOpen: false }); this.exportExcel(); }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
