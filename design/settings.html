@@ -289,7 +289,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.73.10</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.73.11</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -981,11 +981,11 @@ class Component extends DCLogic {
         arrowStyle: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 11px; cursor: pointer',
         up: () => { if (!can || !i) return; const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(i - 1, 0, x); this.saveLT(L); },
         down: () => { if (!can || i === LTS.length - 1) return; const L = this.ltEdit(); const x = L.splice(i, 1)[0]; L.splice(i + 1, 0, x); this.saveLT(L); },
-        // 삭제 = 고르는 목록에서만 빼기(off). 그 유형이던 원생·지난 출석부는 이름·색 그대로. '되살리기'로 다시 목록에
-        delLabel: t.off ? '되살리기' : st.ltDel === t.id ? '한 번 더' : '삭제',
-        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; ' + (!can ? 'visibility: hidden' : t.off ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; cursor: pointer' : LTS.filter(x => !x.off).length > 1 ? 'border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; cursor: pointer' : 'visibility: hidden'),
-        del: () => { if (!can) return; if (t.off) { this.setLT(t.id, { off: false }); return; } if (LTS.filter(x => !x.off).length <= 1) return; if (st.ltDel !== t.id) { this.setState({ ltDel: t.id }); return; } this.setState({ ltDel: null }); this.setLT(t.id, { off: true }); },
-        offTag: t.off ? '삭제됨 · 고르는 목록에 안 나옴' : '',
+        // 숨기기 = 고르는 목록에서만 빼기(off). 그 유형이던 원생·지난 출석부는 이름·색 그대로. '보이기'로 다시 목록에
+        delLabel: t.off ? '보이기' : '숨기기',
+        delStyle: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; ' + (!can ? 'visibility: hidden' : t.off ? 'border: 1px solid #A9DCDE; background: #E6F6F6; color: #007E82; cursor: pointer' : LTS.filter(x => !x.off).length > 1 ? 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer' : 'visibility: hidden'),
+        del: () => { if (!can) return; if (t.off) { this.setLT(t.id, { off: false }); return; } if (LTS.filter(x => !x.off).length <= 1) return; this.setLT(t.id, { off: true }); },
+        offTag: t.off ? '숨김 · 고르는 목록에 안 나옴' : '',
         rowStyle: LTC + '; min-height: 52px; border-bottom: 1px solid #EBEEEC; background: ' + (t.off ? '#F7F8F8; opacity: 0.6' : '#FFFFFF')
       };
     });
