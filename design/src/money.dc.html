@@ -29,7 +29,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
 .memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
 .reorder [data-rg] input,.reorder [data-rg] button{pointer-events:none}.reorder [data-rg]{cursor:grab;user-select:none}.reorder [data-rg]:hover{background:#F2FAFA!important}
 .colgrip{background:linear-gradient(#D5DBD8,#D5DBD8) center/1px 45% no-repeat}.colgrip:hover,.colgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}
-[aria-label="수입·지출"] input:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}[aria-label="수입·지출"] input:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
+[aria-label="수입·지출"] input:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}[aria-label="수입·지출"] input:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}[aria-label="수입·지출"] input:focus:read-only{border-color:#AEB7B2!important;background:#F7F8F8!important}
 </style>
 </helmet>
 <sc-if value="{{noAccess}}" hint-placeholder-val="{{ false }}"><div class="noprint" style="position: fixed; inset: 0; z-index: 80; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: #F3F5F4; font-family: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif"><span style="font-size: 18px; font-weight: 600; color: #17201C">수입·지출은 원장님만 볼 수 있습니다.</span><a href="attendance.html" style="height: 44px; padding: 0 20px; display: inline-flex; align-items: center; border-radius: 12px; background: #00A6AB; color: #FFFFFF; font-size: 15px; font-weight: 600; text-decoration: none">출석부로 가기</a></div></sc-if>
@@ -125,7 +125,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.76.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.76.1</span>
     </div>
   </main>
 
@@ -419,7 +419,7 @@ class Component extends DCLogic {
     // 글 칸 키보드 이동: ↑↓ = 같은 상자 위·아래 줄 같은 칸, ←→ = 글 맨 앞·맨 끝에서 옆 칸, Enter = 고친 게 있으면 확정(그 칸에 그대로), 한 번 더 Enter = 아래 줄로
     const inMoney = el => el && el.tagName === 'INPUT' && el.closest && el.closest('section[aria-label="수입·지출"]') && el.closest('[data-rg]');
     document.addEventListener('input', e => { if (inMoney(e.target)) this._dirty = e.target.id; }, true);
-    document.addEventListener('focusin', e => { if (!inMoney(e.target)) return; if (this._dirty !== e.target.id) this._dirty = null; e.target.readOnly = this._edit !== e.target.id; }, true);
+    document.addEventListener('focusin', e => { if (!inMoney(e.target)) return; if (this._dirty !== e.target.id) this._dirty = null; if (e.target.value === '') this._edit = e.target.id; e.target.readOnly = this._edit !== e.target.id; }, true);
     // 칸은 평소 잠김(누르면 고르기만). 두 번 누르기·Enter·F2 = 고치기 시작(커서는 글 끝), 고친 뒤 Enter = 확정하고 다시 잠김
     const startEdit = el => { this._edit = el.id; el.readOnly = false; el.focus(); const end = () => { try { const L = el.value.length; el.setSelectionRange(L, L); } catch (x) {} }; end(); [0, 30, 80].forEach(t => setTimeout(end, t)); };
     document.addEventListener('dblclick', e => { if (inMoney(e.target) && !this.state.reorder) startEdit(e.target); }, true);
@@ -442,6 +442,7 @@ class Component extends DCLogic {
       if (e.key === 'Enter') {
         e.preventDefault();
         // 잠긴 칸: 처음 Enter = 고치기 시작, 고치기 중 Enter = 확정(다시 잠김, 그 칸에 그대로), 잠긴 칸에서 다시 Enter = 아래 줄로
+        if (editing && el.value === '' && this._dirty !== el.id) { vert(1); return; }
         if (editing) { const id = el.id; this._dirty = null; this._edit = null; el.blur(); this._enterDone = id; setTimeout(() => { const n = document.getElementById(id); if (n) n.focus(); }, 30); return; }
         if (this._enterDone === el.id) { this._enterDone = null; vert(1); return; }
         startEdit(el); return;
