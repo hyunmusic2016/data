@@ -122,7 +122,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.4</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.5</span>
     </div>
   </main>
 
@@ -413,6 +413,30 @@ class Component extends DCLogic {
     window.addEventListener('storage', this._st);
     this._dbl = () => this.setState({ tick: Date.now() });
     document.addEventListener('academy:data', this._dbl);
+    // 글 칸 키보드 이동: ↑↓ = 같은 상자 위·아래 줄 같은 칸, ←→ = 글 맨 앞·맨 끝에서 옆 칸, Enter = 고친 게 있으면 확정(그 칸에 그대로), 한 번 더 Enter = 아래 줄로
+    const inMoney = el => el && el.tagName === 'INPUT' && el.closest && el.closest('section[aria-label="수입·지출"]') && el.closest('[data-rg]');
+    document.addEventListener('input', e => { if (inMoney(e.target)) this._dirty = e.target.id; }, true);
+    document.addEventListener('focusin', e => { if (inMoney(e.target) && this._dirty !== e.target.id) this._dirty = null; }, true);
+    this._nav = e => {
+      const el = e.target; if (!inMoney(el) || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+      const row = el.closest('[data-rg]'), box = row.parentElement;
+      const rows = [...box.querySelectorAll('[data-rg]')].filter(r => r.querySelector('input'));
+      const cells = r => [...r.querySelectorAll('input')];
+      const ri = rows.indexOf(row), ci = cells(row).indexOf(el);
+      const go = (r, c) => { const t = r && cells(r)[Math.max(0, Math.min(c, cells(r).length - 1))]; if (!t) return false; e.preventDefault(); t.focus(); try { t.select(); } catch (x) {} return true; };
+      const vert = d => { let k = ri + d; while (rows[k] && !cells(rows[k]).length) k += d; return go(rows[k], ci); };
+      if (e.key === 'ArrowUp') { vert(-1); return; }
+      if (e.key === 'ArrowDown') { vert(1); return; }
+      const all = cells(row);
+      if (e.key === 'ArrowLeft' && el.selectionStart === 0 && el.selectionEnd === 0 && ci > 0) { go(row, ci - 1); return; }
+      if (e.key === 'ArrowRight' && el.selectionStart === el.value.length && ci < all.length - 1) { go(row, ci + 1); return; }
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        if (this._dirty === el.id) { const id = el.id; this._dirty = null; el.blur(); setTimeout(() => { const n = document.getElementById(id); if (n) { n.focus(); try { const L = n.value.length; n.setSelectionRange(L, L); } catch (x) {} } }, 30); return; }
+        vert(1);
+      }
+    };
+    document.addEventListener('keydown', this._nav, true);
   }
   todayYmd() { const t = new Date(); return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }
   ymShift(ym, k) { const y = +ym.slice(0, 4), m = +ym.slice(5, 7) - 1 + k; const d = new Date(y, m, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
