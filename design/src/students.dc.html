@@ -168,7 +168,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.71.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.72.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1212,7 +1212,7 @@ class Component extends DCLogic {
     let v = null;
     try { v = JSON.parse(localStorage.getItem('academy.lessonTypes') || 'null'); } catch (e) {}
     if (Array.isArray(v) && v.length) return v;
-    return [{ id: 'L1', cls: 'hobby', count: 4, dur: 60, unit: 40000, bg: '', fg: '' }, { id: 'L2', cls: 'pro', count: 4, dur: 60, unit: 62500, bg: '#E6DFF5', fg: '#5B4A8B' }];
+    return [{ id: 'L1', cls: 'hobby', count: 4, dur: 60, unit: 40000, bg: '', fg: '' }, { id: 'L2', cls: 'pro', count: 4, dur: 60, unit: 62500, bg: '', fg: '' }];
   }
   ltName(t) { return (t.cls === 'pro' ? '전문' : '취미') + ' ' + (+t.count || 0) + '회' + ((+t.dur || 60) !== 60 ? ' ' + (+t.dur) + '분' : ''); }
   // 반·횟수·시간·회당이 모두 같은 유형 (없으면 null = 직접 입력)
@@ -1729,7 +1729,7 @@ class Component extends DCLogic {
         // 레슨 유형 고르기 → 반·횟수·시간·회당·합계 채움(고칠 수 있음). 숫자가 어느 유형과도 안 맞으면 '직접 입력'
         ltOpts: this.lessonTypes().map(t => { const on = (() => { const m = this.ltOf(R); return !!(m && m.id === t.id); })();
           return { label: this.ltName(t), on: on ? 'true' : 'false', pick: () => this.setReg({ cls: t.cls === 'pro' ? 'pro' : 'hobby', count: +t.count, dur: +t.dur || 60, unit: +t.unit, pay: Math.round(+t.unit * 0.5), total: +t.count * +t.unit }),
-            style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 2px solid ' + (t.fg || '#007E82') + '; background: ' + (t.bg || '#E6F6F6') + '; color: ' + (t.fg || '#007E82') : 'border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450') }; }),
+            style: 'height: 34px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? (() => { const c = t.bg ? [t.bg, t.fg] : t.cls === 'pro' ? ['#EDE6FA', '#7A5FBF'] : ['#E6F6F6', '#007E82']; return 'border: 2px solid ' + c[1] + '; background: ' + c[0] + '; color: ' + c[1]; })() : 'border: 1px solid #D5DBD8; background: #FFFFFF; color: #3A4450') }; }),
         ltCustom: !this.ltOf(R),
         classes: [['hobby', '취미반'], ['pro', '전문반']].map(o => ({ label: o[1], on: R.cls === o[0] ? 'true' : 'false', pick: () => { if (R.editId != null && R.cls !== o[0] && !confirm((R.cls === 'hobby' ? '취미반에서 전문반' : '전문반에서 취미반') + '으로 변경하시겠습니까?\n수강료가 ' + (o[0] === 'pro' ? '전문반' : '취미반') + ' 기본값으로 바뀝니다.')) return; this.setReg(Object.assign({ cls: o[0] }, this.regDefaults(o[0]))); },
           style: 'height: 40px; padding: 0 22px; border: none; border-radius: 10px; font-family: inherit; font-size: 15px; cursor: pointer; ' + (R.cls === o[0] ? (o[0] === 'pro' ? 'background: #FFFFFF; color: #7A5FBF; font-weight: 600; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)' : 'background: #FFFFFF; color: #007E82; font-weight: 600; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.15)') : 'background: transparent; color: #5E6873; font-weight: 500') })),
