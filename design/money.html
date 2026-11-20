@@ -124,7 +124,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.5</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.6</span>
     </div>
   </main>
 
@@ -448,7 +448,8 @@ class Component extends DCLogic {
   // 장부 'academy.ledger' = { '2026-12': { fix: { 항목id: { d, amt, memo } }, vars: [{ id, d, item, shop, amt, memo }], extra: [{ id, d, item, amt, memo }] } } (로그인 사이트는 app_settings 'ledger')
   ledger() { const v = this.rd('academy.ledger', {}); return v && typeof v === 'object' ? v : {}; }
   month(ym) { const L = this.ledger(), m = L[ym] || {}; return { fix: Object.assign({}, m.fix || {}), vars: (m.vars || []).slice(), extra: (m.extra || []).slice(), incMemo: Object.assign({}, m.incMemo || {}), incOrder: (m.incOrder || []).slice() }; }
-  saveMonth(ym, m) { const L = this.ledger(); L[ym] = m; try { localStorage.setItem('academy.ledger', JSON.stringify(L)); } catch (e) {} this.setState({ tick: Date.now() }); }
+  // 저장은 바로, 화면 다시 그리기는 한 박자 뒤 (칸을 나가 다른 칸으로 옮겨 간 뒤에 그려야 커서가 새 칸에 남음)
+  saveMonth(ym, m) { const L = this.ledger(); L[ym] = m; try { localStorage.setItem('academy.ledger', JSON.stringify(L)); } catch (e) {} clearTimeout(this._smT); this._smT = setTimeout(() => this.setState({ tick: Date.now() }), 0); }
   // 고정 지출 항목 'academy.ledgerItems' = [{ id, name, hidden }] (app_settings 'ledgerItems'). 강사월급은 직원명부에서 저절로
   fixItems() {
     const v = this.rd('academy.ledgerItems', null);
