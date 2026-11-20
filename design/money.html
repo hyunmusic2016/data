@@ -68,7 +68,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #D6E6F7; color: #2E5A8A">수입</div>
             <div style="{{hIn.row}}"><sc-for list="{{hIn.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
-              <div style="{{r.row}}">
+              <div data-rg="{{r.rg}}" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}">
                 <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
                 <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
               </div>
@@ -82,7 +82,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">고정 지출</div>
             <div style="{{hFx.row}}"><sc-for list="{{hFx.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{fix}}" as="r" hint-placeholder-count="6">
-              <div data-fid="{{r.fid}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span onMouseDown="{{r.grab}}" title="누른 채 위아래로 끌어 순서 바꾸기" style="{{cl}}; cursor: grab; user-select: none; display: flex; align-items: center; gap: 6px"><span aria-hidden="true" class="noexp" style="color: #C3CAC6; font-size: 11px; letter-spacing: -2px">⋮⋮</span>{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
+              <div data-rg="fx" data-rid="{{r.fid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span title="누른 채 위아래로 끌어 순서 바꾸기" style="{{cl}}; cursor: grab; user-select: none">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
             </sc-for>
             <div class="noexp" style="display: flex; gap: 6px; padding: 8px 10px"><input id="mo_newfix" type="text" defaultValue="" onKeyDown="{{fixKey}}" aria-label="새 고정 지출 항목" placeholder="새 항목 이름" style="flex: 1; min-width: 0; height: 32px; padding: 0 10px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FAFBFA; font-family: inherit; font-size: 13px"><button type="button" onClick="{{addFix}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #9A3A31; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">+ 항목</button></div>
             <sc-if value="{{hiddenFix}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 10px 10px; font-size: 12px; color: #8A949E">숨긴 항목<sc-for list="{{hiddenFix}}" as="h" hint-placeholder-count="1"><button type="button" onClick="{{h.show}}" title="다시 보이기" style="height: 24px; padding: 0 8px; border-radius: 999px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">{{h.name}} +</button></sc-for></div></sc-if>
@@ -92,7 +92,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">변동 지출</div>
             <div style="{{hVa.row}}"><sc-for list="{{hVa.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{vars}}" as="r" hint-placeholder-count="4">
-              <div style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idS}}" type="text" data-noclear="1" defaultValue="{{r.shop}}" onChange="{{r.setS}}" aria-label="구입처" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></div>
+              <div data-rg="va" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idS}}" type="text" data-noclear="1" defaultValue="{{r.shop}}" onChange="{{r.setS}}" aria-label="구입처" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></div>
             </sc-for>
             <sc-if value="{{varEmpty}}" hint-placeholder-val="{{ false }}"><div style="{{empty}}">아직 변동 지출이 없습니다</div></sc-if>
             <button type="button" class="noexp" onClick="{{addVar}}" style="{{addBtn}}">+ 지출</button>
@@ -126,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.1</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.2</span>
     </div>
   </main>
 
@@ -414,7 +414,7 @@ class Component extends DCLogic {
   rd(k, def) { try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? def : v; } catch (e) { return def; } }
   // 장부 'academy.ledger' = { '2026-12': { fix: { 항목id: { d, amt, memo } }, vars: [{ id, d, item, shop, amt, memo }], extra: [{ id, d, item, amt, memo }] } } (로그인 사이트는 app_settings 'ledger')
   ledger() { const v = this.rd('academy.ledger', {}); return v && typeof v === 'object' ? v : {}; }
-  month(ym) { const L = this.ledger(), m = L[ym] || {}; return { fix: Object.assign({}, m.fix || {}), vars: (m.vars || []).slice(), extra: (m.extra || []).slice(), incMemo: Object.assign({}, m.incMemo || {}) }; }
+  month(ym) { const L = this.ledger(), m = L[ym] || {}; return { fix: Object.assign({}, m.fix || {}), vars: (m.vars || []).slice(), extra: (m.extra || []).slice(), incMemo: Object.assign({}, m.incMemo || {}), incOrder: (m.incOrder || []).slice() }; }
   saveMonth(ym, m) { const L = this.ledger(); L[ym] = m; try { localStorage.setItem('academy.ledger', JSON.stringify(L)); } catch (e) {} this.setState({ tick: Date.now() }); }
   // 고정 지출 항목 'academy.ledgerItems' = [{ id, name, hidden }] (app_settings 'ledgerItems'). 강사월급은 직원명부에서 저절로
   fixItems() {
@@ -477,21 +477,29 @@ class Component extends DCLogic {
         window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); },
       resetW: () => { const all = Object.assign({}, this.state.cw || this.rd('money.colW', {}) || {}); const ws = this.colW(k).slice(); ws[i] = this.colDef()[k][i]; all[k] = ws; try { localStorage.setItem('money.colW', JSON.stringify(all)); } catch (x) {} this.setState({ cw: all }); } })).concat([{ label: '', grip: false, style: '' }]) };
   }
-  // 고정 지출 줄 순서: 항목 이름을 누른 채 위아래로 끌면 지나가는 줄과 자리를 바꿈(움직이는 모습 0.18초). 놓으면 저장
-  fixDrag(id, e) {
-    if (e.button) return; e.preventDefault();
-    const vis = () => [...document.querySelectorAll('[data-fid]')].map(el => el.getAttribute('data-fid'));
-    this._ford = vis(); this._fdrag = id;
-    const flip = fn => { const r0 = {}; document.querySelectorAll('[data-fid]').forEach(el => { r0[el.getAttribute('data-fid')] = el.getBoundingClientRect().top; }); fn();
-      document.querySelectorAll('[data-fid]').forEach(el => { const k = el.getAttribute('data-fid'), dy = (r0[k] || 0) - el.getBoundingClientRect().top; if (!dy) return; el.style.transition = 'none'; el.style.transform = 'translateY(' + dy + 'px)'; requestAnimationFrame(() => { el.style.transition = 'transform 0.18s ease'; el.style.transform = ''; }); }); };
-    const mv = ev => { const el = document.elementFromPoint(ev.clientX, ev.clientY), row = el && el.closest && el.closest('[data-fid]'); if (!row) return; const over = row.getAttribute('data-fid'); if (over === this._fdrag || Date.now() - (this._fswap || 0) < 160) return; this._fswap = Date.now();
-      const o = this._ford.slice(), a = o.indexOf(this._fdrag), b = o.indexOf(over); if (a < 0 || b < 0) return; o.splice(a, 1); o.splice(b, 0, this._fdrag); this._ford = o; flip(() => this.setState({ ford: o })); };
-    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); const o = this._ford || []; this._fdrag = null;
-      // 숨긴 항목은 원래 자리 그대로, 보이는 항목만 새 순서로
-      const L = this.fixItems(), visSet = {}; o.forEach(k => { visSet[k] = 1; }); let q = 0; const out = L.map(x => { if (!visSet[x.id]) return x; const id = o[q++]; return L.find(y => y.id === id) || x; });
-      this.saveItems(out); this.setState({ ford: null }); };
+  // 줄 순서 바꾸기 (고정 지출·변동 지출·수입): 줄을 누른 채 위아래로 6px 넘게 끌면 시작(글 칸을 눌러도 됨), 지나가는 같은 묶음 줄과 자리를 바꾸며 0.18초 움직임, 놓으면 저장.
+  // 수입은 같은 날 안에서만 바뀜(날짜 순서는 그대로). 묶음 = data-rg, 줄 = data-rid
+  rowDrag(rg, id, e, save) {
+    if (e.button) return;
+    const y0 = e.clientY; let on = false;
+    const sel = '[data-rg="' + rg + '"]';
+    const ids = () => [...document.querySelectorAll(sel)].map(el => el.getAttribute('data-rid'));
+    const flip = fn => { const r0 = {}; document.querySelectorAll(sel).forEach(el => { r0[el.getAttribute('data-rid')] = el.getBoundingClientRect().top; }); fn();
+      document.querySelectorAll(sel).forEach(el => { const k = el.getAttribute('data-rid'), dy = (r0[k] || 0) - el.getBoundingClientRect().top; if (!dy) return; el.style.transition = 'none'; el.style.transform = 'translateY(' + dy + 'px)'; requestAnimationFrame(() => { el.style.transition = 'transform 0.18s ease'; el.style.transform = ''; }); }); };
+    const mv = ev => {
+      if (!on) { if (Math.abs(ev.clientY - y0) < 6) return; on = true; this._rdrag = { rg: rg, id: id, ord: ids() }; const a = document.activeElement; if (a && a.blur) a.blur(); try { window.getSelection().removeAllRanges(); } catch (x) {} }
+      ev.preventDefault();
+      const el = document.elementFromPoint(ev.clientX, ev.clientY), row = el && el.closest && el.closest(sel); if (!row) return;
+      const over = row.getAttribute('data-rid'); if (over === id || Date.now() - (this._fswap || 0) < 160) return; this._fswap = Date.now();
+      const o = this._rdrag.ord.slice(), a = o.indexOf(id), b = o.indexOf(over); if (a < 0 || b < 0) return; o.splice(a, 1); o.splice(b, 0, id); this._rdrag.ord = o;
+      flip(() => this.setState({ rdrag: { rg: rg, id: id, ord: o } }));
+    };
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); if (!on) return; const o = this._rdrag.ord; this._rdrag = null; this.setState({ rdrag: null }); save(o); };
     window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
   }
+  // 끄는 중이면 그 순서대로
+  dragOrder(rg, list, key) { const d = this.state.rdrag; if (!d || d.rg !== rg) return list; const pos = {}; d.ord.forEach((k, i) => { pos[k] = i; }); return list.slice().sort((a, b) => (pos[key(a)] != null ? pos[key(a)] : 1e9) - (pos[key(b)] != null ? pos[key(b)] : 1e9)); }
+  dragStyle(rg, id) { const d = this.state.rdrag; return d && d.rg === rg && d.id === id ? '; background: #EAF6F6; box-shadow: 0 2px 10px rgba(23, 32, 28, 0.15); position: relative; z-index: 2' : ''; }
   num(v) { const s = String(v == null ? '' : v).replace(/[^0-9-]/g, ''); if (!s || s === '-') return 0; return parseInt(s, 10) || 0; }
   won(n) { return n ? (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ko-KR') : ''; }
   flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
@@ -535,31 +543,37 @@ class Component extends DCLogic {
     // 수입
     const auto = this.incomeAuto(ym);
     const mkey = r => r.pid || (r.d + '|' + r.item + '|' + r.amt + '|' + r.memo);
-    const inc = auto.map((r, i) => ({ auto: true, manual: false, d: i && auto[i - 1].d === r.d ? '' : r.d, item: r.item, amtTxt: this.won(r.amt), memo: (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo,
-      idM: 'mi_m_' + String(mkey(r)).replace(/[^A-Za-z0-9가-힣]/g, '_'), setM: e => put(m => { m.incMemo = Object.assign({}, m.incMemo || {}, { [mkey(r)]: e.target.value.trim() }); }), row: ROW4.replace('border-bottom: 1px solid #EEF1EF', (i + 1 < auto.length && auto[i + 1].d === r.d ? 'border-bottom: 1px dotted #EEF1EF' : 'border-bottom: 1px solid #D5DBD8')) + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
+    // 수입 순서: 날짜 순 → 같은 날 안에서는 원장님이 끌어 정한 순서(incOrder) → 끄는 중이면 그 순서
+    const IO = M.incOrder || [], io = k => { const i = IO.indexOf(k); return i < 0 ? 1e9 : i; };
+    const dd = st.rdrag && /^in:/.test(st.rdrag.rg) ? st.rdrag : null, dp = k => { const i = dd ? dd.ord.indexOf(k) : -1; return i < 0 ? 1e9 : i; };
+    auto.sort((a, b) => a.d - b.d || (dd && ('in:' + a.d) === dd.rg ? dp(mkey(a)) - dp(mkey(b)) : 0) || io(mkey(a)) - io(mkey(b)));
+    const saveIn = o => put(m => { const rest = (m.incOrder || []).filter(k => o.indexOf(k) < 0); m.incOrder = rest.concat(o); });
+    const inc = auto.map((r, i) => ({ rg: 'in:' + r.d, rid: mkey(r), grab: e => this.rowDrag('in:' + r.d, mkey(r), e, saveIn), auto: true, manual: false, d: i && auto[i - 1].d === r.d ? '' : r.d, item: r.item, amtTxt: this.won(r.amt), memo: (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo,
+      idM: 'mi_m_' + String(mkey(r)).replace(/[^A-Za-z0-9가-힣]/g, '_'), setM: e => put(m => { m.incMemo = Object.assign({}, m.incMemo || {}, { [mkey(r)]: e.target.value.trim() }); }), row: ROW4.replace('border-bottom: 1px solid #EEF1EF', (i + 1 < auto.length && auto[i + 1].d === r.d ? 'border-bottom: 1px dotted #EEF1EF' : 'border-bottom: 1px solid #D5DBD8')) + this.dragStyle('in:' + r.d, mkey(r)) + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
       memoStyle: 'font-size: 11px; ' + (r.orphan ? 'color: #B4332B; font-weight: 600; text-decoration: none' : 'color: #8A949E'),
       del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropPays([r.pid]); } })).concat(M.extra.map((r, i) => {
       const set = k => e => put(m => { const x = m.extra.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
-      return { auto: false, manual: true, d: r.d || '', item: r.item || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW4 + '; background: #F5F9FE', idD: 'mx_d_' + r.id, idI: 'mx_i_' + r.id, idA: 'mx_a_' + r.id, idM: 'mx_m_' + r.id,
+      return { rg: 'inx', rid: r.id, auto: false, manual: true, d: r.d || '', item: r.item || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW4 + '; background: #F5F9FE', idD: 'mx_d_' + r.id, idI: 'mx_i_' + r.id, idA: 'mx_a_' + r.id, idM: 'mx_m_' + r.id,
         setD: set('d'), setI: set('item'), setA: set('amt'), setM: set('memo'), del: () => put(m => { m.extra = m.extra.filter(z => z.id !== r.id); }) };
     }));
     const orph = auto.filter(r => r.orphan && r.pid);
     const incSum = auto.filter(r => !r.orphan).reduce((n, r) => n + r.amt, 0) + M.extra.reduce((n, r) => n + (+r.amt || 0), 0);
     // 고정 지출
     let items = this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt));
-    if (st.ford) items = st.ford.map(k => items.find(x => x.id === k)).filter(Boolean).concat(items.filter(x => st.ford.indexOf(x.id) < 0));
+    items = this.dragOrder('fx', items, x => x.id);
+    const saveFx = o => { const L = this.fixItems(), vis = {}; o.forEach(k => { vis[k] = 1; }); let q = 0; this.saveItems(L.map(x => { if (!vis[x.id]) return x; const id = o[q++]; return L.find(y => y.id === id) || x; })); };
     const fix = items.map(it => { const f = M.fix[it.id] || {};
       const set = k => e => put(m => { const x = Object.assign({}, m.fix[it.id] || {}); x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); m.fix[it.id] = x; });
       const key = it.id.replace(/[^A-Za-z0-9가-힣]/g, '_');
-      return { fid: it.id, grab: e => this.fixDrag(it.id, e), item: it.name, d: f.d || '', amtTxt: this.won(+f.amt || 0), memo: f.memo || '', row: ROWF + (st.ford && this._fdrag === it.id ? '; background: #EAF6F6; box-shadow: 0 2px 10px rgba(23, 32, 28, 0.15); position: relative; z-index: 2' : ''), amtLabel: it.name + ' 금액', idD: 'mf_d_' + key, idA: 'mf_a_' + key, idM: 'mf_m_' + key, setD: set('d'), setA: set('amt'), setM: set('memo'),
+      return { fid: it.id, grab: e => this.rowDrag('fx', it.id, e, saveFx), item: it.name, d: f.d || '', amtTxt: this.won(+f.amt || 0), memo: f.memo || '', row: ROWF + this.dragStyle('fx', it.id), amtLabel: it.name + ' 금액', idD: 'mf_d_' + key, idA: 'mf_a_' + key, idM: 'mf_m_' + key, setD: set('d'), setA: set('amt'), setM: set('memo'),
         canHide: true, noHide: false, hide: () => this.saveItems(this.fixItems().map(x => x.id === it.id ? Object.assign({}, x, { hidden: true }) : x)) }; });
     const fixSum = items.reduce((n, it) => n + (+((M.fix[it.id] || {}).amt) || 0), 0);
     const hiddenFix = this.fixItems().filter(x => x.hidden).map(x => ({ name: x.name, show: () => this.saveItems(this.fixItems().map(y => y.id === x.id ? Object.assign({}, y, { hidden: false }) : y)) }));
     const addFix = () => { const el = document.getElementById('mo_newfix'); const nm = ((el && el.value) || '').trim(); if (!nm) return; const L = this.fixItems(); if (L.some(x => x.name === nm)) { this.flash('같은 항목이 있습니다'); return; } L.push({ id: 'F' + Date.now(), name: nm, hidden: false }); if (el) el.value = ''; this.saveItems(L); };
     // 변동 지출
-    const vars = M.vars.slice().sort((a, b) => (+a.d || 99) - (+b.d || 99)).map(r => {
+    const vars = this.dragOrder('va', M.vars, r => r.id).map(r => {
       const set = k => e => put(m => { const x = m.vars.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
-      return { d: r.d || '', item: r.item || '', shop: r.shop || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW5, idD: 'mv_d_' + r.id, idI: 'mv_i_' + r.id, idS: 'mv_s_' + r.id, idA: 'mv_a_' + r.id, idM: 'mv_m_' + r.id,
+      return { rid: r.id, grab: e => this.rowDrag('va', r.id, e, o => put(m => { m.vars = o.map(k => m.vars.find(z => z.id === k)).filter(Boolean).concat(m.vars.filter(z => o.indexOf(z.id) < 0)); })), d: r.d || '', item: r.item || '', shop: r.shop || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW5 + this.dragStyle('va', r.id), idD: 'mv_d_' + r.id, idI: 'mv_i_' + r.id, idS: 'mv_s_' + r.id, idA: 'mv_a_' + r.id, idM: 'mv_m_' + r.id,
         setD: set('d'), setI: set('item'), setS: set('shop'), setA: set('amt'), setM: set('memo'), del: () => put(m => { m.vars = m.vars.filter(z => z.id !== r.id); }) };
     });
     const varSum = M.vars.reduce((n, r) => n + (+r.amt || 0), 0);
@@ -605,7 +619,7 @@ class Component extends DCLogic {
       printBoxes: [
         { title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
         { title: '고정 지출', span: 4, head: ['일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
-        { title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.slice().sort((a, b) => (+a.d || 99) - (+b.d || 99)).map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
+        { title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
         { title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
       ].map(b => Object.assign(b, { rows: b.raw.map(r => r.map(x => typeof x === 'number' ? this.won(x) : x)) })),
       printX: () => this.setState({ printOpen: true }),
