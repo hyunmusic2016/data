@@ -109,6 +109,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <textarea id="{{attMemo.id}}" class="wltxt" aria-label="출석부 메모" onBlur="{{attMemo.save}}" style="grid-column: 2 / -1; width: 100%; min-height: 100px; box-sizing: border-box; padding: 12px 14px; border: none; outline: none; background: transparent; resize: vertical; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{attMemo.text}}</textarea>
         </div>
         <div class="noprint noexp" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 14px 16px; border-top: 1px solid #E1E6E3; background: #FFFFFF">
+          <button type="button" onClick="{{trOpen}}" aria-label="체험레슨 추가" style="flex: none; height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #F0D98A; background: #FFF7D6; color: #7A6200; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap">+ 체험레슨</button>
           <sc-if value="{{mc.closed}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 28px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 600; background: #E6F6F6; color: #007E82">{{mc.status}}</span></sc-if>
           <span style="flex: 1"></span>
           <sc-if value="{{mc.canEdit}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{mc.ask}}" style="{{mc.btnStyle}}">{{mc.btn}}</button></sc-if>
@@ -235,14 +236,13 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <sc-for list="{{am.months}}" as="mo" hint-placeholder-count="12"><button type="button" disabled="{{mo.has}}" onClick="{{mo.pick}}" style="{{mo.style}}">{{mo.label}}</button></sc-for>
         </div>
       </div></sc-if>
-    <button type="button" onClick="{{trOpen}}" aria-label="체험레슨 추가" style="flex: none; align-self: center; height: 28px; margin-right: 6px; padding: 0 10px; border-radius: 8px; border: 1px solid #F0D98A; background: #FFF7D6; color: #7A6200; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap">+ 체험레슨</button>
     <button type="button" onClick="{{addSheet}}\" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
     <button type="button" onClick="{{sm.toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.1</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
