@@ -128,10 +128,23 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.78.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.79.0</span>
     </div>
   </main>
 
+  <nav aria-label="시트" class="noprint" style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: stretch; gap: 2px; background: #FFFFFF; border-top: 1px solid #DDE2DF; padding: 0 12px; box-shadow: 0 -2px 8px rgba(23, 32, 28, 0.04); overflow-x: auto">
+    <sc-if value="{{am.open}}" hint-placeholder-val="{{ false }}"><div class="noprint" onMouseDown="{{am.close}}" style="position: fixed; inset: 0; z-index: 70"></div>
+      <div class="noprint" role="dialog" aria-label="수입·지출 추가할 달" style="{{am.style}}">
+        <div style="display: flex; align-items: center; gap: 6px; padding: 2px 2px 8px"><button type="button" onClick="{{am.prevY}}" aria-label="이전 해" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer">‹</button><span style="flex: 1; text-align: center; font-size: 13px; font-weight: 600; color: #17201C">{{am.year}}년</span><button type="button" onClick="{{am.nextY}}" aria-label="다음 해" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; cursor: pointer">›</button></div>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px"><sc-for list="{{am.months}}" as="mo" hint-placeholder-count="12"><button type="button" disabled="{{mo.has}}" onClick="{{mo.pick}}" style="{{mo.style}}">{{mo.label}}</button></sc-for></div>
+      </div></sc-if>
+    <sc-if value="{{sl.open}}" hint-placeholder-val="{{ false }}"><div class="noprint" onMouseDown="{{sl.close}}" style="position: fixed; inset: 0; z-index: 70"></div>
+      <div class="noprint" role="dialog" aria-label="모든 시트" style="{{sl.style}}"><sc-for list="{{sl.items}}" as="it" hint-placeholder-count="4"><button type="button" onClick="{{it.pick}}" style="{{it.style}}">{{it.name}}</button></sc-for></div></sc-if>
+    <button type="button" onClick="{{addSheet}}" aria-label="새 달 수입·지출 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
+    <button type="button" onClick="{{toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
+    <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
+    <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5"><button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="width: 8px; height: 8px; border-radius: 50%; flex: none; background: #8AB4E8"></span>{{t.name}}</button></sc-for>
+  </nav>
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 70; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; font-weight: 600">{{toast}}</div>
   </sc-if>
@@ -648,6 +661,28 @@ class Component extends DCLogic {
       reOn: !!st.reorder, reOnStr: st.reorder ? 'true' : 'false', reCls: st.reorder ? 'reorder' : '', reLabel: st.reorder ? '순서 바꾸기 끝내기' : '순서 바꾸기',
       reToggle: () => { const a = document.activeElement; if (a && a.blur) a.blur(); this.setState({ reorder: !st.reorder }); },
       reBtn: 'display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (st.reorder ? 'border: 2px solid #00A6AB; background: #00A6AB; color: #FFFFFF' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450'),
+      // 아래 시트 막대 (출석부처럼): 기록이 있는 달 + 이번 달, 최신 달이 맨 왼쪽. + = 달 추가, ≡ = 모든 시트
+      ...(() => {
+        const nm = k => String(k).slice(2, 4) + "' " + (+k.slice(5, 7)) + '월 수입·지출';
+        const now = this.todayYmd().slice(0, 7);
+        const months = Object.keys(this.ledger()).filter(k => /^\d{4}-\d{2}$/.test(k)).concat([now, ym]).filter((k, i, a) => a.indexOf(k) === i).sort().reverse();
+        const go = k => this.setState({ ym: k, addMenu: null, sheetList: false });
+        const pop = (x, y) => 'position: fixed; z-index: 71; left: ' + Math.max(8, x) + 'px; bottom: ' + Math.max(8, innerHeight - y + 6) + 'px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 14px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.18)';
+        const A0 = st.addMenu, Y0 = A0 ? A0.y0 : 0;
+        return {
+          sheetTabs: months.map(k => { const on = k === ym; return { name: nm(k), on: on ? 'true' : 'false', pick: () => go(k),
+            style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? '#5B86C9' : 'transparent') + '; font-family: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #EEF4FC; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500') }; }),
+          addSheet: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ addMenu: { x: r.left, y: r.top, y0: +ym.slice(0, 4) }, sheetList: false }); },
+          am: A0 ? { open: true, year: Y0, close: () => this.setState({ addMenu: null }), prevY: () => this.setState({ addMenu: Object.assign({}, A0, { y0: Y0 - 1 }) }), nextY: () => this.setState({ addMenu: Object.assign({}, A0, { y0: Y0 + 1 }) }),
+            style: pop(A0.x, A0.y) + '; width: 230px',
+            months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(mo => { const k = Y0 + '-' + String(mo).padStart(2, '0'), has = months.indexOf(k) >= 0; return { label: mo + '월', has: has ? 'true' : '',
+              style: 'height: 34px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; ' + (has ? 'border: 1px solid #EEF1F0; background: #F7F9F8; color: #B5BDB8; cursor: default' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #17201C; cursor: pointer'),
+              pick: () => { if (has) return; this.saveMonth(k, this.month(k)); go(k); } }; }) } : { open: false },
+          toggleList: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ sheetList: st.sheetList ? false : { x: r.left, y: r.top }, addMenu: null }); },
+          sl: st.sheetList ? { open: true, close: () => this.setState({ sheetList: false }), style: pop(st.sheetList.x, st.sheetList.y) + '; width: 200px; max-height: 320px; overflow: auto',
+            items: months.map(k => ({ name: nm(k), pick: () => go(k), style: 'height: 32px; padding: 0 10px; border: none; border-radius: 8px; text-align: left; font-family: inherit; font-size: 13px; cursor: pointer; ' + (k === ym ? 'background: #EEF4FC; color: #17201C; font-weight: 600' : 'background: transparent; color: #3A4450') })) } : { open: false }
+        };
+      })(),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
       delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropPays(orph.map(r => r.pid)); },
