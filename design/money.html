@@ -6,7 +6,7 @@
 <title>수입·지출</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.74.0"></script>
+<script src="db.js?v=0.79.7"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -128,7 +128,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.79.6</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.79.7</span>
     </div>
   </main>
 
@@ -513,10 +513,21 @@ class Component extends DCLogic {
   // 수납 기록인데 출석부 그날 칸에 ₩ 표시(p+날짜 또는 'V')가 없으면 남은 찌꺼기 (로그인 사이트에서만 판단, 미납 수납(late)은 빼고)
   orphanPay(p) {
     const A = window.academy; if (!(A && A.data && Array.isArray(A.data.students)) || p.kind === 'late') return false;
-    const nm = String(p.name || '').replace('$', ''), st = A.data.students.find(x => String(x.name || '').replace('$', '') === nm); if (!st) return false;
+    const nm = String(p.name || '').replace('$', ''), same = A.data.students.filter(x => String(x.name || '').replace('$', '') === nm); if (same.length !== 1) return false; const st = same[0];
     const ym = String(p.date).slice(0, 7), d = +String(p.date).slice(8, 10);
     const cells = ((this.rd('academy.attCells', {}) || {})[ym] || {})['D' + st.dbId] || {};
     return !Object.keys(cells).some(rid => rid.charAt(0) !== '_' && cells[rid] && (cells[rid]['p' + d] || cells[rid][d] === 'V' || cells[rid][String(d)] === 'V'));
+  }
+  // 지우기 전에 서버에서 출석부·수납을 다시 불러와, 그래도 출석부에 없는 것만 지움
+  dropOrphans(ids) {
+    const A = window.academy;
+    if (!(A && A.load)) { this.dropPays(ids); return; }
+    this.flash('출석부를 다시 확인하는 중…');
+    Promise.resolve(A.load()).then(() => {
+      const L = this.rd('academy.payments', []), still = ids.filter(id => { const p = L.find(x => x && x.id === id); return p && this.orphanPay(p); });
+      if (still.length < ids.length) this.flash((ids.length - still.length) + '건은 출석부에 있어서 지우지 않았습니다');
+      if (still.length) this.dropPays(still); else this.setState({ tick: Date.now(), orphAsk: false, delAsk: null });
+    }, () => { this.flash('서버에 연결되지 않아 지우지 않았습니다'); this.setState({ orphAsk: false, delAsk: null }); });
   }
   dropPays(ids) { if (!ids.length) return; const L = this.rd('academy.payments', []).filter(x => !(x && ids.indexOf(x.id) >= 0)); try { localStorage.setItem('academy.payments', JSON.stringify(L)); } catch (e) {} this.flash('수납 기록 ' + ids.length + '건을 지웠습니다'); this.setState({ tick: Date.now(), orphAsk: false, delAsk: null }); }
   // 상자 폭 (상자 오른쪽 테두리 바깥 세로줄을 끌어 조정, 두 번 누르면 원래 폭) 'money.boxW' = { in, fx, va, sum } (이 브라우저에만). 상자 안 칸은 상자 폭에 맞춰 늘고 줆
@@ -617,7 +628,7 @@ class Component extends DCLogic {
     const inc = auto.map((r, i) => ({ rg: 'in:' + r.d, rid: mkey(r), grab: e => this.rowDrag('in:' + r.d, mkey(r), e, saveIn), auto: true, manual: false, d: i && auto[i - 1].d === r.d ? '' : r.d, item: r.item, amtTxt: this.won(r.amt), memo: (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo,
       idM: 'mi_m_' + String(mkey(r)).replace(/[^A-Za-z0-9가-힣]/g, '_'), setM: e => put(m => { m.incMemo = Object.assign({}, m.incMemo || {}, { [mkey(r)]: e.target.value.trim() }); }), row: ROW4.replace('border-bottom: 1px solid #EEF1EF', (i + 1 < auto.length && auto[i + 1].d === r.d ? 'border-bottom: 1px dotted #EEF1EF' : 'border-bottom: 1px solid #D5DBD8')) + this.dragStyle('in:' + r.d, mkey(r)) + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
       memoStyle: 'font-size: 11px; ' + (r.orphan ? 'color: #B4332B; font-weight: 600; text-decoration: none' : 'color: #8A949E'),
-      del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropPays([r.pid]); } })).concat(M.extra.map((r, i) => {
+      del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropOrphans([r.pid]); } })).concat(M.extra.map((r, i) => {
       const set = k => e => put(m => { const x = m.extra.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
       return { rg: 'inx', rid: r.id, auto: false, manual: true, d: r.d || '', item: r.item || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW4 + '; background: #F5F9FE', idD: 'mx_d_' + r.id, idI: 'mx_i_' + r.id, idA: 'mx_a_' + r.id, idM: 'mx_m_' + r.id,
         setD: set('d'), setI: set('item'), setA: set('amt'), setM: set('memo'), del: () => put(m => { m.extra = m.extra.filter(z => z.id !== r.id); }) };
@@ -702,7 +713,7 @@ class Component extends DCLogic {
       })(),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
-      delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropPays(orph.map(r => r.pid)); },
+      delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropOrphans(orph.map(r => r.pid)); },
       addExtra: () => put(m => { m.extra.push({ id: 'X' + Date.now(), d: dNow, item: '', amt: 0, memo: '' }); }),
       fix: fix, addFix: addFix, fixKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); addFix(); } },
       vars: vars, varEmpty: !vars.length,

@@ -220,6 +220,7 @@
         // 탭을 옮기거나 새 창으로 열 때 로그인·불러오기 화면이 번쩍이지 않도록 이 브라우저에 저장 (로그아웃·로그인 만료면 지움)
         try { rawSet('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (e) {}
         document.dispatchEvent(new CustomEvent('academy:data'));
+        flushLedger();
       });
     });
   };
@@ -233,6 +234,50 @@
     t.textContent = msg; t.style.display = 'block'; clearTimeout(t._t); t._t = setTimeout(function () { t.style.display = 'none'; }, 4000);
   }
   A.toast = toast;
+  // 수입·지출: 바뀐 달·항목만 '대기'에 모아 두고, 서버의 최신 장부를 받아 그 부분만 합쳐 저장 (다른 컴퓨터에서 고친 달을 덮어쓰지 않음)
+  // 저장에 실패하면 대기를 남겨 두고 빨간 띠 + 30초마다·인터넷 다시 연결되면 다시 시도, 다시 열어도 대기를 먼저 올림
+  function ledP() { try { return JSON.parse(localStorage.getItem('academy.ledgerPending') || 'null') || { ledger: {}, items: {}, order: null }; } catch (e) { return { ledger: {}, items: {}, order: null }; } }
+  function ledgerWrite(k, oldStr, newStr) {
+    var P = ledP(), o, n; try { o = JSON.parse(oldStr || 'null'); n = JSON.parse(newStr || 'null'); } catch (e) { return; }
+    if (k === 'academy.ledger') { o = o || {}; n = n || {}; Object.keys(Object.assign({}, o, n)).forEach(function (ym) { if (JSON.stringify(o[ym]) !== JSON.stringify(n[ym])) P.ledger[ym] = n[ym] === undefined ? null : n[ym]; }); }
+    else { var om = {}; (o || []).forEach(function (x) { if (x) om[x.id] = JSON.stringify(x); }); (n || []).forEach(function (x) { if (x && om[x.id] !== JSON.stringify(x)) P.items[x.id] = x; }); P.order = (n || []).map(function (x) { return x && x.id; }); }
+    rawSet('academy.ledgerPending', JSON.stringify(P)); flushLedger();
+  }
+  var ledBusy = false, ledAgain = false, ledTimer = null;
+  function ledBar(on) {
+    var b = document.getElementById('acLedBar');
+    if (!on) { if (b) b.remove(); return; }
+    if (!b) { b = el('<div id="acLedBar" style="position:fixed;left:0;right:0;top:0;z-index:1002;padding:8px 16px;background:#B4332B;color:#fff;font-size:13px;font-weight:600;text-align:center">수입·지출이 아직 서버에 저장되지 않았습니다 · 인터넷 연결을 확인해 주세요 (자동으로 다시 시도 중, 이 창을 닫지 마세요)</div>'); document.body.appendChild(b); }
+  }
+  function flushLedger() {
+    if (!A.staff || A.staff.role !== 'owner') return;
+    var P = ledP(); if (!Object.keys(P.ledger).length && !Object.keys(P.items).length && !P.order) { ledBar(false); return; }
+    if (ledBusy) { ledAgain = true; return; } ledBusy = true;
+    var fail = function () { ledBusy = false; ledBar(true); clearTimeout(ledTimer); ledTimer = setTimeout(flushLedger, 30000); if (ledAgain) { ledAgain = false; flushLedger(); } };
+    sb.from('app_settings').select('key,value').in('key', ['ledger', 'ledgerItems']).then(function (q) {
+      if (q.error) return fail();
+      var L = {}, I = []; (q.data || []).forEach(function (r) { if (r.key === 'ledger' && r.value) L = r.value; if (r.key === 'ledgerItems' && Array.isArray(r.value)) I = r.value; });
+      Object.keys(P.ledger).forEach(function (ym) { if (P.ledger[ym] === null) delete L[ym]; else L[ym] = P.ledger[ym]; });
+      Object.keys(P.items).forEach(function (id) { var i = I.findIndex(function (x) { return x && x.id === id; }); if (i >= 0) I[i] = P.items[id]; else I.push(P.items[id]); });
+      if (P.order) { var pos = {}; P.order.forEach(function (id, i) { pos[id] = i; }); I = I.map(function (x, i) { return { x: x, i: i }; }).sort(function (a, b) { var pa = a.x && a.x.id in pos ? pos[a.x.id] : 1e6 + a.i, pb = b.x && b.x.id in pos ? pos[b.x.id] : 1e6 + b.i; return pa - pb; }).map(function (o) { return o.x; }); }
+      var now = new Date().toISOString();
+      Promise.all([sb.from('app_settings').upsert({ key: 'ledger', value: L, updated_by: A.staff.id, updated_at: now }), sb.from('app_settings').upsert({ key: 'ledgerItems', value: I, updated_by: A.staff.id, updated_at: now })]).then(function (rs) {
+        if (rs[0].error || rs[1].error) return fail();
+        // 기다리는 동안 새로 바뀐 것은 대기에 그대로 둠 (올린 것만 지움)
+        var P2 = ledP(); Object.keys(P.ledger).forEach(function (ym) { if (JSON.stringify(P2.ledger[ym]) === JSON.stringify(P.ledger[ym])) delete P2.ledger[ym]; });
+        Object.keys(P.items).forEach(function (id) { if (JSON.stringify(P2.items[id]) === JSON.stringify(P.items[id])) delete P2.items[id]; });
+        if (JSON.stringify(P2.order) === JSON.stringify(P.order)) P2.order = null;
+        var left = Object.keys(P2.ledger).length || Object.keys(P2.items).length || P2.order;
+        if (left) rawSet('academy.ledgerPending', JSON.stringify(P2)); else localStorage.removeItem('academy.ledgerPending');
+        if (!left) { rawSet('academy.ledger', JSON.stringify(L)); rawSet('academy.ledgerItems', JSON.stringify(I)); document.dispatchEvent(new CustomEvent('academy:data')); }
+        ledBusy = false; ledBar(false); clearTimeout(ledTimer);
+        if (ledAgain || left) { ledAgain = false; flushLedger(); }
+      }, fail);
+    }, fail);
+  }
+  A.flushLedger = flushLedger;
+  window.addEventListener('online', function () { flushLedger(); });
+  window.addEventListener('beforeunload', function (e) { var P = ledP(); if (Object.keys(P.ledger).length || Object.keys(P.items).length || P.order) { e.preventDefault(); e.returnValue = ''; } });
   var known = { shared: {}, status: {} }, idMap = {};
   function dbIdOf(localId) { if (/^T\d+$/.test(localId) || /^S\d+$/.test(localId)) return Promise.resolve(+localId.slice(1)); return idMap[localId] || Promise.resolve(null); }
 
@@ -271,6 +316,7 @@
   }
   Storage.prototype.setItem = function (k, v) {
     var evOld = (this === window.localStorage && A.data && (k === 'academy.lessonChanges' || k === 'academy.statusChanges')) ? this.getItem(k) : null;
+    var ledOld = (this === window.localStorage && (k === 'academy.ledger' || k === 'academy.ledgerItems')) ? this.getItem(k) : null;
     origSet.call(this, k, v);
     if (evOld !== null) { try { evDiff(k, evOld, v); } catch (e) {} }
     if (this !== window.localStorage || !A.data) return;
@@ -293,7 +339,7 @@
       }
       else if (k === 'academy.ledger' || k === 'academy.ledgerItems') {
         if (!A.staff || A.staff.role !== 'owner') { toast('수입·지출은 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: k === 'academy.ledger' ? 'ledger' : 'ledgerItems', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '수입·지출'); });
+        ledgerWrite(k, ledOld, v);
       }
       else if (k === 'academy.lessonTypes') {
         if (!A.staff || A.staff.role !== 'owner') { toast('레슨 유형은 원장님만 바꿀 수 있습니다'); return; }
