@@ -6,7 +6,7 @@
 <title>학원 출석부</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.79.7"></script>
+<script src="db.js?v=0.80.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
@@ -235,14 +235,34 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <sc-for list="{{am.months}}" as="mo" hint-placeholder-count="12"><button type="button" disabled="{{mo.has}}" onClick="{{mo.pick}}" style="{{mo.style}}">{{mo.label}}</button></sc-for>
         </div>
       </div></sc-if>
-    <button type="button" onClick="{{addSheet}}" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
+    <button type="button" onClick="{{trOpen}}" aria-label="체험레슨 추가" style="flex: none; align-self: center; height: 28px; margin-right: 6px; padding: 0 10px; border-radius: 8px; border: 1px solid #F0D98A; background: #FFF7D6; color: #7A6200; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap">+ 체험레슨</button>
+    <button type="button" onClick="{{addSheet}}\" aria-label="새 달 출석부 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
     <button type="button" onClick="{{sm.toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.79.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.0</span>
   </nav>
+  <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="체험레슨" id="trDlg" tabIndex="-1" onKeyDown="{{tr.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 440px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 20px 48px rgba(23, 32, 28, 0.18); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 18px; font-weight: 600; color: #17201C">{{tr.title}}</span><sc-if value="{{tr.regTxt}}" hint-placeholder-val="{{ false }}"><span style="height: 22px; padding: 0 8px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center">{{tr.regTxt}}</span></sc-if><span style="flex: 1"></span><button type="button" onClick="{{tr.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: none; background: #EEF1F0; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
+      <label style="{{tr.lab}}"><span style="{{tr.labT}}">이름</span><input id="trName" defaultValue="{{tr.name}}" autocomplete="off" style="{{tr.inp}}"></label>
+      <label style="{{tr.lab}}"><span style="{{tr.labT}}">연락처</span><input id="trPhone" defaultValue="{{tr.phone}}" inputMode="tel" autocomplete="off" style="{{tr.inp}}"></label>
+      <div style="display: flex; gap: 10px"><label style="{{tr.lab}}; flex: 1"><span style="{{tr.labT}}">날짜</span><input id="trDate" type="date" defaultValue="{{tr.date}}" style="{{tr.inp}}"></label><label style="{{tr.lab}}; width: 120px"><span style="{{tr.labT}}">시간</span><input id="trTime" data-noclear="1" defaultValue="{{tr.time}}" placeholder="4:30" autocomplete="off" style="{{tr.inp}}"></label></div>
+      <div style="{{tr.lab}}"><span style="{{tr.labT}}">과목</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{tr.subjects}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.name}}</button></sc-for></div></div>
+      <div style="{{tr.lab}}"><span style="{{tr.labT}}">요금</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{tr.kinds}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.name}}</button></sc-for></div></div>
+      <label style="{{tr.feeLab}}"><span style="{{tr.labT}}">금액 (원)</span><input id="trFee" data-noclear="1" defaultValue="{{tr.fee}}" inputMode="numeric" placeholder="{{tr.feePh}}" disabled="{{tr.free}}" autocomplete="off" style="{{tr.inp}}"></label>
+      <sc-if value="{{tr.err}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; font-weight: 600; color: #B4332B">{{tr.err}}</div></sc-if>
+      <div style="display: flex; align-items: center; gap: 8px; padding-top: 4px">
+        <sc-if value="{{tr.edit}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.remove}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{tr.delLabel}}</button></sc-if>
+        <span style="flex: 1"></span>
+        <sc-if value="{{tr.canReg}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.reg}}" style="height: 40px; padding: 0 14px; border-radius: 11px; border: 1px solid #00A6AB; background: #FFFFFF; color: #007E82; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">정식 등록</button></sc-if>
+        <button type="button" onClick="{{tr.save}}" style="height: 40px; padding: 0 18px; border-radius: 11px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">저장</button>
+      </div>
+    </div>
+  </sc-if>
   <sc-if value="{{hv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{hv.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="변경 기록" onKeyDown="{{hv.key}}" tabIndex="-1" id="histDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 560px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none; overflow: hidden">
@@ -712,7 +732,7 @@ class Component extends DCLogic {
   }
   buildCells() {
     // 줄 id 'D12-화' → 원생 키 'D12' (로그인 사이트 원생 줄만 저장)
-    const st = this.state, ac = {}, skOf = rid => { const m = /^(D\d+)(-|$)/.exec(String(rid)); return m ? m[1] : null; };
+    const st = this.state, ac = {}, skOf = rid => { const m = /^([DX]\d+)(-|$)/.exec(String(rid)); return m ? m[1] : null; };
     const put = (m, sk) => { const ym = this.ymK(m); ac[ym] = ac[ym] || {}; return (ac[ym][sk] = ac[ym][sk] || {}); };
     [[11, st.ev]].concat(Object.keys(st.evByMonth || {}).filter(m => +m !== 11).map(m => [+m, st.evByMonth[m]])).forEach(p => {
       Object.keys(p[1] || {}).forEach(rid => { const r = p[1][rid], sk = skOf(rid); if (sk && r && Object.keys(r).length) put(p[0], sk)[rid] = r; });
@@ -833,7 +853,7 @@ class Component extends DCLogic {
   ymOf(m) { return this.ymK(m); }
   // 출석부와 같은 순서: 요일 묶음(월~토, R, 휴원·퇴원·이동) 안에서 시간 순서, 시간 없으면 가나다
   attOrder(all) {
-    const GROUPS = ['월', '화', '수', '목', '금', '토', 'R', '휴원', '퇴원', '이동'];
+    const GROUPS = ['월', '화', '수', '목', '금', '토', 'R', '체험', '휴원', '퇴원', '이동'];
     const OUTG = { '휴원': '휴원', '퇴원': '퇴원', '강사 변경': '이동' };
     const grpOf = s => s.g === '퇴휴' ? (OUTG[s.status] || '퇴원') : s.g;
     const tmin = s => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(s.time || ''); return m0 ? +m0[1] * 60 + +m0[2] : Infinity; };
@@ -858,7 +878,7 @@ class Component extends DCLogic {
     const WD = ['일', '월', '화', '수', '목', '금', '토'];
     const LOG = this.readLog('academy.classLog', {}), LM = LOG[ym] || {};
     const t0 = new Date(), today = (t0.getFullYear() - 2026) * 12 + t0.getMonth() + 1 === m ? t0.getDate() : 0;
-    const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] };
+    const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '체험': ['#FFF4C2', '#7A6200'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] };
     const to12 = t => { const x = /^(\d{1,2}):(\d{2})$/.exec(t || ''); return x ? ((+x[1] % 12) || 12) + ':' + x[2] : ''; };
     let nNotes = 0, nRows = 0;
     this._clSep = 0;
@@ -1017,7 +1037,66 @@ class Component extends DCLogic {
     const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     await this.saveBlob(fname, new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
   }
-  students() {
+  // ---------- 체험레슨 ('academy.trials' [{id,name,phone,date,time,teacher,subject,kind,fee,reg}], Supabase trials 표) ----------
+  // 출석부 '체험레슨' 묶음: 그 강사 탭·체험 날짜가 든 달에만 보임. 줄 키 'X'+id (출결 칸·수납은 보통 원생과 같은 방식, 출석 칸은 ⓪)
+  readTrials() { try { const v = JSON.parse(localStorage.getItem('academy.trials') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  writeTrials(L) { try { localStorage.setItem('academy.trials', JSON.stringify(L)); } catch (e) {} this.setState({ tick: Date.now() }); }
+  // [종류, 이름, 바탕, 글씨, 동그라미] 무료 = 레슨 유형 회색, 50% = 주황, 정상 = 취미 청록 · 전문 라벤더
+  trialKinds() { return [['free', '무료', '#E5E9EC', '#3A4450', '#8A949E'], ['half', '50%', '#FDE7D2', '#9A4A12', '#E08A3C'], ['hobby', '정상 · 취미', '#E6F6F6', '#007E82', '#00A6AB'], ['pro', '정상 · 전문', '#EDE6FA', '#7A5FBF', '#7A5FBF']]; }
+  trialMe() { const TL = this.teacherList(); return String(((TL[Math.min(this.state.teacher || 0, TL.length - 1)] || [''])[0]) || '').replace(' 원장님', ''); }
+  trialRows() {
+    const SC = this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [];
+    const MON = SC[1] || SC[3] || 11, me = this.trialMe();
+    return this.readTrials().filter(t => t && t.id && t.teacher === me && this.kOf(t.date) === MON).map(t => ({ id: 'X' + t.id + '-T', sid: 'X' + t.id, g: '체험', name: t.name, time: t.time || undefined, tickets: 1, start: 0,
+      fresh: t.kind !== 'free' && +t.fee > 0, trial: t, teacher: me, backTag: t.reg ? '→ 등록' : '', rowBg: t.kind === 'pro' ? '#E9E1F7' : undefined }));
+  }
+  openTrial(t) {
+    const SC = this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [], MON = SC[1] || SC[3] || 11, td = this.todayYmd();
+    const tm = t && /^(\d{1,2}):(\d{2})$/.exec(t.time || '');
+    this.setState({ tr: t ? { id: t.id, name: t.name || '', phone: t.phone || '', date: t.date || td, time: tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '', subject: t.subject || '', kind: t.kind || 'hobby', fee: t.kind === 'free' ? '' : String(t.fee == null ? '' : t.fee), reg: t.reg || '', err: '', del: false, n: Date.now() }
+      : { id: null, name: '', phone: '', date: this.kOf(td) === MON ? td : this.ymK(MON) + '-01', time: '', subject: '', kind: 'hobby', fee: '', reg: '', err: '', del: false, n: Date.now() } });
+    setTimeout(() => { const d = document.getElementById(t ? 'trDlg' : 'trName'); if (d) d.focus(); }, 30);
+  }
+  trialForm() {
+    const T = this.state.tr; if (!T) return null;
+    const v = id => { const el = document.getElementById(id); return el ? String(el.value || '').trim() : ''; };
+    const name = v('trName'), date = v('trDate'), tt = v('trTime').replace(/\s/g, ''), fee = +v('trFee').replace(/[^\d]/g, '') || 0;
+    let time = '';
+    if (tt) { const m = /^(\d{1,2})(?::(\d{1,2}))?$/.exec(tt.replace('시', ':').replace(/분$/, '').replace(/:$/, '')); if (!m || +m[1] < 1 || +m[1] > 12 || +(m[2] || 0) > 59) return { err: '시간은 4:30처럼 입력해 주세요.' }; const h = +m[1] === 12 ? 12 : +m[1] + 12; time = String(h).padStart(2, '0') + ':' + String(+(m[2] || 0)).padStart(2, '0'); }
+    if (!name) return { err: '이름을 입력해 주세요.' };
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return { err: '날짜를 골라 주세요.' };
+    return { name: name, phone: v('trPhone'), date: date, time: time, subject: T.subject || '', kind: T.kind, fee: T.kind === 'free' ? 0 : fee };
+  }
+  saveTrial() {
+    const T = this.state.tr, f = this.trialForm(); if (!T || !f) return;
+    if (f.err) { this.setState({ tr: Object.assign({}, T, { err: f.err }) }); return; }
+    const L = this.readTrials();
+    if (T.id) { const i = L.findIndex(x => x.id === T.id); if (i >= 0) L[i] = Object.assign({}, L[i], f); }
+    else L.push(Object.assign({ id: Date.now(), teacher: this.trialMe(), at: Date.now() }, f));
+    this.writeTrials(L);
+    this.setState({ tr: null });
+  }
+  deleteTrial() {
+    const T = this.state.tr; if (!T || !T.id) return;
+    if (!T.del) { this.setState({ tr: Object.assign({}, T, { del: true }) }); return; }
+    this.writeTrials(this.readTrials().filter(x => x.id !== T.id));
+    const P = this.readPays(), P2 = P.filter(x => x.trial !== T.id); if (P2.length !== P.length) this.writePays(P2);
+    this.setState({ tr: null });
+  }
+  // 정식 등록: 수강생대장 원생 등록 창을 이름·연락처·강사·과목이 채워진 채로 연다. 체험 줄에는 '→ 등록'
+  regTrial() {
+    const T = this.state.tr; if (!T || !T.id) return;
+    const f = this.trialForm(); if (f && f.err) { this.setState({ tr: Object.assign({}, T, { err: f.err }) }); return; }
+    const L = this.readTrials(), i = L.findIndex(x => x.id === T.id); if (i < 0) return;
+    L[i] = Object.assign({}, L[i], f || {}, { reg: this.todayYmd() });
+    this.writeTrials(L);
+    const t = L[i];
+    try { localStorage.setItem('students.prefill', JSON.stringify({ name: t.name, phone: t.phone || '', teacher: t.teacher || '', part: t.subject || '', cls: t.kind === 'pro' ? 'pro' : 'hobby', at: Date.now() })); } catch (e) {}
+    this.setState({ tr: null });
+    location.href = 'students.html';
+  }
+  students() { return this.studentsCore().concat(this.trialRows()); }
+  studentsCore() {
     // 수업 요일·시간·드럼스틱 변경(수강생대장과 같이 쓰는 기록)을 적용 날짜가 들어 있는 달부터 반영한다.
     // 그 달은 처음부터 새 요일로 옮기고(이미 입력한 출결은 그대로 따라감), 그 전 달은 예전 요일 그대로.
     const shared = this.state.shared || [];
@@ -1364,6 +1443,9 @@ class Component extends DCLogic {
   }
   // 그날의 레슨 유형 색·이름. 유형에 색이 없으면 반 기본색(취미 청록 · 전문 라벤더). 기본 4회가 아니면 '8회' 같은 칩
   ltStyle(r, ymd) {
+    if (r && r.trial) { const K = this.trialKinds().find(x => x[0] === r.trial.kind) || this.trialKinds()[0];
+      const mx = h => { const n = parseInt(h.slice(1), 16); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * 0.55).toString(16).padStart(2, '0')).join(''); };
+      return { bg: K[2], fg: K[3], dot: K[4], row: K[0] === 'hobby' ? '' : K[0] === 'pro' ? '#F7F4FD' : mx(K[2]), key: 'TR' + K[0], name: '체험 ' + K[1].replace('정상 · ', ''), short: '', count: 1 }; }
     const f = this.feeOn(r, ymd), pro = f.cls === 'pro';
     const t = this.lessonTypes().find(x => (x.cls === 'pro') === pro && +x.count === +f.count && (+x.dur || 60) === (+f.dur || 60) && +x.unit === +f.unit) || null;
     const mix = (h, k) => { const n = parseInt(h.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * k)); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''); };
@@ -1745,11 +1827,12 @@ class Component extends DCLogic {
     const s0 = this.students().find(x => x.id === c0.sid);
     if (!s0) return;
     const name = s0.name.replace('$', '');
-    const info = this.stuInfo(name);
+    const info = s0.trial ? null : this.stuInfo(name);
     let pro = info ? info.cls === 'pro' : !!s0.rowBg;
     let count = info ? info.count : (s0.tickets || (s0.nameBg ? 8 : 4));
     let unit = info ? info.unit : (pro ? 62500 : 40000);
     let total = info ? info.total : unit * count;
+    if (s0.trial) { pro = s0.trial.kind === 'pro'; count = 1; unit = +s0.trial.fee || 0; total = unit; }
     // 로그인 사이트: 반·회당 수업료는 누른 칸 날짜 기준 (수강생대장 수강료 변경의 적용 날짜부터)
     if (s0.reg != null && !late) {
       const cd = this.ymK(m) + '-' + String(c0.d).padStart(2, '0');
@@ -1780,7 +1863,7 @@ class Component extends DCLogic {
     const outRow = s0.g === '퇴휴' && (s0.status === '휴원' || s0.status === '퇴원');
     this.setState({ pop: null, pay: { outRow: outRow, debtN: (this._unpaid || {})[c0.sid] || 0, debtDiff: (this._diffLeft || {})[c0.sid] || 0, recIds: recs.map(x => x.id), recId: rec ? rec.id : null, base: base, diff: diff, dpPaid: dpPaid, name: name, sid: c0.sid, d: c0.d, m: m, date: paid ? recDate : newDate, origDate: recDate, paid: paid, umode: umode, late: !!late, minDate: this.ymK(m) + '-01', pro: pro, count: count, unit: unit, total: total, info: info, dur: (paid && rec && rec.dur) || (info ? info.dur : 60), pay: (paid && rec && rec.pay) || (info ? info.pay : Math.round(unit * 0.5)),
       cash: info ? !!info.cashOn : s0.name.indexOf('$') >= 0, cashType: info ? info.cashType : 'person', cashNo: (info && info.cashNo) || s0.cashNo || '010-0000-' + String(1000 + s0.id * 37).slice(-4),
-      teacher: info ? info.teacher : '', part: info ? info.part : '', sched: info ? (info.day + (info.timeTxt ? ' ' + info.timeTxt : '')) : (s0.g + (s0.time ? ' ' + s0.time : '')), phone: info ? (info.gphone || info.phone) : '' } });
+      teacher: info ? info.teacher : '', part: info ? info.part : '', sched: info ? (info.day + (info.timeTxt ? ' ' + info.timeTxt : '')) : (s0.g + (s0.time ? ' ' + s0.time : '')), phone: info ? (info.gphone || info.phone) : '', trial: s0.trial ? s0.trial.id : '' } });
     setTimeout(() => { const d = document.getElementById('payDlg'); if (d) d.focus(); }, 30);
   }
   readPays() {
@@ -1791,6 +1874,7 @@ class Component extends DCLogic {
     const P = this.state.pay;
     if (!P) return;
     const rec = { name: P.name, date: P.date, amount: P.total, count: P.count, dur: P.dur, unit: P.unit, total: P.total, cls: P.pro ? 'pro' : 'hobby', teacher: P.teacher };
+    if (P.trial) { rec.kind = 'trial'; rec.trial = P.trial; }
     if (P.umode) {
       // 미납금액 수납 (휴원·퇴원 원생): 그 달 안의 날짜면 그 날짜 칸에 빨간 ₩, 다음 달 이후면 칸에는 표시하지 않고 수강권 칸에 '미납금액 수납완료 (날짜)'
       const mm = /^(\d{4})-(\d{2})-(\d{2})$/.exec(P.date || '');
@@ -2378,6 +2462,7 @@ class Component extends DCLogic {
     const chipFor = t => {
       if (!t) return 'display: none';
       // 회차 숫자는 몇 회든 동그라미 (미납 13회 이상도)
+      if (t === '0') return circ(0, false);
       if (/^[1-9]\d*$/.test(t)) return circ(+t, false);
       if (/^[1-9]\d*!$/.test(t)) return circ(parseInt(t, 10), true);
       if (t[0] === '결') return MARK['결'];
@@ -2531,7 +2616,7 @@ class Component extends DCLogic {
             if (used === 1) firstDate = this.kM(Mm) + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
             if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, this.ymK(Mm) + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; const L0 = this.ltStyle(s0, ymdOf(Mm, d)); const b0 = lessonBy[L0.key] || (lessonBy[L0.key] = { n: 0, name: L0.name, bg: L0.bg, fg: L0.fg }); b0.n++; }
-            if (v === '수') { o.text = String(used); o.what = used + '회차 출석'; }
+            if (v === '수') { o.text = s0.trial ? '0' : String(used); o.what = used + '회차 출석'; }
             else { o.text = '결' + used; o.what = used + '회차 결석'; }
             o.kind = v;
             if (!paid) { o.over = true; o.what += ' · 미납 수업'; }
@@ -2667,7 +2752,7 @@ class Component extends DCLogic {
     return { dots: dots, dotGroups: dotGroups, dotLines: dotLines, canPlan: canPlan, plan: plan, tk: tk, subParts: subParts, lateLine: lateLine, diffLine: diffLine[0], diffStyle: 'font-size: 10px; font-weight: 600; letter-spacing: -0.02em; white-space: nowrap; ' + diffLine[1], queueTxt: '' };
     };
     const all = this.students();
-    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['휴원', '휴원'], ['퇴원', '퇴원'], ['이동', '이동']];
+    const GROUPS = [['월', '월'], ['화', '화'], ['수', '수'], ['목', '목'], ['금', '금'], ['토', '토'], ['R', 'R'], ['체험', '체험\n레슨'], ['휴원', '휴원'], ['퇴원', '퇴원'], ['이동', '이동']];
     const SEL = st.sel ? { r1: Math.min(st.sel.r1, st.sel.r2), r2: Math.max(st.sel.r1, st.sel.r2), c1: Math.min(st.sel.c1, st.sel.c2), c2: Math.max(st.sel.c1, st.sel.c2) } : null;
     const BLUE = '#8AB4E8';
     let rowIdx = 0;
@@ -2697,7 +2782,7 @@ class Component extends DCLogic {
         this._rowHide[R] = s.mvT ? (d => !this.cellMine(s, EV[s.id] || {}, MON, d)) : null;
         (this._rowMv = this._rowMv || [])[R] = s.mvT || null;
         // 휴원·퇴원 기간(처리 날짜 ~ 복귀·재등록 전날): 출결은 못 넣고 수납만
-        { const LK = this.statusLocks(s.name.replace('$', '')), ymdD = d => this.ymK(MON) + '-' + String(d).padStart(2, '0');
+        { const LK = s.trial ? [] : this.statusLocks(s.name.replace('$', '')), ymdD = d => this.ymK(MON) + '-' + String(d).padStart(2, '0');
           (this._rowLock = this._rowLock || [])[R] = LK.length ? (d => LK.some(p => ymdD(d) >= p[0] && (!p[1] || ymdD(d) < p[1]))) : null; }
         const r0 = calc(s);
         this._tk = this._tk || {};
@@ -2727,7 +2812,7 @@ class Component extends DCLogic {
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
           name: s.name.replace('$', ''),
-          quick: () => { if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); else if (s.canInfo) this.setState({ tinfo: Object.assign({ rowId: s.id, name: s.name.replace('$', ''), ticket: (this._tk || {})[s.id] || '' }, s.tInfo) }); setTimeout(() => { const d = document.getElementById('tiDlg'); if (d) d.focus(); }, 30); },
+          quick: () => { if (s.trial) { this.openTrial(s.trial); return; } if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); else if (s.canInfo) this.setState({ tinfo: Object.assign({ rowId: s.id, name: s.name.replace('$', ''), ticket: (this._tk || {})[s.id] || '' }, s.tInfo) }); setTimeout(() => { const d = document.getElementById('tiDlg'); if (d) d.focus(); }, 30); },
           rowCls: 'arow' + (this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? ' aflash' : ''),
           flashTag: this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? this._flash.tag : '',
           nameCls: (s.g !== '퇴휴' || s.canBack || s.canInfo) ? 'qname' + ((st.qe && st.qe.rowId === s.id) || (st.ast && st.ast.rowId === s.id) || (st.tinfo && st.tinfo.rowId === s.id) ? ' qsel' : '') : '',
@@ -2739,7 +2824,7 @@ class Component extends DCLogic {
           hasTime: !!s.time || !!s.origG, time: ((s.origG ? s.origG + ' ' : '') + (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12))).trim(),
           // 신규: 등록한 달 동안 이름 옆 파란 '신규' (수강생대장 입원 연월일이 이 달이거나, 아직 입금 전 신규)
           // 다른 강사에게서 넘어온 원생(옮긴 달): '신규' 대신 '← 예전 강사'
-          isNew: (() => { if (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) return false; if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && (2000 + +m[1] - 2026) * 12 + +m[2] === MON; })(),
+          isNew: (() => { if (s.trial) return false; if (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) return false; if (s.newReg) return true; const inf = NEWI[s.name.replace('$', '')] || this.stuInfo(s.name.replace('$', '')); const m = /^(\d{2})\.(\d{2})\./.exec((inf && inf.join) || ''); return !!m && (2000 + +m[1] - 2026) * 12 + +m[2] === MON; })(),
           nameStyle: base + 'background: ' + rowBg + '; border-right: 1px solid ' + SPLIT + '; justify-content: flex-start; gap: 4px; padding-left: 10px; font-size: 14px; font-weight: 600' + (((s.status === '휴원' || s.status === '퇴원') && s.outDate) ? '; height: auto; min-height: 58px; padding-top: 7px; padding-bottom: 7px' : ''),
           check: s.status === '강사 변경' ? '→ ' + s.moveTo : (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to) ? '← ' + s.mvT.prev : ((s.status === '휴원' || s.status === '퇴원') ? '' : (s.status || s.backTag || '')), checkChip: ((s.status === '강사 변경' || (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to)) ? pill('#E3ECFD', '#2952A3') : (!s.status && s.backTag) ? pill('#E6F6F6', '#007E82') : 'display: none'),
           // 휴원·퇴원은 왼쪽 묶음 칸에 이미 보이므로 이름 옆 배지는 없음
@@ -2797,7 +2882,7 @@ class Component extends DCLogic {
         dayCell: 'grid-row: span ' + rows.length + '; display: flex; flex-direction: ' + (rows.length === 1 ? 'row; gap: 2px !important' : 'column') + '; align-items: center; justify-content: center; gap: 4px; background: #FFFFFF; border-bottom: 1px solid ' + ROW + '; border-right: 1px solid ' + SPLIT,
         // 요일 표시: 수강생대장과 같은 요일 색(파스텔 바탕 + 진한 글씨), 오늘 요일은 같은 색 테두리를 한 번 더
         dayChip: (() => {
-          const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] }[gp[0]] || ['#EEF1F0', '#3A4450'];
+          const DC = { '월': ['#FDE8E7', '#B4332B'], '화': ['#E3ECFD', '#2952A3'], '수': ['#FCF1C2', '#7A6200'], '목': ['#DFF2E4', '#2F6B43'], '금': ['#FDEBDC', '#9A4A12'], '토': ['#ECE4F8', '#5B4A8B'], 'R': ['#EEF1F0', '#3A4450'], '체험': ['#FFF4C2', '#7A6200'], '휴원': ['#FFF4E0', '#9A5B00'], '퇴원': ['#FCEBEA', '#B4332B'], '이동': ['#E3ECFD', '#2952A3'] }[gp[0]] || ['#EEF1F0', '#3A4450'];
           const one = rows.length === 1;
           const two = gp[1].length > 1;
           return 'background: ' + DC[0] + '; color: ' + DC[1] + '; border: none; ' + (isTodayG ? 'box-shadow: inset 0 0 0 2px ' + DC[1] + '; ' : '') +
@@ -3120,6 +3205,19 @@ class Component extends DCLogic {
       sm: sm,
       sheetTabs: sheetTabs,
       // + : 해·달을 골라 출석부를 만든다 (아직 없는 달만, ‹ › 로 해 넘김)
+      trOpen: () => this.openTrial(null),
+      tr: st.tr ? (() => { const T = st.tr, chip = (on, bg, fg) => 'height: 32px; padding: 0 12px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid ' + (on ? fg : '#DDE2DF') + '; background: ' + (on ? bg : '#FFFFFF') + '; color: ' + (on ? fg : '#5E6873');
+        const set = p => { const g = id => { const el = document.getElementById(id); return el ? el.value : undefined; }, cur = {}; [['name', 'trName'], ['phone', 'trPhone'], ['date', 'trDate'], ['time', 'trTime'], ['fee', 'trFee']].forEach(q => { const v = g(q[1]); if (v !== undefined) cur[q[0]] = v; }); this.setState({ tr: Object.assign({}, this.state.tr, cur, p, { err: '' }) }); };
+        return { open: true, title: T.id ? '체험레슨 · ' + T.name : '체험레슨 추가', edit: !!T.id, canReg: !!T.id && this.isOwner(), regTxt: T.reg ? '정식 등록 ' + (+T.reg.slice(5, 7)) + '/' + (+T.reg.slice(8, 10)) : '',
+          name: T.name, phone: T.phone, date: T.date, time: T.time, fee: T.fee, err: T.err || '', free: T.kind === 'free', feePh: T.kind === 'free' ? '무료' : '금액 입력',
+          lab: 'display: flex; flex-direction: column; gap: 5px', labT: 'font-size: 12px; font-weight: 600; color: #5E6873',
+          feeLab: 'display: flex; flex-direction: column; gap: 5px' + (T.kind === 'free' ? '; opacity: 0.5' : ''),
+          inp: 'height: 38px; padding: 0 10px; border: 1px solid #DDE2DF; border-radius: 10px; font-family: inherit; font-size: 14px; color: #17201C; box-sizing: border-box; width: 100%; background: #FFFFFF',
+          subjects: this.subjectList().map(sj => { const nm = sj.name || sj, pc = this.partColors()[nm] || ['#E6F6F6', '#007E82']; return { name: nm, on: T.subject === nm ? 'true' : 'false', style: chip(T.subject === nm, pc[0], pc[1]), pick: () => set({ subject: T.subject === nm ? '' : nm }) }; }),
+          kinds: this.trialKinds().map(k => ({ name: k[1], on: T.kind === k[0] ? 'true' : 'false', style: chip(T.kind === k[0], k[2], k[3]), pick: () => set({ kind: k[0] }) })),
+          delLabel: T.del ? '한 번 더 누르면 삭제' : '삭제',
+          close: () => this.setState({ tr: null }), save: () => this.saveTrial(), remove: () => this.deleteTrial(), reg: () => this.regTrial(),
+          key: e => { if (e.key === 'Escape') { e.stopPropagation(); this.setState({ tr: null }); } else if (e.key === 'Enter' && e.target && e.target.tagName === 'INPUT') { e.preventDefault(); this.saveTrial(); } } }; })() : { open: false },
       addSheet: e => { const r = e && e.currentTarget ? e.currentTarget.getBoundingClientRect() : { left: 20, top: innerHeight - 40 }; this.setState({ addMenu: { x: r.left, y: r.top, y0: this.kY(MON) } }); },
       am: (() => { const A0 = st.addMenu; if (!A0) return { open: false }; const have = this.sheetList().map(x => x[1]);
         const Y0 = A0.y0 || 2026;
@@ -3379,14 +3477,14 @@ class Component extends DCLogic {
       lessonCount: lessonCount,
       openSheet: () => this.openSheet(), ltInfoOpen: () => this.setState({ ltInfo: true }),
       // 레슨횟수 칸을 누르면: 이 강사 탭 이번 달에 수업이 있는 유형만, 횟수를 크게
-      ltInfo: st.ltInfo ? (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); const tot = ks.reduce((n, k) => n + lessonBy[k].n, 0);
+      ltInfo: st.ltInfo ? (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); const tot = ks.reduce((n, k) => n + lessonBy[k].n, 0);
         return { open: true, close: () => this.setState({ ltInfo: false }), total: tot, sub: this.kLabel(MON) + ' · ' + String(curT[0] || '').replace(' 원장님', ' 원장님'),
           rows: ks.map(k => { const b = lessonBy[k], t = this.lessonTypes().find(x => x.id === k); return { name: b.name, n: b.n, pct: tot ? Math.round(b.n / tot * 100) + '%' : '', desc: t ? '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원' : '설정에 없는 수강료',
             card: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: ' + b.bg + '; color: ' + b.fg, bar: 'flex: ' + b.n + ' 0 0; background: ' + b.fg }; }) }; })() : { open: false },
       // MEMO 위 범례 한 줄 (이번 달 수업이 있는 유형, 인쇄·내보내기에도)
-      ltLegend: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return { show: ks.length > 0, items: ks.map(k => ({ t: lessonBy[k].name + ' ' + lessonBy[k].n + '회', style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-weight: 600; background: ' + lessonBy[k].bg + '; color: ' + lessonBy[k].fg })) }; })(),
+      ltLegend: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return { show: ks.length > 0, items: ks.map(k => ({ t: lessonBy[k].name + ' ' + lessonBy[k].n + '회', style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-weight: 600; background: ' + lessonBy[k].bg + '; color: ' + lessonBy[k].fg })) }; })(),
       // 레슨횟수 유형별 칩 (그 달 수업이 있는 유형만, 마우스 올리면 유형 이름)
-      lessonTypesChips: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return (ks.length ? ks : ['xh']).map(k => { const b = lessonBy[k] || { n: 0, name: '취미', bg: '#E6F6F6', fg: '#007E82' }; return { n: b.n, title: b.name + ' ' + b.n + '회', style: 'display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: ' + b.bg + '; color: ' + b.fg + '; font-size: 15px; font-weight: 600' }; }); })(),
+      lessonTypesChips: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return (ks.length ? ks : ['xh']).map(k => { const b = lessonBy[k] || { n: 0, name: '취미', bg: '#E6F6F6', fg: '#007E82' }; return { n: b.n, title: b.name + ' ' + b.n + '회', style: 'display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 26px; padding: 0 9px; box-sizing: border-box; border-radius: 999px; background: ' + b.bg + '; color: ' + b.fg + '; font-size: 15px; font-weight: 600' }; }); })(),
       lessonHobby: lessonHobby,
       lessonPro: lessonPro,
       showHobby: all.some(s0 => !s0.status && !s0.rowBg),

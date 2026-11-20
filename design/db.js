@@ -184,7 +184,8 @@
         sb.from('attendance_cells').select('student_id,ym,cells'),
         sb.from('payments').select('*').order('id'),
         sb.from('ticket_plans').select('student_id,plan_date'),
-        sb.from('cell_log').select('local_id,at,who,tab,ym,rid,name,k,a,b').order('at', { ascending: false }).limit(20000)
+        sb.from('cell_log').select('local_id,at,who,tab,ym,rid,name,k,a,b').order('at', { ascending: false }).limit(20000),
+        sb.from('trials').select('id,data')
       ]).then(function (qs) {
         // 출석부 변경 기록 (009 SQL). 표가 없으면 이 브라우저에만 남김
         if (!qs[6].error) {
@@ -203,6 +204,20 @@
           A.payReady = true;
           var pl = qs[4].data.map(function (r) { var s = byId[r.student_id]; if (!s) return null; return Object.assign({}, r.extra || {}, { id: r.local_id || ('P' + r.id), name: s.name, date: r.date, count: r.count, dur: r.dur, unit: r.unit, total: r.total, cls: r.cls }, r.kind === 'unpaid' ? { kind: 'unpaid' } : {}); }).filter(Boolean);
           rawSet('academy.payments', JSON.stringify(pl)); known.pay = idxList(pl);
+        }
+        // 체험레슨 (010 SQL): 출석부 칸('X'+id)·수납(kind 'trial')을 trials 표 한 줄에 같이 둠
+        A.trialTried = true;
+        if (qs[7] && !qs[7].error) {
+          A.trialReady = true;
+          var trL = [], acT = {}, plT = [];
+          try { acT = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; plT = JSON.parse(localStorage.getItem('academy.payments') || '[]') || []; } catch (x) {}
+          Object.keys(acT).forEach(function (ym) { Object.keys(acT[ym] || {}).forEach(function (k) { if (/^X/.test(k)) delete acT[ym][k]; }); });
+          plT = plT.filter(function (p) { return !(p && p.kind === 'trial'); });
+          (qs[7].data || []).forEach(function (r) { var d = r.data || {}; if (!d.info) return; trL.push(d.info);
+            Object.keys(d.cells || {}).forEach(function (ym) { (acT[ym] = acT[ym] || {})['X' + d.info.id] = d.cells[ym]; });
+            (d.pays || []).forEach(function (p) { plT.push(p); }); });
+          rawSet('academy.trials', JSON.stringify(trL)); rawSet('academy.attCells', JSON.stringify(acT)); rawSet('academy.payments', JSON.stringify(plT));
+          known.trial = trialData();
         }
         if (!qs[5].error) {
           var tp = {}; (qs[5].data || []).forEach(function (r) { var s = byId[r.student_id]; if (s) tp[s.name] = r.plan_date; });
@@ -332,6 +347,7 @@
       else if (k === 'academy.attCells') syncAtt(JSON.parse(v || '{}'));
       else if (k === 'academy.cellLog') syncClog(JSON.parse(v || '[]'));
       else if (k === 'academy.payments') syncPays(JSON.parse(v || '[]'));
+      if (k === 'academy.trials' || k === 'academy.attCells' || k === 'academy.payments') syncTrials();
       else if (k === 'academy.ticketPlans') syncPlans(JSON.parse(v || '{}'));
       else if (k === 'academy.attMemo') {
         // 출석부 MEMO: 원장님 것만 Supabase에 저장(설정 표는 원장님만 쓸 수 있음), 강사는 이 브라우저에만
@@ -384,11 +400,29 @@
     if (up.length) sb.from('attendance_cells').upsert(up, { onConflict: 'student_id,ym' }).then(function (r) { report(r, '출석부 저장'); });
     known.att = now;
   }
+  function trialData() {
+    var L = [], ac = {}, pl = [], out = {};
+    try { L = JSON.parse(localStorage.getItem('academy.trials') || '[]') || []; ac = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; pl = JSON.parse(localStorage.getItem('academy.payments') || '[]') || []; } catch (e) {}
+    L.forEach(function (t) { if (!t || !t.id) return; var cells = {};
+      Object.keys(ac).forEach(function (ym) { var c = (ac[ym] || {})['X' + t.id]; if (c && Object.keys(c).length) cells[ym] = c; });
+      out[String(t.id)] = JSON.stringify({ info: t, cells: cells, pays: pl.filter(function (p) { return p && p.trial === t.id; }) }); });
+    return out;
+  }
+  function syncTrials() {
+    var now = trialData(), prev = known.trial || {};
+    if (!A.trialReady) { if (A.trialTried && Object.keys(now).length) toast('체험레슨을 저장하려면 Supabase에서 010 SQL을 먼저 실행해 주세요'); return; }
+    var up = [];
+    Object.keys(now).forEach(function (id) { if (prev[id] !== now[id]) up.push({ id: id, data: JSON.parse(now[id]), updated_by: A.staff.id, updated_at: new Date().toISOString() }); });
+    Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('trials').delete().eq('id', id).then(function (r) { report(r, '체험레슨 삭제'); }); });
+    if (up.length) sb.from('trials').upsert(up).then(function (r) { report(r, '체험레슨 저장'); });
+    known.trial = now;
+  }
   function syncPays(list) {
     if (!A.payReady) { if (A.attTried) toast('수납을 저장하려면 Supabase에서 008 SQL을 먼저 실행해 주세요'); return; }
     var prev = known.pay || {}, now = {}, up = [];
     (list || []).forEach(function (e) {
       if (!e || !e.id) return;
+      if (e.kind === 'trial') return;
       var sid = sidOfName(e.name); if (!sid) return;
       var js = JSON.stringify(e); now[e.id] = js; if (prev[e.id] === js) return;
       up.push({ local_id: e.id, student_id: sid, date: e.date, kind: e.kind === 'unpaid' ? 'unpaid' : 'normal', count: +e.count || 0, dur: +e.dur || null, unit: +e.unit || null, total: +e.total || 0, cls: e.cls === 'pro' ? 'pro' : 'hobby', extra: e, created_by: A.staff.id, updated_at: new Date().toISOString() });
