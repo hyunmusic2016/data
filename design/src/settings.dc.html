@@ -288,7 +288,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.73.13</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.74.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -488,7 +488,7 @@ class Component extends DCLogic {
   // 맨 위 메뉴 탭 (모든 페이지 공통): 설정 > 메뉴 탭에서 순서·이름·숨기기·추가·삭제를 정한다.
   // 이 브라우저에 'academy.menu'로 저장하고, 로그인한 사이트에서는 Supabase(app_settings)와 같이 쓴다.
   menuItems() {
-    const DEF = [['attendance', '출석부', 'Main.dc.html'], ['students', '수강생대장', 'Students.dc.html'], ['notice', '수납 안내', 'Notice.dc.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['settings', '설정', 'Settings.dc.html']];
+    const DEF = [['attendance', '출석부', 'Main.dc.html'], ['students', '수강생대장', 'Students.dc.html'], ['notice', '수납 안내', 'Notice.dc.html'], ['money', '수입·지출', 'Money.dc.html'], ['stats', '통계', '#'], ['settings', '설정', 'Settings.dc.html']];
     let cfg = null;
     try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
     const base = {};

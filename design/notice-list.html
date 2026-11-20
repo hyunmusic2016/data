@@ -6,7 +6,7 @@
 <title>수납 안내 (목록)</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.70.0"></script>
+<script src="db.js?v=0.74.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -233,7 +233,7 @@ class Component extends DCLogic {
     }, true);
   }
   menuItems() {
-    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
+    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', 'money.html'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
     let cfg = null;
     try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
     const base = {};

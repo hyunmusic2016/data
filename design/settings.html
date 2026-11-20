@@ -6,7 +6,7 @@
 <title>설정</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.70.0"></script>
+<script src="db.js?v=0.74.0"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -289,7 +289,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.73.13</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.74.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -491,7 +491,7 @@ class Component extends DCLogic {
   // 맨 위 메뉴 탭 (모든 페이지 공통): 설정 > 메뉴 탭에서 순서·이름·숨기기·추가·삭제를 정한다.
   // 이 브라우저에 'academy.menu'로 저장하고, 로그인한 사이트에서는 Supabase(app_settings)와 같이 쓴다.
   menuItems() {
-    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
+    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', 'money.html'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
     let cfg = null;
     try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
     const base = {};

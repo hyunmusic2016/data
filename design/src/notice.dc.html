@@ -111,7 +111,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.73.13</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.74.0</span>
     </div>
   </main>
 
@@ -260,7 +260,7 @@ class Component extends DCLogic {
     }, true);
   }
   menuItems() {
-    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', '#'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
+    const DEF = [['attendance', '출석부', 'attendance.html'], ['students', '수강생대장', 'students.html'], ['notice', '수납 안내', 'notice.html'], ['money', '수입·지출', 'Money.dc.html'], ['stats', '통계', '#'], ['settings', '설정', 'settings.html']];
     let cfg = null;
     try { cfg = JSON.parse(localStorage.getItem('academy.menu') || 'null'); } catch (e) {}
     const base = {};
