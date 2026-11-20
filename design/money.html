@@ -128,7 +128,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.79.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.79.1</span>
     </div>
   </main>
 
@@ -143,7 +143,8 @@ html.bwp .printonly .pcell{border-color:#000!important}
     <button type="button" onClick="{{addSheet}}" aria-label="새 달 수입·지출 추가" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer">+</button>
     <button type="button" onClick="{{toggleList}}" aria-label="모든 시트" style="width: 30px; flex: none; border: none; background: none; color: #5E6873; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"></path></svg></button>
     <span style="width: 1px; background: #E1E6E3; margin: 8px 4px"></span>
-    <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5"><button type="button" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="width: 8px; height: 8px; border-radius: 50%; flex: none; background: #8AB4E8"></span>{{t.name}}</button></sc-for>
+    <sc-if value="{{tc.open}}" hint-placeholder-val="{{ false }}"><div class="noprint" onMouseDown="{{tc.close}}" onContextMenu="{{tc.close}}" style="position: fixed; inset: 0; z-index: 70"></div><div class="noprint" role="menu" aria-label="시트 메뉴" style="{{tc.style}}"><button type="button" role="menuitem" onClick="{{tc.hide}}" style="height: 34px; padding: 0 12px; border: none; border-radius: 8px; background: transparent; text-align: left; font-family: inherit; font-size: 13px; font-weight: 600; color: #17201C; cursor: pointer">{{tc.label}}</button></div></sc-if>
+    <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5"><button type="button" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" title="오른쪽 클릭: 시트 숨기기" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="width: 8px; height: 8px; border-radius: 50%; flex: none; background: #8AB4E8"></span>{{t.name}}</button></sc-for>
   </nav>
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); z-index: 70; padding: 12px 18px; border-radius: 12px; background: #17201C; color: #FFFFFF; font-size: 14px; font-weight: 600">{{toast}}</div>
@@ -669,8 +670,13 @@ class Component extends DCLogic {
         const go = k => this.setState({ ym: k, addMenu: null, sheetList: false });
         const pop = (x, y) => 'position: fixed; z-index: 71; left: ' + Math.max(8, x) + 'px; bottom: ' + Math.max(8, innerHeight - y + 6) + 'px; padding: 10px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 14px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.18)';
         const A0 = st.addMenu, Y0 = A0 ? A0.y0 : 0;
+        // 시트 숨기기 (출석부처럼, 이 브라우저에만 'money.hiddenSheets'): 탭 오른쪽 클릭 → '시트 숨기기', ≡ 목록에서 숨긴 시트를 누르면 다시 보임
+        const HID = this.rd('money.hiddenSheets', []) || [];
+        const setHid = L => { try { localStorage.setItem('money.hiddenSheets', JSON.stringify(L)); } catch (x) {} };
+        const vis = months.filter(k => HID.indexOf(k) < 0 || k === ym);
+        const TC = st.tabCtx;
         return {
-          sheetTabs: months.map(k => { const on = k === ym; return { name: nm(k), on: on ? 'true' : 'false', pick: () => go(k),
+          sheetTabs: vis.map(k => { const on = k === ym; return { name: nm(k), on: on ? 'true' : 'false', pick: () => go(k), ctx: e => { e.preventDefault(); this.setState({ tabCtx: { x: e.clientX, y: e.clientY, k: k }, addMenu: null, sheetList: false }); },
             style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? '#5B86C9' : 'transparent') + '; font-family: inherit; font-size: 12px; cursor: pointer; white-space: nowrap; ' + (on ? 'background: #EEF4FC; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500') }; }),
           addSheet: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ addMenu: { x: r.left, y: r.top, y0: +ym.slice(0, 4) }, sheetList: false }); },
           am: A0 ? { open: true, year: Y0, close: () => this.setState({ addMenu: null }), prevY: () => this.setState({ addMenu: Object.assign({}, A0, { y0: Y0 - 1 }) }), nextY: () => this.setState({ addMenu: Object.assign({}, A0, { y0: Y0 + 1 }) }),
@@ -678,9 +684,12 @@ class Component extends DCLogic {
             months: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(mo => { const k = Y0 + '-' + String(mo).padStart(2, '0'), has = months.indexOf(k) >= 0; return { label: mo + '월', has: has ? 'true' : '',
               style: 'height: 34px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; ' + (has ? 'border: 1px solid #EEF1F0; background: #F7F9F8; color: #B5BDB8; cursor: default' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #17201C; cursor: pointer'),
               pick: () => { if (has) return; this.saveMonth(k, this.month(k)); go(k); } }; }) } : { open: false },
+          tc: TC ? { open: true, label: '시트 숨기기', close: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ tabCtx: null }); },
+            style: 'position: fixed; z-index: 71; left: ' + Math.max(8, TC.x) + 'px; bottom: ' + Math.max(8, innerHeight - TC.y + 4) + 'px; width: 150px; padding: 6px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 12px; box-shadow: 0 12px 32px rgba(23, 32, 28, 0.18)',
+            hide: () => { const L = HID.concat([TC.k]).filter((k, i, a) => a.indexOf(k) === i); const rest = months.filter(k => L.indexOf(k) < 0); if (!rest.length) { this.flash('시트를 모두 숨길 수는 없습니다'); this.setState({ tabCtx: null }); return; } setHid(L); this.setState({ tabCtx: null, ym: TC.k === ym ? rest[0] : ym }); } } : { open: false },
           toggleList: e => { const r = e.currentTarget.getBoundingClientRect(); this.setState({ sheetList: st.sheetList ? false : { x: r.left, y: r.top }, addMenu: null }); },
           sl: st.sheetList ? { open: true, close: () => this.setState({ sheetList: false }), style: pop(st.sheetList.x, st.sheetList.y) + '; width: 200px; max-height: 320px; overflow: auto',
-            items: months.map(k => ({ name: nm(k), pick: () => go(k), style: 'height: 32px; padding: 0 10px; border: none; border-radius: 8px; text-align: left; font-family: inherit; font-size: 13px; cursor: pointer; ' + (k === ym ? 'background: #EEF4FC; color: #17201C; font-weight: 600' : 'background: transparent; color: #3A4450') })) } : { open: false }
+            items: months.map(k => ({ name: nm(k) + (HID.indexOf(k) >= 0 ? '  (숨김)' : ''), pick: () => { if (HID.indexOf(k) >= 0) setHid(HID.filter(x => x !== k)); go(k); }, style: 'height: 32px; padding: 0 10px; border: none; border-radius: 8px; text-align: left; font-family: inherit; font-size: 13px; cursor: pointer; ' + (k === ym ? 'background: #EEF4FC; color: #17201C; font-weight: 600' : 'background: transparent; color: #3A4450') })) } : { open: false }
         };
       })(),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
