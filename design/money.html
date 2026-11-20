@@ -82,7 +82,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6; color: #9A3A31">고정 지출</div>
             <div style="{{hFx.row}}"><sc-for list="{{hFx.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{fix}}" as="r" hint-placeholder-count="6">
-              <div style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span style="{{cl}}">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
+              <div data-fid="{{r.fid}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span onMouseDown="{{r.grab}}" title="누른 채 위아래로 끌어 순서 바꾸기" style="{{cl}}; cursor: grab; user-select: none; display: flex; align-items: center; gap: 6px"><span aria-hidden="true" class="noexp" style="color: #C3CAC6; font-size: 11px; letter-spacing: -2px">⋮⋮</span>{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><sc-if value="{{r.canHide}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.hide}}" title="이 항목을 목록에서 숨기기 (다음 달부터 안 나옴)" aria-label="항목 숨기기" style="{{delBtn}}">×</button></sc-if><sc-if value="{{r.noHide}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></div>
             </sc-for>
             <div class="noexp" style="display: flex; gap: 6px; padding: 8px 10px"><input id="mo_newfix" type="text" defaultValue="" onKeyDown="{{fixKey}}" aria-label="새 고정 지출 항목" placeholder="새 항목 이름" style="flex: 1; min-width: 0; height: 32px; padding: 0 10px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FAFBFA; font-family: inherit; font-size: 13px"><button type="button" onClick="{{addFix}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #9A3A31; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">+ 항목</button></div>
             <sc-if value="{{hiddenFix}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 4px 10px 10px; font-size: 12px; color: #8A949E">숨긴 항목<sc-for list="{{hiddenFix}}" as="h" hint-placeholder-count="1"><button type="button" onClick="{{h.show}}" title="다시 보이기" style="height: 24px; padding: 0 8px; border-radius: 999px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">{{h.name}} +</button></sc-for></div></sc-if>
@@ -126,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.75.1</span>
     </div>
   </main>
 
@@ -477,6 +477,21 @@ class Component extends DCLogic {
         window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); },
       resetW: () => { const all = Object.assign({}, this.state.cw || this.rd('money.colW', {}) || {}); const ws = this.colW(k).slice(); ws[i] = this.colDef()[k][i]; all[k] = ws; try { localStorage.setItem('money.colW', JSON.stringify(all)); } catch (x) {} this.setState({ cw: all }); } })).concat([{ label: '', grip: false, style: '' }]) };
   }
+  // 고정 지출 줄 순서: 항목 이름을 누른 채 위아래로 끌면 지나가는 줄과 자리를 바꿈(움직이는 모습 0.18초). 놓으면 저장
+  fixDrag(id, e) {
+    if (e.button) return; e.preventDefault();
+    const vis = () => [...document.querySelectorAll('[data-fid]')].map(el => el.getAttribute('data-fid'));
+    this._ford = vis(); this._fdrag = id;
+    const flip = fn => { const r0 = {}; document.querySelectorAll('[data-fid]').forEach(el => { r0[el.getAttribute('data-fid')] = el.getBoundingClientRect().top; }); fn();
+      document.querySelectorAll('[data-fid]').forEach(el => { const k = el.getAttribute('data-fid'), dy = (r0[k] || 0) - el.getBoundingClientRect().top; if (!dy) return; el.style.transition = 'none'; el.style.transform = 'translateY(' + dy + 'px)'; requestAnimationFrame(() => { el.style.transition = 'transform 0.18s ease'; el.style.transform = ''; }); }); };
+    const mv = ev => { const el = document.elementFromPoint(ev.clientX, ev.clientY), row = el && el.closest && el.closest('[data-fid]'); if (!row) return; const over = row.getAttribute('data-fid'); if (over === this._fdrag || Date.now() - (this._fswap || 0) < 160) return; this._fswap = Date.now();
+      const o = this._ford.slice(), a = o.indexOf(this._fdrag), b = o.indexOf(over); if (a < 0 || b < 0) return; o.splice(a, 1); o.splice(b, 0, this._fdrag); this._ford = o; flip(() => this.setState({ ford: o })); };
+    const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); const o = this._ford || []; this._fdrag = null;
+      // 숨긴 항목은 원래 자리 그대로, 보이는 항목만 새 순서로
+      const L = this.fixItems(), visSet = {}; o.forEach(k => { visSet[k] = 1; }); let q = 0; const out = L.map(x => { if (!visSet[x.id]) return x; const id = o[q++]; return L.find(y => y.id === id) || x; });
+      this.saveItems(out); this.setState({ ford: null }); };
+    window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up);
+  }
   num(v) { const s = String(v == null ? '' : v).replace(/[^0-9-]/g, ''); if (!s || s === '-') return 0; return parseInt(s, 10) || 0; }
   won(n) { return n ? (n < 0 ? '-' : '') + Math.abs(n).toLocaleString('ko-KR') : ''; }
   flash(t) { clearTimeout(this._tt); this.setState({ toast: t }); this._tt = setTimeout(() => this.setState({ toast: '' }), 2400); }
@@ -531,11 +546,12 @@ class Component extends DCLogic {
     const orph = auto.filter(r => r.orphan && r.pid);
     const incSum = auto.filter(r => !r.orphan).reduce((n, r) => n + r.amt, 0) + M.extra.reduce((n, r) => n + (+r.amt || 0), 0);
     // 고정 지출
-    const items = this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt));
+    let items = this.fixItems().filter(x => !x.hidden || (M.fix[x.id] && +M.fix[x.id].amt));
+    if (st.ford) items = st.ford.map(k => items.find(x => x.id === k)).filter(Boolean).concat(items.filter(x => st.ford.indexOf(x.id) < 0));
     const fix = items.map(it => { const f = M.fix[it.id] || {};
       const set = k => e => put(m => { const x = Object.assign({}, m.fix[it.id] || {}); x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); m.fix[it.id] = x; });
       const key = it.id.replace(/[^A-Za-z0-9가-힣]/g, '_');
-      return { item: it.name, d: f.d || '', amtTxt: this.won(+f.amt || 0), memo: f.memo || '', row: ROWF, amtLabel: it.name + ' 금액', idD: 'mf_d_' + key, idA: 'mf_a_' + key, idM: 'mf_m_' + key, setD: set('d'), setA: set('amt'), setM: set('memo'),
+      return { fid: it.id, grab: e => this.fixDrag(it.id, e), item: it.name, d: f.d || '', amtTxt: this.won(+f.amt || 0), memo: f.memo || '', row: ROWF + (st.ford && this._fdrag === it.id ? '; background: #EAF6F6; box-shadow: 0 2px 10px rgba(23, 32, 28, 0.15); position: relative; z-index: 2' : ''), amtLabel: it.name + ' 금액', idD: 'mf_d_' + key, idA: 'mf_a_' + key, idM: 'mf_m_' + key, setD: set('d'), setA: set('amt'), setM: set('memo'),
         canHide: true, noHide: false, hide: () => this.saveItems(this.fixItems().map(x => x.id === it.id ? Object.assign({}, x, { hidden: true }) : x)) }; });
     const fixSum = items.reduce((n, it) => n + (+((M.fix[it.id] || {}).amt) || 0), 0);
     const hiddenFix = this.fixItems().filter(x => x.hidden).map(x => ({ name: x.name, show: () => this.saveItems(this.fixItems().map(y => y.id === x.id ? Object.assign({}, y, { hidden: false }) : y)) }));
