@@ -84,7 +84,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <span style="{{g.dayCell}}"><span style="{{g.dayChip}}">{{g.label}}</span></span>
             <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
               <div class="{{r.rowCls}}" style="display: contents">
-                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span>{{r.name}}</span><sc-if value="{{r.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 5px; background: #E3ECFD; color: #2952A3; font-size: 10px; font-weight: 600">신규</span></sc-if><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 600; white-space: nowrap">{{r.flashTag}}</span></sc-if><span style="{{r.checkChip}}">{{r.check}}</span><span style="{{r.check2Chip}}">{{r.check2}}</span></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if><sc-if value="{{r.stTxt}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTxt}}</span></sc-if></span></span>
+                <span class="{{r.nameCls}}" style="{{r.nameStyle}}" onClick="{{r.quick}}"><span style="display: flex; flex-direction: column; justify-content: center; gap: 1px; min-width: 0; line-height: 1.15"><span style="display: inline-flex; align-items: center; gap: 4px"><span title="{{r.chgTip}}" style="position: relative">{{r.name}}<sc-if value="{{r.chgTip}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-label="최근 3일 안에 바뀐 내용 있음" style="position: absolute; top: -2px; right: -8px; width: 7px; height: 7px; border-radius: 50%; background: #F08A3C"></span></sc-if></span><sc-if value="{{r.isNew}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 17px; padding: 0 5px; border-radius: 5px; background: #E3ECFD; color: #2952A3; font-size: 10px; font-weight: 600">신규</span></sc-if><sc-if value="{{r.cash}}" hint-placeholder-val="{{ false }}"><span title="현금영수증 발행" style="display: inline-flex; color: #00A6AB"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="현금영수증"><path d="M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"></path></svg></span></sc-if><sc-if value="{{r.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="display: inline-flex; align-items: center; height: 18px; padding: 0 6px; margin-left: 2px; border-radius: 6px; background: #E6F6F6; color: #007E82; font-size: 10px; font-weight: 600; white-space: nowrap">{{r.flashTag}}</span></sc-if><span style="{{r.checkChip}}">{{r.check}}</span><span style="{{r.check2Chip}}">{{r.check2}}</span></span><sc-if value="{{r.hasTime}}" hint-placeholder-val="{{ true }}"><span style="font-size: 12px; font-weight: 600; color: #6B7680; letter-spacing: -0.01em">{{r.time}}</span></sc-if><sc-if value="{{r.stTxt}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTxt}}</span></sc-if></span></span>
                 <span class="{{r.tkCls}}" style="{{r.ticketCell}}" onClick="{{r.tkClick}}" title="{{r.tkTitle}}">
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.84.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -797,6 +797,7 @@ class Component extends DCLogic {
     if (on) list = list.concat([{ id: 'W' + Date.now(), at: Date.now(), name: name, date: this.todayYmd(), n: n || 0, diff: diff || 0, by: (A && A.staff && A.staff.name) || '원장님' }]);
     else if (w0) list = list.filter(w => w.id !== w0.id);
     try { localStorage.setItem('academy.writeOffs', JSON.stringify(list)); } catch (e) {}
+    try { if (A && A.addEv && (on || w0)) A.addEv(name, on ? '미납 정리' : '미납 정리 취소'); } catch (e) {}
     this.setState({});
   }
   // 휴원·퇴원 날짜 고치기: 같은 기록의 날짜만 바꾼다 (DB는 academy.updateStatusDate)
@@ -2774,6 +2775,8 @@ class Component extends DCLogic {
     let calcMain = null;
     const calc = s => (calcMain = calcMain || mkCalc(MON, EV, all, true))(s);
     // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 입금일(수납 날짜)부터 가장 가까운 수업 요일 (R은 직접 넣어야 함, 입금일을 모르면 직접 입력)
+    // 최근 3일(72시간) 안에 바뀐 내용(수업 변경·휴원·퇴원·복귀·신규·수강료 변경·미납 정리 등) → 이름 오른쪽 위 주황 점 + 마우스 올리면 내용
+    const CHG = (() => { const o = {}, lim = Date.now() - 72 * 3600 * 1000; this.readCellLog().forEach(e => { if (!e || e.k !== 'EV' || !(e.at >= lim) || !e.name) return; const b = String(e.b || ''); if (b === '원생 삭제' || (b.indexOf('원생 정보 수정') === 0 && b.indexOf(' 변경 (') < 0)) return; const d = new Date(e.at); (o[e.name] = o[e.name] || []).push((d.getMonth() + 1) + '/' + d.getDate() + ' ' + b + (e.who ? ' · ' + e.who : '')); }); return o; })();
     const NEWI = (() => { const o = {}; try { (JSON.parse(localStorage.getItem('academy.students') || '[]') || []).forEach(x => { o[x.name] = x; }); } catch (e) {} return o; })();
     const TKP = (() => { try { return JSON.parse(localStorage.getItem('academy.ticketPlans') || '{}') || {}; } catch (e) { return {}; } })();
     const planOf = (s, r) => {
@@ -2907,6 +2910,7 @@ class Component extends DCLogic {
           // 이름에 마우스를 올려도 설명 말풍선은 띄우지 않음
           nameTitle: '',
           cash: s.name.indexOf('$') >= 0,
+          chgTip: s.trial ? '' : (CHG[s.name.replace('$', '')] || []).join('\n'),
           // 휴원·퇴원·이동으로 내려간 원생은 시간 왼쪽에 직전 요일
           stTxt: (s.status === '휴원' || s.status === '퇴원') && s.outDate ? (+s.outDate.slice(5, 7)) + '/' + (+s.outDate.slice(8, 10)) + ' ' + s.status : '', stStyle: 'font-size: 12px; font-weight: 600; color: ' + (s.status === '휴원' ? '#9A5B00' : '#B4332B'),
           hasTime: !!s.time || !!s.origG, time: ((s.origG ? s.origG + ' ' : '') + (s.time || '').replace(/^(\d{1,2})/, h => String((+h % 12) || 12))).trim(),
