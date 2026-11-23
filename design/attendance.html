@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.9</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.10</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -273,7 +273,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         </sc-for>
       </div>
       <div style="display: flex; align-items: center; gap: 8px">
-        <sc-if value="{{th.canPlan}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{th.plan}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #A9DCDE; background: #F2FBFB; color: #007E82; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">레슨시작일(예정) 넣기</button></sc-if>
+        <sc-if value="{{th.canPlan}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{th.plan}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #B9CCE8; background: #EEF3FB; color: #5B7FB8; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">레슨시작일 넣기</button></sc-if>
         <sc-if value="{{th.canLate}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{th.late}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">미납금액 수납 보기</button></sc-if>
         <span style="flex: 1"></span>
         <button type="button" onClick="{{th.close}}" style="height: 36px; padding: 0 16px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">닫기</button>
