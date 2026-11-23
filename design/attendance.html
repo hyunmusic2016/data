@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -255,10 +255,17 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <div style="display: flex; flex-direction: column; gap: 6px">
             <button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.isOpen}}" style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: none; border-radius: 8px; background: #F2F4F3; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; cursor: pointer; text-align: left"><span>{{g.arrow}}</span><span>{{g.label}}</span></button>
             <sc-if value="{{g.isOpen}}" hint-placeholder-val="{{ true }}">
-              <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2"><div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid #E1E6E3; border-radius: 10px">
-                <span style="font-size: 14px; font-weight: 600; color: #17201C">{{it.head}}</span>
-                <span style="font-size: 12px; font-weight: 600; color: #007E82">{{it.sub}}</span>
-                <span style="font-size: 12px; color: #5E6873; word-break: keep-all">{{it.lessons}}</span>
+              <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2"><div style="{{it.cardSt}}">
+                <div style="display: flex; align-items: flex-start; gap: 10px">
+                  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 11px; font-weight: 600; color: #8A949E">수납 날짜</span><span style="font-size: 15px; font-weight: 600; color: #17201C">{{it.dateTxt}}</span></span>
+                  <span style="flex: 1"></span>
+                  <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span style="font-size: 18px; font-weight: 600; color: #007E82; letter-spacing: -0.02em">{{it.amt}}</span><sc-if value="{{it.orig}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8A949E; text-decoration: line-through">{{it.orig}}</span></sc-if></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-for list="{{it.tags}}" as="tg" hint-placeholder-count="2"><span style="{{tg.st}}">{{tg.t}}</span></sc-for><span style="flex: 1"></span><span style="display: inline-flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{it.dots}}" as="dt" hint-placeholder-count="4"><span style="{{dt.st}}"></span></sc-for></span></div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; border-top: 1px dashed #E1E6E3">
+                  <sc-if value="{{it.noLesson}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8A949E">아직 수업 없음</span></sc-if>
+                  <sc-for list="{{it.lessons}}" as="ls" hint-placeholder-count="3"><span style="{{ls.st}}"><span style="{{ls.nst}}">{{ls.n}}</span>{{ls.t}}</span></sc-for>
+                </div>
               </div></sc-for>
             </sc-if>
           </div>
@@ -3294,9 +3301,15 @@ class Component extends DCLogic {
             return { label: g.h.slice(0, 4) + '년 ' + (g.h.slice(5) === 'A' ? '1~6월' : '7~12월') + ' · ' + g.items.length + '건', arrow: isOpen ? '▾' : '▸', isOpen: isOpen,
               toggle: () => this.setState({ th: Object.assign({}, T, { open: Object.assign({}, T.open, { [g.h]: !isOpen }) }) }),
               items: g.items.map(r => { const p = r.p, B = p.ben && p.ben.kind ? p.ben : null;
-                return { head: md(p.date) + ' 수납 · ' + (r.c || '?') + '회 · ' + won(p.amount != null ? p.amount : p.total) + '원' + (p.kind === 'late' ? ' (미납 수납)' : ''),
-                  sub: (B ? '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%') + ' · 원래 ' + won(p.total) + '원 · ' : '') + '사용 ' + r.used.length + '/' + (r.c || 0) + '회' + (r.used.length >= r.c && r.c ? ' · 수업완료' : ''),
-                  lessons: r.used.length ? r.used.map((l, i) => md(l.ymd) + ' ' + (l.kind === '결' ? '결' + (i + 1) : '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳'[i] || String(i + 1))).join('  ') : '아직 수업 없음' }; }) }; }),
+                const wd = '일월화수목금토'[new Date(p.date + 'T12:00:00').getDay()], done = r.c && r.used.length >= r.c;
+                const pill = (bg, fg) => 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + bg + '; color: ' + fg;
+                const bcol = k => B && k < B.n ? (B.kind === 'free' ? '#8A949E' : '#E08A3C') : null;
+                const tags = [{ t: (r.c || 0) + '회', st: pill('#E6F6F6', '#007E82') }].concat(B ? [{ t: '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%'), st: B.kind === 'free' ? pill('#E5E9EC', '#3A4450') : pill('#FDE7D2', '#9A4A12') }] : []).concat(p.kind === 'late' ? [{ t: '미납 수납', st: pill('#FCEBEA', '#B4332B') }] : []).concat([{ t: done ? '수업완료' : '사용 ' + r.used.length + '/' + (r.c || 0), st: done ? pill('#DFF2E4', '#2F6B43') : pill('#F2F4F3', '#5E6873') }]);
+                const dots = []; for (let k = 0; k < (r.c || 0); k++) { const l = r.used[k], bn = bcol(k); dots.push({ st: 'width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; ' + (l ? 'background: ' + (l.kind === '결' ? '#E0605A' : (bn || '#00A6AB')) : 'border: 1.5px solid ' + (bn || '#CDD4D0')) }); }
+                return { dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: won(p.amount != null ? p.amount : p.total) + '원', orig: B ? won(p.total) + '원' : '',
+                  tags: tags, dots: dots, noLesson: !r.used.length,
+                  cardSt: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; border: 1px solid ' + (done ? '#E1E6E3' : '#A9DCDE') + '; background: ' + (done ? '#FAFBFA' : '#FFFFFF') + '; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.04)',
+                  lessons: r.used.map((l, k) => ({ t: md(l.ymd), n: l.kind === '결' ? '결' : String(k + 1), st: 'display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 4px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + (l.kind === '결' ? '#FDEBE4' : '#F2F4F3') + '; color: #3A4450', nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 999px; font-size: 10px; color: #FFFFFF; background: ' + (l.kind === '결' ? '#E0605A' : (bcol(k) || '#00A6AB')) })) }; }) }; }),
           canPlan: !!T.canPlan, plan: () => { const s0 = T.s; this.setState({ th: null }); this.openTkPlan(s0, T.planV); },
           canLate: !!T.late, late: () => { const L = T.late; this.setState({ th: null }); this.openPay(L); },
           close: () => this.setState({ th: null }), key: e => { if (e.key === 'Escape') { e.stopPropagation(); this.setState({ th: null }); } } }; })() : { open: false },
