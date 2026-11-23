@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.8</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3481,7 +3481,7 @@ class Component extends DCLogic {
       // 레슨횟수 칸을 누르면: 이 강사 탭 이번 달에 수업이 있는 유형만, 횟수를 크게
       ltInfo: st.ltInfo ? (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); const tot = ks.reduce((n, k) => n + lessonBy[k].n, 0);
         return { open: true, close: () => this.setState({ ltInfo: false }), total: tot, sub: this.kLabel(MON) + ' · ' + String(curT[0] || '').replace(' 원장님', ' 원장님'),
-          rows: ks.map(k => { const b = lessonBy[k], t = this.lessonTypes().find(x => x.id === k); return { name: b.name, n: b.n, pct: tot ? Math.round(b.n / tot * 100) + '%' : '', desc: t ? '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원' : b.tb ? (() => { const W = v => (+v).toLocaleString('ko-KR') + '원', u = a => a.filter((x, i) => a.indexOf(x) === i); const bs = u(b.tb), fs = u(b.tf); return '정상 금액 ' + (bs.length === 1 ? W(bs[0]) : bs.map(W).join(' / ')) + ' · 받을 금액 ' + (fs.length === 1 ? W(fs[0]) : fs.map(W).join(' / ')); })() : '설정에 없는 수강료',
+          rows: ks.map(k => { const b = lessonBy[k], t = this.lessonTypes().find(x => x.id === k); return { name: b.name, n: b.n, pct: tot ? Math.round(b.n / tot * 100) + '%' : '', desc: t ? '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원' : b.tb ? (() => { const W = v => (+v).toLocaleString('ko-KR') + '원', u = a => a.filter((x, i) => a.indexOf(x) === i); const bs = u(b.tb), fs = u(b.tf); return '회당 ' + fs.map(W).join(' / '); })() : '설정에 없는 수강료',
             card: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: ' + b.bg + '; color: ' + b.fg, bar: 'flex: ' + b.n + ' 0 0; background: ' + b.fg }; }) }; })() : { open: false },
       // MEMO 위 범례 한 줄 (이번 달 수업이 있는 유형, 인쇄·내보내기에도)
       ltLegend: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return { show: ks.length > 0, items: ks.map(k => ({ t: lessonBy[k].name + ' ' + lessonBy[k].n + '회', style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-weight: 600; background: ' + lessonBy[k].bg + '; color: ' + lessonBy[k].fg })) }; })(),
