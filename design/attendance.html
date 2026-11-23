@@ -242,11 +242,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.3</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
-    <div class="noprint" role="dialog" aria-label="수강 내역" id="thDlg" tabIndex="-1" onKeyDown="{{th.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 460px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 20px 48px rgba(23, 32, 28, 0.18); outline: none">
+    <div class="noprint" role="dialog" aria-label="수강 내역" id="thDlg" tabIndex="-1" onKeyDown="{{th.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 760px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 20px 48px rgba(23, 32, 28, 0.18); outline: none">
       <div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 18px; font-weight: 600; color: #17201C">{{th.title}}</span><span style="flex: 1"></span><button type="button" onClick="{{th.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: none; background: #EEF1F0; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
       <div style="flex: 1 1 auto; overflow: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0">
         <sc-if value="{{th.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 18px; text-align: center; font-size: 13px; color: #8A949E">아직 수납·수업 기록이 없습니다</div></sc-if>
@@ -264,7 +264,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-for list="{{it.tags}}" as="tg" hint-placeholder-count="2"><span style="{{tg.st}}">{{tg.t}}</span></sc-for><span style="flex: 1"></span><span style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end"><sc-for list="{{it.dots}}" as="dg" hint-placeholder-count="1"><span style="display: inline-flex; gap: 3px"><sc-for list="{{dg.items}}" as="dt" hint-placeholder-count="4"><span style="{{dt.st}}"></span></sc-for></span></sc-for></span></div>
                 <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px dashed #E1E6E3">
                   <sc-if value="{{it.noLesson}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8A949E">아직 수업 없음</span></sc-if>
-                  <sc-for list="{{it.lessons}}" as="lg" hint-placeholder-count="1"><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{lg.items}}" as="ls" hint-placeholder-count="3"><span style="{{ls.st}}"><span style="{{ls.nst}}">{{ls.n}}</span>{{ls.t}}</span></sc-for></div></sc-for>
+                  <sc-for list="{{it.lessons}}" as="lg" hint-placeholder-count="1"><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{lg.items}}" as="ls" hint-placeholder-count="3"><span style="{{ls.st}}"><span style="{{ls.nst}}">{{ls.n}}</span>{{ls.t}}<span style="{{ls.wst}}">{{ls.w}}</span></span></sc-for></div></sc-for>
                 </div>
               </div></sc-for>
             </sc-if>
@@ -2034,8 +2034,8 @@ class Component extends DCLogic {
     const p2 = n => String(n).padStart(2, '0');
     const months = [11].concat(Object.keys(this.state.evByMonth || {}).map(Number)).filter((m, i, a) => m > 0 && a.indexOf(m) === i);
     const isMine = k => T.ids.indexOf(String(k)) >= 0 || (/^[A-Z]\d+$/.test(T.key) && String(k).indexOf(T.key + '-') === 0);
-    const lessons = [];
-    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (/^\d+$/.test(d) && (e[d] === '수' || e[d] === '결')) lessons.push({ ymd: this.ymK(m) + '-' + p2(+d), kind: e[d] }); }); }); });
+    const lessons = [], others = [];
+    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (!/^\d+$/.test(d)) return; const ymd = this.ymK(m) + '-' + p2(+d); if (e[d] === '수' || e[d] === '결') lessons.push({ ymd: ymd, kind: e[d] }); else if (e[d] === '연' || e[d] === '보' || e[d] === 'M') others.push({ ymd: ymd, kind: e[d], ms: e['s' + d] || '' }); }); }); });
     lessons.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0);
     const TR = T.s && T.s.trial;
     let pays = this.readPays().filter(p => p && (TR ? p.trial === TR.id : (p.name === T.name && p.kind !== 'trial'))).slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
@@ -2043,6 +2043,8 @@ class Component extends DCLogic {
     // 결제 순서대로 수업을 앞에서부터 채움 (출석부 수강권 계산과 같은 순서)
     let li = 0;
     const rows = pays.map(p => { const c = +p.count || 0, used = lessons.slice(li, li + c); li += used.length; return { p: p, used: used, c: c }; });
+    // 연기·보강은 그 날짜가 들어가는 결제(그 결제의 첫 수업 날짜 이후 중 가장 늦은 결제)에 끼워 넣음
+    others.sort((a, b) => a.ymd < b.ymd ? -1 : 1).forEach(o => { let t = null; rows.forEach(r => { if (r.used.length && r.used[0].ymd <= o.ymd) t = r; }); if (!t) t = rows.find(r => r.used.length) || rows[0]; if (t) (t.oth = t.oth || []).push(o); });
     return { rows: rows.reverse(), extra: lessons.slice(li) };
   }
   openTkPlan(s, plan) {
@@ -3311,9 +3313,17 @@ class Component extends DCLogic {
                 const tags = (TR0 ? [{ t: LT.name, st: pill(LT.bg, LT.fg) }] : [{ t: (r.c || 0) + '회', st: pill(LT.bg, LT.fg) }]).concat(B ? [{ t: '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%'), st: B.kind === 'free' ? pill('#E5E9EC', '#3A4450') : pill('#FDE7D2', '#9A4A12') }] : []).concat(p.virt && !p.freeTrial ? [{ t: '미입금', st: pill('#FCEBEA', '#B4332B') }] : []).concat(p.kind === 'late' ? [{ t: '미납 수납', st: pill('#FCEBEA', '#B4332B') }] : []).concat([{ t: done ? '수업완료' : '사용 ' + r.used.length + '/' + (r.c || 0), st: done ? pill('#DFF2E4', '#2F6B43') : pill('#F2F4F3', '#5E6873') }]);
                 const dots = []; for (let k = 0; k < (r.c || 0); k++) { const l = r.used[k], bn = bcol(k); dots.push({ st: 'width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; ' + (l ? 'background: ' + (l.kind === '결' ? '#E0605A' : bn) : 'border: 1.5px solid ' + bn) }); }
                 return { dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: p.freeTrial ? '무료' : p.virt ? won(p.amount) + '원' : won(p.amount != null ? p.amount : p.total) + '원', amtSt: 'font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: ' + LT.fg, dateLbl: p.virt ? '체험 날짜' : '수납 날짜', orig: B ? won(p.total) + '원' : '',
-                  tags: tags, dots: grp(dots), noLesson: !r.used.length,
+                  tags: tags, dots: grp(dots), noLesson: !r.used.length && !(r.oth || []).length,
                   cardSt: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; border: 1px solid ' + (done ? '#E1E6E3' : LT.dot) + '; background: ' + (done ? '#FAFBFA' : '#FFFFFF') + '; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.04)',
-                  lessons: grp(r.used.map((l, k) => ({ t: md(l.ymd), n: l.kind === '결' ? '결' : String(k + 1), st: 'display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 4px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + (l.kind === '결' ? '#FDEBE4' : '#F2F4F3') + '; color: #3A4450', nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 999px; font-size: 10px; color: #FFFFFF; background: ' + (l.kind === '결' ? '#E0605A' : bcol(k)) }))) }; }) }; }),
+                  lessons: (() => { const seq = r.used.map((l, k) => ({ l: l, k: k })).concat((r.oth || []).map(o => ({ l: o, k: -1 }))).sort((a, b) => a.l.ymd < b.l.ymd ? -1 : a.l.ymd > b.l.ymd ? 1 : a.k - b.k);
+                    const out = []; let cur = null;
+                    seq.forEach(x => { if (!cur || (x.k >= 0 && x.k % GS === 0 && cur.items.some(y => y.cnt))) out.push(cur = { items: [] }); const l = x.l, wd0 = '일월화수목금토'[new Date(l.ymd + 'T12:00:00').getDay()];
+                      const K = { '수': ['출석', this.ltStyle(T.s, l.ymd).bg, bcol(x.k)], '결': ['결석', '#FDEBE4', '#E0605A'], '연': ['연기', '#EEF1F0', '#5E6873'], '보': ['보강 예정', '#E3ECFD', '#1E4FA8'], 'M': [l.ms === '수' ? '보강 출석' : l.ms === '결' ? '보강 결석' : '보강', '#E3ECFD', '#1E4FA8'] }[l.kind];
+                      cur.items.push({ cnt: x.k >= 0, n: x.k >= 0 ? (l.kind === '결' ? '결' + (x.k + 1) : String(x.k + 1)) : l.kind === '연' ? '연' : '보', t: md(l.ymd) + ' (' + wd0 + ')', w: K[0],
+                        st: 'display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 5px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #17201C; background: ' + K[1] + (x.k < 0 ? '; border: 1px dashed #C9D0CC' : ''),
+                        nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; font-size: 11px; color: #FFFFFF; background: ' + K[2],
+                        wst: 'font-size: 11px; font-weight: 600; color: ' + K[2] }); });
+                    return out; })() }; }) }; }),
           canPlan: !!T.canPlan, plan: () => { const s0 = T.s; this.setState({ th: null }); this.openTkPlan(s0, T.planV); },
           canLate: !!T.late, late: () => { const L = T.late; this.setState({ th: null }); this.openPay(L); },
           close: () => this.setState({ th: null }), key: e => { if (e.key === 'Escape') { e.stopPropagation(); this.setState({ th: null }); } } }; })() : { open: false },
