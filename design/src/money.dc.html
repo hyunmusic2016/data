@@ -27,7 +27,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 .nrow:hover>*{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
-.reorder [data-rg] input,.reorder [data-rg] button{pointer-events:none}.reorder [data-rg]{cursor:grab;user-select:none}.reorder [data-rg]:hover{background:#F2FAFA!important}
+.samed:not(:focus){color:transparent!important}.reorder [data-rg] input,.reorder [data-rg] button{pointer-events:none}.reorder [data-rg]{cursor:grab;user-select:none}.reorder [data-rg]:hover{background:#F2FAFA!important}
 .colgrip{background:linear-gradient(#D5DBD8,#D5DBD8) center/1px 45% no-repeat}.colgrip:hover,.colgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}
 [aria-label="수입·지출"] input:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}[aria-label="수입·지출"] input:focus{border-color:#00A6AB!important;background:#E6F6F6!important;outline:none}[aria-label="수입·지출"] input:focus:read-only{border-color:#AEB7B2!important;background:transparent!important}
 </style>
@@ -70,7 +70,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
               <div data-rg="{{r.rg}}" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}">
                 <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cno}}">{{r.no}}</span><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
-                <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><span style="{{cno}}">{{r.no}}</span><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
+                <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><span style="{{cno}}">{{r.no}}</span><input id="{{r.idD}}" class="{{r.dCls}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
               </div>
             </sc-for>
             <sc-if value="{{orphanN}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #FCEBEA; color: #B4332B; font-size: 12px; font-weight: 600"><span style="flex: 1">출석부 칸에 ₩ 표시가 없는 수납 기록 {{orphanN}}건 (예전에 지워지지 않고 남은 기록)</span><button type="button" onClick="{{delOrphans}}" style="height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E8A9A4; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{delOrphansLabel}}</button></div></sc-if>
@@ -126,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.85.5</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.85.6</span>
     </div>
   </main>
 
@@ -627,7 +627,9 @@ class Component extends DCLogic {
       memoStyle: 'font-size: 11px; ' + (r.orphan ? 'color: #B4332B; font-weight: 600; text-decoration: none' : 'color: #8A949E'),
       del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropOrphans([r.pid]); } })).concat(M.extra.map((r, i) => {
       const set = k => e => put(m => { const x = m.extra.find(z => z.id === r.id); if (x) x[k] = k === 'amt' ? this.num(e.target.value) : k === 'd' ? dOk(e.target.value) : e.target.value.trim(); });
-      return { rg: 'inx', rid: r.id, auto: false, manual: true, d: r.d || '', item: r.item || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW4 + '; background: #F5F9FE', idD: 'mx_d_' + r.id, idI: 'mx_i_' + r.id, idA: 'mx_a_' + r.id, idM: 'mx_m_' + r.id,
+      // 바로 위 줄과 같은 날이면 '일'을 안 보이게 (칸을 누르면 보이고 고칠 수 있음)
+      const pd = String((i ? M.extra[i - 1].d : (auto.length ? auto[auto.length - 1].d : '')) || ''), sameD = !!String(r.d || '') && String(r.d) === pd;
+      return { rg: 'inx', rid: r.id, auto: false, manual: true, dCls: sameD ? 'samed' : '', d: r.d || '', item: r.item || '', amtTxt: this.won(+r.amt || 0), memo: r.memo || '', row: ROW4 + '; background: #F5F9FE', idD: 'mx_d_' + r.id, idI: 'mx_i_' + r.id, idA: 'mx_a_' + r.id, idM: 'mx_m_' + r.id,
         setD: set('d'), setI: set('item'), setA: set('amt'), setM: set('memo'), del: () => put(m => { m.extra = m.extra.filter(z => z.id !== r.id); }) };
     }));
     const orph = auto.filter(r => r.orphan && r.pid);
