@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.4</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2636,7 +2636,7 @@ class Component extends DCLogic {
             o.dpay = true; if (!o.text) { o.text = '₩'; o.kind = 'DV'; }
             o.what = (o.what ? o.what + ' · ' : '') + '차액 수납 ' + (+e['dp' + d]).toLocaleString('ko-KR') + '원';
           }
-          if (s0.trial && !o.text && ymdOf(Mm, d) === s0.trial.date) { const tm = /^(\d{1,2}):(\d{2})$/.exec(s0.trial.time || ''); o.text = tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '체험'; o.what = '체험레슨 예정' + (tm ? ' ' + o.text : ''); }
+          if (s0.trial && !o.text && ymdOf(Mm, d) === s0.trial.date) { const tm = /^(\d{1,2}):(\d{2})$/.exec(s0.trial.time || ''); o.text = '체험' + (tm ? '\n' + ((+tm[1] % 12) || 12) + ':' + tm[2] : ''); o.plan = true; o.what = '체험레슨 예정' + (tm ? ' ' + o.text.slice(3) : ''); }
           if (cur) outs[x.id].push(o);
           });
         }
@@ -2850,7 +2850,7 @@ class Component extends DCLogic {
             const LD = this.ltStyle(s, this.ymK(MON) + '-' + String(x.d).padStart(2, '0')), rowD = s.trial ? ((x.kind === '수' || x.kind === '결') ? LD.cellBg : '') : LD.row;
             const bg = x.pay ? (x.upay ? '#FCEBEA' : '#FAEFD2') : x.kind === 'DV' ? '#FDEBD8' : rowD ? rowD : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
-              text: x.text.replace('!', ''), chip: x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
+              text: x.text.replace('!', ''), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
               label: this.kM(MON) + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
