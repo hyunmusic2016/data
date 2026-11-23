@@ -242,8 +242,36 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.82.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.0</span>
   </nav>
+  <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="수강 내역" id="thDlg" tabIndex="-1" onKeyDown="{{th.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 460px; max-width: calc(100vw - 32px); max-height: calc(100vh - 64px); box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 20px 48px rgba(23, 32, 28, 0.18); outline: none">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 18px; font-weight: 600; color: #17201C">{{th.title}}</span><span style="flex: 1"></span><button type="button" onClick="{{th.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: none; background: #EEF1F0; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
+      <div style="flex: 1 1 auto; overflow: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0">
+        <sc-if value="{{th.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 18px; text-align: center; font-size: 13px; color: #8A949E">아직 수납·수업 기록이 없습니다</div></sc-if>
+        <sc-if value="{{th.extraTxt}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF5F4; border: 1px dashed #E0605A; font-size: 12px; font-weight: 600; color: #B4332B">{{th.extraTxt}}</div></sc-if>
+        <sc-for list="{{th.groups}}" as="g" hint-placeholder-count="2">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.isOpen}}" style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: none; border-radius: 8px; background: #F2F4F3; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; cursor: pointer; text-align: left"><span>{{g.arrow}}</span><span>{{g.label}}</span></button>
+            <sc-if value="{{g.isOpen}}" hint-placeholder-val="{{ true }}">
+              <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2"><div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 12px; border: 1px solid #E1E6E3; border-radius: 10px">
+                <span style="font-size: 14px; font-weight: 600; color: #17201C">{{it.head}}</span>
+                <span style="font-size: 12px; font-weight: 600; color: #007E82">{{it.sub}}</span>
+                <span style="font-size: 12px; color: #5E6873; word-break: keep-all">{{it.lessons}}</span>
+              </div></sc-for>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <sc-if value="{{th.canPlan}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{th.plan}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #A9DCDE; background: #F2FBFB; color: #007E82; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">레슨시작일(예정) 넣기</button></sc-if>
+        <sc-if value="{{th.canLate}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{th.late}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">미납금액 수납 보기</button></sc-if>
+        <span style="flex: 1"></span>
+        <button type="button" onClick="{{th.close}}" style="height: 36px; padding: 0 16px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">닫기</button>
+      </div>
+    </div>
+  </sc-if>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="체험레슨" id="trDlg" tabIndex="-1" onKeyDown="{{tr.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 440px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 20px 48px rgba(23, 32, 28, 0.18); outline: none">
@@ -1988,6 +2016,26 @@ class Component extends DCLogic {
     this.commit(patch);
     this.focusSheet();
   }
+  // ---------- 수강 내역 (수강 칸을 누르면): 결제마다 최신이 위, 반년(1~6월·7~12월)씩 접기, 최근 6개월 묶음은 펼침 ----------
+  openTkHist(s, opt) {
+    const key = String(s.sid || s.id);
+    const ids = this.students().filter(x => String(x.sid || x.id) === key).map(x => String(x.id));
+    this.setState({ th: Object.assign({ key: key, ids: ids, name: s.name.replace('$', ''), open: {} }, opt || {}) });
+    setTimeout(() => { const d = document.getElementById('thDlg'); if (d) d.focus(); }, 30);
+  }
+  tkHistData(T) {
+    const p2 = n => String(n).padStart(2, '0');
+    const months = [11].concat(Object.keys(this.state.evByMonth || {}).map(Number)).filter((m, i, a) => m > 0 && a.indexOf(m) === i);
+    const isMine = k => T.ids.indexOf(String(k)) >= 0 || (/^[A-Z]\d+$/.test(T.key) && String(k).indexOf(T.key + '-') === 0);
+    const lessons = [];
+    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (/^\d+$/.test(d) && (e[d] === '수' || e[d] === '결')) lessons.push({ ymd: this.ymK(m) + '-' + p2(+d), kind: e[d] }); }); }); });
+    lessons.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0);
+    const pays = this.readPays().filter(p => p && p.name === T.name && p.kind !== 'trial').slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
+    // 결제 순서대로 수업을 앞에서부터 채움 (출석부 수강권 계산과 같은 순서)
+    let li = 0;
+    const rows = pays.map(p => { const c = +p.count || 0, used = lessons.slice(li, li + c); li += used.length; return { p: p, used: used, c: c }; });
+    return { rows: rows.reverse(), extra: lessons.slice(li) };
+  }
   openTkPlan(s, plan) {
     const nm = s.name.replace('$', '');
     let cur = '';
@@ -2859,9 +2907,9 @@ class Component extends DCLogic {
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
           queueTxt: '',
           // 다음 달 이후에 낸 미납금액 수납은 출석부 칸이 없으므로 수강권 칸을 눌러 고치거나 취소한다
-          tkClick: () => { if (r.latePaid) this.openPay({ sid: r.latePaid.sid, date: r.latePaid.date }); else if (canPlan) this.openTkPlan(s, plan); },
-          tkTitle: canPlan ? '눌러서 레슨시작일(예정) 직접 넣기' : '',
-          tkCls: canPlan || r.latePaid ? 'qname' : '',
+          tkClick: () => this.openTkHist(s, { s: s, canPlan: canPlan, planV: plan, late: r.latePaid ? { sid: r.latePaid.sid, date: r.latePaid.date } : null }),
+          tkTitle: '눌러서 수강 내역 보기',
+          tkCls: 'qname',
           lastStyle: base + 'background: #F7F8F8; border-left: 1px solid ' + GRID,
           cells: r.cells.map(x => {
             const w = (x.d - 1 + FIRST) % 7;
@@ -3233,6 +3281,25 @@ class Component extends DCLogic {
       sm: sm,
       sheetTabs: sheetTabs,
       // + : 해·달을 골라 출석부를 만든다 (아직 없는 달만, ‹ › 로 해 넘김)
+      th: st.th ? (() => { const T = st.th, D = this.tkHistData(T), won = v => (+v || 0).toLocaleString('ko-KR');
+        const md = ymd => (+ymd.slice(5, 7)) + '/' + (+ymd.slice(8, 10));
+        const half = ymd => ymd.slice(0, 4) + '-' + (+ymd.slice(5, 7) <= 6 ? 'A' : 'B');
+        const td = this.todayYmd(), t6 = (() => { const d = new Date(td + 'T12:00:00'); d.setMonth(d.getMonth() - 6); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })();
+        const hEnd = h => h.slice(0, 4) + (h.slice(5) === 'A' ? '-06-30' : '-12-31');
+        const groups = [];
+        D.rows.forEach(r => { const h = half(r.p.date); let g = groups.find(x => x.h === h); if (!g) groups.push(g = { h: h, items: [] }); g.items.push(r); });
+        return { open: true, title: '수강 내역 · ' + T.name, empty: !D.rows.length && !D.extra.length,
+          extraTxt: D.extra.length ? '결제 없이 한 수업 ' + D.extra.length + '회: ' + D.extra.map(l => md(l.ymd) + (l.kind === '결' ? '(결석)' : '')).join(', ') : '',
+          groups: groups.map(g => { const isOpen = T.open[g.h] != null ? T.open[g.h] : hEnd(g.h) >= t6;
+            return { label: g.h.slice(0, 4) + '년 ' + (g.h.slice(5) === 'A' ? '1~6월' : '7~12월') + ' · ' + g.items.length + '건', arrow: isOpen ? '▾' : '▸', isOpen: isOpen,
+              toggle: () => this.setState({ th: Object.assign({}, T, { open: Object.assign({}, T.open, { [g.h]: !isOpen }) }) }),
+              items: g.items.map(r => { const p = r.p, B = p.ben && p.ben.kind ? p.ben : null;
+                return { head: md(p.date) + ' 수납 · ' + (r.c || '?') + '회 · ' + won(p.amount != null ? p.amount : p.total) + '원' + (p.kind === 'late' ? ' (미납 수납)' : ''),
+                  sub: (B ? '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%') + ' · 원래 ' + won(p.total) + '원 · ' : '') + '사용 ' + r.used.length + '/' + (r.c || 0) + '회' + (r.used.length >= r.c && r.c ? ' · 수업완료' : ''),
+                  lessons: r.used.length ? r.used.map((l, i) => md(l.ymd) + ' ' + (l.kind === '결' ? '결' + (i + 1) : '①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮⑯⑰⑱⑲⑳'[i] || String(i + 1))).join('  ') : '아직 수업 없음' }; }) }; }),
+          canPlan: !!T.canPlan, plan: () => { const s0 = T.s; this.setState({ th: null }); this.openTkPlan(s0, T.planV); },
+          canLate: !!T.late, late: () => { const L = T.late; this.setState({ th: null }); this.openPay(L); },
+          close: () => this.setState({ th: null }), key: e => { if (e.key === 'Escape') { e.stopPropagation(); this.setState({ th: null }); } } }; })() : { open: false },
       trOpen: () => this.openTrial(null),
       tr: st.tr ? (() => { const T = st.tr, chip = (on, bg, fg) => 'height: 32px; padding: 0 12px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid ' + (on ? fg : '#DDE2DF') + '; background: ' + (on ? bg : '#FFFFFF') + '; color: ' + (on ? fg : '#5E6873');
         const set = p => { const g = id => { const el = document.getElementById(id); return el ? el.value : undefined; }, cur = {}; [['name', 'trName'], ['phone', 'trPhone'], ['date', 'trDate'], ['th', 'trH'], ['tm', 'trM'], ['fee', 'trFee']].forEach(q => { const v = g(q[1]); if (v !== undefined) cur[q[0]] = v; }); this.setState({ tr: Object.assign({}, this.state.tr, cur, p, { err: '' }) }); };
