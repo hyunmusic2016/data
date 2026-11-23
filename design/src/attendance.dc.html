@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.9</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -251,11 +251,11 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <div style="display: flex; flex-direction: column; gap: 6px">
             <button type="button" onClick="{{g.toggle}}" aria-expanded="{{g.isOpen}}" style="display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: none; border-radius: 8px; background: #F2F4F3; font-family: inherit; font-size: 13px; font-weight: 600; color: #3A4450; cursor: pointer; text-align: left"><span>{{g.arrow}}</span><span>{{g.label}}</span></button>
             <sc-if value="{{g.isOpen}}" hint-placeholder-val="{{ true }}">
-              <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2"><div style="{{it.cardSt}}">
+              <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2"><div id="{{it.cid}}" style="{{it.cardSt}}">
                 <div style="display: flex; align-items: flex-start; gap: 10px">
                   <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 11px; font-weight: 600; color: #8A949E">{{it.dateLbl}}</span><span style="font-size: 15px; font-weight: 600; color: #17201C">{{it.dateTxt}}</span></span>
                   <span style="flex: 1"></span>
-                  <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span style="{{it.amtSt}}">{{it.amt}}</span><sc-if value="{{it.orig}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8A949E; text-decoration: line-through">{{it.orig}}</span></sc-if></span>
+                  <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span style="display: inline-flex; align-items: center; gap: 8px"><button type="button" class="thsave" onClick="{{it.save}}" title="이 카드를 이미지(PNG)로 저장" aria-label="이미지 저장" style="height: 26px; padding: 0 8px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">이미지 저장</button><span style="{{it.amtSt}}">{{it.amt}}</span></span><sc-if value="{{it.orig}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8A949E; text-decoration: line-through">{{it.orig}}</span></sc-if></span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-for list="{{it.tags}}" as="tg" hint-placeholder-count="2"><span style="{{tg.st}}">{{tg.t}}</span></sc-for><span style="flex: 1"></span><span style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end"><sc-for list="{{it.dots}}" as="dg" hint-placeholder-count="1"><span style="display: inline-flex; gap: 3px"><sc-for list="{{dg.items}}" as="dt" hint-placeholder-count="4"><span style="{{dt.st}}"></span></sc-for></span></sc-for></span></div>
                 <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px dashed #E1E6E3">
@@ -2024,6 +2024,13 @@ class Component extends DCLogic {
     this.setState({ th: Object.assign({ key: key, ids: ids, name: s.name.replace('$', ''), open: {} }, opt || {}) });
     setTimeout(() => { const d = document.getElementById('thDlg'); if (d) d.focus(); }, 30);
   }
+  // 수강 내역 카드 한 장을 PNG로 저장 (저장 버튼은 이미지에서 뺌)
+  saveCardImg(id, name, head) {
+    const el = document.getElementById(id); if (!el) return;
+    this.loadLib('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js', 'html2canvas').then(h2c => h2c(el, { scale: 2, backgroundColor: '#FFFFFF', ignoreElements: n => n.classList && n.classList.contains('thsave'), onclone: d => { const c = d.getElementById(id); if (!c || !head) return; const h = d.createElement('div'); h.textContent = head; h.style.cssText = 'font-size: 13px; font-weight: 600; color: #3A4450; padding-bottom: 6px; border-bottom: 1px solid #EEF1F0'; c.insertBefore(h, c.firstChild); } })).then(cv => {
+      const a = document.createElement('a'); a.download = String(name).replace(/[\\/:*?"<>|]/g, '_') + '.png'; a.href = cv.toDataURL('image/png'); document.body.appendChild(a); a.click(); a.remove();
+    }).catch(() => {});
+  }
   tkHistData(T) {
     const p2 = n => String(n).padStart(2, '0');
     const months = [11].concat(Object.keys(this.state.evByMonth || {}).map(Number)).filter((m, i, a) => m > 0 && a.indexOf(m) === i);
@@ -3310,7 +3317,8 @@ class Component extends DCLogic {
                 const GS = (r.c % 4 !== 0 && r.c % 5 === 0) ? 5 : 4, grp = a => { const o = []; for (let q = 0; q < a.length; q += GS) o.push({ items: a.slice(q, q + GS) }); return o; };
                 const tags = p.unpaidV ? [{ t: '미납 ' + r.c + '회', st: pill('#FCEBEA', '#B4332B') }] : (TR0 ? [{ t: LT.name, st: pill(LT.bg, LT.fg) }] : [{ t: (r.c || 0) + '회', st: pill(LT.bg, LT.fg) }]).concat(B ? [{ t: '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%'), st: B.kind === 'free' ? pill('#E5E9EC', '#3A4450') : pill('#FDE7D2', '#9A4A12') }] : []).concat(p.virt && !p.freeTrial ? [{ t: '미입금', st: pill('#FCEBEA', '#B4332B') }] : []).concat(p.kind === 'late' ? [{ t: '미납 수납', st: pill('#FCEBEA', '#B4332B') }] : []).concat([{ t: done ? '수업완료' : '사용 ' + r.used.length + '/' + (r.c || 0), st: done ? pill('#DFF2E4', '#2F6B43') : pill('#F2F4F3', '#5E6873') }]);
                 const dots = []; for (let k = 0; k < (r.c || 0); k++) { const l = r.used[k], bn = bcol(k); dots.push({ st: 'width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; ' + (l ? 'background: ' + (l.kind === '결' ? '#E0605A' : bn) : 'border: 1.5px solid ' + bn) }); }
-                return { dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: p.unpaidV ? '미입금' : p.freeTrial ? '무료' : p.virt ? won(p.amount) + '원' : won(p.amount != null ? p.amount : p.total) + '원', amtSt: 'font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: ' + (p.unpaidV ? '#B4332B' : LT.fg), dateLbl: p.unpaidV ? '결제 없이 한 수업 · 첫 수업' : p.virt ? '체험 날짜' : '수납 날짜', orig: B ? won(p.total) + '원' : '',
+                const cid = 'thc_' + String(p.id || p.date).replace(/[^A-Za-z0-9]/g, '') + '_' + (p.unpaidV ? 'u' : '');
+                return { cid: cid, save: () => this.saveCardImg(cid, T.name + '_수강내역_' + p.date + (p.unpaidV ? '_미입금' : ''), '현실용음악학원 · ' + T.name + ' 수강 내역'), dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: p.unpaidV ? '미입금' : p.freeTrial ? '무료' : p.virt ? won(p.amount) + '원' : won(p.amount != null ? p.amount : p.total) + '원', amtSt: 'font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: ' + (p.unpaidV ? '#B4332B' : LT.fg), dateLbl: p.unpaidV ? '결제 없이 한 수업 · 첫 수업' : p.virt ? '체험 날짜' : '수납 날짜', orig: B ? won(p.total) + '원' : '',
                   tags: tags, dots: grp(dots), noLesson: !r.used.length && !(r.oth || []).length,
                   cardSt: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; border: ' + (p.unpaidV ? '1.5px dashed #E0605A' : '1px solid ' + (done ? '#E1E6E3' : LT.dot)) + '; background: ' + (p.unpaidV ? '#FFFBFA' : done ? '#FAFBFA' : '#FFFFFF') + '; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.04)',
                   lessons: (() => { const seq = r.used.map((l, k) => ({ l: l, k: k })).concat((r.oth || []).map(o => ({ l: o, k: -1 }))).sort((a, b) => a.l.ymd < b.l.ymd ? -1 : a.l.ymd > b.l.ymd ? 1 : a.k - b.k);
