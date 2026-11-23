@@ -242,18 +242,18 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.3</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
     <div class="noprint" role="dialog" aria-label="체험레슨" id="trDlg" tabIndex="-1" onKeyDown="{{tr.key}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 71; width: 440px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 20px 48px rgba(23, 32, 28, 0.18); outline: none">
-      <div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 18px; font-weight: 600; color: #17201C">{{tr.title}}</span><sc-if value="{{tr.regTxt}}" hint-placeholder-val="{{ false }}"><span style="height: 22px; padding: 0 8px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center">{{tr.regTxt}}</span></sc-if><span style="flex: 1"></span><button type="button" onClick="{{tr.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: none; background: #EEF1F0; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
+      <div style="display: flex; align-items: center; gap: 10px"><span style="font-size: 18px; font-weight: 600; color: #17201C">{{tr.title}}</span><span style="{{tr.tchStyle}}">{{tr.tch}}</span><sc-if value="{{tr.regTxt}}" hint-placeholder-val="{{ false }}"><span style="height: 22px; padding: 0 8px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center">{{tr.regTxt}}</span></sc-if><span style="flex: 1"></span><button type="button" onClick="{{tr.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: none; background: #EEF1F0; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
       <label style="{{tr.lab}}"><span style="{{tr.labT}}">이름</span><input id="trName" defaultValue="{{tr.name}}" autocomplete="off" style="{{tr.inp}}"></label>
       <label style="{{tr.lab}}"><span style="{{tr.labT}}">연락처</span><input id="trPhone" defaultValue="{{tr.phone}}" inputMode="tel" autocomplete="off" style="{{tr.inp}}"></label>
       <div style="display: flex; gap: 10px"><label style="{{tr.lab}}; flex: 1"><span style="{{tr.labT}}">날짜</span><input id="trDate" type="date" defaultValue="{{tr.date}}" style="{{tr.inp}}"></label><label style="{{tr.lab}}; width: 120px"><span style="{{tr.labT}}">시간</span><input id="trTime" data-noclear="1" defaultValue="{{tr.time}}" placeholder="4:30" autocomplete="off" style="{{tr.inp}}"></label></div>
       <div style="{{tr.lab}}"><span style="{{tr.labT}}">과목</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{tr.subjects}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.name}}</button></sc-for></div></div>
       <div style="{{tr.lab}}"><span style="{{tr.labT}}">요금</span><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{tr.kinds}}" as="o" hint-placeholder-count="4"><button type="button" onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.name}}</button></sc-for></div></div>
-      <label style="{{tr.feeLab}}"><span style="{{tr.labT}}">정상 금액 (원)</span><input id="trFee" data-noclear="1" defaultValue="{{tr.fee}}" onInput="{{tr.feeIn}}" inputMode="numeric" placeholder="{{tr.feePh}}" autocomplete="off" style="{{tr.inp}}"><span id="trFeeNote" style="font-size: 13px; font-weight: 600; color: #007E82">{{tr.feeNote}}</span></label>
+      <div style="{{tr.feeLab}}"><span style="{{tr.labT}}">정상 금액 (원)</span><div style="display: flex; gap: 8px; align-items: center"><input id="trFee" data-noclear="1" defaultValue="{{tr.fee}}" onInput="{{tr.feeIn}}" inputMode="numeric" placeholder="예: 40000" autocomplete="off" aria-label="정상 금액" style="{{tr.inp}}; flex: 1; min-width: 0"><span style="flex: none; font-size: 12px; font-weight: 600; color: #5E6873">→</span><span id="trFeeNote" style="flex: none; min-width: 170px; height: 38px; box-sizing: border-box; padding: 0 12px; border-radius: 10px; background: #E6F6F6; color: #007E82; font-size: 14px; font-weight: 600; display: inline-flex; align-items: center">{{tr.feeNote}}</span></div></div>
       <sc-if value="{{tr.err}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; font-weight: 600; color: #B4332B">{{tr.err}}</div></sc-if>
       <div style="display: flex; align-items: center; gap: 8px; padding-top: 4px">
         <sc-if value="{{tr.edit}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.remove}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{tr.delLabel}}</button></sc-if>
@@ -1048,13 +1048,13 @@ class Component extends DCLogic {
     const SC = this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [];
     const MON = SC[1] || SC[3] || 11, me = this.trialMe();
     return this.readTrials().filter(t => t && t.id && t.teacher === me && this.kOf(t.date) === MON).map(t => ({ id: 'X' + t.id + '-T', sid: 'X' + t.id, g: '체험', name: t.name, time: t.time || undefined, tickets: 1, start: 0,
-      fresh: t.kind !== 'free' && +t.fee > 0, trial: t, teacher: me, backTag: t.reg ? '→ 등록' : '', rowBg: t.kind === 'pro' ? '#E9E1F7' : undefined }));
+      fresh: t.kind !== 'free' && +t.fee > 0, trial: t, teacher: me, backTag: t.reg ? '→ 등록' : '' }));
   }
   openTrial(t) {
     const SC = this.sheetList()[Math.min(this.state.sheet, this.sheetList().length - 1)] || [], MON = SC[1] || SC[3] || 11, td = this.todayYmd();
     const tm = t && /^(\d{1,2}):(\d{2})$/.exec(t.time || '');
-    this.setState({ tr: t ? { id: t.id, name: t.name || '', phone: t.phone || '', date: t.date || td, time: tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '', subject: t.subject || '', kind: t.kind || 'hobby', fee: String(t.base != null ? t.base : t.fee == null ? '' : t.fee), reg: t.reg || '', err: '', del: false, n: Date.now() }
-      : { id: null, name: '', phone: '', date: this.kOf(td) === MON ? td : this.ymK(MON) + '-01', time: '', subject: '', kind: 'hobby', fee: '', reg: '', err: '', del: false, n: Date.now() } });
+    this.setState({ tr: t ? { id: t.id, name: t.name || '', phone: t.phone || '', date: t.date || td, time: tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '', subject: t.subject || '', kind: t.kind || 'hobby', fee: String(t.base != null ? t.base : t.fee == null ? '' : t.fee), reg: t.reg || '', teacher: t.teacher || this.trialMe(), err: '', del: false, n: Date.now() }
+      : { id: null, name: '', phone: '', date: this.kOf(td) === MON ? td : this.ymK(MON) + '-01', time: '', subject: '', kind: 'hobby', fee: '', reg: '', teacher: this.trialMe(), err: '', del: false, n: Date.now() } });
     setTimeout(() => { const d = document.getElementById(t ? 'trDlg' : 'trName'); if (d) d.focus(); }, 30);
   }
   trNote(fv, kind) { const b = +String(fv || '').replace(/[^\d]/g, '') || 0, f = kind === 'free' ? 0 : kind === 'half' ? Math.round(b / 2) : b; return '받을 금액 ' + f.toLocaleString('ko-KR') + '원' + (kind === 'free' ? ' (무료)' : kind === 'half' ? ' (50%)' : ''); }
@@ -1446,7 +1446,7 @@ class Component extends DCLogic {
   ltStyle(r, ymd) {
     if (r && r.trial) { const K = this.trialKinds().find(x => x[0] === r.trial.kind) || this.trialKinds()[0];
       const mx = h => { const n = parseInt(h.slice(1), 16); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * 0.55).toString(16).padStart(2, '0')).join(''); };
-      return { bg: K[2], fg: K[3], dot: K[4], row: K[0] === 'hobby' ? '' : K[0] === 'pro' ? '#F7F4FD' : mx(K[2]), key: 'TR' + K[0], name: '체험 ' + K[1].replace('정상 · ', ''), short: '', count: 1 }; }
+      return { bg: K[2], fg: K[3], dot: K[4], row: '', cellBg: K[0] === 'hobby' ? '#E6F6F6' : K[0] === 'pro' ? '#F7F4FD' : mx(K[2]), key: 'TR' + K[0], name: '체험 ' + K[1].replace('정상 · ', ''), short: '', count: 1 }; }
     const f = this.feeOn(r, ymd), pro = f.cls === 'pro';
     const t = this.lessonTypes().find(x => (x.cls === 'pro') === pro && +x.count === +f.count && (+x.dur || 60) === (+f.dur || 60) && +x.unit === +f.unit) || null;
     const mix = (h, k) => { const n = parseInt(h.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * k)); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''); };
@@ -2642,6 +2642,7 @@ class Component extends DCLogic {
             o.dpay = true; if (!o.text) { o.text = '₩'; o.kind = 'DV'; }
             o.what = (o.what ? o.what + ' · ' : '') + '차액 수납 ' + (+e['dp' + d]).toLocaleString('ko-KR') + '원';
           }
+          if (s0.trial && !o.text && ymdOf(Mm, d) === s0.trial.date) { const tm = /^(\d{1,2}):(\d{2})$/.exec(s0.trial.time || ''); o.text = tm ? ((+tm[1] % 12) || 12) + ':' + tm[2] : '체험'; o.what = '체험레슨 예정' + (tm ? ' ' + o.text : ''); }
           if (cur) outs[x.id].push(o);
           });
         }
@@ -2852,7 +2853,7 @@ class Component extends DCLogic {
               if (x.d === SEL.c2) edges.push('inset -2px 0 0 ' + BLUE);
             }
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
-            const LD = this.ltStyle(s, this.ymK(MON) + '-' + String(x.d).padStart(2, '0')), rowD = LD.row;
+            const LD = this.ltStyle(s, this.ymK(MON) + '-' + String(x.d).padStart(2, '0')), rowD = s.trial ? ((x.kind === '수' || x.kind === '결') ? LD.cellBg : '') : LD.row;
             const bg = x.pay ? (x.upay ? '#FCEBEA' : '#FAEFD2') : x.kind === 'DV' ? '#FDEBD8' : rowD ? rowD : x.d === TODAY ? '#F8F9F9' : (w === 0 || w === 6) ? tintWe : tint;
             return {
               text: x.text.replace('!', ''), chip: x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
@@ -3209,7 +3210,8 @@ class Component extends DCLogic {
       trOpen: () => this.openTrial(null),
       tr: st.tr ? (() => { const T = st.tr, chip = (on, bg, fg) => 'height: 32px; padding: 0 12px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid ' + (on ? fg : '#DDE2DF') + '; background: ' + (on ? bg : '#FFFFFF') + '; color: ' + (on ? fg : '#5E6873');
         const set = p => { const g = id => { const el = document.getElementById(id); return el ? el.value : undefined; }, cur = {}; [['name', 'trName'], ['phone', 'trPhone'], ['date', 'trDate'], ['time', 'trTime'], ['fee', 'trFee']].forEach(q => { const v = g(q[1]); if (v !== undefined) cur[q[0]] = v; }); this.setState({ tr: Object.assign({}, this.state.tr, cur, p, { err: '' }) }); };
-        return { open: true, title: T.id ? '체험레슨 · ' + T.name : '체험레슨 추가', edit: !!T.id, canReg: !!T.id && this.isOwner(), regTxt: T.reg ? '정식 등록 ' + (+T.reg.slice(5, 7)) + '/' + (+T.reg.slice(8, 10)) : '',
+        const tc = this.teacherColor(T.teacher || this.trialMe());
+        return { tch: (T.teacher || this.trialMe()) + ' 강사님', tchStyle: 'height: 26px; padding: 0 10px; border-radius: 999px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; background: ' + tc[0] + '; color: ' + tc[1], open: true, title: T.id ? '체험레슨 · ' + T.name : '체험레슨 추가', edit: !!T.id, canReg: !!T.id && this.isOwner(), regTxt: T.reg ? '정식 등록 ' + (+T.reg.slice(5, 7)) + '/' + (+T.reg.slice(8, 10)) : '',
           name: T.name, phone: T.phone, date: T.date, time: T.time, fee: T.fee, err: T.err || '', free: false, feePh: '정상 금액 (예: 40000)', feeNote: this.trNote(T.fee, T.kind), feeIn: e => { const n = document.getElementById('trFeeNote'); if (n) n.textContent = this.trNote(e.target.value, (this.state.tr || {}).kind); },
           lab: 'display: flex; flex-direction: column; gap: 5px', labT: 'font-size: 12px; font-weight: 600; color: #5E6873',
           feeLab: 'display: flex; flex-direction: column; gap: 5px',
