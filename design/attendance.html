@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.80.7</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1445,7 +1445,7 @@ class Component extends DCLogic {
   ltStyle(r, ymd) {
     if (r && r.trial) { const K = this.trialKinds().find(x => x[0] === r.trial.kind) || this.trialKinds()[0];
       const mx = h => { const n = parseInt(h.slice(1), 16); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * 0.55).toString(16).padStart(2, '0')).join(''); };
-      return { bg: K[2], fg: K[3], dot: K[4], row: '', cellBg: K[0] === 'hobby' ? '#E6F6F6' : K[0] === 'pro' ? '#F7F4FD' : mx(K[2]), key: 'TR' + K[0], name: '체험 ' + K[1].replace('정상 · ', '').replace(' (100%)', ''), short: '', count: 1 }; }
+      return { bg: K[2], fg: K[3], dot: K[4], row: '', cellBg: K[0] === 'hobby' ? '#E6F6F6' : K[0] === 'pro' ? '#F7F4FD' : mx(K[2]), key: 'TR' + K[0], name: '체험 ' + K[1].replace('정상 · ', '').replace(' (100%)', ''), short: '', count: 1, tBase: +(r.trial.base != null ? r.trial.base : r.trial.fee) || 0, tFee: +r.trial.fee || 0 }; }
     const f = this.feeOn(r, ymd), pro = f.cls === 'pro';
     const t = this.lessonTypes().find(x => (x.cls === 'pro') === pro && +x.count === +f.count && (+x.dur || 60) === (+f.dur || 60) && +x.unit === +f.unit) || null;
     const mix = (h, k) => { const n = parseInt(h.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * k)); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''); };
@@ -2615,7 +2615,7 @@ class Component extends DCLogic {
             marks[used - 1] = v + (this.proOn(s0, ymdOf(Mm, d)) ? 'P' : '') + this.ltStyle(s0, ymdOf(Mm, d)).dot;
             if (used === 1) firstDate = this.kM(Mm) + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
-            if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, this.ymK(Mm) + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; const L0 = this.ltStyle(s0, ymdOf(Mm, d)); const b0 = lessonBy[L0.key] || (lessonBy[L0.key] = { n: 0, name: L0.name, bg: L0.bg, fg: L0.fg }); b0.n++; }
+            if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, this.ymK(Mm) + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; const L0 = this.ltStyle(s0, ymdOf(Mm, d)); const b0 = lessonBy[L0.key] || (lessonBy[L0.key] = { n: 0, name: L0.name, bg: L0.bg, fg: L0.fg }); b0.n++; if (L0.tBase != null) { (b0.tb = b0.tb || []).push(L0.tBase); (b0.tf = b0.tf || []).push(L0.tFee); } }
             if (v === '수') { o.text = s0.trial ? '0' : String(used); o.what = used + '회차 출석'; }
             else { o.text = '결' + used; o.what = used + '회차 결석'; }
             o.kind = v;
@@ -3481,7 +3481,7 @@ class Component extends DCLogic {
       // 레슨횟수 칸을 누르면: 이 강사 탭 이번 달에 수업이 있는 유형만, 횟수를 크게
       ltInfo: st.ltInfo ? (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); const tot = ks.reduce((n, k) => n + lessonBy[k].n, 0);
         return { open: true, close: () => this.setState({ ltInfo: false }), total: tot, sub: this.kLabel(MON) + ' · ' + String(curT[0] || '').replace(' 원장님', ' 원장님'),
-          rows: ks.map(k => { const b = lessonBy[k], t = this.lessonTypes().find(x => x.id === k); return { name: b.name, n: b.n, pct: tot ? Math.round(b.n / tot * 100) + '%' : '', desc: t ? '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원' : '설정에 없는 수강료',
+          rows: ks.map(k => { const b = lessonBy[k], t = this.lessonTypes().find(x => x.id === k); return { name: b.name, n: b.n, pct: tot ? Math.round(b.n / tot * 100) + '%' : '', desc: t ? '회당 ' + (+t.unit).toLocaleString('ko-KR') + '원 · 합계 ' + (+t.count * +t.unit).toLocaleString('ko-KR') + '원' : b.tb ? (() => { const W = v => (+v).toLocaleString('ko-KR') + '원', u = a => a.filter((x, i) => a.indexOf(x) === i); const bs = u(b.tb), fs = u(b.tf); return '정상 금액 ' + (bs.length === 1 ? W(bs[0]) : bs.map(W).join(' / ')) + ' · 받을 금액 ' + (fs.length === 1 ? W(fs[0]) : fs.map(W).join(' / ')); })() : '설정에 없는 수강료',
             card: 'display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: ' + b.bg + '; color: ' + b.fg, bar: 'flex: ' + b.n + ' 0 0; background: ' + b.fg }; }) }; })() : { open: false },
       // MEMO 위 범례 한 줄 (이번 달 수업이 있는 유형, 인쇄·내보내기에도)
       ltLegend: (() => { const order = this.lessonTypes().map(t => t.id).concat(['xh', 'xp', 'TRfree', 'TRhalf', 'TRhobby', 'TRpro']); const ks = Object.keys(lessonBy).sort((a, b) => order.indexOf(a) - order.indexOf(b)); return { show: ks.length > 0, items: ks.map(k => ({ t: lessonBy[k].name + ' ' + lessonBy[k].n + '회', style: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-weight: 600; background: ' + lessonBy[k].bg + '; color: ' + lessonBy[k].fg })) }; })(),
