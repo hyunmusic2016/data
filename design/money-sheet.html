@@ -39,6 +39,7 @@ th.col,th.row,th.corner{cursor:pointer}
 .fbar .val{padding:0 8px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fbar .sp{flex:1}.fbar .agg{padding:0 14px;font-size:12px;color:#3C4043}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:#1F1F1F;color:#FFFFFF;font-size:13px;font-weight:600;display:none}
+.cgrip{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:1}.cgrip:hover,.cgrip.on{background:#1A73E8}
 </style>
 </head>
 <body>
@@ -54,7 +55,7 @@ th.col,th.row,th.corner{cursor:pointer}
 <script>
 // 수입·지출 화면(money.html)이 그때그때 'money.sheet'에 써 두는 표 내용을 구글시트 모양으로 보여 준다 (보기 전용)
 const BOX = [['in', '수입', '#CFE2F3', 5], ['fx', '고정 지출', '#F4CCCC', 5], ['va', '변동 지출', '#F4CCCC', 6], ['sum', '합계', '#EFEFEF', 2]];
-const W = { in: [40, 36, 120, 90, 90], fx: [40, 36, 140, 90, 90], va: [40, 36, 150, 100, 90, 90], sum: [110, 110] };
+const W = { in: [40, 32, 120, 90, 90], fx: [40, 32, 140, 90, 90], va: [40, 32, 150, 100, 90, 90], sum: [110, 110] };
 const esc = s => String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const colName = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
 let GRID = [], NC_ = 0, SEL = { r1: 5, c1: 0, r2: 5, c2: 0 }, ANC = { r: 5, c: 0 }, dragging = false;
@@ -84,8 +85,8 @@ function build() {
     rows.push(r);
   }
   GRID = rows;
-  let h = '<colgroup><col style="width:40px">' + widths.map(w => '<col style="width:' + w + 'px">').join('') + '</colgroup>';
-  h += '<tr><th class="corner" data-all="1"></th>' + widths.map((w, i) => '<th class="col" data-col="' + i + '">' + colName(i) + '</th>').join('') + '</tr>';
+  const CW0 = readCW(); let h = '<colgroup><col style="width:40px">' + widths.map((w, i) => '<col data-def="' + w + '" style="width:' + (+CW0[i] >= 20 ? +CW0[i] : w) + 'px">').join('') + '</colgroup>';
+  h += '<tr><th class="corner" data-all="1"></th>' + widths.map((w, i) => '<th class="col" data-col="' + i + '" style="position:sticky">' + colName(i) + '<span class="cgrip" data-grip="' + i + '" title="끌어서 폭 조절 · 두 번 누르면 원래 폭"></span></th>').join('') + '</tr>';
   rows.forEach((r, ri) => {
     h += '<tr><th class="row" data-row="' + ri + '">' + (ri + 1) + '</th>';
     for (let ci = 0; ci < NC; ci++) {
@@ -166,6 +167,26 @@ document.addEventListener('copy', e => {
 });
 window.addEventListener('storage', e => { if (e.key === 'money.sheet') build(); });
 build();
+
+// 열 폭 조정: 열 글자 오른쪽 끝을 끌면 폭이 바뀜, 두 번 누르면 원래 폭 (이 브라우저에 저장)
+var CWK = 'moneySheet.colW';
+function readCW() { try { return JSON.parse(localStorage.getItem(CWK || (location.pathname.indexOf('money-sheet') >= 0 ? 'moneySheet.colW' : 'sheet.' + (new URLSearchParams(location.search).get('k') || '') + '.colW')) || '{}') || {}; } catch (e) { return {}; } }
+document.addEventListener('mousedown', e => {
+  const g = e.target.closest && e.target.closest('.cgrip'); if (!g || e.button) return;
+  e.preventDefault(); e.stopPropagation();
+  const i = +g.dataset.grip, col = document.querySelectorAll('#t col')[i + 1]; if (!col) return;
+  const x0 = e.clientX, w0 = parseFloat(col.style.width) || 80; g.classList.add('on');
+  const mv = ev => { col.style.width = Math.max(20, Math.round(w0 + ev.clientX - x0)) + 'px'; };
+  const up = () => { window.removeEventListener('mousemove', mv, true); window.removeEventListener('mouseup', up, true); g.classList.remove('on'); const cw = readCW(); cw[i] = parseFloat(col.style.width); try { localStorage.setItem(CWK, JSON.stringify(cw)); } catch (x) {} };
+  window.addEventListener('mousemove', mv, true); window.addEventListener('mouseup', up, true);
+}, true);
+document.addEventListener('dblclick', e => {
+  const g = e.target.closest && e.target.closest('.cgrip'); if (!g) return;
+  e.preventDefault(); e.stopPropagation();
+  const i = +g.dataset.grip, col = document.querySelectorAll('#t col')[i + 1], cw = readCW(); delete cw[i];
+  try { localStorage.setItem(CWK, JSON.stringify(cw)); } catch (x) {}
+  if (col && col.dataset.def) col.style.width = col.dataset.def + 'px';
+}, true);
 </script>
 </body>
 </html>

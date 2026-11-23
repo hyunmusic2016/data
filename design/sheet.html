@@ -39,6 +39,7 @@ th.col,th.row,th.corner{cursor:pointer}
 .fbar .val{padding:0 8px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fbar .sp{flex:1}.fbar .agg{padding:0 14px;font-size:12px;color:#3C4043}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:#1F1F1F;color:#FFFFFF;font-size:13px;font-weight:600;display:none}
+.cgrip{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:1}.cgrip:hover,.cgrip.on{background:#1A73E8}
 </style>
 </head>
 <body>
@@ -66,8 +67,8 @@ function build() {
   const NC = Math.max(1, ...d.grid.map(r => r.reduce((n, x) => n + ((x && x.span) || 1), 0)));
   const widths = Array.from({ length: NC }, (_, i) => (d.widths || [])[i] || 90);
   GRID = d.grid.map(r => { const row = []; r.forEach(x => { const o = x && typeof x === 'object' ? Object.assign({}, x) : { v: x }; row.push(o); for (let k = 1; k < (o.span || 1); k++) row.push({ v: '', skip: true }); }); while (row.length < NC) row.push({ v: '' }); return row; });
-  let h = '<colgroup><col style="width:40px">' + widths.map(w => '<col style="width:' + w + 'px">').join('') + '</colgroup>';
-  h += '<tr><th class="corner" data-all="1"></th>' + widths.map((w, i) => '<th class="col" data-col="' + i + '">' + colName(i) + '</th>').join('') + '</tr>';
+  const CW0 = readCW(); let h = '<colgroup><col style="width:40px">' + widths.map((w, i) => '<col data-def="' + w + '" style="width:' + (+CW0[i] >= 20 ? +CW0[i] : w) + 'px">').join('') + '</colgroup>';
+  h += '<tr><th class="corner" data-all="1"></th>' + widths.map((w, i) => '<th class="col" data-col="' + i + '" style="position:sticky">' + colName(i) + '<span class="cgrip" data-grip="' + i + '" title="끌어서 폭 조절 · 두 번 누르면 원래 폭"></span></th>').join('') + '</tr>';
   GRID.forEach((r, ri) => {
     h += '<tr><th class="row" data-row="' + ri + '">' + (ri + 1) + '</th>';
     r.forEach((x, ci) => { if (x.skip) return; const isN = typeof x.v === 'number';
@@ -144,6 +145,26 @@ document.addEventListener('copy', e => {
 });
 window.addEventListener('storage', e => { if (e.key === KEY) build(); });
 build();
+
+// 열 폭 조정: 열 글자 오른쪽 끝을 끌면 폭이 바뀜, 두 번 누르면 원래 폭 (이 브라우저에 저장)
+var CWK = KEY + '.colW';
+function readCW() { try { return JSON.parse(localStorage.getItem(CWK || (location.pathname.indexOf('money-sheet') >= 0 ? 'moneySheet.colW' : 'sheet.' + (new URLSearchParams(location.search).get('k') || '') + '.colW')) || '{}') || {}; } catch (e) { return {}; } }
+document.addEventListener('mousedown', e => {
+  const g = e.target.closest && e.target.closest('.cgrip'); if (!g || e.button) return;
+  e.preventDefault(); e.stopPropagation();
+  const i = +g.dataset.grip, col = document.querySelectorAll('#t col')[i + 1]; if (!col) return;
+  const x0 = e.clientX, w0 = parseFloat(col.style.width) || 80; g.classList.add('on');
+  const mv = ev => { col.style.width = Math.max(20, Math.round(w0 + ev.clientX - x0)) + 'px'; };
+  const up = () => { window.removeEventListener('mousemove', mv, true); window.removeEventListener('mouseup', up, true); g.classList.remove('on'); const cw = readCW(); cw[i] = parseFloat(col.style.width); try { localStorage.setItem(CWK, JSON.stringify(cw)); } catch (x) {} };
+  window.addEventListener('mousemove', mv, true); window.addEventListener('mouseup', up, true);
+}, true);
+document.addEventListener('dblclick', e => {
+  const g = e.target.closest && e.target.closest('.cgrip'); if (!g) return;
+  e.preventDefault(); e.stopPropagation();
+  const i = +g.dataset.grip, col = document.querySelectorAll('#t col')[i + 1], cw = readCW(); delete cw[i];
+  try { localStorage.setItem(CWK, JSON.stringify(cw)); } catch (x) {}
+  if (col && col.dataset.def) col.style.width = col.dataset.def + 'px';
+}, true);
 </script>
 </body>
 </html>
