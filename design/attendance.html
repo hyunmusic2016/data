@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -257,14 +257,14 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
             <sc-if value="{{g.isOpen}}" hint-placeholder-val="{{ true }}">
               <sc-for list="{{g.items}}" as="it" hint-placeholder-count="2"><div style="{{it.cardSt}}">
                 <div style="display: flex; align-items: flex-start; gap: 10px">
-                  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 11px; font-weight: 600; color: #8A949E">수납 날짜</span><span style="font-size: 15px; font-weight: 600; color: #17201C">{{it.dateTxt}}</span></span>
+                  <span style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span style="font-size: 11px; font-weight: 600; color: #8A949E">{{it.dateLbl}}</span><span style="font-size: 15px; font-weight: 600; color: #17201C">{{it.dateTxt}}</span></span>
                   <span style="flex: 1"></span>
-                  <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span style="font-size: 18px; font-weight: 600; color: #007E82; letter-spacing: -0.02em">{{it.amt}}</span><sc-if value="{{it.orig}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8A949E; text-decoration: line-through">{{it.orig}}</span></sc-if></span>
+                  <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><span style="{{it.amtSt}}">{{it.amt}}</span><sc-if value="{{it.orig}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; color: #8A949E; text-decoration: line-through">{{it.orig}}</span></sc-if></span>
                 </div>
-                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-for list="{{it.tags}}" as="tg" hint-placeholder-count="2"><span style="{{tg.st}}">{{tg.t}}</span></sc-for><span style="flex: 1"></span><span style="display: inline-flex; gap: 4px; flex-wrap: wrap"><sc-for list="{{it.dots}}" as="dt" hint-placeholder-count="4"><span style="{{dt.st}}"></span></sc-for></span></div>
-                <div style="display: flex; flex-wrap: wrap; gap: 6px; padding-top: 8px; border-top: 1px dashed #E1E6E3">
+                <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap"><sc-for list="{{it.tags}}" as="tg" hint-placeholder-count="2"><span style="{{tg.st}}">{{tg.t}}</span></sc-for><span style="flex: 1"></span><span style="display: inline-flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end"><sc-for list="{{it.dots}}" as="dg" hint-placeholder-count="1"><span style="display: inline-flex; gap: 3px"><sc-for list="{{dg.items}}" as="dt" hint-placeholder-count="4"><span style="{{dt.st}}"></span></sc-for></span></sc-for></span></div>
+                <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 8px; border-top: 1px dashed #E1E6E3">
                   <sc-if value="{{it.noLesson}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #8A949E">아직 수업 없음</span></sc-if>
-                  <sc-for list="{{it.lessons}}" as="ls" hint-placeholder-count="3"><span style="{{ls.st}}"><span style="{{ls.nst}}">{{ls.n}}</span>{{ls.t}}</span></sc-for>
+                  <sc-for list="{{it.lessons}}" as="lg" hint-placeholder-count="1"><div style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{lg.items}}" as="ls" hint-placeholder-count="3"><span style="{{ls.st}}"><span style="{{ls.nst}}">{{ls.n}}</span>{{ls.t}}</span></sc-for></div></sc-for>
                 </div>
               </div></sc-for>
             </sc-if>
@@ -2037,7 +2037,9 @@ class Component extends DCLogic {
     const lessons = [];
     months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (/^\d+$/.test(d) && (e[d] === '수' || e[d] === '결')) lessons.push({ ymd: this.ymK(m) + '-' + p2(+d), kind: e[d] }); }); }); });
     lessons.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0);
-    const pays = this.readPays().filter(p => p && p.name === T.name && p.kind !== 'trial').slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
+    const TR = T.s && T.s.trial;
+    let pays = this.readPays().filter(p => p && (TR ? p.trial === TR.id : (p.name === T.name && p.kind !== 'trial'))).slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
+    if (TR && !pays.length) pays = [{ date: TR.date, count: 1, amount: +TR.fee || 0, total: +TR.fee || 0, virt: true, freeTrial: TR.kind === 'free' }];
     // 결제 순서대로 수업을 앞에서부터 채움 (출석부 수강권 계산과 같은 순서)
     let li = 0;
     const rows = pays.map(p => { const c = +p.count || 0, used = lessons.slice(li, li + c); li += used.length; return { p: p, used: used, c: c }; });
@@ -3300,16 +3302,18 @@ class Component extends DCLogic {
           groups: groups.map(g => { const isOpen = T.open[g.h] != null ? T.open[g.h] : hEnd(g.h) >= t6;
             return { label: g.h.slice(0, 4) + '년 ' + (g.h.slice(5) === 'A' ? '1~6월' : '7~12월') + ' · ' + g.items.length + '건', arrow: isOpen ? '▾' : '▸', isOpen: isOpen,
               toggle: () => this.setState({ th: Object.assign({}, T, { open: Object.assign({}, T.open, { [g.h]: !isOpen }) }) }),
-              items: g.items.map(r => { const p = r.p, B = p.ben && p.ben.kind ? p.ben : null;
+              items: g.items.map(r => { const p = r.p, B = p.ben && p.ben.kind ? p.ben : null, TR0 = T.s && T.s.trial;
                 const wd = '일월화수목금토'[new Date(p.date + 'T12:00:00').getDay()], done = r.c && r.used.length >= r.c;
                 const pill = (bg, fg) => 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + bg + '; color: ' + fg;
-                const bcol = k => B && k < B.n ? (B.kind === 'free' ? '#8A949E' : '#E08A3C') : null;
-                const tags = [{ t: (r.c || 0) + '회', st: pill('#E6F6F6', '#007E82') }].concat(B ? [{ t: '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%'), st: B.kind === 'free' ? pill('#E5E9EC', '#3A4450') : pill('#FDE7D2', '#9A4A12') }] : []).concat(p.kind === 'late' ? [{ t: '미납 수납', st: pill('#FCEBEA', '#B4332B') }] : []).concat([{ t: done ? '수업완료' : '사용 ' + r.used.length + '/' + (r.c || 0), st: done ? pill('#DFF2E4', '#2F6B43') : pill('#F2F4F3', '#5E6873') }]);
-                const dots = []; for (let k = 0; k < (r.c || 0); k++) { const l = r.used[k], bn = bcol(k); dots.push({ st: 'width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; ' + (l ? 'background: ' + (l.kind === '결' ? '#E0605A' : (bn || '#00A6AB')) : 'border: 1.5px solid ' + (bn || '#CDD4D0')) }); }
-                return { dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: won(p.amount != null ? p.amount : p.total) + '원', orig: B ? won(p.total) + '원' : '',
-                  tags: tags, dots: dots, noLesson: !r.used.length,
-                  cardSt: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; border: 1px solid ' + (done ? '#E1E6E3' : '#A9DCDE') + '; background: ' + (done ? '#FAFBFA' : '#FFFFFF') + '; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.04)',
-                  lessons: r.used.map((l, k) => ({ t: md(l.ymd), n: l.kind === '결' ? '결' : String(k + 1), st: 'display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 4px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + (l.kind === '결' ? '#FDEBE4' : '#F2F4F3') + '; color: #3A4450', nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 999px; font-size: 10px; color: #FFFFFF; background: ' + (l.kind === '결' ? '#E0605A' : (bcol(k) || '#00A6AB')) })) }; }) }; }),
+                const LT = this.ltStyle(T.s, p.date), lcol = k => { const l = r.used[k]; return l ? this.ltStyle(T.s, l.ymd).dot : LT.dot; };
+                const bcol = k => B && k < B.n ? (B.kind === 'free' ? '#8A949E' : '#E08A3C') : lcol(k);
+                const GS = (r.c % 4 !== 0 && r.c % 5 === 0) ? 5 : 4, grp = a => { const o = []; for (let q = 0; q < a.length; q += GS) o.push({ items: a.slice(q, q + GS) }); return o; };
+                const tags = (TR0 ? [{ t: LT.name, st: pill(LT.bg, LT.fg) }] : [{ t: (r.c || 0) + '회', st: pill(LT.bg, LT.fg) }]).concat(B ? [{ t: '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%'), st: B.kind === 'free' ? pill('#E5E9EC', '#3A4450') : pill('#FDE7D2', '#9A4A12') }] : []).concat(p.virt && !p.freeTrial ? [{ t: '미입금', st: pill('#FCEBEA', '#B4332B') }] : []).concat(p.kind === 'late' ? [{ t: '미납 수납', st: pill('#FCEBEA', '#B4332B') }] : []).concat([{ t: done ? '수업완료' : '사용 ' + r.used.length + '/' + (r.c || 0), st: done ? pill('#DFF2E4', '#2F6B43') : pill('#F2F4F3', '#5E6873') }]);
+                const dots = []; for (let k = 0; k < (r.c || 0); k++) { const l = r.used[k], bn = bcol(k); dots.push({ st: 'width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; ' + (l ? 'background: ' + (l.kind === '결' ? '#E0605A' : bn) : 'border: 1.5px solid ' + bn) }); }
+                return { dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: p.freeTrial ? '무료' : p.virt ? won(p.amount) + '원' : won(p.amount != null ? p.amount : p.total) + '원', amtSt: 'font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: ' + LT.fg, dateLbl: p.virt ? '체험 날짜' : '수납 날짜', orig: B ? won(p.total) + '원' : '',
+                  tags: tags, dots: grp(dots), noLesson: !r.used.length,
+                  cardSt: 'display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 14px; border: 1px solid ' + (done ? '#E1E6E3' : LT.dot) + '; background: ' + (done ? '#FAFBFA' : '#FFFFFF') + '; box-shadow: 0 1px 2px rgba(23, 32, 28, 0.04)',
+                  lessons: grp(r.used.map((l, k) => ({ t: md(l.ymd), n: l.kind === '결' ? '결' : String(k + 1), st: 'display: inline-flex; align-items: center; gap: 4px; height: 24px; padding: 0 8px 0 4px; border-radius: 999px; font-size: 11px; font-weight: 600; background: ' + (l.kind === '결' ? '#FDEBE4' : '#F2F4F3') + '; color: #3A4450', nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 16px; height: 16px; padding: 0 3px; box-sizing: border-box; border-radius: 999px; font-size: 10px; color: #FFFFFF; background: ' + (l.kind === '결' ? '#E0605A' : bcol(k)) }))) }; }) }; }),
           canPlan: !!T.canPlan, plan: () => { const s0 = T.s; this.setState({ th: null }); this.openTkPlan(s0, T.planV); },
           canLate: !!T.late, late: () => { const L = T.late; this.setState({ th: null }); this.openPay(L); },
           close: () => this.setState({ th: null }), key: e => { if (e.key === 'Escape') { e.stopPropagation(); this.setState({ th: null }); } } }; })() : { open: false },
