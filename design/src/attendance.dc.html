@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.9</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.82.0</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -550,7 +550,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <div class="noprint" role="menu" style="{{sm.ctxStyle}}">
       <button type="button" role="menuitem" onClick="{{sm.hide}}" disabled="{{sm.hideDis}}" style="{{sm.hideStyle}}">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.1A9.8 9.8 0 0 1 12 5c5 0 9 4 10 7a11 11 0 0 1-2.7 3.9M6.1 6.1A11 11 0 0 0 2 12c1 3 5 7 10 7a9.8 9.8 0 0 0 4.1-.9"></path></svg>
-        시트 숨기기
+        {{sm.hideLabel}}
       </button>
     </div>
   </sc-if>
@@ -3106,11 +3106,12 @@ class Component extends DCLogic {
         dragEnd: e => { this._tabDrag = null; if (e.currentTarget) e.currentTarget.style.opacity = ''; },
         cls: st.tabFlash === t[0] ? 'tabdrop' : '',
         name: t[0], on: on ? 'true' : 'false',
-        pick: () => this.setState({ sheet: i, sheetCtx: null, sheetList: false, logView: null }),
+        // Shift+누르기 = 마지막으로 누른 탭부터 이 탭까지 여러 개 선택(한 번에 숨기기용), 그냥 누르면 선택 풀림
+        pick: e => { if (e && e.shiftKey && this._tabAnchor) { const names = tabsOrd.map(x => x.t[0]), a = names.indexOf(this._tabAnchor), b = names.indexOf(t[0]); if (a >= 0 && b >= 0) { this.setState({ tabMulti: names.slice(Math.min(a, b), Math.max(a, b) + 1), sheetCtx: null, sheetList: false }); return; } } this._tabAnchor = t[0]; this.setState({ sheet: i, tabMulti: null, sheetCtx: null, sheetList: false, logView: null }); },
         ctx: e => { if (e && e.preventDefault) e.preventDefault(); this.setState({ sheetCtx: { i: i, x: e.clientX, y: e.clientY }, sheetList: false }); },
         dot: tOk ? 'width: 9px; height: 9px; border-radius: 50%; flex: none; background: ' + tcol[0] : 'width: 6px; height: 6px; border-radius: 50%; flex: none; background: ' + col,
         style: 'display: inline-flex; align-items: center; gap: 6px; flex: none; height: 32px; padding: 0 11px; border: none; border-top: 2px solid ' + (on ? col : 'transparent') + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' +
-          (on ? 'background: ' + (att ? '#FDF1F1' : '#EEF4FC') + '; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500')
+          (on ? 'background: ' + (att ? '#FDF1F1' : '#EEF4FC') + '; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500') + ((st.tabMulti || []).indexOf(t[0]) >= 0 ? '; background: #E6F6F6; color: #17201C; box-shadow: inset 0 0 0 1.5px #00A6AB; border-radius: 6px' : '')
       };
     });
     const nextM = this.state.extra.length ? this.state.extra[0] + 1 : 12;
@@ -3122,6 +3123,7 @@ class Component extends DCLogic {
       style: 'display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; font-family: inherit; cursor: pointer; border: ' + (on ? '2px solid #00A6AB; background: #F2FBFB' : '1px solid #E1E6E3; background: #FFFFFF'),
       radio: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 50%; border: ' + (on ? '5px solid #00A6AB' : '2px solid #CDD4D0') + '; background: #FFFFFF'
     });
+    const hideNames = ctx ? ((st.tabMulti || []).indexOf(sheets[ctx.i][0]) >= 0 ? st.tabMulti.filter(n => hidden.indexOf(n) < 0) : [sheets[ctx.i][0]]) : [];
     const sm = {
       anyOpen: !!ctx || !!st.sheetList,
       ctxOpen: !!ctx,
@@ -3138,15 +3140,16 @@ class Component extends DCLogic {
         };
       }),
       ctxStyle: 'position: fixed; left: ' + (ctx ? Math.min(ctx.x, window.innerWidth - 180) : 0) + 'px; top: ' + (ctx ? Math.max(8, ctx.y - 52) : 0) + 'px; z-index: 31; width: 168px; padding: 4px; box-sizing: border-box; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 10px; box-shadow: 0 10px 28px rgba(23, 32, 28, 0.16)',
-      hideDis: visibleCount <= 1,
-      hideStyle: 'display: flex; align-items: center; gap: 8px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; background: #FFFFFF; font-family: inherit; font-size: 13px; text-align: left; cursor: ' + (visibleCount <= 1 ? 'not-allowed; color: #B7C0BC' : 'pointer; color: #17201C'),
+      hideLabel: hideNames.length > 1 ? '시트 ' + hideNames.length + '개 숨기기' : '시트 숨기기',
+      hideDis: visibleCount - hideNames.length < 1,
+      hideStyle: 'display: flex; align-items: center; gap: 8px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; background: #FFFFFF; font-family: inherit; font-size: 13px; text-align: left; cursor: ' + (visibleCount - hideNames.length < 1 ? 'not-allowed; color: #B7C0BC' : 'pointer; color: #17201C'),
       hide: () => {
-        if (!ctx || visibleCount <= 1) return;
-        const name = sheets[ctx.i][0];
-        const nh = hidden.concat([name]);
+        const names = hideNames;
+        if (!ctx || visibleCount - names.length < 1) return;
+        const nh = hidden.concat(names);
         let ns = st.sheet;
-        if (ns === ctx.i) { const nx = sheets.findIndex(t => nh.indexOf(t[0]) < 0); ns = nx < 0 ? 0 : nx; }
-        this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null });
+        if (names.indexOf(sheets[ns] && sheets[ns][0]) >= 0) { const nx = sheets.findIndex(t => nh.indexOf(t[0]) < 0); ns = nx < 0 ? 0 : nx; }
+        this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null, tabMulti: null });
       },
       items: ordered.filter(o => ((st.sheetListTab || 'att') === 'att') === (o.t[1] > 0)).map(o => {
         const isH = hidden.indexOf(o.t[0]) >= 0, on = o.i === st.sheet;
