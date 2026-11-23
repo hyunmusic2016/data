@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.4</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2573,10 +2573,10 @@ class Component extends DCLogic {
       // 이번 달 계산에는 그 전 달들의 기록만 쓰고, 이번 달 기록은 지난 달 계산에 쓰지 않는다 (지난 달 출석부는 그대로).
       // 입금 처리 (날짜 칸 수납, 휴원·퇴원 원생이 다음 달 이후에 낸 미납금액 수납 모두 같은 절차)
       // 혜택 레슨: 색(무료 회색·50% 주황)·레슨횟수 묶음(혜택 무료·혜택 50%)
-      const benSt = (kind, ymd) => { const K = this.trialKinds().find(x => x[0] === kind) || this.trialKinds()[0]; const u = this.unitOn(s0, ymd) || this.feeOn(s0, ymd).unit; return { key: 'BN' + kind, name: '혜택 ' + K[1], bg: K[2], fg: K[3], dot: K[4], cellBg: kind === 'free' ? '#EEF1F2' : '#FEF1E6', tBase: u, tFee: u }; };
+      const benSt = (kind, ymd) => { const K = this.trialKinds().find(x => x[0] === kind) || this.trialKinds()[0]; const u = this.unitOn(s0, ymd) || this.feeOn(s0, ymd).unit; return { key: 'BN' + kind, name: '혜택 ' + K[1], bg: K[2], fg: K[3], dot: K[4], cellBg: (h => { const n = parseInt(h.slice(1), 16); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * 0.55).toString(16).padStart(2, '0')).join(''); })(K[2]), tBase: u, tFee: u }; };
       const addCnt = (o, L0) => { const b0 = lessonBy[L0.key] || (lessonBy[L0.key] = { n: 0, name: L0.name, bg: L0.bg, fg: L0.fg }); b0.n++; if (L0.tBase != null) { (b0.tb = b0.tb || []).push(L0.tBase); (b0.tf = b0.tf || []).push(L0.tFee); } if (o) o.cnt = L0.key; };
       const dotOf = (m, dot) => { const i = String(m || '').indexOf('#'); return (i >= 0 ? m.slice(0, i) : (m || '')) + dot; };
-      const applyBen = (t, i, ben, arr) => { const L1 = benSt(ben.kind, ymdOf(t.m, t.d)); t.ben = ben.kind; t.benBg = L1.cellBg; if (arr && arr[i]) arr[i] = dotOf(arr[i], L1.dot);
+      const applyBen = (t, i, ben, arr) => { const L1 = benSt(ben.kind, ymdOf(t.m, t.d)); t.ben = ben.kind; t.benBg = L1.cellBg; t.benDot = L1.dot; if (arr && arr[i]) arr[i] = dotOf(arr[i], L1.dot);
         if (t.cnt && t.cnt !== L1.key) { const b = lessonBy[t.cnt]; if (b) { b.n--; if (b.tb && b.tb.length) { b.tb.pop(); b.tf.pop(); } if (b.n <= 0) delete lessonBy[t.cnt]; } addCnt(t, L1); } };
       const payNow = (c, dt, ben) => {
       ben = ben && ben.kind ? { kind: ben.kind, n: Math.max(0, Math.min(+ben.n || 0, c)) } : null;
@@ -2628,7 +2628,7 @@ class Component extends DCLogic {
             used++;
             const benNow = paid && curBen && used <= curBen.n ? curBen : null, Lm = benNow ? benSt(benNow.kind, ymdOf(Mm, d)) : this.ltStyle(s0, ymdOf(Mm, d));
             marks[used - 1] = v + (this.proOn(s0, ymdOf(Mm, d)) ? 'P' : '') + Lm.dot;
-            if (benNow) { o.ben = benNow.kind; o.benBg = Lm.cellBg; }
+            if (benNow) { o.ben = benNow.kind; o.benBg = Lm.cellBg; o.benDot = Lm.dot; }
             if (used === 1) firstDate = this.kM(Mm) + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
             if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, this.ymK(Mm) + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; addCnt(o, Lm); }
@@ -2873,7 +2873,7 @@ class Component extends DCLogic {
             return {
               // 출결과 수납이 같은 날: 바탕 대신 회차 오른쪽 위 금색 점 (미납 수납은 빨간 점)
               pdot: x.pay ? 'position: absolute; top: -2px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: ' + (x.upay ? '#E0605A' : '#D4A017') + '; box-shadow: 0 0 0 1.5px #FFFFFF' : '',
-              text: x.text.replace('!', ''), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
+              text: x.text.replace('!', ''), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
               label: this.kM(MON) + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
