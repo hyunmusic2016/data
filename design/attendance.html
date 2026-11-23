@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.9</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1456,7 +1456,7 @@ class Component extends DCLogic {
     const mix = (h, k) => { const n = parseInt(h.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * k)); return '#' + c.map(v => v.toString(16).padStart(2, '0')).join(''); };
     const own = t && /^#[0-9A-Fa-f]{6}$/.test(t.bg || '') && /^#[0-9A-Fa-f]{6}$/.test(t.fg || '');
     const c = own ? { bg: t.bg, fg: t.fg, dot: t.fg, row: mix(t.bg, 0.55) } : pro ? { bg: '#EDE6FA', fg: '#7A5FBF', dot: '#7A5FBF', row: '#F7F4FD' } : { bg: '#E6F6F6', fg: '#007E82', dot: '#00A6AB', row: '' };
-    return Object.assign(c, { key: t ? t.id : (pro ? 'xp' : 'xh'), name: t ? this.ltName(t) : (pro ? '전문' : '취미') + ' ' + f.count + '회 (직접 입력)', short: +f.count !== 4 ? f.count + '회' : '', count: f.count });
+    return Object.assign(c, { pro: pro, key: t ? t.id : (pro ? 'xp' : 'xh'), name: t ? this.ltName(t) : (pro ? '전문' : '취미') + ' ' + f.count + '회 (직접 입력)', short: +f.count !== 4 ? f.count + '회' : '', count: f.count });
   }
   // 반(취미/전문)은 수강생대장 수강료 변경의 적용 날짜부터. 그 날짜 전 수업·지난 달은 그대로
   proOn(r, ymd) {
@@ -2580,7 +2580,7 @@ class Component extends DCLogic {
       // 입금 처리 (날짜 칸 수납, 휴원·퇴원 원생이 다음 달 이후에 낸 미납금액 수납 모두 같은 절차)
       // 혜택 레슨: 색(무료 회색·50% 주황)·레슨횟수 묶음(혜택 무료·혜택 50%)
       const benSt = (kind, ymd) => { const K = this.trialKinds().find(x => x[0] === kind) || this.trialKinds()[0]; const u = this.unitOn(s0, ymd) || this.feeOn(s0, ymd).unit; return { key: 'BN' + kind, name: '재원생 ' + (kind === 'free' ? '무료' : '50%') + ' 레슨', bg: K[2], fg: K[3], dot: K[4], cellBg: kind === 'free' ? K[2] : (h => { const n = parseInt(h.slice(1), 16); return '#' + [n >> 16, (n >> 8) & 255, n & 255].map(v => Math.round(v + (255 - v) * 0.55).toString(16).padStart(2, '0')).join(''); })(K[2]), tBase: u, tFee: u }; };
-      const addCnt = (o, L0) => { const b0 = lessonBy[L0.key] || (lessonBy[L0.key] = { n: 0, name: L0.name, bg: L0.bg, fg: L0.fg }); b0.n++; if (L0.tBase != null) { (b0.tb = b0.tb || []).push(L0.tBase); (b0.tf = b0.tf || []).push(L0.tFee); } if (o) o.cnt = L0.key; if (/^(BN|TR)/.test(L0.key)) (b0.who = b0.who || []).push(s0.name.replace('$', '')); };
+      const addCnt = (o, L0) => { const b0 = lessonBy[L0.key] || (lessonBy[L0.key] = { n: 0, name: L0.name, bg: L0.bg, fg: L0.fg }); b0.n++; if (L0.tBase != null) { (b0.tb = b0.tb || []).push(L0.tBase); (b0.tf = b0.tf || []).push(L0.tFee); } if (o) o.cnt = L0.key; if (/^(BN|TR)/.test(L0.key) || L0.pro) (b0.who = b0.who || []).push(s0.name.replace('$', '')); };
       const dotOf = (m, dot) => { const i = String(m || '').indexOf('#'); return (i >= 0 ? m.slice(0, i) : (m || '')) + dot; };
       const applyBen = (t, i, ben, arr) => { const L1 = benSt(ben.kind, ymdOf(t.m, t.d)); t.ben = ben.kind; t.benBg = L1.cellBg; t.benDot = L1.dot; if (arr && arr[i]) arr[i] = dotOf(arr[i], L1.dot);
         if (t.cnt && t.cnt !== L1.key) { const b = lessonBy[t.cnt]; if (b) { b.n--; if (b.tb && b.tb.length) { b.tb.pop(); b.tf.pop(); } if (b.who) { const wi = b.who.lastIndexOf(s0.name.replace('$', '')); if (wi >= 0) b.who.splice(wi, 1); } if (b.n <= 0) delete lessonBy[t.cnt]; } addCnt(t, L1); } };
