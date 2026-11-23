@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.8</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.9</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2479,6 +2479,9 @@ class Component extends DCLogic {
     const m = this.kOf(v.ym + '-01'), si = this.sheetList().findIndex(t => t[1] === m);
     if (si >= 0) { patch.sheet = si; patch.logView = null; }
     this.setState(patch);
+    // 바뀐 칸(초록)으로 스크롤 — 칸이 없는 기록(수업 변경·휴원 등)은 그 원생 줄로
+    const nm = (v.list.find(e => e.k === 'EV') || {}).name;
+    [80, 350].forEach(ms => setTimeout(() => { let el = document.querySelector('button[data-cell][style*="#BDEBC8" i], button[data-cell][style*="189, 235, 200"]'); if (!el && nm) el = [...document.querySelectorAll('.arow span')].find(x => x.childNodes[0] && x.childNodes[0].nodeType === 3 && x.childNodes[0].nodeValue.trim() === nm); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', inline: 'center', behavior: 'smooth' }); }, ms));
   }
   histBlock() {
     const st = this.state, H = st.hist || {}, own = this.isOwner();
