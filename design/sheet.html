@@ -39,7 +39,7 @@ th.col,th.row,th.corner{cursor:pointer}
 .fbar .val{padding:0 8px;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fbar .sp{flex:1}.fbar .agg{padding:0 14px;font-size:12px;color:#3C4043}
 .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);padding:10px 16px;border-radius:10px;background:#1F1F1F;color:#FFFFFF;font-size:13px;font-weight:600;display:none}
-.cgrip{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:1}.cgrip:hover,.cgrip.on{background:#1A73E8}
+.cgrip{position:absolute;top:0;right:-3px;width:7px;height:100%;cursor:col-resize;z-index:1}.cgrip:hover,.cgrip.on{background:#1A73E8}.rgrip{position:absolute;left:0;bottom:-3px;width:100%;height:7px;cursor:row-resize;z-index:1}.rgrip:hover,.rgrip.on{background:#1A73E8}th.row{position:sticky}
 </style>
 </head>
 <body>
@@ -70,13 +70,13 @@ function build() {
   const CW0 = readCW(); let h = '<colgroup><col style="width:40px">' + widths.map((w, i) => '<col data-def="' + w + '" style="width:' + (+CW0[i] >= 20 ? +CW0[i] : w) + 'px">').join('') + '</colgroup>';
   h += '<tr><th class="corner" data-all="1"></th>' + widths.map((w, i) => '<th class="col" data-col="' + i + '" style="position:sticky">' + colName(i) + '<span class="cgrip" data-grip="' + i + '" title="끌어서 폭 조절 · 두 번 누르면 원래 폭"></span></th>').join('') + '</tr>';
   GRID.forEach((r, ri) => {
-    h += '<tr><th class="row" data-row="' + ri + '">' + (ri + 1) + '</th>';
+    h += '<tr><th class="row" data-row="' + ri + '">' + (ri + 1) + '<span class="rgrip" data-rgrip="' + ri + '" title="끌어서 높이 조절 · 두 번 누르면 원래 높이"></span></th>';
     r.forEach((x, ci) => { if (x.skip) return; const isN = typeof x.v === 'number';
       const st = (x.bg ? 'background:' + x.bg + ';' : '') + (x.b ? 'font-weight:700;' : '') + (x.fg ? 'color:' + x.fg + ';' : '') + (x.al === 'c' ? 'text-align:center;' : x.al === 'r' || isN ? 'text-align:right;' : '');
       h += '<td data-r="' + ri + '" data-c="' + ci + '"' + (x.span > 1 ? ' colspan="' + x.span + '"' : '') + (st ? ' style="' + st + '"' : '') + '>' + (isN ? x.v.toLocaleString('ko-KR') : esc(x.v)) + '</td>'; });
     h += '</tr>';
   });
-  t.innerHTML = h; NC_ = NC; SEL = { r1: Math.min(SEL.r1, GRID.length - 1), c1: Math.min(SEL.c1, NC - 1), r2: Math.min(SEL.r2, GRID.length - 1), c2: Math.min(SEL.c2, NC - 1) }; paint();
+  t.innerHTML = h; applyRH(); NC_ = NC; SEL = { r1: Math.min(SEL.r1, GRID.length - 1), c1: Math.min(SEL.c1, NC - 1), r2: Math.min(SEL.r2, GRID.length - 1), c2: Math.min(SEL.c2, NC - 1) }; paint();
 }
 // 표 전체 복사: 구글시트 A1 칸에 붙이면 같은 모양(칸 나뉨)으로 들어감. 금액은 숫자 그대로
 document.getElementById('copyAll').addEventListener('click', async () => {
@@ -164,6 +164,26 @@ document.addEventListener('dblclick', e => {
   const i = +g.dataset.grip, col = document.querySelectorAll('#t col')[i + 1], cw = readCW(); delete cw[i];
   try { localStorage.setItem(CWK, JSON.stringify(cw)); } catch (x) {}
   if (col && col.dataset.def) col.style.width = col.dataset.def + 'px';
+}, true);
+
+// 줄 높이 조정: 줄 번호 아래 끝을 끌면 높이가 바뀜, 두 번 누르면 원래 높이 (이 브라우저에 저장)
+function rhKey() { return (location.pathname.indexOf('money-sheet') >= 0 ? 'moneySheet' : 'sheet.' + (new URLSearchParams(location.search).get('k') || '')) + '.rowH'; }
+function readRH() { try { return JSON.parse(localStorage.getItem(rhKey()) || '{}') || {}; } catch (e) { return {}; } }
+function setRowH(tr, h) { if (!tr) return; tr.querySelectorAll('th,td').forEach(c => { c.style.height = h ? h + 'px' : ''; }); }
+function applyRH() { const rh = readRH(); document.querySelectorAll('#t th.row').forEach(th => { const v = +rh[th.dataset.row]; if (v >= 12) setRowH(th.parentNode, v); }); }
+document.addEventListener('mousedown', e => {
+  const g = e.target.closest && e.target.closest('.rgrip'); if (!g || e.button) return;
+  e.preventDefault(); e.stopPropagation();
+  const i = g.dataset.rgrip, tr = g.closest('tr'), y0 = e.clientY, h0 = tr.getBoundingClientRect().height; g.classList.add('on');
+  const mv = ev => setRowH(tr, Math.max(12, Math.round(h0 + ev.clientY - y0)));
+  const up = () => { window.removeEventListener('mousemove', mv, true); window.removeEventListener('mouseup', up, true); g.classList.remove('on'); const rh = readRH(); rh[i] = Math.round(tr.getBoundingClientRect().height); try { localStorage.setItem(rhKey(), JSON.stringify(rh)); } catch (x) {} };
+  window.addEventListener('mousemove', mv, true); window.addEventListener('mouseup', up, true);
+}, true);
+document.addEventListener('dblclick', e => {
+  const g = e.target.closest && e.target.closest('.rgrip'); if (!g) return;
+  e.preventDefault(); e.stopPropagation();
+  const rh = readRH(); delete rh[g.dataset.rgrip]; try { localStorage.setItem(rhKey(), JSON.stringify(rh)); } catch (x) {}
+  setRowH(g.closest('tr'), 0);
 }, true);
 </script>
 </body>
