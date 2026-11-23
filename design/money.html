@@ -71,8 +71,8 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{hIn.row}}"><sc-for list="{{hIn.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
               <div data-rg="{{r.rg}}" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}">
-                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
-                <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
+                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cno}}">{{r.no}}</span><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
+                <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><span style="{{cno}}">{{r.no}}</span><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
               </div>
             </sc-for>
             <sc-if value="{{orphanN}}" hint-placeholder-val="{{ false }}"><div class="noexp" style="display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: #FCEBEA; color: #B4332B; font-size: 12px; font-weight: 600"><span style="flex: 1">출석부 칸에 ₩ 표시가 없는 수납 기록 {{orphanN}}건 (예전에 지워지지 않고 남은 기록)</span><button type="button" onClick="{{delOrphans}}" style="height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E8A9A4; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{delOrphansLabel}}</button></div></sc-if>
@@ -84,7 +84,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6"><span style="width: 10px; height: 10px; border-radius: 3px; flex: none; background: #9A3A31"></span><span style="color: #9A3A31">고정 지출</span><span style="flex: 1"></span><span style="font-size: 15px; font-weight: 600; color: #9A3A31">{{tFx}}</span></div>
             <div style="{{hFx.row}}"><sc-for list="{{hFx.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{fix}}" as="r" hint-placeholder-count="6">
-              <div data-rg="fx" data-rid="{{r.fid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span style="{{cl}}">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" title="항목 삭제" aria-label="항목 삭제" style="{{delBtn}}">×</button></div>
+              <div data-rg="fx" data-rid="{{r.fid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><span style="{{cno}}">{{r.no}}</span><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><span style="{{cl}}">{{r.item}}</span><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="{{r.amtLabel}}" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" title="항목 삭제" aria-label="항목 삭제" style="{{delBtn}}">×</button></div>
             </sc-for>
             <div class="noexp" style="display: flex; gap: 6px; padding: 8px 10px"><input id="mo_newfix" type="text" defaultValue="" onKeyDown="{{fixKey}}" aria-label="새 고정 지출 항목" placeholder="새 항목 이름" style="flex: 1; min-width: 0; height: 32px; padding: 0 10px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FAFBFA; font-family: inherit; font-size: 13px"><button type="button" onClick="{{addFix}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #9A3A31; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">+ 항목</button></div>
           </div>
@@ -93,7 +93,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{boxHead}}; background: #F9D9D6"><span style="width: 10px; height: 10px; border-radius: 3px; flex: none; background: #9A3A31"></span><span style="color: #9A3A31">변동 지출</span><span style="flex: 1"></span><span style="font-size: 15px; font-weight: 600; color: #9A3A31">{{tVa}}</span></div>
             <div style="{{hVa.row}}"><sc-for list="{{hVa.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{vars}}" as="r" hint-placeholder-count="4">
-              <div data-rg="va" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idS}}" type="text" data-noclear="1" defaultValue="{{r.shop}}" onChange="{{r.setS}}" aria-label="구입처" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></div>
+              <div data-rg="va" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}"><span style="{{cno}}">{{r.no}}</span><input id="{{r.idD}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idS}}" type="text" data-noclear="1" defaultValue="{{r.shop}}" onChange="{{r.setS}}" aria-label="구입처" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></div>
             </sc-for>
             <sc-if value="{{varEmpty}}" hint-placeholder-val="{{ false }}"><div style="{{empty}}">아직 변동 지출이 없습니다</div></sc-if>
             <button type="button" class="noexp" onClick="{{addVar}}" style="{{addBtn}}">+ 지출</button>
@@ -128,7 +128,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.85.3</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.85.4</span>
     </div>
   </main>
 
@@ -542,8 +542,8 @@ class Component extends DCLogic {
       reset: () => { const all = Object.assign({}, this.state.bw2 || this.rd('money.boxW', {}) || {}); delete all[k]; try { localStorage.setItem('money.boxW', JSON.stringify(all)); } catch (x) {} this.setState({ bw2: all }); } };
   }
   // 상자 안 칸 폭: 머리글 칸 사이 세로줄을 끌어 그 상자 칸만 조정(다른 상자는 그대로), 두 번 누르면 원래 폭. 비고 칸은 남는 폭을 채움 'money.colW' = { in: [일, 항목, 금액], fx: [..], va: [일, 항목, 구입처, 금액] }
-  colDef() { return { in: [40, 140, 100], fx: [40, 160, 100], va: [40, 140, 100, 100] }; }
-  colW(k) { const d = this.colDef()[k], v = (this.state.cw || this.rd('money.colW', {}) || {})[k]; return d.map((w, i) => (Array.isArray(v) && +v[i] >= 30 ? +v[i] : w)); }
+  colDef() { return { in: [34, 40, 140, 100], fx: [34, 40, 160, 100], va: [34, 40, 140, 100, 100] }; }
+  colW(k) { const d = this.colDef()[k]; let v = (this.state.cw || this.rd('money.colW', {}) || {})[k]; if (Array.isArray(v) && v.length === d.length - 1) v = [d[0]].concat(v); return d.map((w, i) => (Array.isArray(v) && +v[i] >= 30 ? +v[i] : w)); }
   gridOf(k) { return 'display: grid; grid-template-columns: ' + this.colW(k).map(w => 'minmax(28px, ' + w + 'px)').join(' ') + ' minmax(40px, 1fr) 22px; align-items: center; gap: 4px; padding: 2px 8px'; }
   heads(k, labels) {
     const n = this.colDef()[k].length;
@@ -601,12 +601,12 @@ class Component extends DCLogic {
       for (let k = 1; k < b.span; k++) put(2, c0 + k, '', { fill: ['D6E6F7', 'F9D9D6', 'F9D9D6', 'EEF1F0'][bi] });
       (ws['!merges'] = ws['!merges'] || []).push({ s: { r: 2, c: c0 }, e: { r: 2, c: c0 + b.span - 1 } });
       b.head.forEach((h, k) => put(3, c0 + k, h, { bold: true, fill: 'F7F9F8' }));
-      b.raw.forEach((row, i) => row.forEach((val, k) => put(4 + i, c0 + k, val, { money: typeof val === 'number', align: typeof val === 'number' ? 'right' : (k === 1 || k === 2 ? 'left' : 'center') })));
+      b.raw.forEach((row, i) => row.forEach((val, k) => put(4 + i, c0 + k, val, { money: typeof val === 'number', align: typeof val === 'number' ? 'right' : (b.key !== 'sum' && (k === 2 || k === 3) ? 'left' : 'center') })));
       maxR = Math.max(maxR, 3 + b.raw.length);
       c0 += b.span + 1;
     });
     ws['!ref'] = X.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: maxR, c: c0 - 2 } });
-    ws['!cols'] = [5, 18, 12, 12, 2, 5, 18, 12, 12, 2, 5, 22, 14, 12, 12, 2, 14, 14].map(w => ({ wch: w }));
+    ws['!cols'] = [5, 5, 18, 12, 12, 2, 5, 5, 18, 12, 12, 2, 5, 5, 22, 14, 12, 12, 2, 14, 14].map(w => ({ wch: w }));
     const wb = X.utils.book_new(); X.utils.book_append_sheet(wb, ws, v.monthLabel);
     const out = X.write(wb, { bookType: 'xlsx', type: 'array', cellStyles: true });
     await this.saveBlob(this.xlsName(), new Blob([out], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }));
@@ -671,7 +671,7 @@ class Component extends DCLogic {
       copyPrev: () => { let n = 0; put(m => { Object.keys(prev.fix).forEach(k => { const p = prev.fix[k] || {}; if (!+p.amt) return; const cur = m.fix[k] || {}; if (+cur.amt) return; m.fix[k] = Object.assign({}, cur, { amt: +p.amt, d: cur.d || p.d || '' }); n++; }); }); this.flash(n ? '고정 지출 ' + n + '줄을 지난달 금액으로 채웠습니다' : '채울 빈 칸이 없습니다'); },
       // 상자 폭은 안 칸들의 합보다 좁아지지 않음 (칸이 상자 밖으로 넘치지 않게)
       boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => { if (k === 'sum') return this.boxW(k) + 'px'; const c = this.colW(k); const need = c.reduce((n, w) => n + w, 0) + 60 + 22 + 4 * (c.length + 2) + 16 + 4; const set = +((this.state.bw2 || this.rd('money.boxW', {}) || {})[k]) >= 200; return (set ? this.boxW(k) : Math.max(this.boxW(k), need)) + 'px'; }).join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
-      hIn: this.heads('in', ['일', '항목', '금액', '비고']), hFx: this.heads('fx', ['일', '항목', '금액', '비고']), hVa: this.heads('va', ['일', '항목', '구입처', '금액', '비고']),
+      hIn: this.heads('in', ['연번', '일', '항목', '금액', '비고']), hFx: this.heads('fx', ['연번', '일', '항목', '금액', '비고']), hVa: this.heads('va', ['연번', '일', '항목', '구입처', '금액', '비고']),
       // 금액 칸: 치는 동안 1,000 단위 쉼표 (커서 자리 유지)
       commaIn: e => { const el = e.target, v = el.value, pos = el.selectionStart || 0; const neg = /^\s*-/.test(v); const dBefore = v.slice(0, pos).replace(/[^0-9]/g, '').length; const digits = v.replace(/[^0-9]/g, ''); const out = (neg ? '-' : '') + (digits ? (+digits).toLocaleString('ko-KR') : ''); if (out === v) return; el.value = out; let k = 0, c = neg ? 1 : 0; while (c < out.length && k < dBefore) { if (/[0-9]/.test(out[c])) k++; c++; } try { el.setSelectionRange(c, c); } catch (x) {} },
       // 순서 바꾸기 스위치: 켜면 글 칸이 잠기고 줄을 끌어 순서를 바꿈, 다시 누르면 평소대로
@@ -712,6 +712,9 @@ class Component extends DCLogic {
               tagStyle: isH ? 'font-size: 10px; font-weight: 600; color: #5E6873; background: #EEF1F0; padding: 2px 6px; border-radius: 5px' : 'display: none' }; }) } : { open: false }
         };
       })(),
+      // 연번: 상자마다 위에서부터 1, 2, 3 ('출석부에 없음' 줄은 번호 없음)
+      cno: 'text-align: center; font-size: 12px; color: #8A949E; font-variant-numeric: tabular-nums',
+      ...(() => { let n = 0; inc.forEach(r => { r.no = r.orphan ? '' : ++n; }); fix.forEach((r, i) => { r.no = i + 1; }); vars.forEach((r, i) => { r.no = i + 1; }); return {}; })(),
       inc: inc, incEmpty: !inc.length, orphanN: orph.length || '',
       delOrphansLabel: st.orphAsk ? '한 번 더 누르면 모두 지움' : '모두 지우기',
       delOrphans: () => { if (!st.orphAsk) { this.setState({ orphAsk: true }); return; } this.dropOrphans(orph.map(r => r.pid)); },
@@ -735,11 +738,11 @@ class Component extends DCLogic {
       ask: st.ask ? { open: true, text: st.ask.text, ok: st.ask.ok, close: () => this.setState({ ask: null }) } : { open: false },
       toast: st.toast || '',
       printBoxes: [
-        { key: 'in', title: '수입', span: 4, head: ['일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
-        { key: 'fx', title: '고정 지출', span: 4, head: ['일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
-        { key: 'va', title: '변동 지출', span: 5, head: ['일', '항목', '구입처', '금액', '비고'], raw: M.vars.map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
+        { key: 'in', title: '수입', span: 5, head: ['연번', '일', '항목', '금액', '비고'], raw: auto.filter(r => !r.orphan).map(r => [r.d, r.item, r.amt, (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo]).concat(M.extra.map(r => [r.d || '', r.item || '', +r.amt || 0, r.memo || ''])) },
+        { key: 'fx', title: '고정 지출', span: 5, head: ['연번', '일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
+        { key: 'va', title: '변동 지출', span: 6, head: ['연번', '일', '항목', '구입처', '금액', '비고'], raw: M.vars.map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
         { key: 'sum', title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
-      ].map(b => Object.assign(b, { rows: b.raw.map(r => r.map(x => typeof x === 'number' ? this.won(x) : x)) })),
+      ].map(b => { if (b.key !== 'sum') b.raw = b.raw.map((r, i) => [String(i + 1)].concat(r)); return b; }).map(b => Object.assign(b, { rows: b.raw.map(r => r.map(x => typeof x === 'number' ? this.won(x) : x)) })),
       printX: () => this.setState({ printOpen: true }),
       pr: {
         open: !!st.printOpen, close: () => this.setState({ printOpen: false }), go: () => this.doPrint(),
