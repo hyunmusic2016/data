@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.4</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2029,7 +2029,7 @@ class Component extends DCLogic {
     const months = [11].concat(Object.keys(this.state.evByMonth || {}).map(Number)).filter((m, i, a) => m > 0 && a.indexOf(m) === i);
     const isMine = k => T.ids.indexOf(String(k)) >= 0 || (/^[A-Z]\d+$/.test(T.key) && String(k).indexOf(T.key + '-') === 0);
     const lessons = [], others = [];
-    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (!/^\d+$/.test(d)) return; const ymd = this.ymK(m) + '-' + p2(+d); if (e[d] === '수' || e[d] === '결') lessons.push({ ymd: ymd, kind: e[d] }); else if (e[d] === '연' || e[d] === '보' || e[d] === 'M') others.push({ ymd: ymd, kind: e[d], ms: e['s' + d] || '' }); }); }); });
+    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (!/^\d+$/.test(d)) return; const ymd = this.ymK(m) + '-' + p2(+d); if (e[d] === '수' || e[d] === '결') lessons.push({ ymd: ymd, kind: e[d] }); else if (e[d] === '연' || e[d] === '보' || (e[d] === 'M' && (e['s' + d] === '수' || e['s' + d] === '결'))) others.push({ ymd: ymd, kind: e[d], ms: e['s' + d] || '' }); }); }); });
     lessons.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0);
     const TR = T.s && T.s.trial;
     let pays = this.readPays().filter(p => p && (TR ? p.trial === TR.id : (p.name === T.name && p.kind !== 'trial'))).slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
