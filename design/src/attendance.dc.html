@@ -92,7 +92,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
-                  <button type="button" data-cell="{{x.key}}" title="{{x.title}}" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="position: relative; display: inline-flex"><span style="{{x.chip}}">{{x.text}}</span><sc-if value="{{x.pdot}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="{{x.pdot}}"></span></sc-if></span><sc-if value="{{x.hint}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-hidden="true" style="{{x.hintStyle}}"><span>{{x.hint}}</span><span>{{x.hint2}}</span></span></sc-if></button>
+                  <button type="button" data-cell="{{x.key}}" title="{{x.title}}" onMouseDown="{{x.down}}" onMouseEnter="{{x.enter}}" aria-label="{{x.label}}" aria-selected="{{x.selected}}" style="{{x.style}}"><span style="position: relative; display: inline-flex"><span style="{{x.chip}}">{{x.text}}</span><sc-if value="{{x.pdot}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="{{x.pdot}}">₩</span></sc-if></span><sc-if value="{{x.hint}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-hidden="true" style="{{x.hintStyle}}"><span>{{x.hint}}</span><span>{{x.hint2}}</span></span></sc-if></button>
                 </sc-for>
                 <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{r.lastStyle}}"></span></sc-for>
               </div>
@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.5</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2872,7 +2872,7 @@ class Component extends DCLogic {
             const bg = x.kind === 'DV' ? '#FDEBD8' : rowD ? rowD : x.d === st.colDay ? this.dayTint(MON, x.d)[0] : (w === 0 || w === 6) ? tintWe : tint;
             return {
               // 출결과 수납이 같은 날: 바탕 대신 회차 오른쪽 위 금색 점 (미납 수납은 빨간 점)
-              pdot: x.pay ? 'position: absolute; top: -2px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: ' + (x.upay ? '#E0605A' : '#D4A017') + '; box-shadow: 0 0 0 1.5px #FFFFFF' : '',
+              pdot: x.pay ? 'position: absolute; top: -6px; right: -9px; font-size: 10px; font-weight: 600; line-height: 1; color: ' + (x.upay ? '#C0392B' : '#B8860B') : '',
               text: x.text.replace('!', ''), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
               label: this.kM(MON) + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
