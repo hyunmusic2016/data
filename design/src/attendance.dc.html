@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.81.3</span>
   </nav>
   <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{tr.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1868,6 +1868,8 @@ class Component extends DCLogic {
   // 혜택(첫 N회 무료·50%) 할인 금액
   benDisc(P) { const B = P && P.ben; if (!B || !B.kind || P.trial) return 0; const n = Math.max(0, Math.min(+B.n || 0, +P.count || 0)), u = +P.unit || 0; return B.kind === 'free' ? n * u : Math.round(n * u / 2); }
   benTxt(P) { const d = this.benDisc(P); return d ? '할인 −' + d.toLocaleString('ko-KR') + '원 → 받을 금액 ' + Math.max(0, (+P.total || 0) - d).toLocaleString('ko-KR') + '원' : ''; }
+  // 날짜 머리글을 눌렀을 때 세로줄 색 [칸 바탕, 머리글 테두리]: 평일 옅은 회색 · 토 파랑 · 일 빨강 (공휴일을 넣으면 여기서 빨강으로)
+  dayTint(k, d) { const w = new Date(2026, k - 1, d).getDay(); return w === 0 ? ['#FDF1F0', '#E8A5A0'] : w === 6 ? ['#EFF4FD', '#9DBCEB'] : ['#F8F9F9', '#C9D0CC']; }
   readPays() {
     try { const v = JSON.parse(localStorage.getItem('academy.payments') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; }
   }
@@ -2509,7 +2511,7 @@ class Component extends DCLogic {
       const w = (d - 1 + FIRST) % 7;
       // 날짜 아래에 요일(월 화 수 …)
       const s = 'width: 26px; height: 36px; border-radius: 7px; display: inline-flex; flex-direction: column; gap: 2px; align-items: center; justify-content: center; font-size: 12px; line-height: 1; font-weight: 600; ';
-      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, pick: () => this.setState({ colDay: this.state.colDay === d ? 0 : d }), style: 'cursor: pointer; ' + (d === st.colDay ? 'outline: 2px solid #8A949E; outline-offset: -2px; ' : '') + s + (w === 0 ? 'background: #FBD3D0; ' : w === 6 ? 'background: #CFE0FB; ' : d === TODAY ? 'background: #D5DBD8; ' : 'background: transparent; ') + (d === TODAY && (w === 0 || w === 6) ? 'box-shadow: inset 0 0 0 1px ' + (w === 0 ? '#D92D20' : '#2563EB') + '; ' : '') + 'color: ' + (w === 0 ? '#D92D20' : w === 6 ? '#2563EB' : d === TODAY ? INK : '#3A4450') });
+      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, pick: () => this.setState({ colDay: this.state.colDay === d ? 0 : d }), style: 'cursor: pointer; ' + (d === st.colDay ? 'outline: 2px solid ' + this.dayTint(MON, d)[1] + '; outline-offset: -2px; ' : '') + s + (w === 0 ? 'background: #FBD3D0; ' : w === 6 ? 'background: #CFE0FB; ' : d === TODAY ? 'background: #D5DBD8; ' : 'background: transparent; ') + (d === TODAY && (w === 0 || w === 6) ? 'box-shadow: inset 0 0 0 1px ' + (w === 0 ? '#D92D20' : '#2563EB') + '; ' : '') + 'color: ' + (w === 0 ? '#D92D20' : w === 6 ? '#2563EB' : d === TODAY ? INK : '#3A4450') });
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0; const lessonBy = {};
@@ -2867,7 +2869,7 @@ class Component extends DCLogic {
             }
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
             const LD = this.ltStyle(s, this.ymK(MON) + '-' + String(x.d).padStart(2, '0')), rowD = x.ben ? x.benBg : s.trial ? ((x.kind === '수' || x.kind === '결') ? LD.cellBg : '') : LD.row;
-            const bg = x.kind === 'DV' ? '#FDEBD8' : rowD ? rowD : x.d === st.colDay ? '#ECEFED' : (w === 0 || w === 6) ? tintWe : tint;
+            const bg = x.kind === 'DV' ? '#FDEBD8' : rowD ? rowD : x.d === st.colDay ? this.dayTint(MON, x.d)[0] : (w === 0 || w === 6) ? tintWe : tint;
             return {
               // 출결과 수납이 같은 날: 바탕 대신 회차 오른쪽 위 금색 점 (미납 수납은 빨간 점)
               pdot: x.pay ? 'position: absolute; top: -2px; right: -3px; width: 7px; height: 7px; border-radius: 50%; background: ' + (x.upay ? '#E0605A' : '#D4A017') + '; box-shadow: 0 0 0 1.5px #FFFFFF' : '',
