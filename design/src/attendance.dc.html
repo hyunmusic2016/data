@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.83.6</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2529,6 +2529,8 @@ class Component extends DCLogic {
       if (t === '0') return circ(0, false);
       if (/^[1-9]\d*$/.test(t)) return circ(+t, false);
       if (/^[1-9]\d*!$/.test(t)) return circ(parseInt(t, 10), true);
+      // 결석 회차: 빨간 동그라미 안에 숫자
+      if (/^결\d+$/.test(t)) return 'width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; background: #E0605A; color: #FFFFFF';
       if (t[0] === '결') return MARK['결'];
       if (t[0] === '₩') return MARK['₩'];
       return MARK[t] || 'font-size: 12px';
@@ -2932,7 +2934,7 @@ class Component extends DCLogic {
             return {
               // 출결과 수납이 같은 날: 바탕 대신 회차 오른쪽 위 금색 점 (미납 수납은 빨간 점)
               pdot: x.pay ? 'position: absolute; top: -6px; right: -9px; font-size: 10px; font-weight: 600; line-height: 1; color: ' + (x.upay ? '#C0392B' : '#B8860B') : '',
-              text: x.text.replace('!', ''), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4' : ''),
+              text: x.text.replace('!', '').replace(/^결(\d+)$/, '$1'), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? (/^결\d+$/.test(x.text) ? '; border: 1.5px dashed #FFFFFF; box-shadow: 0 0 0 1.5px #E0605A' : '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4') : ''),
               label: this.kM(MON) + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
@@ -3313,7 +3315,7 @@ class Component extends DCLogic {
                     const out = []; let cur = null;
                     seq.forEach(x => { if (!cur || (x.k >= 0 && x.k % GS === 0 && cur.items.some(y => y.cnt))) out.push(cur = { items: [] }); const l = x.l, wd0 = '일월화수목금토'[new Date(l.ymd + 'T12:00:00').getDay()];
                       const K = { '수': ['출석', this.ltStyle(T.s, l.ymd).bg, bcol(x.k)], '결': ['결석', '#FDEBE4', '#E0605A'], '연': ['연기', '#EEF1F0', '#5E6873'], '보': ['보강 예정', '#E3ECFD', '#1E4FA8'], 'M': [l.ms === '수' ? '보강 출석' : l.ms === '결' ? '보강 결석' : '보강', '#E3ECFD', '#1E4FA8'] }[l.kind];
-                      cur.items.push({ cnt: x.k >= 0, n: x.k >= 0 ? String(x.k + 1) : l.kind === '연' ? '연' : '보', t: md(l.ymd) + ' (' + wd0 + ')', w: K[0],
+                      cur.items.push({ cnt: x.k >= 0, n: x.k >= 0 ? (l.kind === '결' ? '결' + (x.k + 1) : String(x.k + 1)) : l.kind === '연' ? '연' : '보', t: md(l.ymd) + ' (' + wd0 + ')', w: K[0],
                         st: 'display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 5px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #17201C; background: ' + K[1] + (x.k < 0 ? '; border: 1px dashed #C9D0CC' : ''),
                         nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; font-size: 11px; color: #FFFFFF; background: ' + K[2],
                         wst: 'font-size: 11px; font-weight: 600; color: ' + K[2] }); });
