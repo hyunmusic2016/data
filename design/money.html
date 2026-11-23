@@ -128,7 +128,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.84.2</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.84.3</span>
     </div>
   </main>
 
@@ -535,7 +535,7 @@ class Component extends DCLogic {
   boxDef() { return { in: 360, fx: 400, va: 480, sum: 230 }; }
   boxW(k) { const v = (this.state.bw2 || this.rd('money.boxW', {}) || {})[k]; return +v >= 200 ? +v : this.boxDef()[k]; }
   boxGrip(k) {
-    return { resize: e => { e.preventDefault(); const x0 = e.clientX, w0 = this.boxW(k), all = Object.assign({}, this.rd('money.boxW', {}) || {});
+    return { resize: e => { e.preventDefault(); const x0 = e.clientX, w0 = Math.round((e.currentTarget && e.currentTarget.parentElement ? e.currentTarget.parentElement.getBoundingClientRect().width : 0) || this.boxW(k)), all = Object.assign({}, this.rd('money.boxW', {}) || {});
         const mv = ev => this.setState({ bw2: Object.assign({}, all, this.state.bw2 || {}, { [k]: Math.max(200, Math.round(w0 + ev.clientX - x0)) }) });
         const up = () => { window.removeEventListener('mousemove', mv); window.removeEventListener('mouseup', up); try { localStorage.setItem('money.boxW', JSON.stringify(this.state.bw2 || all)); } catch (x) {} };
         window.addEventListener('mousemove', mv); window.addEventListener('mouseup', up); },
@@ -544,7 +544,7 @@ class Component extends DCLogic {
   // 상자 안 칸 폭: 머리글 칸 사이 세로줄을 끌어 그 상자 칸만 조정(다른 상자는 그대로), 두 번 누르면 원래 폭. 비고 칸은 남는 폭을 채움 'money.colW' = { in: [일, 항목, 금액], fx: [..], va: [일, 항목, 구입처, 금액] }
   colDef() { return { in: [40, 140, 100], fx: [40, 160, 100], va: [40, 140, 100, 100] }; }
   colW(k) { const d = this.colDef()[k], v = (this.state.cw || this.rd('money.colW', {}) || {})[k]; return d.map((w, i) => (Array.isArray(v) && +v[i] >= 30 ? +v[i] : w)); }
-  gridOf(k) { return 'display: grid; grid-template-columns: ' + this.colW(k).map(w => w + 'px').join(' ') + ' minmax(40px, 1fr) 22px; align-items: center; gap: 4px; padding: 2px 8px'; }
+  gridOf(k) { return 'display: grid; grid-template-columns: ' + this.colW(k).map(w => 'minmax(28px, ' + w + 'px)').join(' ') + ' minmax(40px, 1fr) 22px; align-items: center; gap: 4px; padding: 2px 8px'; }
   heads(k, labels) {
     const n = this.colDef()[k].length;
     return { row: this.gridOf(k) + '; height: 34px; padding-top: 0; padding-bottom: 0; background: #F7F9F8; border-bottom: 1px solid #E1E6E3', cells: labels.map((l, i) => ({ label: l, grip: i < n,
@@ -670,7 +670,7 @@ class Component extends DCLogic {
       canCopy: Object.keys(prev.fix).some(k => +(prev.fix[k] || {}).amt),
       copyPrev: () => { let n = 0; put(m => { Object.keys(prev.fix).forEach(k => { const p = prev.fix[k] || {}; if (!+p.amt) return; const cur = m.fix[k] || {}; if (+cur.amt) return; m.fix[k] = Object.assign({}, cur, { amt: +p.amt, d: cur.d || p.d || '' }); n++; }); }); this.flash(n ? '고정 지출 ' + n + '줄을 지난달 금액으로 채웠습니다' : '채울 빈 칸이 없습니다'); },
       // 상자 폭은 안 칸들의 합보다 좁아지지 않음 (칸이 상자 밖으로 넘치지 않게)
-      boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => { if (k === 'sum') return this.boxW(k) + 'px'; const c = this.colW(k); const need = c.reduce((n, w) => n + w, 0) + 60 + 22 + 4 * (c.length + 2) + 16 + 4; return Math.max(this.boxW(k), need) + 'px'; }).join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
+      boxCols: 'grid-template-columns: ' + ['in', 'fx', 'va', 'sum'].map(k => { if (k === 'sum') return this.boxW(k) + 'px'; const c = this.colW(k); const need = c.reduce((n, w) => n + w, 0) + 60 + 22 + 4 * (c.length + 2) + 16 + 4; const set = +((this.state.bw2 || this.rd('money.boxW', {}) || {})[k]) >= 200; return (set ? this.boxW(k) : Math.max(this.boxW(k), need)) + 'px'; }).join(' '), bIn: this.boxGrip('in'), bFx: this.boxGrip('fx'), bVa: this.boxGrip('va'), bSum: this.boxGrip('sum'),
       hIn: this.heads('in', ['일', '항목', '금액', '비고']), hFx: this.heads('fx', ['일', '항목', '금액', '비고']), hVa: this.heads('va', ['일', '항목', '구입처', '금액', '비고']),
       // 금액 칸: 치는 동안 1,000 단위 쉼표 (커서 자리 유지)
       commaIn: e => { const el = e.target, v = el.value, pos = el.selectionStart || 0; const neg = /^\s*-/.test(v); const dBefore = v.slice(0, pos).replace(/[^0-9]/g, '').length; const digits = v.replace(/[^0-9]/g, ''); const out = (neg ? '-' : '') + (digits ? (+digits).toLocaleString('ko-KR') : ''); if (out === v) return; el.value = out; let k = 0, c = neg ? 1 : 0; while (c < out.length && k < dBefore) { if (/[0-9]/.test(out[c])) k++; c++; } try { el.setSelectionRange(c, c); } catch (x) {} },
