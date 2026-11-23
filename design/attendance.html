@@ -242,7 +242,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.10</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.85.11</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -473,7 +473,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       <div style="display: flex; gap: 10px">
         <button type="button" onClick="{{tp.clear}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">자동으로</button>
         <button type="button" onClick="{{tp.close}}" style="flex: 1; height: 46px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
-        <button type="button" onClick="{{tp.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">저장</button>
+        <button type="button" onClick="{{tp.save}}" style="flex: 2; height: 46px; border-radius: 14px; border: none; background: #5B7FB8; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">저장</button>
       </div>
     </div>
   </sc-if>
