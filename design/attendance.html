@@ -241,7 +241,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.89.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.89.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1017,10 +1017,10 @@ class Component extends DCLogic {
   wlCopyVals(m, d, txt) {
     const nx = new Date(2026, m - 1, d + 1); if (nx.getDay() === 0) nx.setDate(nx.getDate() + 1);
     const m2 = (nx.getFullYear() - 2026) * 12 + nx.getMonth() + 1, d2 = nx.getDate(), C = this.state.wlCopied;
-    return { canCopy: !!String(txt || '').trim(), copyLabel: '다음 날(' + this.kM(m2) + '/' + d2 + ')로 복사',
+    return { canCopy: this.wlParse(txt).some(x => x.t.trim() && !x.done), copyLabel: '다음 날(' + this.kM(m2) + '/' + d2 + ')로 복사',
       copyMsg: C && C.m === m && C.d === d ? C.msg : '',
       copy: e => { e.preventDefault(); e.stopPropagation(); const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
-        const src = this.wlParse(this.workDays(m)[d] || '').filter(x => x.t.trim()), cur = this.workDays(m2)[d2] || '';
+        const src = this.wlParse(this.workDays(m)[d] || '').filter(x => x.t.trim() && !x.done), cur = this.workDays(m2)[d2] || '';
         const have = this.wlParse(cur).map(x => x.t.trim()), add = src.filter(x => have.indexOf(x.t.trim()) < 0);
         const at = Date.now(), msg = add.length ? (m2 !== m ? this.kM(m2) + '/' + d2 + '로 복사했어요' : '') : '이미 있어요';
         if (add.length) this.saveWorkDay(m2, d2, (cur.replace(/\s+$/, '') ? cur.replace(/\s+$/, '') + '\n' : '') + this.wlJoin(add));
