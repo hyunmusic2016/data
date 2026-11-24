@@ -15,6 +15,7 @@
     '.fx-pop{animation:fxPop .28s ease-out}',
     '.fx-dlg{animation:fxDlgIn .16s ease-out}',
     '@keyframes fxSweep{0%{background-size:0% 100%}100%{background-size:100% 100%}}',
+    '.fx-tabz{z-index:2}.fx-tabbare{background:transparent!important;border-color:transparent!important}',
     '.fx-sweep{background-repeat:no-repeat;animation:fxSweep .45s ease-out}',
     '.fx-glow{animation:fxGlow 1.1s ease-out;border-radius:6px}',
     '.fx-slide{animation:fxSlide .3s ease-out}',
@@ -53,8 +54,27 @@
   window.addEventListener('pagehide', function () {
     var l = document.querySelector('[data-fxc]'); if (!l) return;
     var c = getComputedStyle(l);
-    try { sessionStorage.setItem('fx.title', JSON.stringify({ p: location.pathname, bg: c.backgroundColor, fg: c.color })); } catch (e) {}
+    var t = activeTab(), r = t && t.getBoundingClientRect();
+    try { sessionStorage.setItem('fx.title', JSON.stringify({ p: location.pathname, bg: c.backgroundColor, fg: c.color, tab: r ? { l: r.left, t: r.top, w: r.width, h: r.height } : null })); } catch (e) {}
   });
+  // 맨 위 메뉴 탭 중 지금 페이지 탭
+  function activeTab() {
+    var me = location.pathname.split('/').pop();
+    return [].slice.call(document.querySelectorAll('nav[aria-label="주 메뉴"] a[href]')).filter(function (a) { return a.getAttribute('href').split('/').pop().split('?')[0] === me; })[0] || null;
+  }
+  // 선택된 메뉴 탭: 앞 페이지 탭 자리에서 이 페이지 탭 자리로 미끄러져 옴
+  function tabSlide(o) {
+    var a = activeTab(); if (!a || !o.tab) return;
+    var r = a.getBoundingClientRect(), c = getComputedStyle(a); if (!r.width || Math.abs(r.left - o.tab.l) < 2) return;
+    var d = document.createElement('div'); d.className = 'noexp noprint'; d.setAttribute('aria-hidden', 'true');
+    d.style.cssText = 'position:fixed;z-index:1;pointer-events:none;box-sizing:border-box;left:' + o.tab.l + 'px;top:' + r.top + 'px;width:' + o.tab.w + 'px;height:' + r.height + 'px;background:' + c.backgroundColor + ';border:' + c.borderTopWidth + ' solid ' + c.borderTopColor + ';border-bottom-color:' + c.borderBottomColor + ';border-radius:' + c.borderTopLeftRadius + ' ' + c.borderTopRightRadius + ' 0 0;transition:left .3s cubic-bezier(.3,.7,.3,1),width .3s cubic-bezier(.3,.7,.3,1)';
+    document.body.appendChild(d);
+    var all = q('nav[aria-label="주 메뉴"] a[href]'), me = function () { var x = activeTab(); return x ? [x] : []; };
+    all(document).forEach(function (x) { mark(x, 'fx-tabz', 360, all); });
+    mark(a, 'fx-tabbare', 360, me);
+    void d.offsetWidth; d.style.left = r.left + 'px'; d.style.width = r.width + 'px';
+    setTimeout(function () { d.remove(); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, 370);
+  }
   function pageEnter(app) {
     var o = null; try { o = JSON.parse(sessionStorage.getItem('fx.title') || 'null'); sessionStorage.removeItem('fx.title'); } catch (e) {}
     if (!o || o.p === location.pathname) return;
@@ -63,6 +83,7 @@
     document.head.appendChild(st);
     app.querySelectorAll('[data-fxc]').forEach(function (e) { mark(e, 'fx-from', 450, q('[data-fxc]')); });
     app.querySelectorAll('[data-fxhl]').forEach(function (e) { mark(e, 'fx-sweep', 450, q('[data-fxhl]')); });
+    tabSlide(o);
   }
   // 효과가 끝나기 전에 화면이 또 다시 그려져도 이어서 보이도록, 진행 중인 효과를 기억했다가 새 요소에 다시 붙임
   var live = [];
