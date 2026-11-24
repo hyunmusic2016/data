@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.91.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.92.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -355,6 +355,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           </sc-for>
         </div>
       </sc-if>
+      <sc-if value="{{qe.cl.on}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 12px; border: 1px solid #BCD0EE; border-left: 4px solid #5B86C9; border-radius: 12px; background: #F8FAFE"><div style="display: flex; align-items: center; gap: 8px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 7px; background: #5B86C9; color: #FFFFFF"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"></path><path d="M8 9h8M8 13h6"></path></svg></span><span style="font-size: 13px; font-weight: 600; color: #2952A3">수업일지</span><span style="font-size: 12px; color: #6B7680">{{qe.cl.sub}}</span></div><sc-if value="{{qe.cl.none}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #9AA3A8">아직 출석한 수업이 없어요</span></sc-if><div id="qeClStrip" onWheel="{{qe.cl.wheel}}" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scroll-snap-type: x proximity"><sc-for list="{{qe.cl.items}}" as="c" hint-placeholder-count="3"><div style="flex: 0 0 196px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; box-sizing: border-box; border: 1px solid #DCE6F5; border-radius: 10px; background: #FFFFFF"><div style="display: flex; align-items: center; gap: 6px"><span style="{{c.chip}}">{{c.date}}</span><sc-if value="{{c.latest}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; font-weight: 600; color: #5B86C9">직전 수업</span></sc-if></div><span style="{{c.noteSt}}">{{c.note}}</span></div></sc-for></div></div></sc-if>
       <div style="display: flex; align-items: center; gap: 8px; padding-top: 12px; border-top: 1px dashed #E1E6E3">
         <span style="font-size: 13px; font-weight: 600; color: #5E6873">원생 상태</span>
         <span style="flex: 1"></span>
@@ -1091,9 +1092,9 @@ class Component extends DCLogic {
   // 수업일지 → 다음 수업으로 넘기기: 다음 출석한 날, 아직 출결이 없으면 원생 요일에 맞는 다음 수업 날(결석·연기·보강 칸은 건너뜀)
   // 누르던 클릭이 끝난 뒤 다시 그리고, 글 칸에 있던 커서를 되살림
   redrawKeep() {
-    const go = () => { const a = document.activeElement, id = a && a.id, p0 = a && a.selectionStart, p1 = a && a.selectionEnd;
+    const go = () => { const a = document.activeElement, id = a && a.id, p0 = a && a.selectionStart, p1 = a && a.selectionEnd, val = a && a.tagName === 'TEXTAREA' ? a.value : null;
       this.setState({ clTick: Date.now() });
-      if (id) { const el = document.getElementById(id); if (el && el !== document.activeElement) { el.focus({ preventScroll: true }); try { el.setSelectionRange(p0, p1); } catch (x) {} } } };
+      if (id) { const el = document.getElementById(id); if (el && el !== document.activeElement) { if (val != null && el.value !== val) el.value = val; el.focus({ preventScroll: true }); try { el.setSelectionRange(p0, p1); } catch (x) {} } } };
     if (this._wlDown) window.addEventListener('mouseup', () => setTimeout(go, 0), { once: true }); else go();
   }
   // 지난 수업 칸: 이 달 전에 마지막으로 출석한 수업 하나(결석·연기는 건너뜀, 6달 전까지 찾음) + 이번 달 첫 출석 칸으로 '가져오기'
@@ -1503,6 +1504,27 @@ class Component extends DCLogic {
   todayYmd() {
     const t = new Date();
     return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+  }
+  // 이름 누른 창의 수업일지: 수업일지가 있는 강사 탭만, 오늘까지 출석한 수업을 최근 것부터(직전 수업이 맨 왼쪽, 옆으로 밀면 그 전 수업들, 1년 전까지 최대 40개)
+  qeClassLog(Q) {
+    if (!this.logAllow().cls) return { on: false };
+    const all = this.students(), me = all.find(x => x.id === Q.rowId); if (!me) return { on: false };
+    const rows = all.filter(x => String(x.sid || x.id).replace(/^K/, '') === Q.key), ids = rows.map(x => x.id).concat([me.id]).filter((v, i, a) => a.indexOf(v) === i);
+    const key = me.dbId ? 'D' + me.dbId : me.name.replace('$', ''), LOG = this.readLog('academy.classLog', {});
+    const today = this.todayYmd(), tk = this.kOf(today), td = +today.slice(8, 10), WD = ['일', '월', '화', '수', '목', '금', '토'], out = [];
+    for (let mm = tk; mm > tk - 12 && out.length < 40; mm--) {
+      const ev = this.monthEvents(mm) || {}, days = {};
+      ids.forEach(id => { const E = ev[id] || {}; Object.keys(E).forEach(k => { if (/^\d+$/.test(k) && E[k] === '수' && (mm < tk || +k <= td)) days[+k] = 1; }); });
+      Object.keys(days).map(Number).sort((a, b) => b - a).forEach(d => {
+        const note = String(((((LOG[this.ymOf(mm)] || {})[key] || {}).d || {})[d]) || '').replace(/\s+$/, ''), L0 = this.ltStyle(me, this.ymOf(mm) + '-' + String(d).padStart(2, '0'));
+        out.push({ date: this.kM(mm) + '/' + d + ' (' + WD[new Date(2026, mm - 1, d).getDay()] + ')', note: note || '적은 내용 없음',
+          chip: 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; background: ' + L0.bg + '; color: ' + L0.fg,
+          noteSt: 'font-size: 12px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; color: ' + (note ? '#17201C' : '#9AA3A8') });
+      });
+    }
+    const items = out.slice(0, 40); if (items[0]) items[0].latest = true;
+    return { on: true, items: items, none: !items.length, sub: items.length > 1 ? '옆으로 밀면 그 전 수업' : '',
+      wheel: e => { const el = e.currentTarget; if (Math.abs(e.deltaY) > Math.abs(e.deltaX) && el.scrollWidth > el.clientWidth) { e.preventDefault(); el.scrollLeft += e.deltaY; } } };
   }
   openQuick(s) {
     const key = String(s.sid || s.id).replace(/^K/, '');
@@ -3724,6 +3746,7 @@ class Component extends DCLogic {
           close: () => { this.setState({ qe: null }); this.focusSheet(); },
           save: () => this.saveQuick(),
           hist: () => this.openHist(Q.name),
+          cl: this.qeClassLog(Q),
           rest: () => this.openAStatus('rest'),
           out: () => this.openAStatus('out'),
           key: e => { e.stopPropagation(); if (e.key === 'Escape') { this.setState({ qe: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target.tagName !== 'BUTTON') { e.preventDefault(); this.saveQuick(); } },
