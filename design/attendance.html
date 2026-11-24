@@ -243,7 +243,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.91.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.91.4</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2704,7 +2704,7 @@ class Component extends DCLogic {
     const c = {
       title: base + span(13) + 'border-bottom: none; height: 76px; justify-content: flex-start; gap: 14px; padding-left: 22px',
       logo: 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: #00A6AB; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(0, 166, 171, 0.32)',
-      titleText: 'font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: ' + INK + '; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, ' + this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))[0] + ' 62%, ' + this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))[0] + ' 92%, transparent 92%)',
+      titleText: 'font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: ' + INK + '; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, ' + (HL => HL + ' 62%, ' + HL + ' 92%')(this.state.logView === 'class' ? '#DCD1F3' : this.state.logView === 'work' ? '#CFDDF3' : this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))[0]) + ', transparent 92%)',
       divider: 'width: 1px; height: 22px; background: #D5DBD8; margin: 0 2px',
       month: 'font-size: 16px; font-weight: 600; color: #5E6873; letter-spacing: -0.01em',
       spacer: base + span(6) + 'border-bottom: none; height: 76px',
@@ -3248,16 +3248,16 @@ class Component extends DCLogic {
       bar: 'grid-column: 1 / -1; display: flex; align-items: stretch; height: 76px; min-width: 0; background: #FFFFFF',
       titleBox: 'display: flex; align-items: center; gap: 14px; padding-left: 22px; flex: none',
       // 제목 아이콘 = 지금 강사 탭 색 (강사 탭 칩과 같은 바탕·글자색)
-      logo: (() => { const tc = this.teacherColor(String(this.tKey() || '').replace(' 원장님', '')); return 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + tc[0] + '; color: ' + tc[1] + '; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px ' + tc[1] + '22, 0 4px 12px ' + tc[1] + '2E'; })(),
+      logo: hKind !== 'att' ? 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + KC[hKind][1] + '; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px ' + KC[hKind][2] : (() => { const tc = this.teacherColor(String(this.tKey() || '').replace(' 원장님', '')); return 'width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + tc[0] + '; color: ' + tc[1] + '; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 0 1px ' + tc[1] + '22, 0 4px 12px ' + tc[1] + '2E'; })(),
       lesson: 'width: 150px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-left: 1px solid #EBEEEC',
       count: 'width: 120px; flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; border-left: 1px solid #EBEEEC',
       teacher: 'width: 230px; flex: none; display: flex; align-items: center; gap: 10px; padding-left: 16px; box-sizing: border-box; border-left: 1px solid #EBEEEC',
       // 출석부·수업일지·업무일지 버튼은 어느 화면에서나 이 순서로 (그 강사 탭에서 쓸 수 있는 것만, 출석부밖에 없으면 버튼 없음)
       nav: (() => { const L = ['att', 'class', 'work'].filter(k => kOk(k)); return L.length < 2 ? [] : L; })().map(k => ({ on: k === hKind ? 'true' : 'false', label: KC[k][0], isAtt: k === 'att', isClass: k === 'class', isWork: k === 'work',
         go: () => { if (k !== hKind) this.setState({ logView: k === 'att' ? null : k, sel: null, pop: null }); },
-        style: 'display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 9px; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; ' + (TC => k === hKind ? 'border: 1.5px solid ' + TC[1] + '; background: ' + TC[0] + '; color: ' + TC[1] + '; cursor: default; box-shadow: 0 4px 12px rgba(23, 32, 28, 0.12)' : 'border: 1px solid ' + TC[0] + '; background: #FFFFFF; color: ' + TC[1] + '; cursor: pointer')(this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))),
-        // 버튼 색 = 제목 아이콘 색(지금 강사 탭 teacherColor)
-        icon: (TC => 'width: 27px; height: 27px; border-radius: 8px; background: ' + (k === hKind ? 'rgba(255, 255, 255, 0.6)' : TC[0]) + '; color: ' + TC[1] + '; display: inline-flex; align-items: center; justify-content: center')(this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))) }))
+        style: 'display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px 0 9px; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 600; white-space: nowrap; ' + (k === 'att' ? (TC => k === hKind ? 'border: 1.5px solid ' + TC[1] + '; background: ' + TC[0] + '; color: ' + TC[1] + '; cursor: default; box-shadow: 0 4px 12px rgba(23, 32, 28, 0.12)' : 'border: 1px solid ' + TC[0] + '; background: #FFFFFF; color: ' + TC[1] + '; cursor: pointer')(this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))) : k === hKind ? 'border: 1.5px solid ' + KC[k][1] + '; background: ' + KC[k][1] + '; color: #FFFFFF; cursor: default; box-shadow: 0 4px 12px ' + KC[k][2] : 'border: 1px solid ' + KC[k][5] + '; background: ' + KC[k][3] + '; color: ' + KC[k][4] + '; cursor: pointer'),
+        // 출석부 버튼 = 출석부 제목 아이콘 색(강사 teacherColor), 수업일지 보라·업무일지 파랑은 그대로 (제목 아이콘이 그 색을 따름)
+        icon: k === 'att' ? (TC => 'width: 27px; height: 27px; border-radius: 8px; background: ' + (k === hKind ? 'rgba(255, 255, 255, 0.6)' : TC[0]) + '; color: ' + TC[1] + '; display: inline-flex; align-items: center; justify-content: center')(this.teacherColor(String(this.tKey() || '').replace(' 원장님', ''))) : 'width: 27px; height: 27px; border-radius: 8px; background: ' + (k === hKind ? 'rgba(255, 255, 255, 0.22)' : KC[k][1]) + '; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center' }))
     };
     // 수업일지·업무일지 화면 값
     const lgM = cur[1] || 11;
