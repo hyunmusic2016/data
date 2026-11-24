@@ -15,7 +15,7 @@
     '.fx-pop{animation:fxPop .28s ease-out}',
     '.fx-dlg{animation:fxDlgIn .16s ease-out}',
     '@keyframes fxSweep{0%{background-size:0% 100%}100%{background-size:100% 100%}}',
-    '.fx-tabz{z-index:2}.fx-tabbare{background:transparent!important;border-color:transparent!important}',
+    '.fx-tabz{z-index:2;position:relative}.fx-tabbare{background:transparent!important;border-color:transparent!important}',
     '.fx-sweep{background-repeat:no-repeat;animation:fxSweep .45s ease-out}',
     '.fx-glow{animation:fxGlow 1.1s ease-out;border-radius:6px}',
     '.fx-slide{animation:fxSlide .3s ease-out}',
@@ -75,6 +75,19 @@
     void d.offsetWidth; d.style.left = r.left + 'px'; d.style.width = r.width + 'px';
     setTimeout(function () { d.remove(); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, 370);
   }
+  // 선택된 탭 바탕 상자를 old 자리에서 el 자리로 옮김 (상자는 탭 묶음 안에 넣어 같은 층에서 글자 아래로)
+  function slideBox(el, old, allF, meF) {
+    var r = el.getBoundingClientRect(), c = getComputedStyle(el); if (!r.width || !old || Math.abs(r.left - old.left) + Math.abs(r.top - old.top) < 2) return;
+    var d = document.createElement('div'); d.className = 'noexp noprint'; d.setAttribute('aria-hidden', 'true');
+    d.style.cssText = 'position:fixed;z-index:1;pointer-events:none;box-sizing:border-box;left:' + old.left + 'px;top:' + old.top + 'px;width:' + old.width + 'px;height:' + old.height + 'px;background:' + c.backgroundColor + ';border:' + c.borderTopWidth + ' solid ' + c.borderTopColor + ';border-radius:' + c.borderTopLeftRadius + ';box-shadow:' + c.boxShadow + ';transition:left .3s cubic-bezier(.3,.7,.3,1),top .3s cubic-bezier(.3,.7,.3,1),width .3s cubic-bezier(.3,.7,.3,1),height .3s cubic-bezier(.3,.7,.3,1)';
+    var host = el.parentNode; host.appendChild(d);
+    allF(document).forEach(function (x) { mark(x, 'fx-tabz', 360, allF); });
+    mark(el, 'fx-tabbare', 360, meF);
+    void d.offsetWidth; d.style.left = r.left + 'px'; d.style.top = r.top + 'px'; d.style.width = r.width + 'px'; d.style.height = r.height + 'px';
+    slides.push({ d: d, until: Date.now() + 360, host: function (a) { var m = meF(a)[0]; return m && m.parentNode; } });
+    setTimeout(function () { d.remove(); slides = slides.filter(function (x) { return x.d !== d; }); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, 370);
+  }
+  var slides = [];
   function pageEnter(app) {
     var o = null; try { o = JSON.parse(sessionStorage.getItem('fx.title') || 'null'); sessionStorage.removeItem('fx.title'); } catch (e) {}
     if (!o || o.p === location.pathname) return;
@@ -98,12 +111,14 @@
     before: function (app, comp) {
       if (RM) return;
       prev = snap(app, comp);
+      var ot = app.querySelector('[role="tablist"][aria-label="강사"] [aria-selected="true"]'); prev.tTab = ot ? { r: ot.getBoundingClientRect(), t: ot.textContent } : null;
       dlgRect = {}; Object.keys(prev.dlg).forEach(function (k) { var r = prev.dlg[k].getBoundingClientRect(); if (r.width) dlgRect[k] = r; });
     },
     after: function (app, comp) {
       if (RM || !prev || exporting()) { prev = null; return; }
       var now = snap(app, comp), P = prev; prev = null;
       carry(app);
+      slides.forEach(function (x) { if (!x.d.isConnected) { var h = x.host(app); if (h) h.appendChild(x.d); } });
       var sameView = lastSig === now.sig; lastSig = now.sig;
       // 1. 팝업 창: 새로 열린 창은 살짝 커지며 나타나고, 닫힌 창은 부드럽게 사라짐
       Object.keys(now.dlg).forEach(function (k) { if (!P.dlg[k]) mark(now.dlg[k], 'fx-dlg', 160, q('[role="dialog"][aria-label="' + esc(k) + '"]')); });
@@ -117,6 +132,9 @@
       // 3. 탭·달·화면을 바꾸면 표가 스르륵
       // 맨 위 메뉴 탭으로 다른 페이지에 오면: 제목 아이콘이 앞 페이지 색에서 이 페이지 색으로, 형광펜 줄은 다시 그어지듯
       if (!entered) { entered = true; pageEnter(app); }
+      // 출석부 강사 탭: 선택된 탭 바탕이 앞 강사 탭 자리에서 새 탭 자리로 미끄러짐
+      var nt = app.querySelector('[role="tablist"][aria-label="강사"] [aria-selected="true"]');
+      if (nt && P.tTab && P.tTab.t !== nt.textContent) slideBox(nt, P.tTab.r, function (a) { return [].slice.call(a.querySelectorAll('[role="tablist"][aria-label="강사"] [role="tab"]')); }, function (a) { var x = a.querySelector('[role="tablist"][aria-label="강사"] [aria-selected="true"]'); return x ? [x] : []; });
       if (sameView) {
         // 2. 출결·수납을 넣은 칸만 톡 (한꺼번에 많이 바뀐 건 효과 없음)
         var ch = [];
