@@ -15,7 +15,7 @@
 .ponly{display:none!important}@media print{.ponly{display:flex!important}.scronly{display:none!important}}.phead{position:sticky;top:0;z-index:6;background:#FFFFFF;box-shadow:0 6px 10px -8px rgba(23,32,28,.25)}@media print{.phead{position:static!important;box-shadow:none!important}}
 
 
-@keyframes tabdrop{0%{transform:translateY(-3px);background-color:#E6F6F6}60%{transform:translateY(0);background-color:#E6F6F6}100%{transform:none}}.tabdrop{animation:tabdrop .7s ease-out}@keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
+@keyframes tabdrop{0%{transform:translateY(-3px);background-color:#E6F6F6}60%{transform:translateY(0);background-color:#E6F6F6}100%{transform:none}}.wlrow .wlimp{opacity:0}.wlrow:hover .wlimp,.wlrow .wlimp.on{opacity:1}@media print{.wlrow .wlimp:not(.on){display:none}}.tabdrop{animation:tabdrop .7s ease-out}@keyframes aflash{0%,55%{background-image:linear-gradient(rgba(0,166,171,.18),rgba(0,166,171,.18))}100%{background-image:linear-gradient(transparent,transparent)}}
 .flashtag{animation:tagfade 4s ease-out forwards}
 @keyframes tagfade{0%,75%{opacity:1}100%{opacity:0}}
 
@@ -193,7 +193,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <sc-for list="{{lg.w.cells}}" as="d" hint-placeholder-count="35">
             <div style="{{d.box}}">
               <span style="{{d.numStyle}}">{{d.d}}</span>
-              <sc-if value="{{d.inM}}" hint-placeholder-val="{{ true }}"><textarea id="{{d.id}}" class="wltxt" aria-label="업무 내용" onBlur="{{d.save}}" style="flex: 1 1 auto; width: 100%; min-height: 80px; box-sizing: border-box; padding: 4px 8px 8px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.45; color: #17201C; field-sizing: content">{{d.text}}</textarea></sc-if>
+              <sc-if value="{{d.editing}}" hint-placeholder-val="{{ false }}"><textarea id="{{d.id}}" class="wltxt" aria-label="업무 내용" onBlur="{{d.save}}" style="flex: 1 1 auto; width: 100%; min-height: 80px; box-sizing: border-box; padding: 4px 8px 8px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.45; color: #17201C; field-sizing: content">{{d.text}}</textarea></sc-if><sc-if value="{{d.viewing}}" hint-placeholder-val="{{ true }}"><div onMouseDown="{{d.edit}}" title="눌러서 고치기" style="flex: 1 1 auto; min-height: 80px; display: flex; flex-direction: column; gap: 1px; padding: 4px 6px 8px; cursor: text"><sc-for list="{{d.lines}}" as="ln" hint-placeholder-count="2"><div class="wlrow" style="{{ln.row}}"><sc-if value="{{ln.item}}" hint-placeholder-val="{{ true }}"><button type="button" data-wlbtn="1" onMouseDown="{{ln.tog}}" aria-label="{{ln.chkLabel}}" title="{{ln.chkLabel}}" style="{{ln.chkSt}}">{{ln.chk}}</button></sc-if><span style="{{ln.tSt}}">{{ln.t}}</span><sc-if value="{{ln.item}}" hint-placeholder-val="{{ true }}"><button type="button" data-wlbtn="1" class="{{ln.impCls}}" onMouseDown="{{ln.imp}}" aria-label="{{ln.impLabel}}" title="{{ln.impLabel}}" style="{{ln.impSt}}">!</button></sc-if></div></sc-for></div></sc-if>
             </div>
           </sc-for>
         </div>
@@ -201,10 +201,8 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <div style="position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 10px 0 14px; box-sizing: border-box; background: #FFF8E1; border-bottom: 1px solid #DDE2DF">
             <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: #8A6400">MEMO</span>
             <span style="flex: 1 1 auto"></span>
-            <sc-if value="{{lg.w.memoMsg}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" style="font-size: 11px; font-weight: 600; color: #2F6B43; white-space: nowrap">{{lg.w.memoMsg}}</span></sc-if>
-            <button type="button" class="noexp noprint" onClick="{{lg.w.moveMemo}}" title="이 메모를 다음 달 메모에 이어 붙입니다" style="height: 28px; padding: 0 10px; border: 1px solid #E6D6A8; border-radius: 8px; background: #FFFFFF; color: #7A5C12; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap">다음 달로 넘기기 ›</button>
           </div>
-          <textarea id="wl_memo" class="wltxt" aria-label="메모" onBlur="{{lg.w.saveMemo}}" style="flex: 1 1 auto; width: 100%; box-sizing: border-box; padding: 10px 12px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{lg.w.memo}}</textarea></div>
+          <sc-if value="{{lg.w.mm.editing}}" hint-placeholder-val="{{ false }}"><textarea id="wl_memo" class="wltxt" aria-label="메모" onBlur="{{lg.w.mm.save}}" style="flex: 1 1 auto; width: 100%; box-sizing: border-box; padding: 10px 12px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{lg.w.mm.text}}</textarea></sc-if><sc-if value="{{lg.w.mm.viewing}}" hint-placeholder-val="{{ true }}"><div onMouseDown="{{lg.w.mm.edit}}" title="눌러서 고치기" style="flex: 1 1 auto; min-height: 120px; display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; cursor: text"><sc-for list="{{lg.w.mm.lines}}" as="ln" hint-placeholder-count="3"><div class="wlrow" style="{{ln.row}}"><sc-if value="{{ln.item}}" hint-placeholder-val="{{ true }}"><button type="button" data-wlbtn="1" onMouseDown="{{ln.tog}}" aria-label="{{ln.chkLabel}}" title="{{ln.chkLabel}}" style="{{ln.chkSt}}">{{ln.chk}}</button></sc-if><span style="{{ln.tSt}}">{{ln.t}}</span><sc-if value="{{ln.item}}" hint-placeholder-val="{{ true }}"><button type="button" data-wlbtn="1" class="{{ln.impCls}}" onMouseDown="{{ln.imp}}" aria-label="{{ln.impLabel}}" title="{{ln.impLabel}}" style="{{ln.impSt}}">!</button></sc-if></div></sc-for></div></sc-if></div>
       </div>
     </section>
     </sc-if>
@@ -243,7 +241,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.87.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.88.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -974,7 +972,7 @@ class Component extends DCLogic {
   saveWorkDay(m, d, text) {
     const LOG = this.readLog('academy.workLog', {}), ym = this.ymOf(m);
     const cur = this.workDays(m);
-    const v = String(text || '').replace(/\s+$/, '');
+    const v = this.wlNorm(String(text || '')).replace(/\s+$/, '');
     if ((cur[d] || '') === v) return;
     if (v) cur[d] = v; else delete cur[d];
     LOG[ym] = cur;
@@ -982,12 +980,41 @@ class Component extends DCLogic {
   }
   workMemo(m) { const v = this.readLog('academy.workMemo', {})[this.ymOf(m)]; return typeof v === 'string' ? v : ''; }
   saveWorkMemo(m, text) {
-    const LOG = this.readLog('academy.workMemo', {}), ym = this.ymOf(m), v = String(text || '').replace(/\s+$/, '');
+    const LOG = this.readLog('academy.workMemo', {}), ym = this.ymOf(m), v = this.wlNorm(String(text || '')).replace(/\s+$/, '');
     if ((LOG[ym] || '') === v) return;
     if (v) LOG[ym] = v; else delete LOG[ym];
     try { localStorage.setItem('academy.workMemo', JSON.stringify(LOG)); } catch (e) {}
   }
-  // 메모를 다음 달 메모에 이어 붙인다(이번 달 메모는 그대로 둠, 같은 글이 이미 있으면 다시 붙이지 않음)
+  // 업무일지 한 줄 = 할 일 하나. 줄 앞 '✓ ' = 끝남(회색 취소선), '! ' = 중요(빨강). 글로 칠 때는 'v '·'!'로 시작해도 됨
+  wlParse(text) {
+    return String(text || '').split('\n').map(raw => { let t = raw, done = false, imp = false;
+      for (let i = 0; i < 2; i++) { if (/^\s*(✓|[vV])\s+/.test(t)) { done = true; t = t.replace(/^\s*(✓|[vV])\s+/, ''); } else if (/^\s*!/.test(t)) { imp = true; t = t.replace(/^\s*!\s*/, ''); } }
+      return { done: done, imp: imp, t: t }; });
+  }
+  wlJoin(L) { return L.map(x => x.t.trim() || x.done || x.imp ? (x.done ? '✓ ' : '') + (x.imp ? '! ' : '') + x.t : x.t).join('\n'); }
+  wlNorm(text) { return this.wlJoin(this.wlParse(text)); }
+  // 고치기를 끝냄 (누르던 버튼 클릭이 끝난 뒤에 다시 그림 — 첫 클릭 씹힘 방지)
+  wlDone(key) {
+    const go = () => { if (this.state.wlEdit === key) this.setState({ wlEdit: null }); };
+    if (this._wlDown) window.addEventListener('mouseup', () => setTimeout(go, 0), { once: true }); else go();
+  }
+  // 보기 화면 값: 줄마다 체크 네모·글·'!' (누르면 글 칸으로 바뀜)
+  wlView(text, key, id, save) {
+    if (!this._wlTrack) { this._wlTrack = 1; window.addEventListener('mousedown', () => { this._wlDown = true; }, true); window.addEventListener('mouseup', () => { this._wlDown = false; }, true); }
+    const L = this.wlParse(text);
+    const put = (i, k) => e => { e.preventDefault(); e.stopPropagation(); const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur(); const N = this.wlParse(text); N[i][k] = !N[i][k]; save(this.wlJoin(N)); this.setState({ wlTick: Date.now() }); };
+    return {
+      lines: (text ? L : []).map((x, i) => { const item = !!x.t.trim();
+        return { item: item, t: x.t || ' ', chk: x.done ? '✓' : '', tog: put(i, 'done'), imp: put(i, 'imp'),
+          chkLabel: x.done ? '끝남 표시 지우기' : '끝남으로 표시', impLabel: x.imp ? '중요 표시 지우기' : '중요로 표시', impCls: 'wlimp' + (x.imp ? ' on' : ''),
+          row: 'display: flex; align-items: flex-start; gap: 5px; min-height: ' + (item ? 20 : 8) + 'px',
+          chkSt: 'flex: none; width: 15px; height: 15px; margin-top: 2px; padding: 0; box-sizing: border-box; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; font-size: 10px; font-weight: 700; line-height: 1; cursor: pointer; ' + (x.done ? 'border: 1.5px solid #5B86C9; background: #5B86C9; color: #FFFFFF' : 'border: 1.5px solid #AEB7B2; background: #FFFFFF; color: transparent'),
+          tSt: 'flex: 1 1 auto; min-width: 0; font-size: 13px; line-height: 1.45; white-space: pre-wrap; word-break: break-word; ' + (x.done ? 'color: #9AA3A8; text-decoration: line-through' : x.imp ? 'color: #C62828; font-weight: 600' : 'color: #17201C'),
+          impSt: 'flex: none; width: 16px; height: 18px; padding: 0; border: none; border-radius: 4px; background: ' + (x.imp ? '#FCEBEA' : 'transparent') + '; color: ' + (x.imp ? '#C62828' : '#AEB7B2') + '; font-family: inherit; font-size: 12px; font-weight: 700; cursor: pointer' }; }),
+      edit: e => { if (e.target.closest && e.target.closest('[data-wlbtn]')) return; e.preventDefault(); const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
+        this.setState({ wlEdit: key }); setTimeout(() => { const t = document.getElementById(id); if (t) { t.focus(); const n = t.value.length; try { t.setSelectionRange(n, n); } catch (x) {} } }, 0); } };
+  }
+  // (다음 달로 넘기기는 원장님 요청으로 없앰)
   moveWorkMemo(m) {
     const el = document.getElementById('wl_memo');
     if (el) this.saveWorkMemo(m, el.value);
@@ -1013,19 +1040,19 @@ class Component extends DCLogic {
       for (let dow = 0; dow < 6; dow++) {
         const d = w * 7 + dow - off + 1, inM = d >= 1 && d <= nd;
         if (inM) any = true;
-        week.push({ d: inM ? d : '', inM: inM, id: 'wl_d' + (inM ? d : 'x' + w + dow), text: inM ? (D[d] || '') : '',
-          save: e => { if (inM) this.saveWorkDay(m, d, e.target.value); },
+        const ek = 'd' + d, txt = inM ? (D[d] || '') : '', editing = inM && this.state.wlEdit === ek;
+        week.push(Object.assign({ d: inM ? d : '', inM: inM, id: 'wl_d' + (inM ? d : 'x' + w + dow), text: txt, editing: editing, viewing: inM && !editing,
+          save: e => { if (inM) this.saveWorkDay(m, d, e.target.value); this.wlDone(ek); } }, inM ? this.wlView(txt, ek, 'wl_d' + d, v => this.saveWorkDay(m, d, v)) : { lines: [], edit: () => {} }, {
           box: 'display: flex; flex-direction: column; min-height: 118px; border-right: 1px solid #EBEEEC; border-bottom: 1px solid #EBEEEC; background: ' + (inM ? '#FFFFFF' : '#F7F8F8'),
-          numStyle: 'display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; min-width: 26px; height: 26px; margin: 6px 0 0 6px; padding: 0 4px; box-sizing: border-box; border-radius: 7px; font-size: 13px; font-weight: 600; ' + (d === today ? 'background: #D5DBD8; ' : '') + 'color: ' + (dow === 5 ? '#2952A3' : '#17201C') });
+          numStyle: 'display: inline-flex; align-items: center; justify-content: center; align-self: flex-start; min-width: 26px; height: 26px; margin: 6px 0 0 6px; padding: 0 4px; box-sizing: border-box; border-radius: 7px; font-size: 13px; font-weight: 600; ' + (d === today ? 'background: #D5DBD8; ' : '') + 'color: ' + (dow === 5 ? '#2952A3' : '#17201C') }));
       }
       if (!any) continue; // 일요일 하루뿐인 주는 줄을 만들지 않는다
       rows++;
       week.forEach(c => cells.push(c));
     }
-    return { cells: cells, total: Object.keys(D).length, memo: this.workMemo(m),
-      saveMemo: e => this.saveWorkMemo(m, e.target.value),
-      moveMemo: () => this.moveWorkMemo(m),
-      memoMsg: (this.state.wlMemoMsg && this.state.wlMemoMsg.m === m) ? this.state.wlMemoMsg.t : '' };
+    const mt = this.workMemo(m), me = this.state.wlEdit === 'memo';
+    return { cells: cells, total: Object.keys(D).length, memo: mt,
+      mm: Object.assign({ text: mt, editing: me, viewing: !me, save: e => { this.saveWorkMemo(m, e.target.value); this.wlDone('memo'); } }, this.wlView(mt, 'memo', 'wl_memo', v => this.saveWorkMemo(m, v))) };
   }
   writerName() { const A = window.academy; if (A && A.staff && A.staff.name) return A.staff.name; return String(this.tKey() || '').replace(' 원장님', ''); }
   // 수업일지 출석 칸 글 바로 저장 (다시 그리지 않음 — 다른 칸으로 옮겨 가는 중이라 커서가 사라지지 않게)
