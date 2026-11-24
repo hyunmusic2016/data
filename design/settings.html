@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="db.js?v=0.80.0"></script>
+<script src="fx.js?v=1"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
 a{color:#007E82}a:hover{color:#005F62}
@@ -281,7 +282,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.85.11</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.86.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -1265,8 +1266,8 @@ function build(node,scope,out){
   node.childNodes.forEach(ch=>build(ch,scope,el));out.appendChild(el)}
 function render(){const app=document.getElementById('app');const keepS=[...app.querySelectorAll('[id]')].filter(e=>e.scrollTop||e.scrollLeft).map(e=>[e.id,e.scrollTop,e.scrollLeft]);const wy=window.scrollY,wx=window.scrollX;const ae=document.activeElement;const fid=ae&&ae.id;const fsel=ae&&ae.selectionStart;const hadFocus=!!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches('section[tabindex]'));const keepX=[...app.querySelectorAll('section')].map(s=>s.scrollLeft);
   const frag=document.createDocumentFragment();const vals=comp.renderVals();
-  tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));app.replaceChildren(frag);keepS.forEach(([i,t,l])=>{const e=document.getElementById(i);if(e){e.scrollTop=t;e.scrollLeft=l}});if(fid){const ne=document.getElementById(fid);if(ne){ne.focus({preventScroll:true});if(fsel!=null&&ne.setSelectionRange)try{ne.setSelectionRange(fsel,fsel)}catch(e){}}}if(hadFocus){const sf=app.querySelector('section[tabindex]');if(sf)sf.focus({preventScroll:true});}
-  app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]});if(window.scrollY!==wy||window.scrollX!==wx)window.scrollTo(wx,wy)}
+  tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));if(window.__fx)__fx.before(app,comp);app.replaceChildren(frag);keepS.forEach(([i,t,l])=>{const e=document.getElementById(i);if(e){e.scrollTop=t;e.scrollLeft=l}});if(fid){const ne=document.getElementById(fid);if(ne){ne.focus({preventScroll:true});if(fsel!=null&&ne.setSelectionRange)try{ne.setSelectionRange(fsel,fsel)}catch(e){}}}if(hadFocus){const sf=app.querySelector('section[tabindex]');if(sf)sf.focus({preventScroll:true});}
+  app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]});if(window.scrollY!==wy||window.scrollX!==wx)window.scrollTo(wx,wy);if(window.__fx)__fx.after(app,comp)}
 render();
 if(comp.componentDidMount)comp.componentDidMount();
 </script>

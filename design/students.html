@@ -7,6 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="db.js?v=0.80.0"></script>
+<script src="fx.js?v=1"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 
@@ -49,8 +50,8 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     <section aria-label="수강생대장" class="shellsec" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
       <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
         <span style="display: inline-flex; align-items: center; gap: 14px">
-          <span style="{{titleLogo}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg></span>
-          <span style="{{titleHL}}">현실용음악학원 수강생대장</span>
+          <span data-fxc="logo" style="{{titleLogo}}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 20v-1a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v1M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M22 20v-1a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg></span>
+          <span data-fxhl="hl" style="{{titleHL}}">현실용음악학원 수강생대장</span>
         </span>
         <span style="flex: 1"></span>
         <div role="tablist" aria-label="원생 구분" style="display: flex; gap: 8px">
@@ -170,7 +171,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.85.11</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.86.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -2052,8 +2053,8 @@ function build(node,scope,out){
   node.childNodes.forEach(ch=>build(ch,scope,el));out.appendChild(el)}
 function render(){const app=document.getElementById('app');const keepS=[...app.querySelectorAll('[id]')].filter(e=>e.scrollTop||e.scrollLeft).map(e=>[e.id,e.scrollTop,e.scrollLeft]);const wy=window.scrollY,wx=window.scrollX;const ae=document.activeElement;const fid=ae&&ae.id;const fsel=ae&&ae.selectionStart;const hadFocus=!!(document.activeElement&&document.activeElement.matches&&document.activeElement.matches('section[tabindex]'));const keepX=[...app.querySelectorAll('section')].map(s=>s.scrollLeft);
   const frag=document.createDocumentFragment();const vals=comp.renderVals();
-  tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));app.replaceChildren(frag);keepS.forEach(([i,t,l])=>{const e=document.getElementById(i);if(e){e.scrollTop=t;e.scrollLeft=l}});if(fid){const ne=document.getElementById(fid);if(ne){ne.focus({preventScroll:true});if(fsel!=null&&ne.setSelectionRange)try{ne.setSelectionRange(fsel,fsel)}catch(e){}}}if(hadFocus){const sf=app.querySelector('section[tabindex]');if(sf)sf.focus({preventScroll:true});}
-  app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]});if(window.scrollY!==wy||window.scrollX!==wx)window.scrollTo(wx,wy)}
+  tpl.content.childNodes.forEach(ch=>build(ch,vals,frag));if(window.__fx)__fx.before(app,comp);app.replaceChildren(frag);keepS.forEach(([i,t,l])=>{const e=document.getElementById(i);if(e){e.scrollTop=t;e.scrollLeft=l}});if(fid){const ne=document.getElementById(fid);if(ne){ne.focus({preventScroll:true});if(fsel!=null&&ne.setSelectionRange)try{ne.setSelectionRange(fsel,fsel)}catch(e){}}}if(hadFocus){const sf=app.querySelector('section[tabindex]');if(sf)sf.focus({preventScroll:true});}
+  app.querySelectorAll('section').forEach((s,i)=>{if(keepX[i])s.scrollLeft=keepX[i]});if(window.scrollY!==wy||window.scrollX!==wx)window.scrollTo(wx,wy);if(window.__fx)__fx.after(app,comp)}
 render();
 if(comp.componentDidMount)comp.componentDidMount();
 </script>
