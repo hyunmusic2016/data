@@ -185,7 +185,8 @@
         sb.from('payments').select('*').order('id'),
         sb.from('ticket_plans').select('student_id,plan_date'),
         sb.from('cell_log').select('local_id,at,who,tab,ym,rid,name,k,a,b').order('at', { ascending: false }).limit(20000),
-        sb.from('trials').select('id,data')
+        sb.from('trials').select('id,data'),
+        sb.from('log_notes').select('kind,ym,k1,k2,body')
       ]).then(function (qs) {
         // 출석부 변경 기록 (009 SQL). 표가 없으면 이 브라우저에만 남김
         if (!qs[6].error) {
@@ -218,6 +219,17 @@
             (d.pays || []).forEach(function (p) { plT.push(p); }); });
           rawSet('academy.trials', JSON.stringify(trL)); rawSet('academy.attCells', JSON.stringify(acT)); rawSet('academy.payments', JSON.stringify(plT));
           known.trial = trialData();
+        }
+        // 수업일지·업무일지 (011 SQL). 이 브라우저에만 있던 글은 처음 한 번 서버에 올림(서버에 같은 칸이 있으면 서버 글을 씀)
+        A.logTried = true;
+        if (qs[8] && !qs[8].error) {
+          A.logReady = true;
+          var srv = {}; (qs[8].data || []).forEach(function (r) { srv[[r.kind, r.ym, r.k1 || '', r.k2 || ''].join('|')] = r.body || ''; });
+          var mine = logFlat(), first = !localStorage.getItem('academy.logsUp'), add = [];
+          if (first) Object.keys(mine).forEach(function (k) { if (!(k in srv) && mine[k]) { srv[k] = mine[k]; add.push(k); } });
+          logWrite(srv); known.logs = srv;
+          if (add.length) logPush(add.map(function (k) { return [k, srv[k]]; }));
+          if (first) rawSet('academy.logsUp', '1');
         }
         if (!qs[5].error) {
           var tp = {}; (qs[5].data || []).forEach(function (r) { var s = byId[r.student_id]; if (s) tp[s.name] = r.plan_date; });
@@ -349,6 +361,7 @@
       else if (k === 'academy.payments') syncPays(JSON.parse(v || '[]'));
       if (k === 'academy.trials' || k === 'academy.attCells' || k === 'academy.payments') syncTrials();
       else if (k === 'academy.ticketPlans') syncPlans(JSON.parse(v || '{}'));
+      else if (k === 'academy.classLog' || k === 'academy.workLog' || k === 'academy.workMemo') syncLogs();
       else if (k === 'academy.attMemo') {
         // 출석부 MEMO: 원장님 것만 Supabase에 저장(설정 표는 원장님만 쓸 수 있음), 강사는 이 브라우저에만
         if (A.staff && A.staff.role === 'owner') sb.from('app_settings').upsert({ key: 'attMemo', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '출석부 메모'); });
@@ -407,6 +420,39 @@
       Object.keys(ac).forEach(function (ym) { var c = (ac[ym] || {})['X' + t.id]; if (c && Object.keys(c).length) cells[ym] = c; });
       out[String(t.id)] = JSON.stringify({ info: t, cells: cells, pays: pl.filter(function (p) { return p && p.trial === t.id; }) }); });
     return out;
+  }
+  // 수업일지·업무일지 ↔ log_notes: 'kind|ym|k1|k2' → 글
+  function logFlat() {
+    var o = {}, rd = function (k) { try { return JSON.parse(localStorage.getItem(k) || '{}') || {}; } catch (e) { return {}; } };
+    var C = rd('academy.classLog'), W = rd('academy.workLog'), M = rd('academy.workMemo');
+    Object.keys(C).forEach(function (ym) { Object.keys(C[ym] || {}).forEach(function (k1) { var d = ((C[ym] || {})[k1] || {}).d || {}; Object.keys(d).forEach(function (k2) { if (d[k2]) o[['class', ym, k1, k2].join('|')] = String(d[k2]); }); }); });
+    Object.keys(W).forEach(function (ym) { var v = W[ym];
+      if (Array.isArray(v)) { var t = {}; v.forEach(function (x) { if (x && x.d && x.text) t[x.d] = (t[x.d] ? t[x.d] + '\n' : '') + x.text; }); v = t; }
+      Object.keys(v || {}).forEach(function (k2) { if (v[k2]) o[['work', ym, '', k2].join('|')] = String(v[k2]); }); });
+    Object.keys(M).forEach(function (ym) { if (typeof M[ym] === 'string' && M[ym]) o[['workmemo', ym, '', ''].join('|')] = M[ym]; });
+    return o;
+  }
+  function logWrite(flat) {
+    var C = {}, W = {}, M = {};
+    Object.keys(flat).forEach(function (k) { var p = k.split('|'), v = flat[k]; if (!v) return;
+      if (p[0] === 'class') { var a = (C[p[1]] = C[p[1]] || {}), b = (a[p[2]] = a[p[2]] || { d: {} }); b.d[p[3]] = v; }
+      else if (p[0] === 'work') (W[p[1]] = W[p[1]] || {})[p[3]] = v;
+      else if (p[0] === 'workmemo') M[p[1]] = v; });
+    rawSet('academy.classLog', JSON.stringify(C)); rawSet('academy.workLog', JSON.stringify(W)); rawSet('academy.workMemo', JSON.stringify(M));
+  }
+  function logPush(pairs) {
+    var up = [], now = new Date().toISOString();
+    pairs.forEach(function (x) { var p = x[0].split('|');
+      if (x[1]) up.push({ kind: p[0], ym: p[1], k1: p[2], k2: p[3], body: x[1], updated_by: A.staff.id, updated_at: now });
+      else sb.from('log_notes').delete().eq('kind', p[0]).eq('ym', p[1]).eq('k1', p[2]).eq('k2', p[3]).then(function (r) { report(r, '일지 저장'); }); });
+    if (up.length) sb.from('log_notes').upsert(up, { onConflict: 'kind,ym,k1,k2' }).then(function (r) { report(r, '일지 저장'); });
+  }
+  function syncLogs() {
+    if (!A.logReady) { if (A.logTried) toast('수업일지·업무일지를 서버에 저장하려면 Supabase에서 011 SQL을 먼저 실행해 주세요'); return; }
+    var now = logFlat(), prev = known.logs || {}, ch = [];
+    Object.keys(now).forEach(function (k) { if (prev[k] !== now[k]) ch.push([k, now[k]]); });
+    Object.keys(prev).forEach(function (k) { if (!(k in now)) ch.push([k, '']); });
+    known.logs = now; if (ch.length) logPush(ch);
   }
   function syncTrials() {
     var now = trialData(), prev = known.trial || {};
