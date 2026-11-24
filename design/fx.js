@@ -14,7 +14,8 @@
     '@keyframes fxDot{0%,100%{scale:1;box-shadow:0 0 0 0 rgba(240,138,60,.55)}50%{scale:1.35;box-shadow:0 0 0 5px rgba(240,138,60,0)}}',
     '.fx-pop{animation:fxPop .28s ease-out}',
     '.fx-dlg{animation:fxDlgIn .16s ease-out}',
-    '.fx-fade{animation:fxFade .22s ease-out}',
+    '@keyframes fxSweep{0%{background-size:0% 100%}100%{background-size:100% 100%}}',
+    '.fx-sweep{background-repeat:no-repeat;animation:fxSweep .45s ease-out}',
     '.fx-glow{animation:fxGlow 1.1s ease-out;border-radius:6px}',
     '.fx-slide{animation:fxSlide .3s ease-out}',
     '.fx-dot{animation:fxDot 1s ease-in-out 3}',
@@ -47,7 +48,22 @@
     if (p.indexOf('settings') >= 0) return String(st.view);
     return '';
   }
-  var dlgRect = {};
+  var dlgRect = {}, entered = false;
+  // 페이지를 떠날 때 제목 아이콘 색을 기억 (같은 창 안에서만)
+  window.addEventListener('pagehide', function () {
+    var l = document.querySelector('[data-fxc]'); if (!l) return;
+    var c = getComputedStyle(l);
+    try { sessionStorage.setItem('fx.title', JSON.stringify({ p: location.pathname, bg: c.backgroundColor, fg: c.color })); } catch (e) {}
+  });
+  function pageEnter(app) {
+    var o = null; try { o = JSON.parse(sessionStorage.getItem('fx.title') || 'null'); sessionStorage.removeItem('fx.title'); } catch (e) {}
+    if (!o || o.p === location.pathname) return;
+    var st = document.createElement('style');
+    st.textContent = '@keyframes fxFromPrev{0%{background-color:' + o.bg + ';color:' + o.fg + '}}.fx-from{animation:fxFromPrev .45s ease}';
+    document.head.appendChild(st);
+    app.querySelectorAll('[data-fxc]').forEach(function (e) { mark(e, 'fx-from', 450, q('[data-fxc]')); });
+    app.querySelectorAll('[data-fxhl]').forEach(function (e) { mark(e, 'fx-sweep', 450, q('[data-fxhl]')); });
+  }
   // 효과가 끝나기 전에 화면이 또 다시 그려져도 이어서 보이도록, 진행 중인 효과를 기억했다가 새 요소에 다시 붙임
   var live = [];
   function mark(el, cls, ms, find) { el.classList.add(cls); live.push({ cls: cls, find: find, t: Date.now(), ms: ms }); }
@@ -78,8 +94,9 @@
         document.body.appendChild(c); setTimeout(function () { c.remove(); }, 200);
       });
       // 3. 탭·달·화면을 바꾸면 표가 스르륵
-      if (!sameView) { app.querySelectorAll('.shellscroll').forEach(function (s) { mark(s, 'fx-fade', 220, q('.shellscroll')); }); }
-      else {
+      // 맨 위 메뉴 탭으로 다른 페이지에 오면: 제목 아이콘이 앞 페이지 색에서 이 페이지 색으로, 형광펜 줄은 다시 그어지듯
+      if (!entered) { entered = true; pageEnter(app); }
+      if (sameView) {
         // 2. 출결·수납을 넣은 칸만 톡 (한꺼번에 많이 바뀐 건 효과 없음)
         var ch = [];
         app.querySelectorAll('button[data-cell]').forEach(function (c) { var k = attr(c, 'data-cell'); if (k in P.cell && P.cell[k] !== c.textContent && c.textContent.trim()) ch.push(c); });
