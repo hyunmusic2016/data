@@ -50,6 +50,7 @@
     return '';
   }
   var dlgRect = {}, entered = false;
+  var SL = 500, EZ = 'cubic-bezier(.3,.7,.3,1)'; // 탭 바탕이 미끄러지는 시간
   // 페이지를 떠날 때 제목 아이콘 색을 기억 (같은 창 안에서만)
   window.addEventListener('pagehide', function () {
     var l = document.querySelector('[data-fxc]'); if (!l) return;
@@ -67,27 +68,40 @@
     var a = activeTab(); if (!a || !o.tab) return;
     var r = a.getBoundingClientRect(), c = getComputedStyle(a); if (!r.width || Math.abs(r.left - o.tab.l) < 2) return;
     var d = document.createElement('div'); d.className = 'noexp noprint'; d.setAttribute('aria-hidden', 'true');
-    d.style.cssText = 'position:fixed;z-index:1;pointer-events:none;box-sizing:border-box;left:' + o.tab.l + 'px;top:' + r.top + 'px;width:' + o.tab.w + 'px;height:' + r.height + 'px;background:' + c.backgroundColor + ';border:' + c.borderTopWidth + ' solid ' + c.borderTopColor + ';border-bottom-color:' + c.borderBottomColor + ';border-radius:' + c.borderTopLeftRadius + ' ' + c.borderTopRightRadius + ' 0 0;transition:left .3s cubic-bezier(.3,.7,.3,1),width .3s cubic-bezier(.3,.7,.3,1)';
+    d.style.cssText = 'position:fixed;z-index:1;pointer-events:none;box-sizing:border-box;left:' + o.tab.l + 'px;top:' + r.top + 'px;width:' + o.tab.w + 'px;height:' + r.height + 'px;background:' + c.backgroundColor + ';border:' + c.borderTopWidth + ' solid ' + c.borderTopColor + ';border-bottom-color:' + c.borderBottomColor + ';border-radius:' + c.borderTopLeftRadius + ' ' + c.borderTopRightRadius + ' 0 0;transition:left ' + SL + 'ms ' + EZ + ',width ' + SL + 'ms ' + EZ;
     document.body.appendChild(d);
     var all = q('nav[aria-label="주 메뉴"] a[href]'), me = function () { var x = activeTab(); return x ? [x] : []; };
-    all(document).forEach(function (x) { mark(x, 'fx-tabz', 360, all); });
-    mark(a, 'fx-tabbare', 360, me);
+    all(document).forEach(function (x) { mark(x, 'fx-tabz', SL + 60, all); });
+    mark(a, 'fx-tabbare', SL + 60, me);
     void d.offsetWidth; d.style.left = r.left + 'px'; d.style.width = r.width + 'px';
-    setTimeout(function () { d.remove(); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, 370);
+    setTimeout(function () { d.remove(); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, SL + 70);
   }
   // 선택된 탭 바탕 상자를 old 자리에서 el 자리로 옮김 (상자는 탭 묶음 안에 넣어 같은 층에서 글자 아래로)
   function slideBox(el, old, allF, meF) {
     var r = el.getBoundingClientRect(), c = getComputedStyle(el); if (!r.width || !old || Math.abs(r.left - old.left) + Math.abs(r.top - old.top) < 2) return;
     var d = document.createElement('div'); d.className = 'noexp noprint'; d.setAttribute('aria-hidden', 'true');
-    d.style.cssText = 'position:fixed;z-index:1;pointer-events:none;box-sizing:border-box;left:' + old.left + 'px;top:' + old.top + 'px;width:' + old.width + 'px;height:' + old.height + 'px;background:' + c.backgroundColor + ';border:' + c.borderTopWidth + ' solid ' + c.borderTopColor + ';border-radius:' + c.borderTopLeftRadius + ';box-shadow:' + c.boxShadow + ';transition:left .3s cubic-bezier(.3,.7,.3,1),top .3s cubic-bezier(.3,.7,.3,1),width .3s cubic-bezier(.3,.7,.3,1),height .3s cubic-bezier(.3,.7,.3,1)';
+    d.style.cssText = 'position:fixed;z-index:1;pointer-events:none;box-sizing:border-box;left:' + old.left + 'px;top:' + old.top + 'px;width:' + old.width + 'px;height:' + old.height + 'px;background:' + c.backgroundColor + ';border-style:solid;border-width:' + c.borderTopWidth + ' ' + c.borderRightWidth + ' ' + c.borderBottomWidth + ' ' + c.borderLeftWidth + ';border-color:' + c.borderTopColor + ' ' + c.borderRightColor + ' ' + c.borderBottomColor + ' ' + c.borderLeftColor + ';border-radius:' + c.borderRadius + ';box-shadow:' + c.boxShadow + ';transition:left ' + SL + 'ms ' + EZ + ',top ' + SL + 'ms ' + EZ + ',width ' + SL + 'ms ' + EZ + ',height ' + SL + 'ms ' + EZ;
     var host = el.parentNode; host.appendChild(d);
-    allF(document).forEach(function (x) { mark(x, 'fx-tabz', 360, allF); });
-    mark(el, 'fx-tabbare', 360, meF);
+    allF(document).forEach(function (x) { mark(x, 'fx-tabz', SL + 60, allF); });
+    mark(el, 'fx-tabbare', SL + 60, meF);
     void d.offsetWidth; d.style.left = r.left + 'px'; d.style.top = r.top + 'px'; d.style.width = r.width + 'px'; d.style.height = r.height + 'px';
-    slides.push({ d: d, until: Date.now() + 360, host: function (a) { var m = meF(a)[0]; return m && m.parentNode; } });
-    setTimeout(function () { d.remove(); slides = slides.filter(function (x) { return x.d !== d; }); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, 370);
+    slides.push({ d: d, until: Date.now() + SL + 60, host: function (a) { var m = meF(a)[0]; return m && m.parentNode; } });
+    setTimeout(function () { d.remove(); slides = slides.filter(function (x) { return x.d !== d; }); document.querySelectorAll('.fx-tabz,.fx-tabbare').forEach(function (x) { x.classList.remove('fx-tabz', 'fx-tabbare'); }); }, SL + 70);
   }
   var slides = [];
+  // 탭 묶음들: 키 = 묶음 이름(aria-label), 값 = 선택된 탭(글자·자리)과 다시 찾는 방법
+  var GROUPS = '[role="tablist"], nav[aria-label="시트"]';
+  function tabState(app) {
+    var o = {};
+    [].slice.call(app.querySelectorAll(GROUPS)).forEach(function (g, gi) {
+      var k = (g.getAttribute('aria-label') || '') + '#' + gi, sel = g.querySelector('[role="tab"][aria-selected="true"], [aria-pressed="true"]'); if (!sel || o[k]) return;
+      var find = function (a) { return [].slice.call(a.querySelectorAll(GROUPS))[gi] || null; };
+      o[k] = { t: sel.textContent, r: sel.getBoundingClientRect(), el: sel,
+        all: function (a) { var x = find(a); return x ? [].slice.call(x.querySelectorAll('[role="tab"], button, a')) : []; },
+        me: function (a) { var x = find(a), m = x && x.querySelector('[role="tab"][aria-selected="true"], [aria-pressed="true"]'); return m ? [m] : []; } };
+    });
+    return o;
+  }
   function pageEnter(app) {
     var o = null; try { o = JSON.parse(sessionStorage.getItem('fx.title') || 'null'); sessionStorage.removeItem('fx.title'); } catch (e) {}
     if (!o || o.p === location.pathname) return;
@@ -111,7 +125,7 @@
     before: function (app, comp) {
       if (RM) return;
       prev = snap(app, comp);
-      var ot = app.querySelector('[role="tablist"][aria-label="강사"] [aria-selected="true"]'); prev.tTab = ot ? { r: ot.getBoundingClientRect(), t: ot.textContent } : null;
+      prev.tabs = tabState(app);
       dlgRect = {}; Object.keys(prev.dlg).forEach(function (k) { var r = prev.dlg[k].getBoundingClientRect(); if (r.width) dlgRect[k] = r; });
     },
     after: function (app, comp) {
@@ -133,8 +147,8 @@
       // 맨 위 메뉴 탭으로 다른 페이지에 오면: 제목 아이콘이 앞 페이지 색에서 이 페이지 색으로, 형광펜 줄은 다시 그어지듯
       if (!entered) { entered = true; pageEnter(app); }
       // 출석부 강사 탭: 선택된 탭 바탕이 앞 강사 탭 자리에서 새 탭 자리로 미끄러짐
-      var nt = app.querySelector('[role="tablist"][aria-label="강사"] [aria-selected="true"]');
-      if (nt && P.tTab && P.tTab.t !== nt.textContent) slideBox(nt, P.tTab.r, function (a) { return [].slice.call(a.querySelectorAll('[role="tablist"][aria-label="강사"] [role="tab"]')); }, function (a) { var x = a.querySelector('[role="tablist"][aria-label="강사"] [aria-selected="true"]'); return x ? [x] : []; });
+      // 탭 묶음(role=tablist, 아래 시트 막대)에서 선택된 탭이 바뀌면 바탕이 앞 탭 자리에서 새 탭 자리로 미끄러짐
+      var NT = tabState(app); Object.keys(NT).forEach(function (k) { var o = (P.tabs || {})[k], n = NT[k]; if (o && n && o.t !== n.t) slideBox(n.el, o.r, n.all, n.me); });
       if (sameView) {
         // 2. 출결·수납을 넣은 칸만 톡 (한꺼번에 많이 바뀐 건 효과 없음)
         var ch = [];
