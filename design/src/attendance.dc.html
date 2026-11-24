@@ -236,7 +236,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.88.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.89.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -969,14 +969,34 @@ class Component extends DCLogic {
     if ((cur[d] || '') === v) return;
     if (v) cur[d] = v; else delete cur[d];
     LOG[ym] = cur;
-    try { localStorage.setItem('academy.workLog', JSON.stringify(LOG)); } catch (e) {}
+    this.jSet('academy.workLog', JSON.stringify(LOG));
   }
   workMemo(m) { const v = this.readLog('academy.workMemo', {})[this.ymOf(m)]; return typeof v === 'string' ? v : ''; }
+  // 수업일지·업무일지 되돌리기 (Ctrl+Z / Ctrl+Y, 글 칸 밖에서. 글 칸 안에서는 치던 글자 되돌리기)
+  // 바뀔 때마다 그 저장소의 앞·뒤 값을 남기고, 되돌리면 그 화면(강사 탭·달·일지)으로 가서 앞 값을 다시 씀 → 서버에도 반영
+  jSet(key, next) {
+    const prev = localStorage.getItem(key);
+    try { localStorage.setItem(key, next); } catch (e) {}
+    if (this._jApplying) return;
+    this._jPast = (this._jPast || []).concat([{ key: key, prev: prev, next: next, at: { teacher: this.state.teacher || 0, sheet: this.state.sheet, logView: this.state.logView } }]).slice(-100);
+    this._jFut = [];
+  }
+  jStep(dir) {
+    const A = dir < 0 ? (this._jPast || []) : (this._jFut || []); if (!A.length) return;
+    const e = A[A.length - 1];
+    if (dir < 0) { this._jPast = A.slice(0, -1); this._jFut = (this._jFut || []).concat([e]); }
+    else { this._jFut = A.slice(0, -1); this._jPast = (this._jPast || []).concat([e]); }
+    this._jApplying = true; try { localStorage.setItem(e.key, (dir < 0 ? e.prev : e.next) || '{}'); } catch (x) {} this._jApplying = false;
+    const p = { logView: e.at.logView, wlEdit: null, jTick: Date.now() };
+    if ((this.state.teacher || 0) !== e.at.teacher) Object.assign(p, { teacher: e.at.teacher, sel: null }, this.sheetFor(e.at.teacher));
+    if (e.at.sheet != null) p.sheet = e.at.sheet;
+    this.setState(p);
+  }
   saveWorkMemo(m, text) {
     const LOG = this.readLog('academy.workMemo', {}), ym = this.ymOf(m), v = this.wlNorm(String(text || '')).replace(/\s+$/, '');
     if ((LOG[ym] || '') === v) return;
     if (v) LOG[ym] = v; else delete LOG[ym];
-    try { localStorage.setItem('academy.workMemo', JSON.stringify(LOG)); } catch (e) {}
+    this.jSet('academy.workMemo', JSON.stringify(LOG));
   }
   // 업무일지 한 줄 = 할 일 하나. 줄 앞 '✓ ' = 끝남(회색 취소선), '! ' = 중요(빨강). 글로 칠 때는 'v '·'!'로 시작해도 됨
   wlParse(text) {
@@ -1055,7 +1075,7 @@ class Component extends DCLogic {
     const v = String(text || '').replace(/\s+$/, '');
     if ((D[d] || '') === v) return;
     if (v) D[d] = v; else delete D[d];
-    try { localStorage.setItem('academy.classLog', JSON.stringify(LOG)); } catch (e) {}
+    this.jSet('academy.classLog', JSON.stringify(LOG));
   }
   saveClassNote(clear) {
     const E = this.state.clEd; if (!E) return;
@@ -1739,6 +1759,12 @@ class Component extends DCLogic {
   componentDidMount() {
     this.installPopupDrag();
     this.installTextInputs();
+    document.addEventListener('keydown', e => {
+      if (!(e.ctrlKey || e.metaKey) || !/^[zy]$/i.test(e.key) || !this.state.logView) return;
+      const t = e.target; if (t && (t.tagName === 'TEXTAREA' || t.tagName === 'INPUT')) return;
+      if (document.querySelector('[role="dialog"]')) return;
+      e.preventDefault(); this.jStep(/y/i.test(e.key) || e.shiftKey ? 1 : -1);
+    });
     // 최근 변경 주황 점: 이름에 마우스를 올리면 바로 큰 글씨 말풍선 (title 대신, 기다림 없음)
     if (!window._chgTipOn) { window._chgTipOn = 1; const tip = document.createElement('div'); tip.className = 'noexp noprint'; tip.setAttribute('role', 'tooltip'); tip.style.cssText = 'position: fixed; z-index: 99999; display: none; max-width: 420px; padding: 10px 13px; border-radius: 10px; background: #FFFFFF; border: 1px solid #F3C9A6; box-shadow: 0 6px 20px rgba(23,32,28,0.16); color: #17201C; font-size: 15px; font-weight: 600; line-height: 1.55; white-space: pre-line; pointer-events: none; font-family: \'Paperlogy\', \'Paperlogy 4 Regular\', \'Apple SD Gothic Neo\', \'Malgun Gothic\', sans-serif'; document.body.appendChild(tip);
       document.addEventListener('mouseover', e => { const el = e.target && e.target.closest && e.target.closest('[data-chg]'); const v = el && el.getAttribute('data-chg'); if (!v) { tip.style.display = 'none'; return; } tip.textContent = v; tip.style.display = 'block'; const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight; let x = r.left, y = r.bottom + 6; if (x + w > innerWidth - 8) x = innerWidth - 8 - w; if (y + h > innerHeight - 8) y = r.top - 6 - h; tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px'; });
