@@ -164,7 +164,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
                     <sc-for list="{{r.weeks}}" as="w" hint-placeholder-count="5">
                       <span style="display: flex; flex-direction: column; gap: 4px; padding: 6px; border-left: 1px solid #F0F2F1">
                         <sc-for list="{{w.items}}" as="it" hint-placeholder-count="1">
-                          <button type="button" onClick="{{it.open}}" style="{{it.style}}"><span style="{{it.labelStyle}}">{{it.label}}</span><sc-if value="{{it.empty}}" hint-placeholder-val="{{ false }}"><span class="noexp" style="font-size: 12px; color: #B7C0BC">눌러서 수업 내용 적기</span></sc-if><sc-if value="{{it.note}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; line-height: 1.45; color: #17201C; white-space: pre-wrap; word-break: break-word">{{it.note}}</span></sc-if></button>
+                          <div style="{{it.style}}"><span style="{{it.labelStyle}}">{{it.label}}</span><sc-if value="{{it.att}}" hint-placeholder-val="{{ false }}"><textarea id="{{it.id}}" class="wltxt" aria-label="{{it.label}} 수업 내용" onBlur="{{it.save}}" style="width: 100%; min-height: 40px; field-sizing: content; box-sizing: border-box; padding: 2px 2px 4px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 12px; line-height: 1.45; color: #17201C; word-break: break-word">{{it.note}}</textarea></sc-if></div>
                         </sc-for>
                       </span>
                     </sc-for>
@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.86.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.86.7</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -935,8 +935,10 @@ class Component extends DCLogic {
           if (note) nNotes++;
           weeks[Math.floor((d - 1 + off) / 7)].items.push({ label: this.kM(m) + '월 ' + d + '일 ' + M[0], att: att, note: note, empty: att && !note,
             labelStyle: 'display: inline-flex; align-items: center; align-self: flex-start; height: 20px; padding: 0 7px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ' + M[1] + '; color: ' + M[2],
-            style: 'display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 9px; border: 1px solid #E8ECEA; background: ' + (att ? '#FFFFFF' : '#F7F8F8') + '; font-family: inherit; text-align: left; cursor: ' + (att ? 'pointer' : 'default'),
-            open: () => { if (att) this.setState({ clEd: { key: key, name: name, d: d, m: m, title: this.kM(m) + '월 ' + d + '일 출석', note: notes[d] || '' } }); } });
+            style: 'display: flex; flex-direction: column; align-items: stretch; gap: 4px; width: 100%; padding: 6px 8px; box-sizing: border-box; border-radius: 9px; border: 1px solid #E8ECEA; background: ' + (att ? '#FFFFFF' : '#F7F8F8') + '; font-family: inherit; text-align: left; cursor: ' + (att ? 'text' : 'default'),
+            // 출석 칸은 업무일지처럼 바로 글을 적음 (칸을 나가면 저장)
+            id: 'cln_' + String(key).replace(/[^A-Za-z0-9]/g, '_') + '_' + m + '_' + d,
+            save: e => this.saveClassDay(key, m, d, e.target.value) });
         });
         return { name: name, sub: (s.g === '퇴휴' ? (s.origG ? s.origG + ' ' : '') : '') + (s.time ? to12(s.time) : '') + (s.status ? (s.time || s.origG ? ' · ' : '') + s.status : ''),
           rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#F7F4FD' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]) };
@@ -1019,6 +1021,15 @@ class Component extends DCLogic {
       memoMsg: (this.state.wlMemoMsg && this.state.wlMemoMsg.m === m) ? this.state.wlMemoMsg.t : '' };
   }
   writerName() { const A = window.academy; if (A && A.staff && A.staff.name) return A.staff.name; return String(this.tKey() || '').replace(' 원장님', ''); }
+  // 수업일지 출석 칸 글 바로 저장 (다시 그리지 않음 — 다른 칸으로 옮겨 가는 중이라 커서가 사라지지 않게)
+  saveClassDay(key, m, d, text) {
+    const LOG = this.readLog('academy.classLog', {}), ym = this.ymOf(m);
+    const LM = LOG[ym] = LOG[ym] || {}, rec = LM[key] = LM[key] || {}, D = rec.d = rec.d || {};
+    const v = String(text || '').replace(/\s+$/, '');
+    if ((D[d] || '') === v) return;
+    if (v) D[d] = v; else delete D[d];
+    try { localStorage.setItem('academy.classLog', JSON.stringify(LOG)); } catch (e) {}
+  }
   saveClassNote(clear) {
     const E = this.state.clEd; if (!E) return;
     const el = document.getElementById('cl_note'); const v = clear ? '' : String((el && el.value) || '').trim();
