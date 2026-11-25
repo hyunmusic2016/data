@@ -227,6 +227,13 @@
           var srv = {}; (qs[8].data || []).forEach(function (r) { srv[[r.kind, r.ym, r.k1 || '', r.k2 || ''].join('|')] = r.body || ''; });
           var mine = logFlat(), first = !localStorage.getItem('academy.logsUp'), add = [];
           if (first) Object.keys(mine).forEach(function (k) { if (!(k in srv) && mine[k]) { srv[k] = mine[k]; add.push(k); } });
+          // 출석부 MEMO를 모두가 같이 쓰게 옮김: 예전 app_settings 'attMemo'(원장님 것)와 이 브라우저에만 있던 강사 메모 중 서버에 없는 것을 한 번 올림
+          if (!localStorage.getItem('academy.memoUp')) {
+            var old = {}; ((qs[0] && qs[0].data) || []).forEach(function (r) { if (r.key === 'attMemo' && r.value) old = r.value; });
+            Object.keys(mine).forEach(function (k) { if (/^attmemo\|/.test(k)) old[k.split('|')[2]] = old[k.split('|')[2]] || mine[k]; });
+            Object.keys(old).forEach(function (t) { var k = ['attmemo', '-', t, ''].join('|'); if (!(k in srv) && typeof old[t] === 'string' && old[t]) { srv[k] = old[t]; add.push(k); } });
+            rawSet('academy.memoUp', '1');
+          }
           logWrite(srv); known.logs = srv;
           if (add.length) logPush(add.map(function (k) { return [k, srv[k]]; }));
           if (first) rawSet('academy.logsUp', '1');
@@ -236,7 +243,7 @@
           rawSet('academy.ticketPlans', JSON.stringify(tp)); known.tkp = tp;
         }
         var q = qs[0];
-        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); }); if (!q.error) (q.data || []).forEach(function (r) { if (r.key !== 'attMemo') return; var loc = {}; try { loc = JSON.parse(localStorage.getItem('academy.attMemo') || '{}') || {}; } catch (x) {} var v = r.value || {}; rawSet('academy.attMemo', JSON.stringify(A.staff && A.staff.role === 'owner' ? v : Object.assign({}, v, loc))); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
         if (!qs[2].error) {
@@ -345,6 +352,7 @@
     var evOld = (this === window.localStorage && A.data && (k === 'academy.lessonChanges' || k === 'academy.statusChanges')) ? this.getItem(k) : null;
     var ledOld = (this === window.localStorage && (k === 'academy.ledger' || k === 'academy.ledgerItems')) ? this.getItem(k) : null;
     origSet.call(this, k, v);
+    if (this === window.localStorage && /^academy\./.test(k)) A.lastWrite = Date.now();
     if (evOld !== null) { try { evDiff(k, evOld, v); } catch (e) {} }
     if (this !== window.localStorage || !A.data) return;
     try {
@@ -361,11 +369,7 @@
       else if (k === 'academy.payments') syncPays(JSON.parse(v || '[]'));
       if (k === 'academy.trials' || k === 'academy.attCells' || k === 'academy.payments') syncTrials();
       else if (k === 'academy.ticketPlans') syncPlans(JSON.parse(v || '{}'));
-      else if (k === 'academy.classLog' || k === 'academy.workLog' || k === 'academy.workMemo') syncLogs();
-      else if (k === 'academy.attMemo') {
-        // 출석부 MEMO: 원장님 것만 Supabase에 저장(설정 표는 원장님만 쓸 수 있음), 강사는 이 브라우저에만
-        if (A.staff && A.staff.role === 'owner') sb.from('app_settings').upsert({ key: 'attMemo', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '출석부 메모'); });
-      }
+      else if (k === 'academy.classLog' || k === 'academy.workLog' || k === 'academy.workMemo' || k === 'academy.attMemo') syncLogs();
       else if (k === 'academy.ledger' || k === 'academy.ledgerItems') {
         if (!A.staff || A.staff.role !== 'owner') { toast('수입·지출은 원장님만 바꿀 수 있습니다'); return; }
         ledgerWrite(k, ledOld, v);
@@ -430,14 +434,18 @@
       if (Array.isArray(v)) { var t = {}; v.forEach(function (x) { if (x && x.d && x.text) t[x.d] = (t[x.d] ? t[x.d] + '\n' : '') + x.text; }); v = t; }
       Object.keys(v || {}).forEach(function (k2) { if (v[k2]) o[['work', ym, '', k2].join('|')] = String(v[k2]); }); });
     Object.keys(M).forEach(function (ym) { if (typeof M[ym] === 'string' && M[ym]) o[['workmemo', ym, '', ''].join('|')] = M[ym]; });
+    // 출석부 MEMO (강사마다 하나, 달과 상관없음): kind 'attmemo', ym '-', k1 = 강사 이름
+    var T = rd('academy.attMemo'); Object.keys(T).forEach(function (t) { if (typeof T[t] === 'string' && T[t]) o[['attmemo', '-', t, ''].join('|')] = T[t]; });
     return o;
   }
   function logWrite(flat) {
-    var C = {}, W = {}, M = {};
+    var C = {}, W = {}, M = {}, T = {};
     Object.keys(flat).forEach(function (k) { var p = k.split('|'), v = flat[k]; if (!v) return;
       if (p[0] === 'class') { var a = (C[p[1]] = C[p[1]] || {}), b = (a[p[2]] = a[p[2]] || { d: {} }); b.d[p[3]] = v; }
       else if (p[0] === 'work') (W[p[1]] = W[p[1]] || {})[p[3]] = v;
-      else if (p[0] === 'workmemo') M[p[1]] = v; });
+      else if (p[0] === 'workmemo') M[p[1]] = v;
+      else if (p[0] === 'attmemo') T[p[2]] = v; });
+    rawSet('academy.attMemo', JSON.stringify(T));
     rawSet('academy.classLog', JSON.stringify(C)); rawSet('academy.workLog', JSON.stringify(W)); rawSet('academy.workMemo', JSON.stringify(M));
   }
   function logPush(pairs) {
@@ -672,4 +680,42 @@
     check();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+
+  // ── 다른 컴퓨터·휴대폰에서 넣은 내용을 저절로 다시 불러오기 ──
+  // 화면을 보고 있을 때 90초마다, 다른 앱·탭에 갔다가 돌아오면 바로(20초 지났으면). 글자를 치는 중·창(팝업)이 열려 있을 때·방금 저장한 직후(8초)·저장 중에는 미룬다.
+  // 수납 안내·수강생대장은 숨은 출석부(아래 calc 창)가 불러오고 계산해 주므로 스스로는 안 불러온다 (내용은 storage 이벤트로 받음).
+  var CALC_HOST = window === window.top && /(notice|notice-list|students)\.html$/.test(location.pathname);
+  var lastLoad = Date.now(), loadingNow = false;
+  function busyNow() {
+    if (!A.ready || !A.staff || loadingNow || A.busy) return true;
+    if (A.lastWrite && Date.now() - A.lastWrite < 8000) return true;
+    if (window === window.top) {
+      var a = document.activeElement;
+      if (a && (a.tagName === 'TEXTAREA' || a.tagName === 'SELECT' || (a.tagName === 'INPUT' && a.type !== 'checkbox' && a.type !== 'button'))) return true;
+      if (document.querySelector('[role="dialog"]')) return true;
+    }
+    return false;
+  }
+  function refresh() {
+    if (CALC_HOST || document.hidden || busyNow()) return;
+    loadingNow = true; lastLoad = Date.now();
+    Promise.resolve(A.load()).then(function () { loadingNow = false; rerender(); }, function () { loadingNow = false; });
+  }
+  setInterval(function () { if (Date.now() - lastLoad >= 90000) refresh(); }, 15000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastLoad >= 20000) refresh(); });
+  document.addEventListener('academy:data', function () { lastLoad = Date.now(); });
+
+  // ── 출석부를 열지 않아도 수강권 계산(수업완료·미납·차액 → 'academy.tickets')이 되도록 ──
+  // 수납 안내·수강생대장은 보이지 않는 출석부(attendance.html?calc=1)를 하나 띄워 둔다. 출석부와 똑같은 계산을 그대로 쓰고,
+  // 그 창이 90초마다 서버에서 다시 불러와 다시 계산하면 결과가 이 창에도 바로 들어온다.
+  function startCalc() {
+    if (!CALC_HOST || document.getElementById('academy-calc') || !A.staff) return;
+    var f = document.createElement('iframe');
+    f.id = 'academy-calc'; f.src = 'attendance.html?calc=1'; f.setAttribute('aria-hidden', 'true'); f.tabIndex = -1;
+    f.className = 'noexp noprint';
+    f.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 1400px; height: 900px; border: 0; visibility: hidden; pointer-events: none';
+    document.body.appendChild(f);
+  }
+  document.addEventListener('academy:login', startCalc);
+  if (A.fromCache) setTimeout(startCalc, 1500);
 })();
