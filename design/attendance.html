@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.101.2"></script>
+<script src="db.js?v=0.101.3"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -244,7 +244,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.101.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.101.3</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1803,16 +1803,18 @@ class Component extends DCLogic {
     if (lgs) { const lw = Math.max(lgs.scrollWidth, (lgs.querySelector('.shellscroll > div') || lgs).scrollWidth); lgs.style.zoom = String(Math.min(1, 1065 / lw) * 0.98); return; }
     const sec = document.querySelector('section[aria-label="출석부"]');
     if (!sec) return;
-    const inner = sec.firstElementChild || sec;
-    const w = inner.scrollWidth, h = sec.scrollHeight;
+    // 표 전체가 든 칸(머리글 줄 .phead + 요일 묶음 .grp + MEMO .pnote). 화면에선 스크롤 칸 안이라 sec 높이로 재면 잘려서 한 장에 안 들어갔음
+    const g0 = sec.querySelector('.grp, .phead'), inner = (g0 && g0.parentElement) || sec.firstElementChild || sec;
+    const ptop = sec.querySelector('.ponly'), topH = ptop ? Math.max(ptop.offsetHeight, 80) : 80;   // 인쇄 때만 보이는 제목 줄
+    const w = inner.scrollWidth, h = inner.scrollHeight + topH;
     const PW = 1065, PH = 735;
     if ((layout || this.state.printLayout) === 'split') {
       const z = Math.min(1, PW / w) * 0.98;
       sec.style.zoom = String(z);
       const head = inner.querySelector('.phead');
-      const avail = (PH / z) * 0.97;
+      const avail = (PH / z) * 0.96;
       const headH = head ? head.offsetHeight : 0;
-      let used = headH;
+      let used = headH + topH;
       [...inner.children].filter(el => el.classList.contains('grp') || el.classList.contains('pnote')).forEach(g => {
         const gh = g.offsetHeight;
         if (used + gh > avail && used > headH) {
@@ -1825,7 +1827,7 @@ class Component extends DCLogic {
         } else used += gh;
       });
     } else {
-      const z = Math.min(1, PW / w, PH / h) * 0.98;
+      const z = Math.min(1, PW / w, PH / h) * 0.97;
       sec.style.zoom = String(z);
     }
   }
