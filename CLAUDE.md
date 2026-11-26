@@ -8,7 +8,7 @@
 - **시험**: 글자·색·간격 같은 작은 수정은 시험 없이 바로 올린다. 계산·저장·입력 동작이 바뀌는 수정만 Playwright로 바꾼 부분을 짧게 시험(오프라인: db.js·supabase-js·xlsx 등은 빈 파일로 막고 file:// 로 열기).
 - **토큰 아끼기**: 답은 짧게(바뀐 버전 + 바뀐 내용 몇 줄). 파일은 통째로 읽지 말고 grep으로 필요한 줄만. 원인 찾기가 길어지면 원장님께 먼저 상황을 묻는다.
 - 원장님이 요청을 여러 개 모아 주시면 한 번에 고치고 한 번만 올린다.
-- 버전: 프로그램 전체 하나, 모든 페이지에 표시. 작은 수정은 끝자리, 기능 추가는 가운데 자리. **현재 `v0.102.9`**. db.js를 고치면 네 페이지 head의 `db.js?v=` 숫자도 올린다(GitHub 페이지 캐시 때문).
+- 버전: 프로그램 전체 하나, 모든 페이지에 표시. 작은 수정은 끝자리, 기능 추가는 가운데 자리. **현재 `v0.103.0`**. db.js를 고치면 네 페이지 head의 `db.js?v=` 숫자도 올린다(GitHub 페이지 캐시 때문).
 - 템플릿 `sc-for`는 글자·숫자 목록을 못 그림(undefined) → 항목을 {t} 객체로 감싼다. `<table>` 안에 sc-for를 넣으면 브라우저가 밖으로 빼 버리므로 표는 div(display: table/table-row/table-cell)로 만든다.
 - 페이지 runtime의 `setState(p)`는 바로 다시 그리고 **두 번째 인자(콜백)를 부르지 않는다** → 뒤에 할 일은 setState 다음 줄에 쓴다.
 - 커밋 메시지 끝에 정해진 Co-Authored-By/Claude-Session 줄을 붙인다(시스템 안내대로).
@@ -117,7 +117,7 @@
 - 로그인(이메일+비밀번호, staff 표 활성 직원만, RLS). 로그인 화면 번쩍임 방지용 'academy.cache'. claude.ai 시안은 연결 안 하고 샘플 원생으로 동작.
 - db.js가 localStorage 쓰기를 가로채 저장: lessonChanges/statusChanges → student_terms/status_changes, employees/subjects, menu/staffOrder → app_settings, attCells → attendance_cells(원생·달마다 한 줄, 바뀐 칸만 `att_patch`(012 SQL)로 서버에서 합침 — 동시 입력해도 다른 칸은 안 덮음, 012 없으면 예전처럼 줄 통째로), payments → payments(local_id), ticketPlans → ticket_plans. 수강생대장 등록·수정은 academy.addStudent/saveEdit/deleteTerm/logEvent.
 - 실시간 반영(`rtStart`·`rtApply`): attendance_cells 알림(012 SQL)을 받아 다른 사람이 저장한 칸을 1~2초 안에 바로 넣고 다시 그림(글자 입력 중·창 열림이면 다시 그리기만 미룸), 3초 뒤 refresh로 수납 기록 등도 채움, 다시 연결되면 한 번 다시 불러옴. 수납 안내·수강생대장은 숨은 출석부가 받음.
-- 접속 표시(`pStart`, Presence 채널 'online', 맨 위 창만): A.presence {이름: state 'on'(창을 보고 5분 안에 움직임)/'idle'(자리 비움), page, dev, since}, A.seen = 마지막 접속(013 SQL staff_seen, 1분마다·나갈 때 씀). 출석부 머리줄 강사 칸 아래 줄(윗줄 = 이름 + 오른쪽 "베이스 담당 강사") `onlineBadge` = 원장님이 다른 사람 탭을 볼 때만 초록 '접속 중'·노랑 '자리 비움'·회색 '접속 안 함', 마우스 올리면 어느 화면·기기·'마지막 접속 N시간 전'.
+- 접속 표시(`pStart`, Presence 채널 'online', 맨 위 창만): A.presence {이름: state 'on'(창을 보고 5분 안에 움직임)/'idle'(자리 비움), page, dev, since}, A.seen = 마지막 접속(013 SQL staff_seen, 1분마다·나갈 때 씀). 출석부 머리줄 강사 칸(동그라미 = 강사 색 + 교습과목 아이콘 `teacherIconPath`(원장 왕관·기타·베이스·드럼·보컬 마이크·피아노 건반·우쿨렐레, 없으면 음표), 윗부분 은은한 빛·흰 테두리 고리, 마우스 올리면 살짝 기울며 커짐(.tav), 강사 탭 바꿀 때 색 부드럽게(data-fxc) / 윗줄 = 이름 + 오른쪽 "베이스 담당 강사" / 아래 줄(6px 띄움) `onlineBadge` = 원장님이 다른 사람 탭을 볼 때만 초록 '접속 중'(점에 퍼지는 고리 .onl-pulse)·노랑 '자리 비움'·회색 '접속 안 함', 마우스 올리면 어느 화면·기기·'마지막 접속 N시간 전'.
 - 저절로 다시 불러오기(`refresh`): 화면을 보는 동안 90초마다·다른 탭에서 돌아오면(20초 지났으면) `A.load()`. 글자 입력 중·팝업(role=dialog) 열림·저장 직후 8초(`A.lastWrite`)·저장 중이면 미룸. 수납 안내·수강생대장은 스스로 안 불러오고 숨은 출석부가 불러온 것을 storage 이벤트로 받음.
 - 원생 등록은 저장이 끝나면 `A.load()`로 다시 불러옴. 원생 등록·반/수강료 변경·휴원/퇴원/복귀 저장 중(`A.busy`)에 .html 링크를 누르면 끝난 뒤 넘어감. 다른 탭이 'academy.cache'를 새로 쓰면 storage 이벤트로 이 탭도 바로 갱신.
 - student_terms는 저장한 순서(id)로 불러옴: 원생·항목마다 첫 줄 = 등록 때 정보, 나머지 = 변경(적용 날짜가 등록일보다 앞서도 변경). 적용 날짜 순서로 불러오면 이른 날짜의 변경이 등록 정보로 잘못 읽힘.
