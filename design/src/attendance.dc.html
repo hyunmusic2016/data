@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.97.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.98.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1404,32 +1404,69 @@ class Component extends DCLogic {
     return { show: true, tip, label, style: 'display: inline-flex; align-items: center; gap: 4px; align-self: flex-start; margin-top: 2px; padding: 0 7px 0 5px; border-radius: 9px; font-size: 11px; font-weight: 500; line-height: 16px; background: ' + c[1] + '; color: ' + c[2] + '; cursor: default', dot: 'width: 7px; height: 7px; border-radius: 50%; background: ' + c[0] };
   }
   // ---------- 휴일 (설정 > 수업 > 휴일, 출석부 날짜 머리글 색) ----------
-  // 대한민국 공휴일 [날짜, 이름, 대체공휴일]. 해마다 여기 추가. 'academy.holidays' = { kr: {날짜: 'off'|'short'|'normal'}, custom: [{id, date, name, kind, teachers: [이름]}] } / app_settings 'holidays'
-  krHolidays() {
-    return [
-      ['2026-01-01', '신정'], ['2026-02-16', '설날 연휴'], ['2026-02-17', '설날'], ['2026-02-18', '설날 연휴'], ['2026-03-01', '삼일절'], ['2026-03-02', '대체공휴일(삼일절)', 1],
-      ['2026-05-05', '어린이날'], ['2026-05-24', '부처님오신날'], ['2026-05-25', '대체공휴일(부처님오신날)', 1], ['2026-06-03', '전국동시지방선거'], ['2026-06-06', '현충일'],
-      ['2026-07-17', '제헌절'], ['2026-08-15', '광복절'], ['2026-08-17', '대체공휴일(광복절)', 1], ['2026-09-24', '추석 연휴'], ['2026-09-25', '추석'], ['2026-09-26', '추석 연휴'],
-      ['2026-10-03', '개천절'], ['2026-10-05', '대체공휴일(개천절)', 1], ['2026-10-09', '한글날'], ['2026-12-25', '성탄절'],
-      ['2027-01-01', '신정'], ['2027-02-06', '설날 연휴'], ['2027-02-07', '설날'], ['2027-02-08', '설날 연휴'], ['2027-02-09', '대체공휴일(설날)', 1], ['2027-03-01', '삼일절'],
-      ['2027-05-05', '어린이날'], ['2027-05-13', '부처님오신날'], ['2027-06-06', '현충일'], ['2027-07-17', '제헌절'], ['2027-07-19', '대체공휴일(제헌절)', 1],
-      ['2027-08-15', '광복절'], ['2027-08-16', '대체공휴일(광복절)', 1], ['2027-09-14', '추석 연휴'], ['2027-09-15', '추석'], ['2027-09-16', '추석 연휴'],
-      ['2027-10-03', '개천절'], ['2027-10-04', '대체공휴일(개천절)', 1], ['2027-10-09', '한글날'], ['2027-10-11', '대체공휴일(한글날)', 1], ['2027-12-25', '성탄절'], ['2027-12-27', '대체공휴일(성탄절)', 1]
-    ].map(x => ({ date: x[0], name: x[1], sub: !!x[2] }));
+  // 대한민국 공휴일은 2026~2040년을 규칙으로 만듦(음력 날짜·선거일은 표, 대체공휴일은 계산). key = 해마다 같은 이름표
+  // 'academy.holidays' = { kr: { key: { 해: 'off'|'short'|'normal' } }, custom: [{ id, date, name, kind, teachers: [이름], every }] } / app_settings 'holidays'
+  // 공휴일 설정은 고른 해부터 다음 해들에도 그대로(그 해 이전 값 중 가장 최근 해), every = 매년 같은 날 반복
+  krHolidays(Y) {
+    const LUN = { 2026: ['02-17', '05-24', '09-25'], 2027: ['02-07', '05-13', '09-15'], 2028: ['01-26', '05-02', '10-03'], 2029: ['02-13', '05-20', '09-22'], 2030: ['02-03', '05-09', '09-12'],
+      2031: ['01-23', '05-28', '10-01'], 2032: ['02-11', '05-16', '09-19'], 2033: ['01-31', '05-06', '09-08'], 2034: ['02-19', '05-25', '09-27'], 2035: ['02-08', '05-15', '09-16'],
+      2036: ['01-28', '05-03', '10-04'], 2037: ['02-15', '05-22', '09-24'], 2038: ['02-04', '05-11', '09-13'], 2039: ['01-24', '04-30', '10-02'], 2040: ['02-12', '05-18', '09-21'] };
+    const ELEC = { '2026-06-03': '전국동시지방선거', '2028-04-12': '국회의원선거', '2030-06-05': '전국동시지방선거', '2032-04-14': '국회의원선거', '2034-06-07': '전국동시지방선거', '2036-04-09': '국회의원선거', '2038-06-02': '전국동시지방선거', '2040-04-11': '국회의원선거' };
+    const L = LUN[Y]; if (!L) return [];
+    const ds = t => t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
+    const at = (md, add) => { const t = new Date(Y + '-' + md + 'T00:00:00'); t.setDate(t.getDate() + (add || 0)); return t; };
+    // [key, 이름, 날짜들, 대체 규칙: 'we' = 토·일, 'sun' = 일요일(설·추석), '' = 없음]
+    const EV = [['newyear', '신정', [at('01-01')], ''], ['seol', '설날', [at(L[0], -1), at(L[0]), at(L[0], 1)], 'sun'], ['march1', '삼일절', [at('03-01')], 'we'],
+      ['children', '어린이날', [at('05-05')], 'we'], ['buddha', '부처님오신날', [at(L[1])], 'we'], ['memorial', '현충일', [at('06-06')], ''], ['constitution', '제헌절', [at('07-17')], 'we'],
+      ['liberation', '광복절', [at('08-15')], 'we'], ['chuseok', '추석', [at(L[2], -1), at(L[2]), at(L[2], 1)], 'sun'], ['foundation', '개천절', [at('10-03')], 'we'],
+      ['hangul', '한글날', [at('10-09')], 'we'], ['xmas', '성탄절', [at('12-25')], 'we']];
+    const out = [], S = {}, N = {};
+    EV.forEach(e => e[2].forEach(t => { N[ds(t)] = (N[ds(t)] || 0) + 1; }));   // 같은 날 겹친 공휴일(설·추석·어린이날은 겹쳐도 대체공휴일)
+    EV.forEach(e => e[2].forEach((t, i) => { const nm = e[2].length > 1 && i !== 1 ? e[1] + ' 연휴' : e[1]; out.push({ key: e[2].length > 1 ? e[0] + (i - 1 || '') : e[0], date: ds(t), name: nm, sub: false }); S[ds(t)] = 1; }));
+    Object.keys(ELEC).forEach(d => { if (d.slice(0, 4) === String(Y)) { out.push({ key: 'elec', date: d, name: ELEC[d], sub: false }); S[d] = 1; } });
+    EV.slice().sort((a, b) => a[2][0] - b[2][0]).forEach(e => {
+      const ov = (e[3] === 'sun' || e[0] === 'children') && e[2].some(t => N[ds(t)] > 1);
+      const hit = ov || e[2].some(t => e[3] === 'sun' ? t.getDay() === 0 : e[3] === 'we' ? (t.getDay() === 0 || t.getDay() === 6) : false);
+      if (!hit) return;
+      const t = new Date(e[2][e[2].length - 1]); t.setDate(t.getDate() + 1);
+      while (t.getDay() === 0 || t.getDay() === 6 || S[ds(t)]) t.setDate(t.getDate() + 1);
+      out.push({ key: 'sub:' + e[0], date: ds(t), name: '대체공휴일(' + e[1] + ')', sub: true }); S[ds(t)] = 1;
+    });
+    return out.sort((a, b) => a.date.localeCompare(b.date));
   }
   holidayCfg() {
     let v = null;
     try { v = JSON.parse(localStorage.getItem('academy.holidays') || 'null'); } catch (e) {}
     v = v && typeof v === 'object' ? v : {};
-    return { kr: v.kr && typeof v.kr === 'object' ? v.kr : {}, custom: Array.isArray(v.custom) ? v.custom : [] };
+    const kr = {}, old = v.kr && typeof v.kr === 'object' ? v.kr : {};
+    Object.keys(old).forEach(k => {
+      if (/^\d{4}-\d\d-\d\d$/.test(k)) { const h = this.krHolidays(+k.slice(0, 4)).find(x => x.date === k); if (h) (kr[h.key] = kr[h.key] || {})[k.slice(0, 4)] = old[k]; }   // 예전(날짜별) 저장값
+      else if (old[k] && typeof old[k] === 'object') kr[k] = Object.assign(kr[k] || {}, old[k]);
+    });
+    return { kr: kr, custom: Array.isArray(v.custom) ? v.custom : [] };
+  }
+  krKind(cfg, key, Y) { const m = cfg.kr[key] || {}, ys = Object.keys(m).filter(y => +y <= Y).sort(); const k = ys.length ? m[ys[ys.length - 1]] : 'off'; return ['off', 'short', 'normal'].indexOf(k) >= 0 ? k : 'off'; }
+  // 그 해 휴일 전부 [{ date, name, kind, kr: true, key, sub } | { date, name, kind, id, teachers, every, base }]
+  holidayList(Y, cfg) {
+    cfg = cfg || this.holidayCfg();
+    const out = this.krHolidays(Y).map(h => Object.assign({}, h, { kr: true, kind: this.krKind(cfg, h.key, Y) }));
+    cfg.custom.forEach(x => {
+      const y0 = +(x.date || '').slice(0, 4); if (!y0) return;
+      if (y0 !== Y && !(x.every && y0 < Y)) return;
+      const d = Y + (x.date || '').slice(4); if (isNaN(new Date(d + 'T00:00:00')) || new Date(d + 'T00:00:00').getDate() !== +d.slice(8)) return;
+      out.push({ date: d, name: x.name || '', kind: x.kind === 'short' ? 'short' : 'off', id: x.id, teachers: Array.isArray(x.teachers) ? x.teachers : [], every: !!x.every, base: y0 !== Y });
+    });
+    return out.sort((a, b) => a.date.localeCompare(b.date));
   }
   // 그 날 휴일 { kind: 'off'|'short'|'normal', name } 또는 null. 학원 휴일(이 강사 탭에 적용되는 것)이 공휴일보다 먼저
   holidayOn(k, d) {
-    const ds = this.ymK(k) + '-' + String(d).padStart(2, '0'), cfg = this.holidayCfg(), me = (this.tKey() || '').replace(' 원장님', '');
-    const c = cfg.custom.find(x => x.date === ds && (!Array.isArray(x.teachers) || !x.teachers.length || x.teachers.indexOf(me) >= 0));
-    if (c) return { kind: c.kind === 'short' ? 'short' : 'off', name: c.name || '학원 휴일' };
-    const h = this.krHolidays().find(x => x.date === ds);
-    return h ? { kind: ['off', 'short', 'normal'].indexOf(cfg.kr[ds]) >= 0 ? cfg.kr[ds] : 'off', name: h.name } : null;
+    const ds = this.ymK(k) + '-' + String(d).padStart(2, '0'), Y = +ds.slice(0, 4), raw = localStorage.getItem('academy.holidays') || '';
+    if (!this._holC || this._holC.raw !== raw) this._holC = { raw: raw, cfg: this.holidayCfg(), y: {} };
+    const L = this._holC.y[Y] || (this._holC.y[Y] = this.holidayList(Y, this._holC.cfg)), me = (this.tKey() || '').replace(' 원장님', '');
+    const c = L.find(x => !x.kr && x.date === ds && (!x.teachers.length || x.teachers.indexOf(me) >= 0));
+    if (c) return { kind: c.kind, name: c.name || '학원 휴일' };
+    const h = L.find(x => x.kr && x.date === ds);
+    return h ? { kind: h.kind, name: h.name } : null;
   }
   teacherList() {
     const E = this.staffOrdered().filter(e => e.use && e.tab !== false);
