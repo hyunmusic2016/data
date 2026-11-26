@@ -95,6 +95,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span data-bw="{{dd.bw}}" style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
                     <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{r.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{r.lateLine}}</span></sc-if><sc-if value="{{r.diffLine}}" hint-placeholder-val="{{ false }}"><span style="{{r.diffStyle}}">{{r.diffLine}}</span></sc-if>
+                    <sc-if value="{{r.pool}}" hint-placeholder-val="{{ false }}"><span title="{{r.pool.title}}" aria-label="{{r.pool.title}}" style="display: flex; align-items: flex-start; gap: 4px; margin-top: 1px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5E6873" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0"></path></svg><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.pool.lines}}" as="pl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{pl.groups}}" as="pg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{pg.dots}}" as="pd" hint-placeholder-count="4"><span data-bw="{{pd.bw}}" style="{{pd.style}}"></span></sc-for></span></sc-for></span></sc-for></span></span></sc-if>
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
@@ -245,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.107.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.108.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2239,6 +2240,31 @@ class Component extends DCLogic {
   // 형제 묶음 ('academy.siblings' = [[이름, 이름, ...], ...] / app_settings 'siblings')
   sibGroups() { try { const v = JSON.parse(localStorage.getItem('academy.siblings') || '[]'); return Array.isArray(v) ? v.filter(g => Array.isArray(g)) : []; } catch (e) { return []; } }
   sibsOf(name) { const g = this.sibGroups().find(x => x.indexOf(name) >= 0); return g ? g.filter(n => n !== name) : []; }
+  // 형제 합계 수강: 형제 묶음 원생들의 지금 수강권을 합쳐서 셈 (각자 수강은 그대로, 합계 동그라미가 다 차면 수납 안내)
+  // calcF = 그 달 계산 함수, baseL = 모든 원생 줄. 돌려줌 { cap, fill, due, kids:[{name, used, cap, col}], dots }
+  sibPool(name, calcF, baseL) {
+    const sibs = this.sibsOf(name); if (!sibs.length) return null;
+    const COL = ['#00A6AB', '#9B85D6', '#E0A23B', '#5B86C9', '#D9746C'];
+    const names = this.sibGroups().find(g => g.indexOf(name) >= 0) || [name];
+    const kids = [];
+    names.forEach((n, i) => {
+      const row = (baseL || []).find(z => String(z.name || '').replace('$', '') === n); if (!row || row.dbStatus === 'rest' || row.dbStatus === 'out') return;
+      let x = null; try { x = calcF(row); } catch (e) { x = null; } if (!x) return;
+      const qn = (x.queue || []).reduce((a, c) => a + c, 0);
+      const cap = x.paid ? (+x.T || 0) + qn : (x.newReg ? 0 : (+x.prevT || +x.T || 0));
+      const used = x.paid ? (+x.used || 0) : cap + (+x.used || 0);
+      kids.push({ name: n, cap: cap, used: used, col: COL[i % COL.length] });
+    });
+    if (kids.length < 2) return null;
+    const cap = kids.reduce((a, k) => a + k.cap, 0), fill = kids.reduce((a, k) => a + k.used, 0);
+    const D = 'display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; flex: none; ';
+    const dots = [];
+    kids.forEach(k => { for (let j = 0; j < k.used; j++) dots.push({ bw: dots.length < cap ? 'd-on' : '', style: D + (dots.length < cap ? 'background: ' + k.col : 'border: 1.5px dashed #D92D20') }); });
+    while (dots.length < cap) dots.push({ bw: '', style: D + 'border: 1.5px solid #C9D0CC' });
+    const groups = []; for (let j = 0; j < dots.length; j += 4) groups.push({ dots: dots.slice(j, j + 4) });
+    const lines = []; for (let j = 0; j < groups.length; j += 2) lines.push({ groups: groups.slice(j, j + 2) });
+    return { cap: cap, fill: fill, due: cap > 0 ? fill >= cap : fill > 0, kids: kids, lines: lines, title: '형제 합계 ' + Math.min(fill, cap) + '/' + cap + '회 (' + kids.map(k => k.name + ' ' + k.used).join(' · ') + ')' };
+  }
   subjTagOf(s) {
     if (!s || s.trial) return null;
     const me = (this.tKey() || '').replace(' 원장님', ''), e = this.employeeList().find(x => x.name === me), main = e && (e.subjects || [])[0];
@@ -3421,16 +3447,20 @@ class Component extends DCLogic {
         const movedAway = s.status === '강사 변경';
         const V = movedAway ? Object.assign({}, tkView(s, r), { dots: [], dotGroups: [], dotLines: [], canPlan: false, plan: null, subParts: [{ t: '수강 → ' + (s.moveTo || '새 강사'), style: 'color: #8A949E; font-weight: 600' }], lateLine: '', diffLine: '', queueTxt: '' }) : tkView(s, r);
         if (movedAway) { this._unpaid[s.id] = 0; (this._diffLeft = this._diffLeft || {})[s.id] = 0; (this._remain = this._remain || {})[s.id] = 0; }
-        const dotGroups = V.dotGroups, dotLines = V.dotLines, canPlan = V.canPlan, plan = V.plan, tk = V.tk, subParts = V.subParts, lateLine = V.lateLine;
+        const pool = movedAway || s.trial ? null : this.sibPool(s.name.replace('$', ''), (this._poolCalc = this._poolCalc && this._poolCalc.m === EV ? this._poolCalc : { m: EV, f: mkCalc(MON, EV, this.baseRows(), false) }).f, this.baseRows());
+        const poolOk = !!(pool && !pool.due && !r.paid);
+        const dotGroups = V.dotGroups, dotLines = V.dotLines, canPlan = V.canPlan, plan = V.plan, tk = V.tk, lateLine = V.lateLine;
+        const subParts = poolOk ? V.subParts.map(p => /미납 \d+회/.test(p.t) ? Object.assign({}, p, { t: p.t.replace(/미납 (\d+)회/, '형제 몫 $1회'), style: 'color: #8A949E; font-weight: 600' }) : p) : V.subParts;
         expRow.since = subParts.map(x => x.t).join('') + (lateLine ? ' · ' + lateLine : '') + (V.diffLine ? ' · ' + V.diffLine : '');
         this._diff = this._diff || {}; this._diff[s.id] = movedAway ? 0 : Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         // 미납 횟수 (미납금액 수납 기본 횟수, 없으면 미납금액 수납 버튼을 숨김)
-        this._unpaid[s.id] = !r.paid ? r.used : 0;
+        this._unpaid[s.id] = !r.paid && !poolOk ? r.used : 0;
         // 남은 수업(낸 수강권 중 아직 안 들은 회차 + 대기 수강권): 퇴원 → 재등록 때 '지난 수강 이어서'를 보여 줄지 정함
         (this._remain = this._remain || {})[s.id] = r.paid ? Math.max(0, r.T - r.used) + (r.queue || []).reduce((n, c) => n + c, 0) : 0;
         (this._diffLeft = this._diffLeft || {})[s.id] = Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
+          pool: pool ? { lines: pool.lines, title: pool.title } : null,
           name: s.name.replace('$', ''),
           quick: () => { if (s.trial) { this.openTrial(s.trial); return; } if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); else if (s.canInfo) this.setState({ tinfo: Object.assign({ rowId: s.id, name: s.name.replace('$', ''), ticket: (this._tk || {})[s.id] || '' }, s.tInfo) }); setTimeout(() => { const d = document.getElementById('tiDlg'); if (d) d.focus(); }, 30); },
           rowCls: 'arow' + (this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? ' aflash' : ''),
@@ -3820,7 +3850,8 @@ class Component extends DCLogic {
         const text = (!x.paid ? (x.newReg && x.used === 0 ? '미입금' : '미납 ' + x.used + '회') : Math.min(x.used, x.T) + '/' + x.T + '회 (남은 ' + Math.max(0, x.T - x.used) + '회)') + (qn ? ' +' + qn + ' 대기' : '');
         const tdy = this.todayYmd(), proT = s0.reg != null ? this.proOn(s0, tdy) : !!s0.rowBg;
         // 수납 안내 탭: 재원생이 마지막 회차를 쓴 순간(수업완료) 또는 미납 중이면 due. cyc = 마지막 수납 날짜(새로 수납하면 바뀌어 발송 기록이 새로 시작)
-        const dueNow = !sm && s0.dbStatus !== 'rest' && s0.dbStatus !== 'out' && ((x.paid && x.used >= x.T && !qn) || (!x.paid && !(x.newReg && x.used === 0)));
+        const pool0 = sm ? null : this.sibPool(nm, calcOf(mm), baseAll);
+        const dueNow = !sm && s0.dbStatus !== 'rest' && s0.dbStatus !== 'out' && (pool0 ? pool0.due : ((x.paid && x.used >= x.T && !qn) || (!x.paid && !(x.newReg && x.used === 0))));
         tks[nm] = { due: dueNow, stKind: sm && stx ? stx.kind : '', stDate: sm && stx ? String(stx.date || '') : '', stAt: sm && stx ? (stx.at || 0) : 0, cyc: String(x.payDate == null ? '' : x.payDate), teacher: s0.teacher || '', days: baseAll.filter(z => (z.sid || z.id) === (s0.sid || s0.id)).map(z => z.g), left: x.paid ? Math.max(0, x.T - x.used) + x.queue.reduce((n, c) => n + c, 0) : 0, n: !x.paid && !(x.newReg && x.used === 0) ? x.used : 0, diffLeft: Math.max(0, (x.diffDue || 0) - (x.diffPaid || 0)), unit: (s0.reg != null && this.unitOn(s0, tdy)) || (proT ? 62500 : 40000), pro: proT, rid: s0.id, sm: sm, text: doneOut ? '수업완료' : text, line: doneOut ? '수업완료' : v.subParts.map(p => p.t).join('') + (v.lateLine ? ' · ' + v.lateLine : ''),
           dotLines: v.dotLines.map(l => ({ groups: l.groups.map(g => ({ dots: g.dots.map(d => ({ style: d.style, bw: d.bw || '' })) })) })),
           subParts: doneOut ? [{ t: '수업완료', style: 'color: #007E82; font-weight: 600' }] : v.subParts, lateLine: v.lateLine, queueTxt: v.queueTxt };
