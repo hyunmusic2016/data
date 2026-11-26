@@ -74,7 +74,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
             <div style="{{hIn.row}}"><sc-for list="{{hIn.cells}}" as="h" hint-placeholder-count="5"><span style="{{h.style}}">{{h.label}}<sc-if value="{{h.grip}}" hint-placeholder-val="{{ true }}"><span class="colgrip noexp" onMouseDown="{{h.resize}}" onDblClick="{{h.resetW}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -4px; width: 8px; cursor: col-resize; z-index: 2"></span></sc-if></span></sc-for></div>
             <sc-for list="{{inc}}" as="r" hint-placeholder-count="4">
               <div data-rg="{{r.rg}}" data-rid="{{r.rid}}" onMouseDown="{{r.grab}}" style="{{r.row}}">
-                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cno}}">{{r.no}}</span><span style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
+                <sc-if value="{{r.auto}}" hint-placeholder-val="{{ true }}"><span style="{{cno}}">{{r.no}}</span><span class="{{r.dCls}}" style="{{cc}}">{{r.d}}</span><span style="{{cl}}">{{r.item}}</span><span style="{{cr}}">{{r.amtTxt}}</span><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}; {{r.memoStyle}}"><sc-if value="{{r.orphan}}" hint-placeholder-val="{{ false }}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="출석부에 없는 수납 기록 지우기" title="출석부에 없는 수납 기록 지우기" style="{{delBtn}}; color: #B4332B">×</button></sc-if><sc-if value="{{r.ok}}" hint-placeholder-val="{{ true }}"><span></span></sc-if></sc-if>
                 <sc-if value="{{r.manual}}" hint-placeholder-val="{{ false }}"><span style="{{cno}}">{{r.no}}</span><input id="{{r.idD}}" class="{{r.dCls}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{r.d}}" onChange="{{r.setD}}" aria-label="일" style="{{inpC}}"><input id="{{r.idI}}" type="text" data-noclear="1" defaultValue="{{r.item}}" onChange="{{r.setI}}" aria-label="항목" style="{{inpL}}"><input id="{{r.idA}}" type="text" inputmode="numeric" data-noclear="1" onInput="{{commaIn}}" defaultValue="{{r.amtTxt}}" onChange="{{r.setA}}" aria-label="금액" style="{{inpR}}"><input id="{{r.idM}}" type="text" data-noclear="1" defaultValue="{{r.memo}}" onChange="{{r.setM}}" aria-label="비고" style="{{inpL}}"><button type="button" class="noexp" onClick="{{r.del}}" aria-label="줄 지우기" style="{{delBtn}}">×</button></sc-if>
               </div>
             </sc-for>
@@ -131,7 +131,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.106.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.106.1</span>
     </div>
   </main>
 
@@ -437,7 +437,8 @@ class Component extends DCLogic {
   }
   applyQ() {
     const el = document.getElementById('money_q'), q = el ? el.value.trim().replace(/,/g, '') : '';
-    if (!document.getElementById('money_qcss')) { const st = document.createElement('style'); st.id = 'money_qcss'; st.textContent = '.qhide{display:none!important}'; document.head.appendChild(st); }
+    if (!document.getElementById('money_qcss')) { const st = document.createElement('style'); st.id = 'money_qcss'; st.textContent = '.qhide{display:none!important}.qon .samed{color:inherit!important}'; document.head.appendChild(st); }
+    document.body.classList.toggle('qon', !!q);
     document.querySelectorAll('[data-rg]').forEach(r => {
       const txt = (r.textContent + ' ' + [...r.querySelectorAll('input, textarea')].map(i => i.value).join(' ')).replace(/,/g, '');
       r.classList.toggle('qhide', !!q && txt.indexOf(q) < 0);
@@ -650,7 +651,7 @@ class Component extends DCLogic {
     const dd = st.rdrag && /^in:/.test(st.rdrag.rg) ? st.rdrag : null, dp = k => { const i = dd ? dd.ord.indexOf(k) : -1; return i < 0 ? 1e9 : i; };
     auto.sort((a, b) => a.d - b.d || (dd && ('in:' + a.d) === dd.rg ? dp(mkey(a)) - dp(mkey(b)) : 0) || io(mkey(a)) - io(mkey(b)));
     const saveIn = o => put(m => { const rest = (m.incOrder || []).filter(k => o.indexOf(k) < 0); m.incOrder = rest.concat(o); });
-    const inc = auto.map((r, i) => ({ rg: 'in:' + r.d, rid: mkey(r), grab: e => this.rowDrag('in:' + r.d, mkey(r), e, saveIn), auto: true, manual: false, d: i && auto[i - 1].d === r.d ? '' : r.d, item: r.item, amtTxt: this.won(r.amt), memo: (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo,
+    const inc = auto.map((r, i) => ({ rg: 'in:' + r.d, rid: mkey(r), grab: e => this.rowDrag('in:' + r.d, mkey(r), e, saveIn), auto: true, manual: false, d: r.d, dCls: i && auto[i - 1].d === r.d ? 'samed' : '', item: r.item, amtTxt: this.won(r.amt), memo: (M.incMemo || {})[mkey(r)] != null ? M.incMemo[mkey(r)] : r.memo,
       idM: 'mi_m_' + String(mkey(r)).replace(/[^A-Za-z0-9가-힣]/g, '_'), setM: e => put(m => { m.incMemo = Object.assign({}, m.incMemo || {}, { [mkey(r)]: e.target.value.trim() }); }), row: ROW4.replace('border-bottom: 1px solid #EEF1EF', (i + 1 < auto.length && auto[i + 1].d === r.d ? 'border-bottom: 1px dotted #EEF1EF' : 'border-bottom: 1px solid #D5DBD8')) + this.dragStyle('in:' + r.d, mkey(r)) + (r.orphan ? '; background: #FDF1F0; text-decoration: line-through; color: #B4332B' : ''), orphan: !!r.orphan, ok: !r.orphan,
       memoStyle: 'font-size: 11px; ' + (r.orphan ? 'color: #B4332B; font-weight: 600; text-decoration: none' : 'color: #8A949E'),
       del: () => { if (st.delAsk !== r.pid) { this.setState({ delAsk: r.pid }); this.flash('한 번 더 누르면 지웁니다'); return; } this.dropOrphans([r.pid]); } })).concat(M.extra.map((r, i) => {
