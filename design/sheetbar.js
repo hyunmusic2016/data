@@ -1,5 +1,5 @@
 // 시트로 보기 창 아래 달 막대 (출석부·수입·지출·통계 공통, 모양은 여기 한 곳). 원래 화면과 같은 기능:
-// + = 해·월 골라 달 추가, ≡ = 모든 시트 목록(숨긴 시트 흐리게 + '숨김', 누르면 다시 보임), 탭 누르기 = 그 달 보기,
+// (달 추가는 없음 — 원래 화면에서만) ≡ = 모든 시트 목록(숨긴 시트 흐리게 + '숨김', 누르면 다시 보임), 탭 누르기 = 그 달 보기,
 // 탭 오른쪽 클릭 = '시트 숨기기'(Shift+누르기로 여러 개 고르기, 하나는 꼭 남김).
 // 원래 화면이 시트 내용에 bar = { color, tabs: [{ id: 'YYYY-MM', name, on }], all: [{ id, name, on, hidden }] } 를 넣어 주고,
 // 탭·목록 누르기 = 이 창만 그 달로(원래 화면 그대로, bar.frame 숨은 창). 추가·숨기기·숨김 풀기는 원래 화면에 보냄
@@ -74,7 +74,7 @@
     }
     var C = bar.color || '#00A6AB', bg = bar.onBg || '#FDF1F1';
     var ib = 'width: 30px; flex: none; border: none; background: none; color: #5E6873; font-size: 16px; cursor: pointer; font-family: ' + FONT;
-    el.innerHTML = '<button data-act="add" aria-label="새 달 추가" style="' + ib + '">+</button><button data-act="list" aria-label="모든 시트" style="' + ib + '; font-size: 15px">≡</button><span style="width: 1px; margin: 8px 6px; background: #E1E6E3; flex: none"></span>'
+    el.innerHTML = '<button data-act="list" aria-label="모든 시트" style="' + ib + '; font-size: 15px">≡</button><span style="width: 1px; margin: 8px 6px; background: #E1E6E3; flex: none"></span>'
       + (bar.tabs || []).map(function (t) {
         var m = multi.indexOf(t.id) >= 0;
         return '<button data-tab="' + t.id + '" style="display: inline-flex; align-items: center; gap: 6px; flex: none; height: 34px; padding: 0 11px; border: none; border-top: 2px solid ' + (t.on ? C : 'transparent') + '; font-family: ' + FONT + '; font-size: 12px; cursor: pointer; white-space: nowrap; ' + (t.on ? 'background: ' + bg + '; color: #17201C; font-weight: 600' : 'background: transparent; color: #5E6873; font-weight: 500') + (m ? '; background: #E6F6F6; box-shadow: inset 0 0 0 1.5px #00A6AB; border-radius: 6px' : '') + '"><span style="width: 9px; height: 9px; border-radius: 50%; flex: none; background: ' + (t.dot || C) + '"></span>' + esc(t.name) + '</button>';
