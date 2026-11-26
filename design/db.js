@@ -219,7 +219,8 @@
             (d.pays || []).forEach(function (p) { plT.push(p);
               // 수납 기록은 있는데 출석부 칸에 ₩ 표시가 빠졌으면 되살림 (저장이 엇갈려 칸만 지워진 경우)
               var m = /^(\d{4}-\d{2})-(\d{2})$/.exec(String(p && p.date || '')); if (!m || p.kind === 'repay' || p.refund) return;
-              var dd = +m[2], row = ((acT[m[1]] = acT[m[1]] || {})['X' + d.info.id] = acT[m[1]]['X' + d.info.id] || {});
+              var dd = +m[2], xk = 'X' + d.info.id, sk = ((acT[m[1]] = acT[m[1]] || {})[xk] = acT[m[1]][xk] || {}), row = (sk[xk] = (sk[xk] && typeof sk[xk] === 'object') ? sk[xk] : {});
+              Object.keys(sk).forEach(function (k) { if (/^p\d+$/.test(k) && sk[k] === true) { delete sk[k]; trFix = true; } });
               if (!row['p' + dd] && row[dd] !== 'V') { row['p' + dd] = true; trFix = true; } }); });
           rawSet('academy.trials', JSON.stringify(trL)); rawSet('academy.attCells', JSON.stringify(acT)); rawSet('academy.payments', JSON.stringify(plT));
           known.trial = trialData();
