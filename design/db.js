@@ -424,6 +424,7 @@
   function attIdx(ac) { var o = {}; Object.keys(ac || {}).forEach(function (ym) { Object.keys(ac[ym] || {}).forEach(function (k) { if (/^D\d+$/.test(k)) o[ym + '|' + k] = JSON.stringify(ac[ym][k]); }); }); return o; }
   function syncAtt(ac) {
     if (!A.attReady) { if (A.attTried) toast('출석부를 저장하려면 Supabase에서 008 SQL을 먼저 실행해 주세요'); return; }
+    A.attWrite = Date.now();
     var prev = known.att || {}, now = attIdx(ac), up = [], patches = [];
     Object.keys(now).forEach(function (k) {
       if (prev[k] === now[k]) return;
@@ -744,6 +745,11 @@
     var now = val && Object.keys(val).length ? JSON.stringify(val) : undefined;
     known.att = known.att || {};
     if (known.att[key] === now) return;   // 내가 저장한 것이 되돌아온 알림
+    // 글자 순서만 다른 같은 내용(서버 jsonb는 키 순서를 바꿈)도 내 것으로 봄
+    var canon = function (v) { return v && typeof v === 'object' && !Array.isArray(v) ? '{' + Object.keys(v).sort().map(function (k) { return JSON.stringify(k) + ':' + canon(v[k]); }).join(',') + '}' : JSON.stringify(v); };
+    try { if (known.att[key] && now && canon(JSON.parse(known.att[key])) === canon(val)) return; } catch (x) {}
+    // 이 컴퓨터에서 방금(5초 안) 출석부를 저장했으면 알림 내용으로 덮지 않음 — 저장 중인 칸이 사라지는 것 막기. 잠시 뒤 다시 불러와 맞춤
+    if (A.attWrite && Date.now() - A.attWrite < 5000) { clearTimeout(rtLoadT); rtLoadT = setTimeout(function () { lastLoad = 0; refresh(); }, 6000); return; }
     var ac = {}; try { ac = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; } catch (x) {}
     if (now) (ac[row.ym] = ac[row.ym] || {})['D' + row.student_id] = val; else if (ac[row.ym]) delete ac[row.ym]['D' + row.student_id];
     rawSet('academy.attCells', JSON.stringify(ac));
