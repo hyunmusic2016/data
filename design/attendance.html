@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.112.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.112.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -667,14 +667,20 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <div class="noprint" onMouseDown="{{etcV.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div class="noprint" role="dialog" aria-label="기타" onKeyDown="{{etcV.key}}" tabIndex="-1" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); display: flex; flex-direction: column; gap: 16px">
       <div style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; font-size: 18px; font-weight: 600; color: #17201C">기타 <span style="font-size: 13px; font-weight: 500; color: #5E6873">{{etcV.title}}</span></span><button type="button" onClick="{{etcV.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
-      <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 14px; background: #F7F8F8; border: 1px solid #E3E7E5">
-        <span style="font-size: 14px; font-weight: 600; color: #17201C">회차 맞추기</span>
-        <sc-if value="{{etcV.canAdj}}" hint-placeholder-val="{{ true }}"><label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #3A4450; white-space: nowrap">이 수업을<input id="etc_n" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{etcV.n0}}" aria-label="회차" style="width: 64px; height: 40px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; text-align: center">회차로</label><span style="font-size: 12px; color: #8A949E">이 날부터 그 번호로 이어서 셉니다.</span>
+      <sc-if value="{{etcV.isMenu}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 8px">
+        <button type="button" onClick="{{etcV.goAdj}}" style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; cursor: pointer">회차 맞추기<span style="color: #8A949E">›</span></button>
+      </div></sc-if>
+      <sc-if value="{{etcV.isAdj}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 12px">
+        <button type="button" onClick="{{etcV.back}}" style="align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 12px; color: #5E6873; cursor: pointer">‹ 기타</button>
+        <span style="font-size: 15px; font-weight: 600; color: #17201C">회차 맞추기</span>
+        <sc-if value="{{etcV.canAdj}}" hint-placeholder-val="{{ true }}">
+          <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #3A4450; white-space: nowrap">이 수업을<input id="etc_n" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{etcV.n0}}" aria-label="회차" style="width: 64px; height: 40px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 15px; text-align: center">회차로</label>
+          <div role="radiogroup" aria-label="맞추는 방법" style="display: flex; flex-direction: column; gap: 8px"><sc-for list="{{etcV.modes}}" as="md" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{md.on}}" onClick="{{md.pick}}" style="{{md.st}}"><span style="{{md.dot}}"></span><span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{md.label}}</span><span style="font-size: 12px; color: #5E6873">{{md.desc}}</span></span></button></sc-for></div>
           <span style="font-size: 12px; color: #B4332B">{{etcV.err}}</span>
           <div style="display: flex; gap: 8px; justify-content: flex-end"><sc-if value="{{etcV.hasAdj}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{etcV.clear}}" style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">맞춤 취소</button></sc-if><button type="button" onClick="{{etcV.save}}" style="height: 40px; padding: 0 18px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">저장</button></div>
         </sc-if>
         <sc-if value="{{etcV.noAdj}}" hint-placeholder-val="{{ false }}"><span style="font-size: 13px; color: #8A949E">출석·결석한 칸에서만 쓸 수 있습니다.</span></sc-if>
-      </div>
+      </div></sc-if>
     </div>
   </sc-if>
   <sc-if value="{{pop.open}}" hint-placeholder-val="{{ false }}">
@@ -3308,7 +3314,7 @@ class Component extends DCLogic {
           const o = { d: d, m: Mm, text: '', what: '', kind: v || '', pay: false, mstat: '', over: false };
           if (v === '수' || v === '결') {
             // 회차 맞추기('n'+날짜 = 이 수업 회차): 그 날부터 그 번호로 이어서 셈
-            const nAdj = +e['n' + d] || 0;
+            const nAdj = e['nm' + d] === 'show' ? 0 : (+e['n' + d] || 0), nShow = e['nm' + d] === 'show' ? (+e['n' + d] || 0) : 0;
             if (nAdj > 0) { used = Math.max(0, (paid ? Math.min(nAdj, T) : nAdj) - 1); marks = marks.slice(0, used); }
             else if (paid && used >= T) nextTicket();
             used++;
@@ -3319,9 +3325,10 @@ class Component extends DCLogic {
             lastLesson = new Date(2026, Mm - 1, d);
             if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, this.ymK(Mm) + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; addCnt(o, Lm); }
             for (let mi = 0; mi < used - 1; mi++) if (marks[mi] == null) marks[mi] = marks[used - 1];
-            if (nAdj > 0) o.adj = true;
-            if (v === '수') { o.text = s0.trial ? '0' : String(used); o.what = used + '회차 출석' + (nAdj > 0 ? ' (회차 맞춤)' : ''); }
-            else { o.text = '결' + used; o.what = used + '회차 결석'; }
+            if (nAdj > 0 || nShow > 0) o.adj = true;
+            const shown = nShow > 0 ? nShow : used;
+            if (v === '수') { o.text = s0.trial ? '0' : String(shown); o.what = shown + '회차 출석' + (nAdj > 0 ? ' (회차 맞춤)' : nShow > 0 ? ' (숫자만 바꿈)' : ''); }
+            else { o.text = '결' + shown; o.what = shown + '회차 결석' + (nAdj > 0 ? ' (회차 맞춤)' : nShow > 0 ? ' (숫자만 바꿈)' : ''); }
             o.kind = v;
             if (!paid) { o.over = true; o.what += ' · 미납 수업'; }
             tCells.push(o);
@@ -3664,17 +3671,21 @@ class Component extends DCLogic {
     const E0 = st.etc;
     const etcV = E0 ? {
       open: true, title: E0.name + ' · ' + this.kM(E0.m) + '월 ' + E0.d + '일',
+      isMenu: E0.step === 'menu', isAdj: E0.step === 'adj',
+      goAdj: () => { this.setState({ etc: Object.assign({}, E0, { step: 'adj' }) }); setTimeout(() => { const el = document.getElementById('etc_n'); if (el) el.focus(); }, 30); },
+      back: () => this.setState({ etc: Object.assign({}, E0, { step: 'menu', err: '' }) }),
+      modes: [['show', '숫자만 바꾸기', '이 칸의 회차 숫자만 바꿉니다. 남은 회차·수업완료·미납은 그대로.'], ['calc', '다시 계산', '이 날부터 그 번호로 이어서 세고, 남은 회차·수업완료·미납도 다시 계산합니다.']].map(m => ({ label: m[1], desc: m[2], on: E0.mode === m[0] ? 'true' : 'false', pick: () => { const el = document.getElementById('etc_n'), keep = el ? el.value : ''; this.setState({ etc: Object.assign({}, E0, { mode: m[0], n: parseInt(keep, 10) || E0.n }) }); }, st: 'display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; text-align: left; font-family: inherit; cursor: pointer; ' + (E0.mode === m[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6' : 'border: 1px solid #D5DBD8; background: #FFFFFF'), dot: 'flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; box-sizing: border-box; ' + (E0.mode === m[0] ? 'border: 5px solid #00A6AB; background: #FFFFFF' : 'border: 1.5px solid #AEB7B2; background: #FFFFFF') })),
       canAdj: E0.v === '수' || E0.v === '결', noAdj: !(E0.v === '수' || E0.v === '결'), hasAdj: E0.n > 0, n0: E0.n > 0 ? String(E0.n) : '', err: E0.err || '',
       close: () => { this.setState({ etc: null }); this.focusSheet(); },
-      save: () => { const el = document.getElementById('etc_n'), n = parseInt(String(el ? el.value : '').replace(/[^0-9]/g, ''), 10); if (!(n > 0)) { this.setState({ etc: Object.assign({}, E0, { err: '회차 숫자를 넣어 주세요.' }) }); return; } const p = this.writeCells([{ m: E0.m, sid: E0.sid, d: E0.d, key: 'n' + E0.d, v: n }], ''); p.etc = null; this.commit(p); this.focusSheet(); },
-      clear: () => { const p = this.writeCells([{ m: E0.m, sid: E0.sid, d: E0.d, key: 'n' + E0.d, v: '' }], ''); p.etc = null; this.commit(p); this.focusSheet(); },
+      save: () => { const el = document.getElementById('etc_n'), n = parseInt(String(el ? el.value : '').replace(/[^0-9]/g, ''), 10); if (!(n > 0)) { this.setState({ etc: Object.assign({}, E0, { err: '회차 숫자를 넣어 주세요.' }) }); return; } const p = this.writeCells([{ m: E0.m, sid: E0.sid, d: E0.d, key: 'n' + E0.d, v: n }, { m: E0.m, sid: E0.sid, d: E0.d, key: 'nm' + E0.d, v: E0.mode === 'show' ? 'show' : '' }], ''); p.etc = null; this.commit(p); this.focusSheet(); },
+      clear: () => { const p = this.writeCells([{ m: E0.m, sid: E0.sid, d: E0.d, key: 'n' + E0.d, v: '' }, { m: E0.m, sid: E0.sid, d: E0.d, key: 'nm' + E0.d, v: '' }], ''); p.etc = null; this.commit(p); this.focusSheet(); },
       key: e => { if (e.key === 'Escape') { e.preventDefault(); this.setState({ etc: null }); this.focusSheet(); } else if (e.key === 'Enter' && e.target && e.target.id === 'etc_n') { e.preventDefault(); etcV.save(); } }
     } : { open: false };
     const pop = {
       open: !!P,
       isMain: !!P && P.mode === 'main',
       showEtc: popCells.length === 1 && !!firstStu && !firstStu.trial,
-      etc: () => { const r0 = this.monthEvents(MON)[first.sid] || {}; this.setState({ pop: null, etc: { sid: first.sid, m: MON, d: first.d, name: firstStu.name.replace('$', ''), n: +r0['n' + first.d] || 0, v: r0[first.d] || '', err: '' } }); setTimeout(() => { const el = document.getElementById('etc_n'); if (el) el.focus(); }, 30); },
+      etc: () => { const r0 = this.monthEvents(MON)[first.sid] || {}; this.setState({ pop: null, etc: { sid: first.sid, m: MON, d: first.d, name: firstStu.name.replace('$', ''), n: +r0['n' + first.d] || 0, mode: r0['nm' + first.d] === 'show' ? 'show' : (r0['n' + first.d] ? 'calc' : 'show'), step: 'menu', v: r0[first.d] || '', err: '' } }); },
       isMk: !!P && P.mode === 'mk',
       isDel: !!P && P.mode === 'del',
       delText: this.delBoth ? '출결과 수납이 함께 있는 칸입니다. 무엇을 지울까요?' : '입력된 ' + (this.delCount || 0) + '칸의 표시가 지워집니다.',
