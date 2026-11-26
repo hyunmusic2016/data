@@ -161,7 +161,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
               <div style="display: flex; flex-direction: column; border-left: 1px solid #E8ECEA">
                 <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="4">
                   <div style="{{lg.c.gridRow}}; {{r.rowStyle}}">
-                    <span style="display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 8px 14px"><span style="display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600">{{r.name}}<sc-if value="{{r.subjIcon}}" hint-placeholder-val="{{ false }}"><span title="{{r.subjTag}}" aria-label="{{r.subjTag}}" style="{{r.subjChip}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.subjIcon}}"></path></svg></span></sc-if></span><span style="font-size: 12px; color: #6B7680">{{r.sub}}</span></span>
+                    <span style="display: flex; flex-direction: column; justify-content: center; gap: 2px; padding: 8px 14px"><span role="button" tabindex="0" onClick="{{r.openAll}}" title="눌러서 수업일지 전체 보기" style="display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; cursor: pointer">{{r.name}}<sc-if value="{{r.subjIcon}}" hint-placeholder-val="{{ false }}"><span title="{{r.subjTag}}" aria-label="{{r.subjTag}}" style="{{r.subjChip}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{r.subjIcon}}"></path></svg></span></sc-if></span><span style="font-size: 12px; color: #6B7680">{{r.sub}}</span></span>
                     <sc-if value="{{lg.c.pvOpen}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 4px; padding: 6px; background: #F8FAFE; border-left: 1px solid #E8ECEA"><sc-if value="{{r.pv.has}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 4px; padding: 6px 8px; border: 1px solid #D6E2F5; border-radius: 9px; background: #FFFFFF"><div style="display: flex; align-items: center; gap: 6px"><span style="display: inline-flex; align-items: center; flex: none; height: 20px; padding: 0 7px; border-radius: 6px; font-size: 11px; font-weight: 600; white-space: nowrap; background: #E9ECEB; color: #5E6873">{{r.pv.chip}}</span><span style="flex: 1 1 auto"></span><sc-if value="{{r.pv.msg}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" style="font-size: 11px; font-weight: 600; color: #2F6B43; white-space: nowrap">{{r.pv.msg}}</span></sc-if><sc-if value="{{r.pv.showGet}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp noprint" onMouseDown="{{r.pv.get}}" title="{{r.pv.getTitle}}" aria-label="{{r.pv.getTitle}}" style="flex: none; width: 22px; height: 20px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border: 1px solid #BCD0EE; border-radius: 6px; background: #FFFFFF; color: #5B86C9; cursor: pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button></sc-if></div><span style="font-size: 12px; line-height: 1.45; color: #6B7680; white-space: pre-wrap; word-break: break-word">{{r.pv.note}}</span></div></sc-if><sc-if value="{{r.pv.none}}" hint-placeholder-val="{{ false }}"><span style="padding: 4px 2px; font-size: 12px; color: #B7C0BC">지난 수업 없음</span></sc-if></div><span style="background: #F3F5F4"></span></sc-if><sc-if value="{{lg.c.pvShut}}" hint-placeholder-val="{{ false }}"><span onClick="{{lg.c.pvToggle}}" title="지난 수업 열기" style="background: #F8FAFE; border-left: 1px solid #E8ECEA; cursor: pointer"></span></sc-if>
                     <sc-for list="{{r.weeks}}" as="w" hint-placeholder-count="5">
                       <span style="display: flex; flex-direction: column; gap: 4px; padding: 6px; border-left: 1px solid #F0F2F1">
@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.104.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.105.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -387,6 +387,21 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
             <div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{h.time}}</span><span style="font-size: 12px; color: #5B6670">{{h.who}}</span><span style="margin-left: auto; font-size: 11px; color: #8A949E">{{h.count}}</span></div>
             <sc-if value="{{h.where}}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: #2952A3">{{h.where}}</div></sc-if>
             <sc-for list="{{h.lines}}" as="ln" hint-placeholder-count="2"><div style="font-size: 12px; color: #3A4450; line-height: 1.5">{{ln}}</div></sc-for>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ca.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{ca.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
+    <div class="noprint" role="dialog" aria-label="수업일지 전체" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 620px; max-width: calc(100vw - 32px); height: calc(100vh - 80px); max-height: 820px; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); overflow: hidden">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 20px 22px 14px; border-bottom: 1px solid #EEF1F0"><span style="width: 34px; height: 34px; border-radius: 10px; background: #5B86C9; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"></path><path d="M8 9h8M8 13h6"></path></svg></span><span style="font-size: 19px; font-weight: 600; color: #17201C">수업일지 · {{ca.name}}</span><button type="button" onClick="{{ca.close}}" aria-label="닫기" style="margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 17px; cursor: pointer">×</button></div>
+      <div style="flex: 1; overflow: auto; padding: 4px 22px 22px; background: #F8FAFE">
+        <sc-if value="{{ca.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 40px 0; text-align: center; font-size: 13px; color: #8A949E">아직 수업 기록이 없습니다</div></sc-if>
+        <sc-for list="{{ca.months}}" as="g" hint-placeholder-count="2">
+          <div style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 14px 2px 8px; background: #F8FAFE"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{g.label}}</span><span style="font-size: 12px; color: #5B86C9; font-weight: 600">{{g.cnt}}</span><span style="flex: 1; height: 1px; background: #DCE4F1"></span></div>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{g.items}}" as="x" hint-placeholder-count="3"><div style="{{x.rowSt}}"><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 600; color: #3A4450">{{x.date}}</span><span style="{{x.chip}}">{{x.kind}}</span></span><sc-if value="{{x.hasNote}}" hint-placeholder-val="{{ true }}"><span style="{{x.noteSt}}">{{x.note}}</span></sc-if></div></sc-for>
           </div>
         </sc-for>
       </div>
@@ -952,6 +967,7 @@ class Component extends DCLogic {
         });
         return { name: name, sub: (s.g === '퇴휴' ? (s.origG ? s.origG + ' ' : '') : '') + (s.time ? to12(s.time) : '') + (s.status ? (s.time || s.origG ? ' · ' : '') + s.status : ''),
           ...(() => { const T = this.subjTagOf(s); return { subjTag: T ? T.t : '', subjChip: T ? T.st : '', subjIcon: T ? T.icon : '' }; })(),
+          openAll: () => this.setState({ clAll: { s: s } }),
           rowStyle: 'border-top: 1px solid #EEF1F0; background: ' + (s.rowBg ? '#F7F4FD' : '#FFFFFF'), weeks: weeks.filter((x, i) => KEEP[i]), pv: pvOpen ? this.clPrevVals(s, key, m, E) : {} };
       });
       const isOutG = ['휴원', '퇴원', '이동'].indexOf(G.g) >= 0;
@@ -1597,6 +1613,30 @@ class Component extends DCLogic {
     return t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0');
   }
   // 수강 내역 창 맨 위(고정) 수업일지: 수업일지가 있는 강사 탭만, 오늘까지 출석한 수업을 최근 것부터(직전 수업이 맨 왼쪽, 옆으로 밀면 그 전 수업들, 1년 전까지 최대 40개)
+  // 수업일지 이름 칸 → 그 원생의 수업일지 전체 (최신이 위, 출석·결석·연기·보강 모두, 달마다 묶음)
+  clAllView() {
+    const A0 = this.state.clAll; if (!A0) return { open: false };
+    const me = A0.s, nm = me.name.replace('$', ''), key = me.dbId ? 'D' + me.dbId : nm, LOG = this.readLog('academy.classLog', {});
+    const ids = this.students().filter(x => x.name.replace('$', '') === nm).map(x => String(x.id)).concat([String(me.id)]).filter((v, i, a) => a.indexOf(v) === i);
+    const today = this.todayYmd(), tk = this.kOf(today), td = +today.slice(8, 10), WD = ['일', '월', '화', '수', '목', '금', '토'];
+    const KIND = { '수': ['출석', null], '결': ['결석', ['#FCEBEA', '#B4332B']], '연': ['연기', ['#EEF1F0', '#5E6873']], 'M': ['보강', ['#E3ECFD', '#2952A3']], '보': ['보강 예정', ['#E3ECFD', '#2952A3']] };
+    const months = [];
+    for (let mm = tk; mm >= 1; mm--) {
+      const ev = this.monthEvents(mm) || {}, days = {}, notes = (((LOG[this.ymOf(mm)] || {})[key] || {}).d) || {};
+      ids.forEach(id => { const E = ev[id] || ev[+id] || {}; Object.keys(E).forEach(k => { if (/^\d+$/.test(k) && KIND[E[k]] && (mm < tk || +k <= td)) days[+k] = E[k]; }); });
+      Object.keys(notes).forEach(d => { if (String(notes[d] || '').trim() && !days[+d]) days[+d] = '?'; });
+      const items = Object.keys(days).map(Number).sort((a, b) => b - a).map(d => {
+        const v = days[d], note = String(notes[d] || '').replace(/\s+$/, ''), L0 = this.ltStyle(me, this.ymOf(mm) + '-' + String(d).padStart(2, '0'));
+        const K = KIND[v] || ['기록', ['#F1F3F2', '#6B7570']], col = K[1] || [L0.bg, L0.fg];
+        return { date: this.kM(mm) + '월 ' + d + '일 (' + WD[new Date(2026, mm - 1, d).getDay()] + ')', kind: K[0], note: note || (v === '수' ? '적은 내용 없음' : ''), hasNote: !!note || v === '수',
+          chip: 'display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; white-space: nowrap; background: ' + col[0] + '; color: ' + col[1],
+          noteSt: 'font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; color: ' + (note ? '#17201C' : '#9AA3A8'),
+          rowSt: 'display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; border: 1px solid #E6EAE8; background: ' + (v === '수' ? '#FFFFFF' : '#FAFBFA') };
+      });
+      if (items.length) months.push({ label: this.kLabel(mm), cnt: items.filter(x => x.kind === '출석').length + '회 출석', items: items });
+    }
+    return { open: true, name: nm, months: months, empty: !months.length, close: () => this.setState({ clAll: null }) };
+  }
   clStrip(me, ids0) {
     if (!this.logAllow().cls || !me) return { on: false };
     const ids = (ids0 || []).map(String).concat([String(me.id)]).filter((v, i, a) => a.indexOf(v) === i);
@@ -3806,6 +3846,7 @@ class Component extends DCLogic {
       printX: () => this.printSheet(),
       hist: this.histBlock(),
       rf: this.refundView(),
+      ca: this.clAllView(),
       pv: (() => {
         const P = st.pay;
         if (!P) return { open: false };
