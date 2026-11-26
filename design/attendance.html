@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.4</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2641,18 +2641,27 @@ class Component extends DCLogic {
     const months = [11].concat(Object.keys(this.state.evByMonth || {}).map(Number)).filter((m, i, a) => m > 0 && a.indexOf(m) === i);
     const isMine = k => T.ids.indexOf(String(k)) >= 0 || (/^[A-Z]\d+$/.test(T.key) && String(k).indexOf(T.key + '-') === 0);
     const lessons = [], others = [];
-    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (!/^\d+$/.test(d)) return; const ymd = this.ymK(m) + '-' + p2(+d); if (e[d] === '수' || e[d] === '결') lessons.push({ ymd: ymd, kind: e[d] }); else if (e[d] === '연' || e[d] === '보' || (e[d] === 'M' && (e['s' + d] === '수' || e['s' + d] === '결'))) others.push({ ymd: ymd, kind: e[d], ms: e['s' + d] || '' }); }); }); });
+    months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (!/^\d+$/.test(d)) return; const ymd = this.ymK(m) + '-' + p2(+d); if (e[d] === '수' || e[d] === '결') lessons.push({ ymd: ymd, kind: e[d], nAdj: e['nm' + d] === 'show' ? 0 : (+e['n' + d] || 0), nShow: e['nm' + d] === 'show' ? (+e['n' + d] || 0) : 0 }); else if (e[d] === '연' || e[d] === '보' || (e[d] === 'M' && (e['s' + d] === '수' || e['s' + d] === '결'))) others.push({ ymd: ymd, kind: e[d], ms: e['s' + d] || '' }); }); }); });
     lessons.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0);
     const TR = T.s && T.s.trial;
     let pays = this.readPays().filter(p => p && (TR ? p.trial === TR.id : (p.name === T.name && p.kind !== 'trial' && p.kind !== 'repay'))).slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
     if (TR && !pays.length) pays = [{ date: TR.date, count: 1, amount: +TR.fee || 0, total: +TR.fee || 0, virt: true, freeTrial: TR.kind === 'free' }];
     // 결제 순서대로 수업을 앞에서부터 채움 (출석부 수강권 계산과 같은 순서)
-    let li = 0;
-    const rows = pays.map(p => { const c = p.refund ? (+p.refund.count || 0) : (+p.count || 0), used = lessons.slice(li, li + c); li += used.length; return { p: p, used: used, c: c }; });
+    // 회차 맞추기(다시 계산)한 수업은 그 번호로 이어서 셈, 숫자만 바꾸기는 보이는 번호만
+    const rows = pays.map(p => ({ p: p, used: [], c: p.refund ? (+p.refund.count || 0) : (+p.count || 0) }));
+    let ri = 0, pos = 0, li = 0;
+    while (ri < rows.length && rows[ri].c <= 0) ri++;
+    for (; li < lessons.length && ri < rows.length; li++) {
+      const l = lessons[li];
+      if (l.nAdj > 0) pos = Math.max(0, Math.min(l.nAdj, rows[ri].c) - 1);
+      else if (pos >= rows[ri].c) { ri++; pos = 0; while (ri < rows.length && rows[ri].c <= 0) ri++; if (ri >= rows.length) break; }
+      l.no = l.nShow > 0 ? l.nShow : pos + 1; rows[ri].used.push(l); pos++;
+    }
     // 연기·보강은 그 날짜가 들어가는 결제(그 결제의 첫 수업 날짜 이후 중 가장 늦은 결제)에 끼워 넣음
     others.sort((a, b) => a.ymd < b.ymd ? -1 : 1).forEach(o => { let t = null; rows.forEach(r => { if (r.used.length && r.used[0].ymd <= o.ymd) t = r; }); if (!t) t = rows.find(r => r.used.length) || rows[0]; if (t) (t.oth = t.oth || []).push(o); });
     // 결제 없이 한 수업: 같은 카드 모양(빨간 점선), 입금하면 위 결제 카드로 들어감
-    const ex = lessons.slice(li); if (ex.length) rows.push({ p: { date: ex[0].ymd, count: ex.length, unpaidV: true }, used: ex, c: ex.length });
+    const ex = lessons.slice(li); { let q = 0; ex.forEach(l => { if (l.nAdj > 0) q = l.nAdj - 1; l.no = l.nShow > 0 ? l.nShow : q + 1; q++; }); }
+    if (ex.length) rows.push({ p: { date: ex[0].ymd, count: ex.length, unpaidV: true }, used: ex, c: ex.length });
     return { rows: rows.reverse(), extra: [] };
   }
   openTkPlan(s, plan) {
@@ -4044,7 +4053,7 @@ class Component extends DCLogic {
                     const out = []; let cur = null;
                     seq.forEach(x => { if (!cur || (x.k >= 0 && x.k % GS === 0 && cur.items.some(y => y.cnt))) out.push(cur = { items: [] }); const l = x.l, wd0 = '일월화수목금토'[new Date(l.ymd + 'T12:00:00').getDay()];
                       const K = { '수': ['출석', this.ltStyle(T.s, l.ymd).bg, bcol(x.k)], '결': ['결석', '#FDEBE4', '#E0605A'], '연': ['연기', '#EEF1F0', '#5E6873'], '보': ['보강 예정', '#E3ECFD', '#1E4FA8'], 'M': [l.ms === '수' ? '보강 출석' : l.ms === '결' ? '보강 결석' : '보강', '#E3ECFD', '#1E4FA8'] }[l.kind];
-                      cur.items.push({ cnt: x.k >= 0, n: x.k >= 0 ? String(x.k + 1) : l.kind === '연' ? '연' : '보', t: md(l.ymd) + ' (' + wd0 + ')', w: K[0],
+                      cur.items.push({ cnt: x.k >= 0, n: x.k >= 0 ? String(l.no || x.k + 1) : l.kind === '연' ? '연' : '보', t: md(l.ymd) + ' (' + wd0 + ')', w: K[0],
                         st: 'display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px 0 5px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #17201C; background: ' + K[1] + (x.k < 0 ? '; border: 1px dashed #C9D0CC' : ''),
                         nst: 'display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; font-size: 11px; color: #FFFFFF; background: ' + K[2],
                         wst: 'font-size: 11px; font-weight: 600; color: ' + K[2] }); });
