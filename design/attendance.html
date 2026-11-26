@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.99.5"></script>
+<script src="db.js?v=0.100.0"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -244,7 +244,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.99.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.100.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1956,6 +1956,8 @@ class Component extends DCLogic {
       document.addEventListener('scroll', () => { tip.style.display = 'none'; }, true); }
     this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const c = this.cellsState(); this._snap = null; this.stampCells(c); this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); } };
     window.addEventListener('storage', this._st);
+    // 시트로 보기 창 아래 달 막대(sheetbar.js)가 opener 대신 저장소로 보낸 명령 (맨 위 창만, 숨은 계산 창 제외)
+    if (window === window.top) window.addEventListener('storage', e => { if (e.key === 'sheetcmd.attendance' && e.newValue) { try { this.sheetCmd(JSON.parse(e.newValue)); } catch (x) {} } });
     // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
     this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) { this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this._snap = null; this.stampCells(c); } this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); };
     document.addEventListener('academy:data', this._dbl);
@@ -2776,10 +2778,29 @@ class Component extends DCLogic {
   openSheet() {
     const k = this.sheetKey();
     const put = () => { try { const js = JSON.stringify(this.sheetData()); if (js !== this._shJs) { this._shJs = js; localStorage.setItem('sheet.' + k, js); } } catch (e) {} };
-    put(); this._shWin = window.open('sheet.html?k=' + k, '_blank');
+    put(); this._shPut = put; this._shWin = window.open('sheet.html?k=' + k, '_blank');
+    // 시트 창 아래 달 막대에서 누른 것(달 보기·숨기기·추가)을 이 화면이 그대로 처리 (sheetbar.js가 opener.__sheetCmd 호출)
+    window.__sheetCmd = (pg, c) => this.sheetCmd(c);
     clearInterval(this._shT); this._shT = setInterval(() => { if (!this._shWin || this._shWin.closed) { clearInterval(this._shT); return; } put(); }, 1500);
   }
   sheetKey() { return 'attendance'; }
+  sheetCmd(c) {
+    const sheets = this.sheetList(), st = this.state, hidden = st.hiddenSheets || [];
+    const idxOf = id => sheets.findIndex(x => x[1] > 0 && this.ymK(x[1]) === id);
+    const after = () => setTimeout(() => { if (this._shPut) this._shPut(); }, 60);
+    if (c.act === 'pick') { const i = idxOf(c.id); if (i < 0) return; const nm = sheets[i][0]; this.setState({ sheet: i, hiddenSheets: hidden.filter(h => h !== nm), sheetList: false, sheetCtx: null, logView: null }, after); }
+    else if (c.act === 'hide') {
+      const names = (c.ids || []).map(idxOf).filter(i => i >= 0).map(i => sheets[i][0]).filter(n => hidden.indexOf(n) < 0);
+      const vis = sheets.filter(t => hidden.indexOf(t[0]) < 0).length; if (!names.length || vis - names.length < 1) return;
+      const nh = hidden.concat(names); let ns = st.sheet;
+      if (nh.indexOf((sheets[ns] || [])[0]) >= 0) { const nx = sheets.findIndex(t => nh.indexOf(t[0]) < 0); ns = nx < 0 ? 0 : nx; }
+      this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null, tabMulti: null }, after);
+    } else if (c.act === 'add') {
+      const m = this.kOf(c.id + '-01'); if (sheets.some(x => x[1] === m)) return this.sheetCmd({ act: 'pick', id: c.id });
+      this.setState({ extra: this.state.extra.concat([m]).sort((a, b) => b - a), addMenu: null }, () => { const i = this.sheetList().findIndex(x => x[1] === m); if (i >= 0) this.setState({ sheet: i, logView: null }, after); });
+      setTimeout(() => { const i = this.sheetList().findIndex(x => x[1] === m); if (i >= 0 && this.state.sheet !== i) this.setState({ sheet: i, logView: null }, after); }, 80);
+    }
+  }
   sheetData() {
     const m = this._meta || {}, ND = m.nd || 31, rows = this._exp || [];
     const head = ['요일', '이름', '결산', '레슨시작일'].concat(Array.from({ length: ND }, (_, i) => String(i + 1))).map(x => ({ v: x, b: true, bg: '#EFEFEF', al: 'c' }));
@@ -2787,7 +2808,7 @@ class Component extends DCLogic {
     rows.forEach(x => { const r = [x.g === prev ? '' : { v: x.label, b: true, al: 'c' }, { v: x.name, b: true, bg: x.pro ? '#F7F4FD' : undefined }, x.sum || '', x.since || ''];
       for (let d = 1; d <= ND; d++) { const c = (x.cells || [])[d - 1]; r.push({ v: c ? String(c.text || '').replace('!', '') : '', al: 'c', bg: c && c.pay ? '#FAEFD2' : undefined }); }
       prev = x.g; grid.push(r); });
-    return { title: '출석부 · ' + String(m.teacher || '').replace(' 원장님', ' 원장님'), sub: m.mon ? this.kLabel(m.mon) : '', widths: [50, 90, 50, 120].concat(Array(ND).fill(40)), grid: grid };
+    return { bar: this._bar, title: '출석부 · ' + String(m.teacher || '').replace(' 원장님', ' 원장님'), sub: m.mon ? this.kLabel(m.mon) : '', widths: [50, 90, 50, 120].concat(Array(ND).fill(40)), grid: grid };
   }
   renderVals() {
     const st = this.state;
@@ -3482,6 +3503,10 @@ class Component extends DCLogic {
       radio: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 50%; border: ' + (on ? '5px solid #00A6AB' : '2px solid #CDD4D0') + '; background: #FFFFFF'
     });
     const hideNames = ctx ? ((st.tabMulti || []).indexOf(sheets[ctx.i][0]) >= 0 ? st.tabMulti.filter(n => hidden.indexOf(n) < 0) : [sheets[ctx.i][0]]) : [];
+    // 시트로 보기 창 아래 달 막대(sheetbar.js)에 줄 내용: 출석부 달 시트만
+    { const tc0 = this.teacherColor((this.tKey() || '').replace(' 원장님', '')), dc = tc0 && tc0[0] && tc0[1] !== '#3A4450' ? tc0[0] : '#F2A3A3';
+      this._bar = { color: dc, onBg: '#FDF1F1', label: '출석부', tabs: tabsOrd.filter(o => o.t[1] > 0).map(o => ({ id: this.ymK(o.t[1]), name: o.t[0], on: o.i === st.sheet, dot: dc })),
+        all: ordered.filter(o => o.t[1] > 0).map(o => ({ id: this.ymK(o.t[1]), name: o.t[0], on: o.i === st.sheet, hidden: hidden.indexOf(o.t[0]) >= 0 })) }; }
     const sm = {
       anyOpen: !!ctx || !!st.sheetList,
       ctxOpen: !!ctx,

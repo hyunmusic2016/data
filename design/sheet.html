@@ -52,6 +52,7 @@ th.col,th.row,th.corner{cursor:pointer}
 <div class="fbar"><span class="nm" id="nm"></span><span class="fx">fx</span><span class="val" id="val"></span><span class="sp"></span><span class="agg" id="agg"></span></div>
 <div class="wrap" id="wrap"><table id="t"></table></div>
 <div class="toast" id="toast"></div>
+<script src="sheetbar.js?v=1"></script>
 <script>
 // 공통 시트 보기 (보기 전용): 각 페이지가 'sheet.<이름>'에 { title, sub, widths, grid: [[칸]] }을 써 두고 sheet.html?k=<이름>으로 연다.
 // 칸 = 글자·숫자, 또는 { v, bg, b(굵게), span(가로 합치기), al('c'|'r') }
@@ -61,6 +62,7 @@ const KEY = 'sheet.' + (new URLSearchParams(location.search).get('k') || '');
 let GRID = [], NC_ = 0, SEL = { r1: 0, c1: 0, r2: 0, c2: 0 }, ANC = { r: 0, c: 0 }, dragging = false;
 function build() {
   let d = null; try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  if (window.SheetBar) SheetBar.render(d && d.bar, (new URLSearchParams(location.search).get('k') || ''));   // 아래 달 막대 (출석부·수입·지출·통계)
   const t = document.getElementById('t');
   if (!d || !Array.isArray(d.grid)) { t.innerHTML = '<tr><td style="padding:24px;border:none">원래 화면에서 \'시트로 보기\'를 다시 눌러 주세요.</td></tr>'; return; }
   document.title = (d.title || '시트') + ' · 시트'; document.getElementById('ttl').textContent = (d.title || '시트') + (d.sub ? ' · ' + d.sub : '');
