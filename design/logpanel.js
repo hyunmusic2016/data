@@ -14,13 +14,19 @@
     return { who: who, head: head, a: a, b: b, bad: /지움|삭제|취소|뺌/.test(String(l)), add: /추가|발송|수납|복귀|되살림|등록|출석/.test(String(l)) };
   }
   function lineHTML(l, C, chipFg) {
-    var x = split(l), dot = x.bad ? '#D9746C' : x.add ? C[0] : '#AEB7B2';
+    var x = split(l), E = /^\(?빈칸\)?$|^없음$/;
+    var gone = x.a != null && E.test(String(x.b == null ? '' : x.b)) && !E.test(String(x.a)), put = x.b != null && E.test(String(x.a == null ? '' : x.a)) && !E.test(String(x.b));
+    if (gone) x.bad = true; if (put) { x.bad = false; x.add = true; }
+    var dot = x.bad ? '#D9746C' : x.add ? C[0] : '#AEB7B2';
+    var chip = function (t, bg, fg) { return ' <span style="display: inline-block; padding: 0 6px; border-radius: 6px; background: ' + bg + '; color: ' + fg + '; font-size: 11px; font-weight: 600; line-height: 18px">' + t + '</span>'; };
+    var val = gone ? ' <span style="color: #B4332B; text-decoration: line-through; text-decoration-color: #E8A5A0">' + esc(x.a) + '</span>' + chip('지움', '#FBE3E1', '#B4332B')
+      : put ? ' <span style="font-weight: 600; color: #17201C; background: linear-gradient(transparent 58%, ' + C[2] + ' 58%)">' + esc(x.b) + '</span>' + chip('입력', C[1], chipFg)
+      : (x.a != null || x.b != null ? ' <span style="color: #8A949E; text-decoration: line-through; text-decoration-color: #C9D0CC">' + esc(x.a) + '</span> <span style="color: #AEB7B2">→</span> <span style="font-weight: 600; color: #17201C; background: linear-gradient(transparent 58%, ' + C[2] + ' 58%)">' + esc(x.b) + '</span>' : '');
     return '<div style="display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px dashed #EEF1EF">'
       + '<span style="flex: none; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: ' + dot + '"></span>'
       + '<span style="min-width: 0; font-size: 13px; line-height: 1.55; color: #3A4450; word-break: keep-all; overflow-wrap: anywhere">'
       + (x.who ? '<span style="display: inline-block; margin-right: 5px; padding: 0 7px; border-radius: 6px; background: ' + C[1] + '; color: ' + chipFg + '; font-size: 12px; font-weight: 600; line-height: 20px">' + esc(x.who) + '</span>' : '')
-      + esc(x.head)
-      + (x.a != null || x.b != null ? ' <span style="color: #8A949E; text-decoration: line-through; text-decoration-color: #C9D0CC">' + esc(x.a) + '</span> <span style="color: #AEB7B2">→</span> <span style="font-weight: 600; color: #17201C; background: linear-gradient(transparent 58%, ' + C[2] + ' 58%)">' + esc(x.b) + '</span>' : '')
+      + esc(x.head) + val
       + '</span></div>';
   }
   function txt(l) { var x = split(l); return [x.who, x.head, x.a, x.b].join(' '); }
@@ -36,11 +42,12 @@
         day = dk; var tag = same(t, td) ? '오늘' : same(t, yd) ? '어제' : '';
         h += '<div style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 6px; padding: 14px 4px 8px; background: #F7F9F8"><span style="font-size: 13px; font-weight: 600; color: #17201C">' + dk + '</span>' + (tag ? '<span style="padding: 1px 8px; border-radius: 999px; background: ' + C[0] + '; color: ' + (o.tagFg || '#FFFFFF') + '; font-size: 11px; font-weight: 600">' + tag + '</span>' : '') + '<span style="flex: 1; height: 1px; background: #E1E6E3"></span></div>';
       }
-      var tm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0'), ini = (g.who || '?').replace(/ 원장님| 강사님/, '').slice(0, 1);
+      var um = /^(.*) · (되돌리기|다시 하기)$/.exec(g.who || ''), who = um ? um[1] : g.who, utag = um ? um[2] : '';
+      var tm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0'), ini = (who || '?').replace(/ 원장님| 강사님/, '').slice(0, 1);
       h += '<div data-lp-g="' + gi + '" style="display: flex; gap: 10px; margin: 0 0 10px;' + (o.onPick ? ' cursor: pointer' : '') + '">'
         + '<span style="flex: none; width: 30px; height: 30px; border-radius: 50%; background: ' + C[1] + '; color: ' + chipFg + '; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px ' + C[2] + '">' + esc(ini) + '</span>'
         + '<div style="flex: 1; min-width: 0; padding: 10px 12px 6px; border-radius: 14px; border: 1px solid ' + (g.sel ? '#7FCF95' : '#E6EAE8') + '; background: ' + (g.sel ? '#F1FAF3' : '#FFFFFF') + '; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">'
-        + '<div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px"><span style="font-size: 14px; font-weight: 600; color: #17201C">' + esc(g.who || '알 수 없음') + '</span><span style="font-size: 12px; color: #8A949E">' + tm + '</span><span style="margin-left: auto; padding: 0 7px; border-radius: 999px; background: #F1F3F2; color: #6B7570; font-size: 11px; font-weight: 600; line-height: 18px; white-space: nowrap">' + esc(g.count || (lines.length + '건')) + '</span></div>'
+        + '<div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px"><span style="font-size: 14px; font-weight: 600; color: #17201C">' + esc(who || '알 수 없음') + '</span>' + (utag ? '<span style="padding: 0 7px; border-radius: 999px; background: #FDEBD8; color: #B4641F; font-size: 11px; font-weight: 600; line-height: 18px">↶ ' + utag + '</span>' : '') + '<span style="font-size: 12px; color: #8A949E">' + tm + '</span><span style="margin-left: auto; padding: 0 7px; border-radius: 999px; background: #F1F3F2; color: #6B7570; font-size: 11px; font-weight: 600; line-height: 18px; white-space: nowrap">' + esc(g.count || (lines.length + '건')) + '</span></div>'
         + (g.where ? '<div style="font-size: 12px; color: #2952A3; margin-bottom: 2px">' + esc(g.where) + '</div>' : '')
         + lines.map(function (l) { return lineHTML(l, C, chipFg); }).join('') + '</div></div>';
     });

@@ -865,12 +865,19 @@
   }
   function clAdd(lines) {
     if (!lines || !lines.length || !clOn() || !A.staff) return;
-    var now = Date.now(), e = { id: 'C' + now + '-' + Math.random().toString(36).slice(2, 6), at: now, who: A.staff.name || '', page: clPage(), lines: lines.slice(0, 200) };
+    var now = Date.now(), e = { id: 'C' + now + '-' + Math.random().toString(36).slice(2, 6), at: now, who: (A.staff.name || '') + (now < clTagUntil ? ' · ' + clTag : ''), page: clPage(), lines: lines.slice(0, 200) };
     var L = jp(localStorage.getItem('academy.changeLog'), []); L.push(e); origSet.call(localStorage, 'academy.changeLog', JSON.stringify(L.slice(-3000)));
     if (A.clReady !== false) sb.from('change_log').insert({ local_id: e.id, at: new Date(now).toISOString(), who: e.who, page: e.page, lines: e.lines }).then(function (r) { if (r && r.error) { A.clReady = false; console.warn('변경 기록 저장 안 됨(014 SQL?)', r.error); } });
     clDraw();
   }
   A.clAdd = clAdd;
+  // 되돌리기(Ctrl+Z)·다시 하기(Ctrl+Y)로 바뀐 내용은 기록에 '↶ 되돌리기' 표시 (글 칸 안의 글자 되돌리기는 빼고)
+  var clTag = '', clTagUntil = 0;
+  document.addEventListener('keydown', function (e) {
+    if (!(e.ctrlKey || e.metaKey) || !/^[zy]$/i.test(e.key)) return;
+    var t = e.target; if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return;
+    clTag = /y/i.test(e.key) || e.shiftKey ? '다시 하기' : '되돌리기'; clTagUntil = Date.now() + 1500;
+  }, true);
   // ── 기록 버튼·오른쪽 칸 ──
   var clServer = [];
   function clLoad() {
