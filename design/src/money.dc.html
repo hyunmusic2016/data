@@ -127,7 +127,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.3</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.4</span>
     </div>
   </main>
 
@@ -438,6 +438,8 @@ class Component extends DCLogic {
     });
   }
   componentDidMount() {
+    // 찾기 칸을 누르면 제목 아이콘과 같은 파랑 (다른 페이지 칸은 청록)
+    if (!document.getElementById('money_qfocus')) { const st = document.createElement('style'); st.id = 'money_qfocus'; st.textContent = '#money_q:focus,#money_q:focus-visible{border-color:#5B86C9!important;background:#EAF0FA!important;outline:none!important;box-shadow:0 0 0 3px rgba(91,134,201,0.18)!important}'; document.head.appendChild(st); }
     // 다시 그려도 찾기 그대로 (줄이 새로 그려지면 다시 거름)
     if (!this._qObs) { let t = 0; this._qObs = new MutationObserver(() => { if (!t) t = requestAnimationFrame(() => { t = 0; const el = document.getElementById('money_q'); if (el && el.value.trim()) this.applyQ(); }); }); this._qObs.observe(document.body, { childList: true, subtree: true }); }
     // 시트로 보기 창이 '다른 달'을 볼 때 띄우는 보이지 않는 수입·지출 (?sheetfor=1&ym=&key=): 그 달로 그려서 시트 내용만 key에 씀
