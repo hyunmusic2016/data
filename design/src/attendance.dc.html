@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.108.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.108.5</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2494,6 +2494,28 @@ class Component extends DCLogic {
       amtIn: e => { const el = e.target, digits = el.value.replace(/[^0-9]/g, ''); el.value = digits ? Number(digits).toLocaleString('ko-KR') : ''; back(); },
       close: () => { this.setState({ refund: null }); this.focusSheet(); }, save: () => this.saveRefund() };
   }
+  // 형제 같이 수납(grp): 한 명 수납을 지우면 같은 grp 형제 수납도 지움. 돌려줌 = 형제 칸에서 ₩를 지울 ops
+  sibRowId(name, date) {
+    const A1 = window.academy, dbs = A1 && A1.data && (A1.data.students || []).find(r => r && r.name === name);
+    const wd = '일월화수목금토'[new Date(date + 'T00:00:00').getDay()];
+    const rows = dbs && dbs.dbId ? this.dbRows().filter(r => r.sid === 'D' + dbs.dbId) : this.studentsCore().filter(r => String(r.name || '').replace('$', '') === name);
+    const row = rows.find(r => r.g === wd) || rows[0]; return row ? row.id : '';
+  }
+  grpDrop(list, removed) {
+    const gs = removed.map(x => x && x.grp).filter(Boolean), ids = removed.map(x => x.id);
+    if (!gs.length) return { list: list, ops: [] };
+    const more = list.filter(x => x.grp && gs.indexOf(x.grp) >= 0 && ids.indexOf(x.id) < 0);
+    const ops = [];
+    more.forEach(x => { const sid = this.sibRowId(x.name, x.date), d = +x.date.slice(8, 10); if (sid && !list.some(y => more.indexOf(y) < 0 && y.name === x.name && y.date === x.date && y.kind !== 'repay')) ops.push({ m: this.kOf(x.date), sid: sid, d: d, key: 'p' + d, v: '' }); });
+    return { list: list.filter(x => more.indexOf(x) < 0), ops: ops };
+  }
+  // 칸을 지울 때 그 칸 수납 기록 지우기 (형제 같이 수납이면 형제 것도, 형제 칸 ₩도)
+  dropPayRecs(isDel) {
+    const pl = this.readPays(), keep = pl.filter(x => !isDel(x)); if (keep.length === pl.length) return;
+    const G = this.grpDrop(keep, pl.filter(isDel));
+    this.writePays(G.list);
+    if (G.ops.length) setTimeout(() => this.commit(this.writeCells(G.ops, '')), 0);
+  }
   cancelPay() {
     const P = this.state.pay;
     if (!P) return;
@@ -2501,14 +2523,18 @@ class Component extends DCLogic {
     const all0 = this.readPays(), multi = !P.late && !P.umode && P.recId && all0.filter(x => x.name === P.name && x.date === P.origDate && x.kind !== 'repay').length > 1;
     if (multi) {
       // 같은 날 여러 건 중 한 건만 취소: 칸 표시는 남긴다
-      this.writePays(all0.filter(x => x.id !== P.recId));
+      const G1 = this.grpDrop(all0.filter(x => x.id !== P.recId), all0.filter(x => x.id === P.recId));
+      this.writePays(G1.list);
       this.setState({ pay: null });
+      if (G1.ops.length) this.commit(this.writeCells(G1.ops, ''));
       this.focusSheet();
       return;
     }
-    this.writePays(all0.filter(x => !(x.name === P.name && x.date === P.origDate && x.kind !== 'repay')));
-    const patch = this.writeCells(P.late ? [{ m: P.m, sid: P.sid, d: 0, key: 'L' + P.origDate, v: '' }]
-      : [{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }, { m: P.m, sid: P.sid, d: P.d, key: 'u' + P.d, v: '' }], '');
+    const isMine = x => x.name === P.name && x.date === P.origDate && x.kind !== 'repay';
+    const G2 = this.grpDrop(all0.filter(x => !isMine(x)), all0.filter(isMine));
+    this.writePays(G2.list);
+    const patch = this.writeCells((P.late ? [{ m: P.m, sid: P.sid, d: 0, key: 'L' + P.origDate, v: '' }]
+      : [{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }, { m: P.m, sid: P.sid, d: P.d, key: 'u' + P.d, v: '' }]).concat(G2.ops), '');
     patch.pay = null;
     this.commit(patch);
     this.focusSheet();
@@ -2610,7 +2636,7 @@ class Component extends DCLogic {
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'dp' + c.d, v: '' })).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: '' }))).concat(cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 'p' + c.d, v: '' })), cells.map(c => ({ m: m, sid: c.sid, d: c.d, key: 's' + c.d, v: '' })));
       // Delete로 지우면 그 칸의 수납 기록(같은 날 여러 건 포함)도 모두 지운다
       { const stu = this.students(), del = {}; cells.forEach(c => { const s0 = stu.find(x => x.id === c.sid); if (s0) del[s0.name.replace('$', '') + '|' + this.ymK(m) + '-' + String(c.d).padStart(2, '0')] = 1; });
-        const pl = this.readPays(), keep = pl.filter(x => !del[x.name + '|' + x.date]); if (keep.length !== pl.length) this.writePays(keep); }
+        this.dropPayRecs(x => !!del[x.name + '|' + x.date]); }
     } else {
       const allSame = cells.every(c => (cur[c.sid] || {})[c.d] === v);
       items = cells.map(c => ({ m: m, sid: c.sid, d: c.d, v: allSame ? '' : v }));
@@ -2627,7 +2653,7 @@ class Component extends DCLogic {
   dropPays(cells, m) {
     const stu = this.students(), del = {};
     cells.forEach(c => { const s0 = stu.find(x => x.id === c.sid); if (s0) del[s0.name.replace('$', '') + '|' + this.ymK(m) + '-' + String(c.d).padStart(2, '0')] = 1; });
-    const pl = this.readPays(), keep = pl.filter(x => !del[x.name + '|' + x.date]); if (keep.length !== pl.length) this.writePays(keep);
+    this.dropPayRecs(x => !!del[x.name + '|' + x.date]);
   }
   clearPart(which) {
     const cells = this.selCells();
