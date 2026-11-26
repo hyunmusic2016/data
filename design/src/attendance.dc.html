@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3116,8 +3116,8 @@ class Component extends DCLogic {
             if (prs.length && !e['u' + d]) prs.forEach(pr => { const c = pr.refund ? (+pr.refund.count || 0) : (pr.count || T0); if (c > 0) payNow(c, new Date(2026, Mm - 1, d), pr.ben); });
             else { const pr = prs[0]; payNow((pr && pr.count) || T0, new Date(2026, Mm - 1, d), pr && pr.ben); }
           }
-          // 환불한 날(취소·재결제) 칸: 빨간 ₩ (돈만, 수강권은 원래 결제 날짜에서 계산)
-          if (e['R' + d]) { o.upay = true; if (!o.text) { o.text = '₩'; o.kind = 'V'; } else if (o.kind !== 'V') o.pay = true; o.what = (o.what ? o.what + ' · ' : '') + '환불(취소·재결제)'; }
+          // 환불한 날(취소·재결제) 칸: 재결제이므로 보통 수납 색 ₩ (돈만, 수강권은 원래 결제 날짜에서 계산)
+          if (e['R' + d]) { if (!o.text) { o.text = '₩'; o.kind = 'V'; } else if (o.kind !== 'V') o.pay = true; o.what = (o.what ? o.what + ' · ' : '') + '환불(취소·재결제)'; }
           if (e['dp' + d]) {
             diffPaid += +e['dp' + d] || 0; diffDate = this.kM(Mm) + '/' + d; diffDateM = Mm;
             o.dpay = true; if (!o.text) { o.text = '₩'; o.kind = 'DV'; }

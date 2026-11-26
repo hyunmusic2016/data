@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.102.1"></script>
+<script src="db.js?v=0.102.2"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
@@ -130,7 +130,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.1</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.2</span>
     </div>
   </main>
 
@@ -507,8 +507,8 @@ class Component extends DCLogic {
   incomeAuto(ym) {
     const out = [];
     // 환불: 취소한 날에 '결제 취소 −원래 금액' + 재결제 기록(kind 'repay')은 '재결제 N회 +금액'
-    this.rd('academy.payments', []).forEach(p => { if (p && p.refund && String(p.refund.date || '').slice(0, 7) === ym) { const a0 = +(p.amount != null ? p.amount : p.total) || 0; if (a0) out.push({ at: (+p.refund.at || 0) - 1, d: +String(p.refund.date).slice(8, 10), item: p.name, amt: -a0, memo: '결제 취소 (' + (+p.date.slice(5, 7)) + '/' + (+p.date.slice(8, 10)) + ' 결제)', pid: p.id + '#cancel', orphan: false }); } });
-    this.rd('academy.payments', []).forEach(p => { if (p && p.kind === 'repay' && String(p.date || '').slice(0, 7) === ym && +p.amount) { out.push({ at: +p.at || 0, d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: '재결제 ' + (+p.count || 0) + '회', pid: p.id, orphan: false }); } });
+    this.rd('academy.payments', []).forEach(p => { if (p && p.refund && String(p.refund.date || '').slice(0, 7) === ym) { const a0 = +(p.amount != null ? p.amount : p.total) || 0; if (a0) out.push({ at: (+p.refund.at || 0) - 1, d: +String(p.refund.date).slice(8, 10), item: p.name, amt: -a0, memo: '결제 취소 (' + (+p.date.slice(5, 7)) + '/' + (+p.date.slice(8, 10)) + ')', pid: p.id + '#cancel', orphan: false }); } });
+    this.rd('academy.payments', []).forEach(p => { if (p && p.kind === 'repay' && String(p.date || '').slice(0, 7) === ym && +p.amount) { out.push({ at: +p.at || 0, d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: '재결제 수업 ' + (+p.count || 0) + '회', pid: p.id, orphan: false }); } });
     this.rd('academy.payments', []).forEach(p => { if (p && p.kind !== 'repay' && String(p.date || '').slice(0, 7) === ym && +p.amount) { const o = this.orphanPay(p); out.push({ at: +p.at || 0, d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: o ? '출석부에 없음' : p.kind === 'late' ? '미납 수납' : p.kind === 'trial' ? '체험수업' : p.ben && p.ben.kind ? '첫 ' + p.ben.n + '회 ' + (p.ben.kind === 'free' ? '무료' : '50%') : '', pid: p.id, orphan: o }); } });
     const AC = this.rd('academy.attCells', {}), A = window.academy, S = (A && A.data && A.data.students) || [];
     const nameOf = sk => { const r = S.find(x => 'D' + x.dbId === sk); return r ? r.name : sk; };
