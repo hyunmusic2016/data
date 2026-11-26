@@ -748,6 +748,50 @@
       if (st === 'SUBSCRIBED') A.rtWas = true;
     });
   }
+
+  // ── 접속 표시 (Supabase Presence): 누가 지금 사이트를 보고 있는지. 'on' = 보고 있음(5분 안에 움직임), 'idle' = 자리 비움 ──
+  // A.presence = { 이름: { state, page, dev, since } }, A.seen = { 이름: 마지막 접속 ms } (013 SQL staff_seen, 없으면 빈 채로)
+  var pChan = null, pState = 'on', pSince = Date.now(), pAct = Date.now(), IDLE = 5 * 60000;
+  A.presence = {}; A.seen = {};
+  function pPage() { var m = location.pathname.match(/(\w[\w-]*)\.html$/); return m ? m[1] : 'attendance'; }
+  function pDev() { return /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ? '휴대폰' : '컴퓨터'; }
+  function pTrack() { if (pChan) pChan.track({ id: A.staff.id, name: A.staff.name, page: pPage(), dev: pDev(), state: pState, since: pSince }); }
+  function pCheck() {
+    var st = !document.hidden && Date.now() - pAct < IDLE ? 'on' : 'idle';
+    if (st !== pState) { pState = st; pSince = st === 'idle' && !document.hidden ? pAct : Date.now(); pTrack(); }
+  }
+  function pSeen() {
+    if (!A.staff) return;
+    sb.from('staff_seen').upsert({ staff_id: A.staff.id, name: A.staff.name, at: new Date().toISOString() }).then(function () {});
+  }
+  function pLoadSeen() {
+    sb.from('staff_seen').select('name,at').then(function (r) {
+      if (r.error) return; A.seen = {}; (r.data || []).forEach(function (x) { A.seen[x.name] = Date.parse(x.at); });
+      rtDraw = true; rtTick();
+    });
+  }
+  function pStart() {
+    if (pChan || window !== window.top || !A.staff || !sb.channel) return;
+    pChan = sb.channel('online', { config: { presence: { key: A.staff.id } } });
+    pChan.on('presence', { event: 'sync' }, function () {
+      var all = pChan.presenceState(), o = {}, rank = { on: 2, idle: 1 }, was = A.presence;
+      Object.keys(all).forEach(function (k) { (all[k] || []).forEach(function (m) {
+        var c = o[m.name];
+        if (!c || rank[m.state] > rank[c.state] || (m.state === c.state && m.state === 'idle' && m.since > c.since)) o[m.name] = { state: m.state, page: m.page, dev: m.dev, since: m.since };
+      }); });
+      A.presence = o;
+      if (Object.keys(was).some(function (n) { return !o[n]; })) setTimeout(pLoadSeen, 1500);   // 나간 사람 마지막 접속 시간
+      rtDraw = true; rtTick();
+    }).subscribe(function (st) { if (st === 'SUBSCRIBED') { pTrack(); pSeen(); pLoadSeen(); } });
+    ['mousemove', 'keydown', 'pointerdown', 'touchstart', 'wheel'].forEach(function (ev) { document.addEventListener(ev, function () { pAct = Date.now(); if (pState !== 'on') pCheck(); }, { passive: true, capture: true }); });
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) pAct = Date.now(); pCheck(); });
+    setInterval(pCheck, 20000);
+    setInterval(function () { if (pState === 'on') pSeen(); }, 60000);
+    window.addEventListener('pagehide', pSeen);
+  }
+  document.addEventListener('academy:login', pStart);
+  document.addEventListener('academy:data', pStart);
+  if (A.fromCache) setTimeout(pStart, 1500);
   document.addEventListener('academy:login', rtStart);
   document.addEventListener('academy:data', rtStart);
   if (A.fromCache) setTimeout(rtStart, 1500);
