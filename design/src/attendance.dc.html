@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.6</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -414,10 +414,10 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
         <span style="{{pv.iconStyle}}">₩</span>
         <span style="display: flex; flex-direction: column; gap: 2px">
           <span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 20px; font-weight: 600; color: #17201C">{{pv.name}}</span><span style="{{pv.clsChip}}">{{pv.clsLabel}}</span><sc-if value="{{pv.umode}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #FBE3E1; color: #B4332B; font-size: 12px; font-weight: 600">미납금액 수납</span></sc-if><sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: #E2F1EA; color: #1F7A5A; font-size: 12px; font-weight: 600">수납 완료</span></sc-if></span>
-          <sc-if value="{{pv.showDateText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
-          <sc-if value="{{pv.showDate}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{pv.dateWord}}<input id="pay_date" type="date" min="{{pv.minDate}}" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="{{pv.dateStyle}}"></label></sc-if>
         </span>
         <span style="flex: 1"></span>
+        <sc-if value="{{pv.showDateText}}" hint-placeholder-val="{{ true }}"><span style="font-size: 13px; color: #5E6873">{{pv.dateLabel}} 수납</span></sc-if>
+        <sc-if value="{{pv.showDate}}" hint-placeholder-val="{{ false }}"><label style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #5E6873">{{pv.dateWord}}<input id="pay_date" type="date" min="{{pv.minDate}}" defaultValue="{{pv.date}}" onChange="{{pv.setDate}}" style="{{pv.dateStyle}}"></label></sc-if>
         <sc-if value="{{pv.showWo}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.wo}}" title="{{pv.woTitle}}" style="{{pv.woStyle}}">{{pv.woLabel}}</button></sc-if>
         <button type="button" onClick="{{pv.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; cursor: pointer; font-size: 16px; line-height: 1">×</button>
       </div>
@@ -429,15 +429,6 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       <sc-if value="{{pv.hasLockMarks}}" hint-placeholder-val="{{ false }}"><div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: 12px; background: #F3F5F4; font-size: 13px; color: #5B6670"><span style="margin-right: auto">휴원·퇴원 기간 · 출결 입력</span><sc-for list="{{pv.lockMarks}}" as="b" hint-placeholder-count="4"><button type="button" onClick="{{b.pick}}" style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #C9D2CE; background: #fff; color: #17201C; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">{{b.label}}</button></sc-for></div></sc-if>
       <sc-if value="{{pv.hasDp}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelDiff}}" style="height: 40px; border-radius: 12px; border: 1.5px solid #F2B880; background: #fff; color: #B45309; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">{{pv.dpTxt}}</button></sc-if>
       <sc-if value="{{pv.hasDiff}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.payDiff}}" style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 46px; border-radius: 14px; border: 1.5px solid #F2B880; background: #FDEBD8; color: #B45309; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.diffTxt}}<span style="font-size: 12px; font-weight: 500; color: #9A5B00">반 변경 차액 · 수강권은 그대로</span></button></sc-if>
-      <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
-        <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #3A4450">수강생대장 정보<span style="font-size: 11px; font-weight: 600; color: #8A949E">{{pv.src}}</span></span>
-        <sc-for list="{{pv.info}}" as="x" hint-placeholder-count="6">
-          <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 14px">
-            <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{x.label}}</span>
-            <span style="font-weight: 600; color: #17201C">{{x.value}}</span>
-          </div>
-        </sc-for>
-      </div>
 
       <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: 16px; background: #FAFBFA; border: 1px solid #E3E8E5">
         <div style="display: flex; align-items: center; gap: 10px">
