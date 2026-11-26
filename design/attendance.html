@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.105.0"></script>
+<script src="db.js?v=0.105.1"></script>
 <script src="fx.js?v=5"></script>
 <style>.tav{transition:transform .28s cubic-bezier(.3,1.6,.5,1),box-shadow .28s}.tav:hover{transform:rotate(-10deg) scale(1.1)}.tav svg{transition:transform .28s}.tav:hover svg{transform:scale(1.08)}@keyframes onlPulse{0%{box-shadow:0 0 0 0 rgba(61,190,110,.55)}70%{box-shadow:0 0 0 6px rgba(61,190,110,0)}100%{box-shadow:0 0 0 0 rgba(61,190,110,0)}}.onl-pulse{animation:onlPulse 1.8s ease-out infinite}@media (prefers-reduced-motion:reduce){.onl-pulse{animation:none}.tav,.tav svg{transition:none}}.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -244,7 +244,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.105.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.105.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -404,11 +404,16 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       <div style="display: flex; align-items: center; gap: 10px; padding: 20px 22px 14px; border-bottom: 1px solid #EEF1F0"><span style="width: 34px; height: 34px; border-radius: 10px; background: #5B86C9; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z"></path><path d="M8 9h8M8 13h6"></path></svg></span><span style="font-size: 19px; font-weight: 600; color: #17201C">수업일지 · {{ca.name}}</span><button type="button" onClick="{{ca.close}}" aria-label="닫기" style="margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 17px; cursor: pointer">×</button></div>
       <div style="flex: 1; overflow: auto; padding: 4px 22px 22px; background: #F8FAFE">
         <sc-if value="{{ca.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 40px 0; text-align: center; font-size: 13px; color: #8A949E">아직 수업 기록이 없습니다</div></sc-if>
-        <sc-for list="{{ca.months}}" as="g" hint-placeholder-count="2">
-          <div style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 14px 2px 8px; background: #F8FAFE"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{g.label}}</span><span style="font-size: 12px; color: #5B86C9; font-weight: 600">{{g.cnt}}</span><span style="flex: 1; height: 1px; background: #DCE4F1"></span></div>
-          <div style="display: flex; flex-direction: column; gap: 8px">
-            <sc-for list="{{g.items}}" as="x" hint-placeholder-count="3"><div style="{{x.rowSt}}"><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 600; color: #3A4450">{{x.date}}</span><span style="{{x.chip}}">{{x.kind}}</span></span><sc-if value="{{x.hasNote}}" hint-placeholder-val="{{ true }}"><span style="{{x.noteSt}}">{{x.note}}</span></sc-if></div></sc-for>
-          </div>
+        <sc-for list="{{ca.halves}}" as="hv" hint-placeholder-count="2">
+          <button type="button" onClick="{{hv.toggle}}" aria-expanded="{{hv.openStr}}" style="display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid #DCE4F1; background: #FFFFFF; font-family: inherit; cursor: pointer; text-align: left"><span style="font-size: 12px; color: #5B86C9">{{hv.arrow}}</span><span style="font-size: 14px; font-weight: 600; color: #17201C">{{hv.label}}</span><span style="margin-left: auto; font-size: 12px; font-weight: 600; color: #5B86C9">{{hv.cnt}}</span></button>
+          <sc-if value="{{hv.isOpen}}" hint-placeholder-val="{{ true }}">
+            <sc-for list="{{hv.months}}" as="g" hint-placeholder-count="2">
+              <div style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 14px 2px 8px; background: #F8FAFE"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{g.label}}</span><span style="font-size: 12px; color: #5B86C9; font-weight: 600">{{g.cnt}}</span><span style="flex: 1; height: 1px; background: #DCE4F1"></span></div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <sc-for list="{{g.items}}" as="x" hint-placeholder-count="3"><div style="{{x.rowSt}}"><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 13px; font-weight: 600; color: #3A4450">{{x.date}}</span><span style="{{x.chip}}">{{x.kind}}</span></span><sc-if value="{{x.hasNote}}" hint-placeholder-val="{{ true }}"><span style="{{x.noteSt}}">{{x.note}}</span></sc-if></div></sc-for>
+              </div>
+            </sc-for>
+          </sc-if>
         </sc-for>
       </div>
     </div>
@@ -1641,9 +1646,15 @@ class Component extends DCLogic {
           noteSt: 'font-size: 13px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; color: ' + (note ? '#17201C' : '#9AA3A8'),
           rowSt: 'display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; border: 1px solid #E6EAE8; background: ' + (v === '수' ? '#FFFFFF' : '#FAFBFA') };
       });
-      if (items.length) months.push({ label: this.kLabel(mm), cnt: items.filter(x => x.kind === '출석').length + '회 출석', items: items });
+      if (items.length) months.push({ mm: mm, label: this.kLabel(mm), n: items.filter(x => x.kind === '출석').length, cnt: items.filter(x => x.kind === '출석').length + '회 출석', items: items });
     }
-    return { open: true, name: nm, months: months, empty: !months.length, close: () => this.setState({ clAll: null }) };
+    // 반년(1~6월·7~12월) 묶음, 수강 내역과 같이 접기·펼치기 (최근 6개월에 걸친 묶음은 처음부터 펼침)
+    const halves = [];
+    months.forEach(g => { const y = this.kY(g.mm), h = y + (this.kM(g.mm) <= 6 ? 'A' : 'B'); let hv = halves.find(x => x.h === h); if (!hv) { hv = { h: h, y: y, months: [], n: 0, recent: false }; halves.push(hv); } hv.months.push(g); hv.n += g.n; if (tk - g.mm < 6) hv.recent = true; });
+    const OP = A0.open || {};
+    return { open: true, name: nm, empty: !months.length, close: () => this.setState({ clAll: null }),
+      halves: halves.map(hv => { const isOpen = OP[hv.h] != null ? OP[hv.h] : hv.recent; return { label: hv.y + '년 ' + (hv.h.slice(-1) === 'A' ? '1~6월' : '7~12월'), cnt: hv.n + '회 출석', months: hv.months, isOpen: isOpen, openStr: isOpen ? 'true' : 'false', arrow: isOpen ? '▾' : '▸',
+        toggle: () => this.setState({ clAll: Object.assign({}, A0, { open: Object.assign({}, OP, { [hv.h]: !isOpen }) }) }) }; }) };
   }
   clStrip(me, ids0) {
     if (!this.logAllow().cls || !me) return { on: false };
