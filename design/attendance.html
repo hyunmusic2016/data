@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.114.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1134,17 +1134,46 @@ class Component extends DCLogic {
   wlJoin(L) { return L.map(x => x.t.trim() || x.done || x.imp ? (x.done ? '✓ ' : '') + (x.imp ? '! ' : '') + x.t : x.t).join('\n'); }
   wlNorm(text) { return this.wlJoin(this.wlParse(text)); }
   // 날짜 칸 → 다음 날로 복사 (일요일은 건너뜀, 마지막 날이면 다음 달 첫 날). 다음 날에 이미 있는 줄은 다시 안 붙임
+  // 다음으로 넘기기 효과: 보내는 버튼 → 받는 칸(연초록 #E3F4E8)으로 빛줄기 + 날아가는 글 카드, 도착하면 받는 칸이 반짝이며 살짝 올라옴
+  flyNote(srcEl, text, col) {
+    const C0 = col || '#5B86C9', rgb = C0 === '#8B6CC9' ? '139,108,201' : '91,134,201';
+    try {
+      if (!srcEl || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)) return;
+      const r0 = srcEl.getBoundingClientRect ? srcEl.getBoundingClientRect() : srcEl, line = String(text || '').split('\n').map(x => x.replace(/^[✓!]\s*/, '').trim()).filter(Boolean)[0] || '';
+      setTimeout(() => {
+        const dst = Array.prototype.find.call(document.querySelectorAll('[style*="background"]'), el => /rgb\(227, 244, 232\)/.test(el.style.background || el.style.backgroundColor || ''));
+        if (!dst) return;
+        const r1 = dst.getBoundingClientRect(); if (r1.bottom < 0 || r1.top > innerHeight || r1.right < 0 || r1.left > innerWidth) return;
+        const x0 = r0.left + r0.width / 2, y0 = r0.top + r0.height / 2, x1 = r1.left + Math.min(r1.width / 2, 60), y1 = r1.top + Math.min(r1.height / 2, 24);
+        const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy), ang = Math.atan2(dy, dx) * 180 / Math.PI;
+        const beam = document.createElement('div');
+        beam.style.cssText = 'position: fixed; z-index: 9999; pointer-events: none; left: ' + x0 + 'px; top: ' + (y0 - 2) + 'px; width: ' + len + 'px; height: 4px; border-radius: 4px; transform-origin: 0 50%; transform: rotate(' + ang + 'deg); background: linear-gradient(90deg, rgba(' + rgb + ',0), rgba(' + rgb + ',0.55) 60%, rgba(' + rgb + ',0))';
+        document.body.appendChild(beam);
+        beam.animate([{ transform: 'rotate(' + ang + 'deg) scaleX(0)', opacity: 0 }, { transform: 'rotate(' + ang + 'deg) scaleX(1)', opacity: 0.9, offset: 0.6 }, { transform: 'rotate(' + ang + 'deg) scaleX(1)', opacity: 0 }], { duration: 520, easing: 'ease-out' }).onfinish = () => beam.remove();
+        const card = document.createElement('div');
+        card.textContent = line.length > 16 ? line.slice(0, 16) + '…' : (line || '→');
+        card.style.cssText = 'position: fixed; z-index: 10000; pointer-events: none; left: ' + x0 + 'px; top: ' + y0 + 'px; max-width: 180px; padding: 4px 9px; border-radius: 8px; background: #FFFFFF; border: 1px solid ' + C0 + '; box-shadow: 0 6px 16px rgba(23,32,28,0.18); font-family: inherit; font-size: 12px; font-weight: 600; color: ' + C0 + '; white-space: nowrap; transform: translate(-50%, -50%)';
+        document.body.appendChild(card);
+        const lift = Math.min(80, 30 + len * 0.15);
+        card.animate([{ transform: 'translate(-50%, -50%) scale(1)', opacity: 1 }, { transform: 'translate(calc(-50% + ' + dx / 2 + 'px), calc(-50% + ' + (dy / 2 - lift) + 'px)) scale(1.05)', opacity: 1, offset: 0.5 }, { transform: 'translate(calc(-50% + ' + dx + 'px), calc(-50% + ' + dy + 'px)) scale(0.7)', opacity: 0.15 }], { duration: 520, easing: 'cubic-bezier(.4,0,.2,1)' }).onfinish = () => {
+          card.remove();
+          dst.animate([{ transform: 'translateY(6px) scale(1)', boxShadow: '0 0 0 0 rgba(' + rgb + ',0)' }, { transform: 'translateY(0) scale(1.03)', boxShadow: '0 0 0 4px rgba(' + rgb + ',0.35)', offset: 0.55 }, { transform: 'none', boxShadow: '0 0 0 0 rgba(' + rgb + ',0)' }], { duration: 420, easing: 'ease-out' });
+        };
+      }, 0);
+    } catch (e) {}
+  }
   wlCopyVals(m, d, txt) {
     const nx = new Date(2026, m - 1, d + 1); if (nx.getDay() === 0) nx.setDate(nx.getDate() + 1);
     const m2 = (nx.getFullYear() - 2026) * 12 + nx.getMonth() + 1, d2 = nx.getDate(), C = this.state.wlCopied;
     return { canCopy: this.wlParse(txt).some(x => x.t.trim() && !x.done), copyLabel: '다음 날(' + this.kM(m2) + '/' + d2 + ')로 복사',
       copyMsg: C && C.m === m && C.d === d ? C.msg : '',
-      copy: e => { e.preventDefault(); e.stopPropagation(); const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
+      copy: e => { e.preventDefault(); e.stopPropagation(); const srcR = e.currentTarget && e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null; const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
         const src = this.wlParse(this.workDays(m)[d] || '').filter(x => x.t.trim() && !x.done), cur = this.workDays(m2)[d2] || '';
         const have = this.wlParse(cur).map(x => x.t.trim()), add = src.filter(x => have.indexOf(x.t.trim()) < 0);
         const at = Date.now(), msg = add.length ? (m2 !== m ? this.kM(m2) + '/' + d2 + '로 복사했어요' : '') : '이미 있어요';
         if (add.length) this.saveWorkDay(m2, d2, (cur.replace(/\s+$/, '') ? cur.replace(/\s+$/, '') + '\n' : '') + this.wlJoin(add));
         this.setState({ wlCopied: { m: m, d: d, tm: m2, td: d2, msg: msg, at: at } });
+        if (add.length) this.flyNote(srcR, this.wlJoin(add), '#8B6CC9');
         setTimeout(() => { if (this.state.wlCopied && this.state.wlCopied.at === at) this.setState({ wlCopied: null }); }, 2200); } };
   }
   // 고치기를 끝냄 (누르던 버튼 클릭이 끝난 뒤에 다시 그림 — 첫 클릭 씹힘 방지)
@@ -1229,11 +1258,12 @@ class Component extends DCLogic {
     return { has: true, none: false, chip: this.kM(P.m) + '/' + P.d + ' (' + WD[new Date(2026, P.m - 1, P.d).getDay()] + ')', note: note || '(적은 내용 없음)',
       canGet: !!note && !!first, getTitle: first ? this.kM(m) + '/' + first + ' 수업으로 넘기기' : '이번 달 출석이 아직 없어요',
       msg: C && C.key === at0 ? C.msg : '', showGet: !!note && !!first && !(C && C.key === at0),
-      get: e => { e.preventDefault(); e.stopPropagation(); const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
+      get: e => { e.preventDefault(); e.stopPropagation(); const srcR = e.currentTarget && e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null; const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
         const cur = String(((((this.readLog('academy.classLog', {})[this.ymOf(m)] || {})[key] || {}).d || {})[first]) || '').replace(/\s+$/, '');
         const have = cur.split('\n').map(x => x.trim()), add = note.split('\n').filter(x => x.trim() && have.indexOf(x.trim()) < 0), at = Date.now();
         if (add.length) this.saveClassDay(key, m, first, (cur ? cur + '\n' : '') + add.join('\n'));
         this.setState({ clCopied: { key: at0, tkey: key, tm: m, td: first, msg: add.length ? this.kM(m) + '/' + first + '로 넘겼어요' : '이미 있어요', at: at } });
+        if (add.length) this.flyNote(srcR, add.join('\n'));
         setTimeout(() => { if (this.state.clCopied && this.state.clCopied.at === at) this.setState({ clCopied: null }); }, 2600); } };
   }
   clNextLesson(s, allRows, m, d) {
@@ -1250,7 +1280,7 @@ class Component extends DCLogic {
     const C = this.state.clCopied, has = !!String(raw || '').trim(), nx = has ? this.clNextLesson(s, allRows, m, d) : null;
     return { canCopy: has, copyLabel: nx ? '다음 수업(' + this.kM(nx.m) + '/' + nx.d + ')으로 넘기기' : '다음 수업으로 넘기기',
       copyMsg: C && C.key === key && C.m === m && C.d === d ? C.msg : '',
-      copy: e => { e.preventDefault(); e.stopPropagation(); const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
+      copy: e => { e.preventDefault(); e.stopPropagation(); const srcR = e.currentTarget && e.currentTarget.getBoundingClientRect ? e.currentTarget.getBoundingClientRect() : null; const a = document.activeElement; if (a && a.blur && a.tagName === 'TEXTAREA') a.blur();
         const at = Date.now(), src = String(((((this.readLog('academy.classLog', {})[this.ymOf(m)] || {})[key] || {}).d || {})[d]) || '').replace(/\s+$/, '');
         let msg = '다음 수업 날을 못 찾았어요';
         if (nx && src) {
@@ -1259,6 +1289,7 @@ class Component extends DCLogic {
           if (add.length) { this.saveClassDay(key, nx.m, nx.d, (cur ? cur + '\n' : '') + add.join('\n')); msg = this.kM(nx.m) + '/' + nx.d + '로 넘겼어요'; } else msg = '이미 있어요';
         }
         this.setState({ clCopied: { key: key, m: m, d: d, tm: nx && nx.m, td: nx && nx.d, msg: msg, at: at } });
+        if (nx && src && !/이미/.test(msg)) this.flyNote(srcR, src);
         setTimeout(() => { if (this.state.clCopied && this.state.clCopied.at === at) this.setState({ clCopied: null }); }, 2600); } };
   }
   // 수업일지 출석 칸 글 바로 저장 (다시 그리지 않음 — 다른 칸으로 옮겨 가는 중이라 커서가 사라지지 않게)
