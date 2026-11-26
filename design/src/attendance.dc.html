@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.109.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.110.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2275,7 +2275,7 @@ class Component extends DCLogic {
     const lines = []; for (let j = 0; j < groups.length; j += 2) lines.push({ groups: groups.slice(j, j + 2) });
     const used = Math.max(0, Math.min(L - start, cap)), wait = packs.slice(k + 1).reduce((a, p) => a + p.cap, 0);
     const md = d => (+d.slice(5, 7)) + '/' + (+d.slice(8, 10));
-    return { cap: cap, fill: used, due: due, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map((n, i) => n + ' ' + les.filter(l => l.i === i).length).join(' · ') + ')' };
+    return { cap: cap, fill: used, due: due, over: due && L > total, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map((n, i) => n + ' ' + les.filter(l => l.i === i).length).join(' · ') + ')' };
   }
   subjTagOf(s) {
     if (!s || s.trial) return null;
@@ -3521,9 +3521,10 @@ class Component extends DCLogic {
           // 넘어온 원생이 복귀·재등록하면 '← 예전 강사' 옆에 복귀·재등록 배지를 따로
           ...(() => { const T = this.subjTagOf(s); return { subjTag: T ? T.t : '', subjChip: T ? T.st : '', subjIcon: T ? T.icon : '', sibTip: s.trial ? '' : (() => { const L = this.sibsOf(String(s.name || '').replace('$', '')); return L.length ? '형제: ' + L.join(', ') : ''; })() }; })(),
           check2: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && !s.status && s.backTag) ? s.backTag : '', check2Chip: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && !s.status && s.backTag) ? pill('#E6F6F6', '#007E82') + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none' : 'display: none' + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none',
-          ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT + (!movedAway && !this.woOf(s.name.replace('$', '')) && ((this._unpaid[s.id] || 0) > 0 || (this._diffLeft[s.id] || 0) > 0) ? '; background: #FDEEEE' : ''),
-          dotGroups: dotGroups, dotLines: dotLines,
-          subText: tk[0], subParts: subParts, lateLine: lateLine, diffLine: V.diffLine, diffStyle: V.diffStyle,
+          ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT + (pool ? pool.over : !movedAway && !this.woOf(s.name.replace('$', '')) && ((this._unpaid[s.id] || 0) > 0 || (this._diffLeft[s.id] || 0) > 0) ? '; background: #FDEEEE' : ''),
+          // 형제 묶음 원생은 개인 수강은 빼고 형제 합계만
+          dotGroups: pool ? [] : dotGroups, dotLines: pool ? [] : dotLines,
+          subText: tk[0], subParts: pool ? [] : subParts, lateLine: pool ? '' : lateLine, diffLine: pool ? '' : V.diffLine, diffStyle: V.diffStyle,
           subStyle: 'font-size: 10px; letter-spacing: -0.02em; ' + tk[1],
           queueTxt: '',
           // 다음 달 이후에 낸 미납금액 수납은 출석부 칸이 없으므로 수강권 칸을 눌러 고치거나 취소한다
@@ -3549,7 +3550,7 @@ class Component extends DCLogic {
               // 흑백 인쇄용 표시 (색 대신 회색·무늬): pro 전문반 · abs 결석 · unpaid 미납 · free/half 무료·50% · pay 수납
               bw: [LD.pro ? 'pro' : '', x.kind === '결' ? 'abs' : '', /!/.test(x.text || '') ? 'unpaid' : '', (x.ben || (s.trial && (x.kind === '수' || x.kind === '결') ? s.trial.kind : '')) === 'free' ? 'free' : '', (x.ben || (s.trial && (x.kind === '수' || x.kind === '결') ? s.trial.kind : '')) === 'half' ? 'half' : '', x.pay ? 'pay' : ''].filter(Boolean).join(' '),
               pdot: x.pay ? 'position: absolute; top: -6px; right: -9px; font-size: 10px; font-weight: 600; line-height: 1; color: ' + (x.upay ? '#C0392B' : '#B8860B') : '',
-              text: x.text.replace('!', '').replace(/^결(\d+)$/, '$1'), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); min-width: max-content; min-height: max-content; padding: 2px 4px; line-height: 1.15; box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? (/^결\d+$/.test(x.text) ? '; border: 1.5px dashed #FFFFFF; box-shadow: 0 0 0 1.5px #E0605A' : '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4') : ''),
+              text: pool && /^결?\d+$/.test(String(x.text).replace('!', '')) ? '' : x.text.replace('!', '').replace(/^결(\d+)$/, '$1'), chip: pool && /^결?\d+$/.test(String(x.text).replace('!', '')) ? 'display: inline-block; width: 14px; height: 14px; border-radius: 50%; background: ' + (/^결/.test(x.text) ? '#E5484D' : '#00A6AB') : x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); min-width: max-content; min-height: max-content; padding: 2px 4px; line-height: 1.15; box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over ? (/^결\d+$/.test(x.text) ? '; border: 1.5px dashed #FFFFFF; box-shadow: 0 0 0 1.5px #E0605A' : '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4') : ''),
               label: this.kM(MON) + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
