@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2283,7 +2283,7 @@ class Component extends DCLogic {
     blk.forEach(l => { const sl = slots[l.i]; if (sl && sl.got.length < sl.share) sl.got.push(l); else spill.push(l); });
     spill.forEach(l => { const sl = slots.find(x => x.got.length < x.share); if (sl) sl.got.push(l); });
     const dot = l => l ? { bw: 'd-on', style: D + 'background: ' + (l.abs ? '#E5484D' : '#00A6AB') } : { bw: '', style: D + 'border: 1.5px solid #C9D0CC' };
-    const short = n => n.length >= 3 ? n.slice(1) : n;
+    const short = n => n;
     const lineOf = (label, ds) => { const groups = []; for (let j = 0; j < ds.length; j += 4) groups.push({ dots: ds.slice(j, j + 4) }); return { label: label, groups: groups }; };
     const lines = slots.filter(sl => sl.share > 0).map(sl => { const ds = []; for (let j = 0; j < sl.share; j++) ds.push(dot(sl.got[j])); return lineOf(short(sl.n), ds); });
     if (due && L > total) { const ds = []; for (let j = total; j < L; j++) ds.push({ bw: '', style: D + 'border: 1.5px dashed #D92D20' }); lines.push(lineOf('미납', ds)); }
