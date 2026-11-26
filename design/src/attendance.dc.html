@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.112.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -657,12 +657,21 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       </sc-for>
     </div>
   </sc-if>
+  <sc-if value="{{sibEndV.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{sibEndV.close}}" style="position: fixed; inset: 0; z-index: 46; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="형제 정리" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 47; width: 400px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; font-size: 18px; font-weight: 600; color: #17201C">형제 정리</span><sc-if value="{{sibEndV.change}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{sibEndV.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; font-size: 16px; cursor: pointer">×</button></sc-if></div>
+      <span style="font-size: 15px; color: #3A4450">형제 합계에 남은 회차 <b style="font-weight: 600; color: #007E82">{{sibEndV.left}}</b>가 있습니다. 어떻게 할까요?</span>
+      <div style="display: flex; flex-direction: column; gap: 8px"><sc-for list="{{sibEndV.opts}}" as="so" hint-placeholder-count="2"><button type="button" aria-pressed="{{so.on}}" onClick="{{so.pick}}" style="{{so.st}}"><span style="font-size: 15px; font-weight: 600; color: #17201C">{{so.label}}</span><span style="font-size: 12px; color: #5E6873">{{so.sub}}</span></button></sc-for></div>
+    </div>
+  </sc-if>
   <sc-if value="{{etcV.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{etcV.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.22)"></div>
     <div class="noprint" role="dialog" aria-label="기타" onKeyDown="{{etcV.key}}" tabIndex="-1" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 380px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; border-radius: 22px; background: #FFFFFF; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22); display: flex; flex-direction: column; gap: 16px">
       <div style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; font-size: 18px; font-weight: 600; color: #17201C">기타 <span style="font-size: 13px; font-weight: 500; color: #5E6873">{{etcV.title}}</span></span><button type="button" onClick="{{etcV.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
       <sc-if value="{{etcV.isMenu}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 8px">
         <button type="button" onClick="{{etcV.goAdj}}" style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; cursor: pointer">회차 맞추기<span style="color: #8A949E">›</span></button>
+        <sc-if value="{{etcV.hasSibEnd}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{etcV.sibEndOpen}}" style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; cursor: pointer">형제 정리 바꾸기<span style="color: #8A949E">›</span></button></sc-if>
       </div></sc-if>
       <sc-if value="{{etcV.isAdj}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 12px">
         <button type="button" onClick="{{etcV.back}}" style="align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 12px; color: #5E6873; cursor: pointer">‹ 기타</button>
@@ -1456,6 +1465,7 @@ class Component extends DCLogic {
     clearTimeout(this._ft);
     this._ft = setTimeout(() => { this._flash = null; this.setState({}); }, 30000);
     this.setState({ statusList: list, ast: null });
+    if ((S.kind === 'rest' || S.kind === 'out') && this.sibsOf(S.name).length) this.sibEndStart(S.name, S.date, S.name);
     [80, 350].forEach(ms => setTimeout(() => { const el = document.querySelector('.aflash > span'); if (el && el.scrollIntoView) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, ms));
     this.focusSheet();
   }
@@ -2083,6 +2093,7 @@ class Component extends DCLogic {
     }, true);
   }
   componentDidMount() {
+    setTimeout(() => { try { this.sibEndCheck(); } catch (e) {} }, 1500);
     // 시트로 보기 창이 '다른 달'을 볼 때 띄우는 보이지 않는 출석부 (?sheetfor=1&teacher=&ym=&key=): 그 강사·달로 그려서 시트 내용만 key에 씀
     { const SP = new URLSearchParams(location.search);
       if (SP.get('sheetfor')) {
@@ -2255,11 +2266,36 @@ class Component extends DCLogic {
   sibsOf(name) { const g = this.sibGroups().find(x => x.indexOf(name) >= 0); return g ? g.filter(n => n !== name) : []; }
   // 형제 합계 수강: 형제 묶음 원생들의 지금 수강권을 합쳐서 셈 (각자 수강은 그대로, 합계 동그라미가 다 차면 수납 안내)
   // calcF = 그 달 계산 함수, baseL = 모든 원생 줄. 돌려줌 { cap, fill, due, kids:[{name, used, cap, col}], dots }
-  sibPool(name, calcF, baseL) {
+  // 형제 정리('academy.sibEnds' [{id, names, date, left, to, leaver, pending}] / app_settings 'sibEnds'): 형제 합계가 끝날 때 남은 회차를 누가 쓸지
+  readSibEnds() { try { const v = JSON.parse(localStorage.getItem('academy.sibEnds') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
+  writeSibEnds(L) { try { localStorage.setItem('academy.sibEnds', JSON.stringify(L)); } catch (e) {} }
+  sibCarry() { const o = {}; this.readSibEnds().filter(r => r && !r.pending).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { o[n] = { date: r.date, left: n === r.to ? (+r.left || 0) : 0 }; })); return o; }
+  // 휴원·퇴원으로 형제 한 명이 빠질 때: 묶음을 풀고 정리 기록(pending)을 남긴 뒤 고르는 창
+  sibEndStart(name, date, leaver) {
+    const G = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!G) return;
+    const gs = this.sibGroups().filter(g => g !== G); const rest = G.filter(n => n !== name); if (rest.length > 1) gs.push(rest);
+    try { localStorage.setItem('academy.siblings', JSON.stringify(gs)); } catch (e) {}
+    this.writeSibEnds(this.readSibEnds().concat([{ id: 'E' + Date.now(), at: Date.now(), names: G, date: date, leaver: leaver || '', pending: true }]));
+    this.sibEndCheck();
+  }
+  sibEndCheck() {
+    if (window !== window.top) return;   // 숨은 계산 창·시트 창에서는 묻지 않음
+    const L = this.readSibEnds(), r = L.find(x => x && x.pending); if (!r || this.state.sibEnd) return;
+    let left = 0; try { const P = this.sibPool(r.names[0], null, this.baseRows(), r.names); left = P ? P.left : 0; } catch (e) {}
+    if (!left) { this.writeSibEnds(L.map(x => x.id === r.id ? Object.assign({}, x, { pending: false, left: 0, to: '' }) : x)); setTimeout(() => this.sibEndCheck(), 0); return; }
+    this.setState({ sibEnd: { id: r.id, names: r.names, left: left, leaver: r.leaver || '', to: '' } });
+  }
+  sibEndPick(n) {
+    const S = this.state.sibEnd; if (!S) return;
+    this.writeSibEnds(this.readSibEnds().map(x => x.id === S.id ? Object.assign({}, x, { pending: false, left: S.left, to: n }) : x));
+    this.setState({ sibEnd: null });
+    setTimeout(() => this.sibEndCheck(), 0);
+  }
+  sibPool(name, calcF, baseL, namesOv) {
     // 형제 합계 = 끊기지 않고 이어지는 묶음 줄. 시작 = 처음 '형제도 같이 수납'한 날(그날 수업 포함).
     // 그 뒤 형제 결제(같이 낸 건 한 묶음)를 날짜순으로 이어 붙여 묶음마다 회차 합만큼, 형제 출석·결석을 날짜순으로 채움.
     // 결제가 늦으면 그 사이 수업은 미납(빨간 점선) → 내면 채워짐, 미리 내면 다음 묶음으로 대기.
-    const names = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!names || names.length < 2) return null;
+    const names = namesOv || this.sibGroups().find(g => g.indexOf(name) >= 0); if (!names || names.length < 2) return null;
     const pays = this.readPays().filter(x => x && names.indexOf(x.name) >= 0 && x.kind !== 'repay' && x.kind !== 'trial' && !x.refund && x.date);
     const g0 = pays.filter(x => x.grp).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0))[0]; if (!g0) return null;
     const rows = baseL || this.baseRows(), maxM = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));
@@ -2297,7 +2333,7 @@ class Component extends DCLogic {
     const lines = []; for (let j = 0; j < groups.length; j += 2) lines.push({ groups: groups.slice(j, j + 2) });
     const used = Math.max(0, Math.min(L - start, cap)), wait = packs.slice(k + 1).reduce((a, p) => a + p.cap, 0);
     const md = d => (+d.slice(5, 7)) + '/' + (+d.slice(8, 10));
-    return { cap: cap, fill: used, due: due, over: due && L > total, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map((n, i) => n + ' ' + les.filter(l => l.i === i).length).join(' · ') + ')' };
+    return { cap: cap, fill: used, due: due, left: Math.max(0, total - L), over: due && L > total, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map((n, i) => n + ' ' + les.filter(l => l.i === i).length).join(' · ') + ')' };
   }
   subjTagOf(s) {
     if (!s || s.trial) return null;
@@ -3286,11 +3322,14 @@ class Component extends DCLogic {
       let tkSeq = 0, diffDue = 0, diffPaid = 0, diffDate = '', diffDateM = 0, diffSeq = -1, diffIdx = 0, diffT = 0;
       const ymdOf = (Mm, d) => this.ymK(Mm) + '-' + String(d).padStart(2, '0');
       // 퇴원 뒤 '새로 시작'으로 재등록한 날: 그날부터 신규처럼 수강권을 처음부터 (그 전 기록은 그대로)
+      const CARRY = (this._carry || {})[s0.name.replace('$', '')];
       const FRESH = (this.state.statusList || []).filter(e => e.name === s0.name.replace('$', '') && e.kind === 'back' && e.ticket === 'NEW').map(e => e.date);
       const runMonth = (Mm, cur) => {
         const EVm = cur ? EV : this.monthEvents(Mm);
         const NDm = new Date(2026, Mm, 0).getDate();
         for (let d = 1; d <= NDm; d++) {
+          // 형제 정리: 형제 합계가 끝난 날부터 각자 수강권으로 (받은 남은 회차만큼 남기고, 못 받은 아이는 다 쓴 상태)
+          if (CARRY && ymdOf(Mm, d) === CARRY.date) { const lf = +CARRY.left || 0; paid = true; newReg = false; T = Math.max(T, lf || T); used = T - lf; marks = marks.slice(0, used); for (let mi = 0; mi < used; mi++) if (marks[mi] == null) marks[mi] = '수#00A6AB'; }
           if (FRESH.length && FRESH.indexOf(ymdOf(Mm, d)) >= 0) { keepStart(firstDate, lastLesson); curBen = null; queueB.length = 0; T = T0; used = 0; paid = false; newReg = true; prevT = 0; prevMarks = []; marks = []; firstDate = ''; queue.length = 0; queueD.length = 0; payDate = null; tCells = []; diffDue = 0; diffPaid = 0; diffSeq = -1; tkSeq++; latePaid = ''; }
           if (s0.reg != null && d > 1 || s0.reg != null && Mm > M0) {
             const u0 = this.unitOn(s0, d > 1 ? ymdOf(Mm, d - 1) : ymdOf(Mm - 1, new Date(2026, Mm - 1, 0).getDate())), u1 = this.unitOn(s0, ymdOf(Mm, d));
@@ -3391,6 +3430,7 @@ class Component extends DCLogic {
       return calcCache[k][s.id];
     };
     };
+    this._carry = this.sibCarry();
     let calcMain = null;
     const calc = s => (calcMain = calcMain || mkCalc(MON, EV, all, true))(s);
     // 레슨시작일 예정: 원장님이 직접 넣은 날짜가 있으면 그것, 없으면 입금일(수납 날짜)부터 가장 가까운 수업 요일 (R은 직접 넣어야 함, 입금일을 모르면 직접 입력)
@@ -3660,10 +3700,16 @@ class Component extends DCLogic {
     });
     const to12 = t => { const m0 = /^(\d{1,2}):(\d{2})$/.exec(t || ''); if (!m0) return t || ''; return ((+m0[1] % 12) || 12) + ':' + m0[2]; };
     const lt12 = firstStu ? to12(firstStu.time || '') : '';
+    const SE = st.sibEnd;
+    const sibEndV = SE ? { open: true, left: SE.left + '회', change: !!SE.change,
+      opts: (SE.names || []).map(n => ({ label: n === SE.leaver ? n + ' 몫으로 남기기' : n + ' 이어서 쓰기', sub: n === SE.leaver ? '복귀하면 이어서 씀' : '다음 수업부터 남은 회차를 씀', on: SE.to === n ? 'true' : 'false', pick: () => this.sibEndPick(n), st: 'display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 12px 14px; border-radius: 14px; text-align: left; font-family: inherit; cursor: pointer; ' + (SE.to === n ? 'border: 1.5px solid #00A6AB; background: #E6F6F6' : 'border: 1px solid #D5DBD8; background: #FFFFFF') })),
+      close: () => { if (SE.change) this.setState({ sibEnd: null }); } } : { open: false };
     const E0 = st.etc;
     const etcV = E0 ? {
       open: true, title: E0.name + ' · ' + this.kM(E0.m) + '월 ' + E0.d + '일',
       isMenu: E0.step === 'menu', isAdj: E0.step === 'adj',
+      hasSibEnd: !!this.readSibEnds().filter(r => r && !r.pending && +r.left > 0 && (r.names || []).indexOf(E0.name) >= 0).length,
+      sibEndOpen: () => { const r = this.readSibEnds().filter(x => x && !x.pending && +x.left > 0 && (x.names || []).indexOf(E0.name) >= 0).sort((a, b) => (a.at || 0) - (b.at || 0)).pop(); if (r) this.setState({ etc: null, sibEnd: { id: r.id, names: r.names, left: r.left, leaver: r.leaver || '', to: r.to || '', change: true } }); },
       goAdj: () => { this.setState({ etc: Object.assign({}, E0, { step: 'adj' }) }); setTimeout(() => { const el = document.getElementById('etc_n'); if (el) el.focus(); }, 30); },
       back: () => this.setState({ etc: Object.assign({}, E0, { step: 'menu', err: '' }) }),
       modes: [['show', '숫자만 바꾸기', '이 칸의 회차 숫자만 바꿉니다. 남은 회차·수업완료·미납은 그대로.'], ['calc', '다시 계산', '이 날부터 그 번호로 이어서 세고, 남은 회차·수업완료·미납도 다시 계산합니다.']].map(m => ({ label: m[1], desc: m[2], on: E0.mode === m[0] ? 'true' : 'false', pick: () => { const el = document.getElementById('etc_n'), keep = el ? el.value : ''; this.setState({ etc: Object.assign({}, E0, { mode: m[0], n: parseInt(keep, 10) || E0.n }) }); }, st: 'display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; text-align: left; font-family: inherit; cursor: pointer; ' + (E0.mode === m[0] ? 'border: 1.5px solid #00A6AB; background: #E6F6F6' : 'border: 1px solid #D5DBD8; background: #FFFFFF'), dot: 'flex: none; width: 16px; height: 16px; margin-top: 2px; border-radius: 50%; box-sizing: border-box; ' + (E0.mode === m[0] ? 'border: 5px solid #00A6AB; background: #FFFFFF' : 'border: 1.5px solid #AEB7B2; background: #FFFFFF') })),
@@ -4295,7 +4341,7 @@ class Component extends DCLogic {
       showHobby: all.some(s0 => !s0.status && !s0.rowBg),
       showPro: all.some(s0 => !s0.status && !!s0.rowBg),
       onKey: e => this.selKey(e),
-      pop: pop, etcV: etcV
+      pop: pop, etcV: etcV, sibEndV: sibEndV
     };
   }
 }

@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.108.8"></script>
+<script src="db.js?v=0.113.0"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
@@ -172,7 +172,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.112.2</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.113.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -604,7 +604,7 @@ class Component extends DCLogic {
   sibSave(gs) { try { localStorage.setItem('academy.siblings', JSON.stringify(gs.filter(g => g.length > 1))); } catch (e) {} this.setState({}); }
   sibAdd(me, other) { if (!me || !other || me === other) return; let gs = this.sibGroups(); const a = gs.find(g => g.indexOf(me) >= 0), b = gs.find(g => g.indexOf(other) >= 0); if (a && a === b) return; gs = gs.filter(g => g !== a && g !== b); gs.push(Array.from(new Set((a || [me]).concat(b || [other])))); this.sibSave(gs); }
   sibFirst(name) { const gs = this.sibGroups().map(g => g.indexOf(name) >= 0 ? [name].concat(g.filter(n => n !== name)) : g); this.sibSave(gs); }
-  sibDel(me, other) { const gs = this.sibGroups().map(g => g.indexOf(me) >= 0 ? g.filter(n => n !== other) : g); this.sibSave(gs); }
+  sibDel(me, other) { const G = this.sibGroups().find(g => g.indexOf(me) >= 0); if (G) { let L = []; try { L = JSON.parse(localStorage.getItem('academy.sibEnds') || '[]') || []; } catch (e) {} L.push({ id: 'E' + Date.now(), at: Date.now(), names: G, date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10), leaver: '', pending: true }); try { localStorage.setItem('academy.sibEnds', JSON.stringify(L)); } catch (e) {} } const gs = this.sibGroups().map(g => g.indexOf(me) >= 0 ? g.filter(n => n !== other) : g); this.sibSave(gs); }
   students() {
     // changes: 수정·휴원·퇴원으로 바로 바뀐 내용 / hist: 적용 날짜가 있는 변경 (오늘까지 시작된 것만 반영)
     const ch = this.state.changes || {}, today = this.todayYmd();
