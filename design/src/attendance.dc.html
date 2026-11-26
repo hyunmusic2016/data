@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.109.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.109.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2240,18 +2240,26 @@ class Component extends DCLogic {
     // 결제가 늦으면 그 사이 수업은 미납(빨간 점선) → 내면 채워짐, 미리 내면 다음 묶음으로 대기.
     const names = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!names || names.length < 2) return null;
     const pays = this.readPays().filter(x => x && names.indexOf(x.name) >= 0 && x.kind !== 'repay' && x.kind !== 'trial' && !x.refund && x.date);
-    const gp = pays.filter(x => x.grp).map(x => x.date).sort(); if (!gp.length) return null;
-    const from = gp[0];
+    const g0 = pays.filter(x => x.grp).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0))[0]; if (!g0) return null;
+    const rows = baseL || this.baseRows(), maxM = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));
+    // 아이 한 명의 모든 출석·결석 날짜 (날짜순)
+    const lesOf = n => { const ids = rows.filter(z => String(z.name || '').replace('$', '') === n).map(z => z.id), out = [];
+      for (let m = 1; m <= maxM; m++) { const ev = this.monthEvents(m) || {}; ids.forEach(id => { const r = ev[id] || {}; for (let d = 1; d <= 31; d++) { const v = r[d]; if (v === '수' || v === '결') out.push({ ymd: this.ymK(m) + '-' + String(d).padStart(2, '0'), abs: v === '결' }); } }); }
+      return out.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0); };
+    // 시작 = 처음 같이 낸 결제가 맡는 수강권의 레슨시작일(아이마다 자기 결제를 앞에서부터 이어 붙여 그 결제가 시작되는 수업 날짜, 그중 가장 이른 날). 아직 수업이 없으면 결제일
+    let from = '';
+    names.forEach(n => { const mine = pays.filter(x => x.name === n).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)), gi = mine.findIndex(x => x.grp === g0.grp); if (gi < 0) return;
+      const pre = mine.slice(0, gi).reduce((a, x) => a + (+x.count || 0), 0), l = lesOf(n)[pre]; if (l && (!from || l.ymd < from)) from = l.ymd; });
+    if (!from) from = g0.date;
     const packs = [], seen = {};
-    pays.filter(x => x.date >= from).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).forEach(x => {
+    pays.filter(x => x.date > g0.date || (x.date === g0.date && (x.at || 0) >= (g0.at || 0)) || x.grp === g0.grp).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).forEach(x => {
       if (x.grp) { if (seen[x.grp]) { seen[x.grp].cap += +x.count || 0; return; } seen[x.grp] = { cap: +x.count || 0, date: x.date }; packs.push(seen[x.grp]); }
       else packs.push({ cap: +x.count || 0, date: x.date });
     });
-    const rows = baseL || this.baseRows(), maxM = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0).concat([this.kOf(from)]));
     const les = [];
     names.forEach((n, i) => {
       const ids = rows.filter(z => String(z.name || '').replace('$', '') === n).map(z => z.id);
-      for (let m = this.kOf(from); m <= maxM; m++) { const ev = this.monthEvents(m) || {}; ids.forEach(id => { const r = ev[id] || {}; for (let d = 1; d <= 31; d++) { const v = r[d]; if (v !== '수' && v !== '결') continue; const ymd = this.ymK(m) + '-' + String(d).padStart(2, '0'); if (ymd >= from) les.push({ ymd: ymd, i: i, abs: v === '결' }); } }); }
+      for (let m = this.kOf(from); m <= Math.max(maxM, this.kOf(from)); m++) { const ev = this.monthEvents(m) || {}; ids.forEach(id => { const r = ev[id] || {}; for (let d = 1; d <= 31; d++) { const v = r[d]; if (v !== '수' && v !== '결') continue; const ymd = this.ymK(m) + '-' + String(d).padStart(2, '0'); if (ymd >= from) les.push({ ymd: ymd, i: i, abs: v === '결' }); } }); }
     });
     les.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : a.i - b.i);
     const total = packs.reduce((a, p) => a + p.cap, 0), L = les.length, due = L >= total;
