@@ -323,6 +323,7 @@
     var now = Date.now(), d = /^\d{4}-\d{2}/.test(date || '') ? date : new Date().toISOString().slice(0, 10);
     L.push({ id: 'E' + now + '-' + Math.random().toString(36).slice(2, 6), at: now, who: (A.staff && A.staff.name) || '', tab: evTeacher(name), ym: d.slice(0, 7), rid: '', name: name, k: 'EV', a: '', b: text });
     localStorage.setItem('academy.cellLog', JSON.stringify(L.slice(-20000)));
+    try { clAdd([name + ' · ' + text]); } catch (e) {}
   }
   A.addEv = addEv;
   function md(d) { var m = /^\d{4}-(\d{2})-(\d{2})/.exec(d || ''); return m ? (+m[1]) + '/' + (+m[2]) : (d || ''); }
@@ -351,9 +352,11 @@
   Storage.prototype.setItem = function (k, v) {
     var evOld = (this === window.localStorage && A.data && (k === 'academy.lessonChanges' || k === 'academy.statusChanges')) ? this.getItem(k) : null;
     var ledOld = (this === window.localStorage && (k === 'academy.ledger' || k === 'academy.ledgerItems')) ? this.getItem(k) : null;
+    var clTrack = this === window.localStorage && CL_KEYS[k] && A.staff, clOld = clTrack ? this.getItem(k) : null;
     origSet.call(this, k, v);
     if (this === window.localStorage && /^academy\./.test(k)) A.lastWrite = Date.now();
     if (evOld !== null) { try { evDiff(k, evOld, v); } catch (e) {} }
+    if (clTrack && clOld !== v) { try { clAdd(clDescribe(k, clOld, v)); } catch (e) { console.warn(e); } }
     if (this !== window.localStorage || !A.data) return;
     try {
       if (k === 'academy.lessonChanges') syncList(JSON.parse(v || '[]'), 'shared', saveLesson, 'student_terms');
@@ -792,6 +795,138 @@
     setInterval(pCheck, 20000);
     setInterval(function () { if (pState === 'on') pSeen(); }, 60000);
     window.addEventListener('pagehide', pSeen);
+  }
+
+  // ── 페이지 변경 기록 (출석부 말고 모든 페이지 공통, 014 SQL change_log) ──
+  // 내용이 바뀌면(저장소 쓰기를 전후 비교) 알아보기 쉬운 줄로 남김: { id, at, who, page, lines: [글] } → 'academy.changeLog' + 서버 change_log
+  // 페이지 맨 아래 '시트로 보기' 왼쪽에 '기록' 버튼을 저절로 붙이고, 누르면 오른쪽에 그 페이지 기록 칸이 열림 (새 페이지도 저절로)
+  var CL_KEYS = { 'academy.payNotice': 1, 'academy.ledger': 1, 'academy.ledgerItems': 1, 'academy.payments': 1, 'academy.writeOffs': 1, 'academy.ticketPlans': 1 };
+  var CL_PAGE_NAME = { students: '수강생대장', notice: '수납 안내', 'notice-list': '수납 안내', money: '수입·지출', settings: '설정' };
+  function clPage() { var p = pPage(); return p === 'notice-list' ? 'notice' : p; }
+  function clOn() { var p = pPage(); return window === window.top && p !== 'attendance' && p !== 'sheet' && p !== 'money-sheet'; }
+  function jp(v, d) { try { var x = JSON.parse(v || 'null'); return x == null ? d : x; } catch (e) { return d; } }
+  function won(n) { n = +n || 0; return n.toLocaleString('ko-KR'); }
+  function md(ds) { var m = /^(\d{4})-(\d\d)-(\d\d)/.exec(ds || ''); return m ? (+m[2]) + '/' + (+m[3]) : (ds || ''); }
+  function q(s) { s = s == null ? '' : String(s); return s === '' ? '(빈칸)' : s; }
+  function clDescribe(k, ov, nv) {
+    var L = [];
+    if (k === 'academy.payNotice') {
+      var a0 = jp(ov, {}), b0 = jp(nv, {});
+      Object.keys(Object.assign({}, a0, b0)).forEach(function (n) {
+        var a = a0[n] || {}, b = b0[n] || {}, as = a.sends || [], bs = b.sends || [];
+        if ((a.cyc || '') !== (b.cyc || '') && a.cyc) { L.push(n + ' · 새로 수납해서 발송 기록 새로 시작'); return; }
+        bs.forEach(function (d) { if (as.indexOf(d) < 0) L.push(n + ' · 수납 안내 발송 ' + md(d)); });
+        as.forEach(function (d) { if (bs.indexOf(d) < 0) L.push(n + ' · 발송 기록 지움 ' + md(d)); });
+        if ((a.memo || '') !== (b.memo || '')) L.push(n + ' · MEMO ' + q(a.memo) + ' → ' + q(b.memo));
+        if (!!a.hidden !== !!b.hidden) L.push(n + (b.hidden ? ' · 목록에서 뺌' : ' · 목록으로 복귀'));
+      });
+    } else if (k === 'academy.ledger') {
+      var A0 = jp(ov, {}), B0 = jp(nv, {}), items = {}, pays = {}, F = { d: '일', amt: '금액', memo: '비고', item: '항목', shop: '구입처' };
+      jp(localStorage.getItem('academy.ledgerItems'), []).forEach(function (x) { items[x.id] = x.name; });
+      jp(localStorage.getItem('academy.payments'), []).forEach(function (x) { pays[x.id] = x.name; });
+      var fv = function (f, v) { return f === 'amt' ? won(v) : q(v); };
+      Object.keys(Object.assign({}, A0, B0)).sort().forEach(function (ym) {
+        var a = A0[ym] || {}, b = B0[ym] || {}, M = (+ym.slice(5)) + '월 ';
+        var af = a.fix || {}, bf = b.fix || {};
+        Object.keys(Object.assign({}, af, bf)).forEach(function (id) { var x = af[id] || {}, y = bf[id] || {}; ['d', 'amt', 'memo'].forEach(function (f) { if (String(x[f] == null ? '' : x[f]) !== String(y[f] == null ? '' : y[f])) L.push(M + '고정 지출 · ' + (items[id] || id) + ' ' + F[f] + ' ' + fv(f, x[f]) + ' → ' + fv(f, y[f])); }); });
+        [['vars', '변동 지출', ['d', 'item', 'shop', 'amt', 'memo']], ['extra', '기타 수입', ['d', 'item', 'amt', 'memo']]].forEach(function (g) {
+          var al = a[g[0]] || [], bl = b[g[0]] || [], ai = {}, bi = {};
+          al.forEach(function (x) { ai[x.id] = x; }); bl.forEach(function (x) { bi[x.id] = x; });
+          bl.forEach(function (y) { var x = ai[y.id]; if (!x) { L.push(M + g[1] + ' 줄 추가'); return; } g[2].forEach(function (f) { if (String(x[f] == null ? '' : x[f]) !== String(y[f] == null ? '' : y[f])) L.push(M + g[1] + ' · ' + (y.item || x.item || '') + ' ' + F[f] + ' ' + fv(f, x[f]) + ' → ' + fv(f, y[f])); }); });
+          al.forEach(function (x) { if (!bi[x.id]) L.push(M + g[1] + ' 줄 지움 · ' + (x.item || '') + (x.amt ? ' ' + won(x.amt) : '')); });
+          var ao = al.map(function (x) { return x.id; }).filter(function (i) { return bi[i]; }).join(), bo = bl.map(function (x) { return x.id; }).filter(function (i) { return ai[i]; }).join();
+          if (ao !== bo) L.push(M + g[1] + ' 순서 바꿈');
+        });
+        var am = a.incMemo || {}, bm = b.incMemo || {};
+        Object.keys(Object.assign({}, am, bm)).forEach(function (id) { if ((am[id] || '') !== (bm[id] || '')) L.push(M + '수입 비고 · ' + (pays[id] || '') + ' ' + q(am[id]) + ' → ' + q(bm[id])); });
+        if (JSON.stringify(a.incOrder || {}) !== JSON.stringify(b.incOrder || {})) L.push(M + '수입 순서 바꿈');
+      });
+    } else if (k === 'academy.ledgerItems') {
+      var ai2 = {}, bi2 = {}, al2 = jp(ov, []), bl2 = jp(nv, []);
+      al2.forEach(function (x) { ai2[x.id] = x; }); bl2.forEach(function (x) { bi2[x.id] = x; });
+      bl2.forEach(function (y) { var x = ai2[y.id]; if (!x) { L.push('고정 지출 항목 추가 · ' + y.name); return; } if (x.name !== y.name) L.push('고정 지출 항목 이름 ' + x.name + ' → ' + y.name); if ((x.until || '') !== (y.until || '')) L.push(y.until ? '고정 지출 항목 삭제 · ' + y.name + ' (' + y.until + '부터)' : '고정 지출 항목 되살림 · ' + y.name); });
+      al2.forEach(function (x) { if (!bi2[x.id]) L.push('고정 지출 항목 지움 · ' + x.name); });
+      if (al2.map(function (x) { return x.id; }).filter(function (i) { return bi2[i]; }).join() !== bl2.map(function (x) { return x.id; }).filter(function (i) { return ai2[i]; }).join()) L.push('고정 지출 항목 순서 바꿈');
+    } else if (k === 'academy.payments') {
+      var pa = {}, pb = {}, KN = { late: '미납 수납', trial: '체험 수납', unpaid: '미입금' };
+      jp(ov, []).forEach(function (x) { pa[x.id] = x; }); jp(nv, []).forEach(function (x) { pb[x.id] = x; });
+      var amt = function (x) { return won(x.amount != null ? x.amount : x.total); };
+      Object.keys(pb).forEach(function (id) { var x = pa[id], y = pb[id]; if (!x) { L.push((KN[y.kind] || '수납') + ' · ' + y.name + ' ' + amt(y) + '원 (' + md(y.date) + ')'); return; } if (x.date !== y.date) L.push('수납 날짜 고침 · ' + y.name + ' ' + md(x.date) + ' → ' + md(y.date)); if (amt(x) !== amt(y)) L.push('수납 금액 고침 · ' + y.name + ' ' + amt(x) + ' → ' + amt(y)); });
+      Object.keys(pa).forEach(function (id) { if (!pb[id]) { var x = pa[id]; L.push('수납 기록 지움 · ' + x.name + ' ' + amt(x) + '원 (' + md(x.date) + ')'); } });
+    } else if (k === 'academy.writeOffs') {
+      var wa = jp(ov, []).map(function (x) { return JSON.stringify(x); }), wb = jp(nv, []).map(function (x) { return JSON.stringify(x); });
+      wb.forEach(function (s) { if (wa.indexOf(s) < 0) { var x = JSON.parse(s); L.push('미납 정리 · ' + (x.name || '')); } });
+      wa.forEach(function (s) { if (wb.indexOf(s) < 0) { var x = JSON.parse(s); L.push('미납 정리 취소 · ' + (x.name || '')); } });
+    } else if (k === 'academy.ticketPlans') {
+      var ta = jp(ov, {}), tb = jp(nv, {});
+      Object.keys(Object.assign({}, ta, tb)).forEach(function (n) { if ((ta[n] || '') !== (tb[n] || '')) L.push(n + ' · 레슨시작일 예정 ' + (md(ta[n]) || '없음') + ' → ' + (md(tb[n]) || '없음')); });
+    }
+    return L;
+  }
+  function clAdd(lines) {
+    if (!lines || !lines.length || !clOn() || !A.staff) return;
+    var now = Date.now(), e = { id: 'C' + now + '-' + Math.random().toString(36).slice(2, 6), at: now, who: A.staff.name || '', page: clPage(), lines: lines.slice(0, 200) };
+    var L = jp(localStorage.getItem('academy.changeLog'), []); L.push(e); origSet.call(localStorage, 'academy.changeLog', JSON.stringify(L.slice(-3000)));
+    if (A.clReady !== false) sb.from('change_log').insert({ local_id: e.id, at: new Date(now).toISOString(), who: e.who, page: e.page, lines: e.lines }).then(function (r) { if (r && r.error) { A.clReady = false; console.warn('변경 기록 저장 안 됨(014 SQL?)', r.error); } });
+    if (clPanel && clPanel.isConnected) clDraw();
+  }
+  A.clAdd = clAdd;
+  // ── 기록 버튼·오른쪽 칸 ──
+  var clPanel = null, clQ = '', clServer = [];
+  function clLoad() {
+    sb.from('change_log').select('local_id,at,who,page,lines').eq('page', clPage()).order('at', { ascending: false }).limit(2000).then(function (r) {
+      if (r.error) { A.clReady = false; return; }
+      A.clReady = true; clServer = (r.data || []).map(function (x) { return { id: x.local_id, at: Date.parse(x.at), who: x.who, page: x.page, lines: x.lines || [] }; });
+      if (clPanel && clPanel.isConnected) clDraw();
+    });
+  }
+  function clEsc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function clDraw() {
+    var seen = {}, all = [];
+    clServer.concat(jp(localStorage.getItem('academy.changeLog'), []).filter(function (x) { return x.page === clPage(); })).forEach(function (x) { if (!seen[x.id]) { seen[x.id] = 1; all.push(x); } });
+    all.sort(function (a, b) { return b.at - a.at; });
+    var qq = clQ.trim(), groups = [];
+    all.forEach(function (x) {
+      var lines = qq ? x.lines.filter(function (l) { return l.indexOf(qq) >= 0 || (x.who || '').indexOf(qq) >= 0; }) : x.lines; if (!lines.length) return;
+      var g = groups[groups.length - 1];   // 같은 사람이 3분 안에 이어서 바꾼 것은 한 묶음
+      if (g && g.who === x.who && g.last - x.at < 180000) { g.lines = lines.concat(g.lines); g.last = x.at; } else groups.push({ who: x.who, at: x.at, last: x.at, lines: lines.slice() });
+    });
+    var WD = '일월화수목금토', h = '', day = '';
+    groups.forEach(function (g) {
+      var t = new Date(g.at), dk = (t.getMonth() + 1) + '월 ' + t.getDate() + '일 (' + WD[t.getDay()] + ')';
+      if (dk !== day) { day = dk; h += '<div style="padding: 12px 6px 4px; font-size: 12px; font-weight: 600; color: #8A949E">' + dk + '</div>'; }
+      var hh = t.getHours() % 12 || 12, tm = hh + ':' + String(t.getMinutes()).padStart(2, '0');
+      h += '<div style="margin: 0 0 6px; padding: 10px 12px; border-radius: 12px; border: 1px solid #E6EAE8; background: #FFFFFF"><div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600; color: #17201C">' + tm + '</span><span style="font-size: 12px; color: #5B6670">' + clEsc(g.who || '') + '</span><span style="margin-left: auto; font-size: 11px; color: #8A949E">' + g.lines.length + '건</span></div>' + g.lines.map(function (l) { return '<div style="font-size: 12px; color: #3A4450; line-height: 1.5">' + clEsc(l) + '</div>'; }).join('') + '</div>';
+    });
+    var list = clPanel.querySelector('[data-cl-list]');
+    list.innerHTML = h || '<div style="padding: 24px 8px; text-align: center; font-size: 13px; color: #8A949E">' + (qq ? '찾는 기록이 없습니다' : '기록이 없습니다') + '</div>';
+    var note = clPanel.querySelector('[data-cl-note]'); note.textContent = A.clReady === false ? '서버에 기록하려면 Supabase에서 014 SQL을 실행해 주세요 (지금은 이 브라우저에만)' : '내용이 바뀌면 누가 언제 무엇을 바꿨는지 남습니다';
+  }
+  function clOpen() {
+    if (clPanel && clPanel.isConnected) { clPanel.remove(); clPanel = null; return; }
+    clPanel = document.createElement('div');
+    clPanel.className = 'noprint noexp'; clPanel.setAttribute('role', 'dialog'); clPanel.setAttribute('aria-label', '변경 기록');
+    clPanel.style.cssText = 'position: fixed; top: 52px; right: 0; bottom: 0; z-index: 1002; width: 340px; max-width: 92vw; display: flex; flex-direction: column; background: #FFFFFF; border-top: 1px solid #DDE2DF; border-left: 1px solid #DDE2DF; border-top-left-radius: 14px; box-shadow: -8px 0 24px rgba(23, 32, 28, 0.08); font-family: inherit';
+    clPanel.innerHTML = '<div style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 10px"><span style="font-size: 17px; font-weight: 600; color: #17201C">변경 기록</span><span style="font-size: 12px; color: #8A949E">' + clEsc(CL_PAGE_NAME[clPage()] || '') + '</span><button type="button" data-cl-close aria-label="닫기" style="margin-left: auto; height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #D9DEE3; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">닫기 ×</button></div>'
+      + '<div style="padding: 0 16px 8px"><input id="cl_search" type="text" data-noclear="1" placeholder="이름·내용 찾기" aria-label="기록 찾기" style="width: 100%; box-sizing: border-box; height: 34px; padding: 0 10px; border-radius: 9px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 13px"></div>'
+      + '<div data-cl-note style="padding: 0 16px 8px; font-size: 12px; color: #8A949E"></div><div data-cl-list style="flex: 1; overflow: auto; padding: 0 10px 16px; background: #F7F9F8"></div>';
+    document.body.appendChild(clPanel);
+    clPanel.querySelector('[data-cl-close]').onclick = function () { clPanel.remove(); clPanel = null; };
+    clPanel.querySelector('#cl_search').oninput = function (e) { clQ = e.target.value; clDraw(); };
+    clDraw(); clLoad();
+  }
+  A.openChangeLog = clOpen;
+  function clButton() {
+    if (!clOn()) return;
+    var sheet = Array.prototype.find.call(document.querySelectorAll('button, a'), function (b) { return /시트로 보기/.test(b.textContent || '') && b.offsetParent && !b.hasAttribute('data-cl-btn'); });
+    if (!sheet || (sheet.previousElementSibling && sheet.previousElementSibling.hasAttribute('data-cl-btn'))) return;
+    var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-cl-btn', '1'); b.className = 'noexp noprint'; b.setAttribute('aria-label', '변경 기록 보기');
+    b.style.cssText = (sheet.getAttribute('style') || '') + '; cursor: pointer; font-family: inherit'; b.textContent = '기록'; b.onclick = clOpen;
+    sheet.parentNode.insertBefore(b, sheet);
+  }
+  if (window === window.top) {
+    var clT = 0;
+    new MutationObserver(function () { if (!clT) clT = requestAnimationFrame(function () { clT = 0; clButton(); }); }).observe(document.documentElement, { childList: true, subtree: true });
   }
   document.addEventListener('academy:login', pStart);
   document.addEventListener('academy:data', pStart);
