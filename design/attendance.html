@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.7</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3902,8 +3902,9 @@ class Component extends DCLogic {
         const pool0 = sm ? null : this.sibPool(nm, calcOf(mm), baseAll);
         const dueNow = !sm && s0.dbStatus !== 'rest' && s0.dbStatus !== 'out' && (pool0 ? pool0.due && (this.sibGroups().find(g => g.indexOf(nm) >= 0) || [nm])[0] === nm : ((x.paid && x.used >= x.T && !qn) || (!x.paid && !(x.newReg && x.used === 0))));
         tks[nm] = { due: dueNow, stKind: sm && stx ? stx.kind : '', stDate: sm && stx ? String(stx.date || '') : '', stAt: sm && stx ? (stx.at || 0) : 0, cyc: String(x.payDate == null ? '' : x.payDate), teacher: s0.teacher || '', days: baseAll.filter(z => (z.sid || z.id) === (s0.sid || s0.id)).map(z => z.g), left: x.paid ? Math.max(0, x.T - x.used) + x.queue.reduce((n, c) => n + c, 0) : 0, n: !x.paid && !(x.newReg && x.used === 0) ? x.used : 0, diffLeft: Math.max(0, (x.diffDue || 0) - (x.diffPaid || 0)), unit: (s0.reg != null && this.unitOn(s0, tdy)) || (proT ? 62500 : 40000), pro: proT, rid: s0.id, sm: sm, text: doneOut ? '수업완료' : text, line: doneOut ? '수업완료' : v.subParts.map(p => p.t).join('') + (v.lateLine ? ' · ' + v.lateLine : ''),
-          dotLines: v.dotLines.map(l => ({ groups: l.groups.map(g => ({ dots: g.dots.map(d => ({ style: d.style, bw: d.bw || '' })) })) })),
-          subParts: doneOut ? [{ t: '수업완료', style: 'color: #007E82; font-weight: 600' }] : v.subParts, lateLine: v.lateLine, queueTxt: v.queueTxt };
+          dotLines: (pool0 ? pool0.lines : v.dotLines).map(l => ({ groups: l.groups.map(g => ({ dots: g.dots.map(d => ({ style: d.style, bw: d.bw || '' })) })) })),
+          // 형제 묶음 원생은 수납 안내·수강생대장에도 형제 합계 동그라미 + '5/8'
+          subParts: pool0 ? [{ t: Math.min(pool0.fill, pool0.cap) + '/' + pool0.cap, style: 'color: #8A949E' }] : doneOut ? [{ t: '수업완료', style: 'color: #007E82; font-weight: 600' }] : v.subParts, lateLine: pool0 ? '' : v.lateLine, queueTxt: pool0 ? '' : v.queueTxt };
       });
       const js = JSON.stringify(tks);
       if (js !== this._tkSnap) { this._tkSnap = js; localStorage.setItem('academy.tickets', js); }
