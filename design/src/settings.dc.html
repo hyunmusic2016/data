@@ -106,11 +106,10 @@ html.bwp .printonly .pcell{border-color:#000!important}
                 <div style="{{b.head}}"><span style="{{b.dot}}"></span><span style="{{b.titleStyle}}">{{b.title}}</span><span style="font-size: 12px; color: #6B7570">{{b.note}}</span><span style="flex: 1 1 auto"></span><span style="{{b.titleStyle}}">{{b.count}}</span></div>
                 <sc-for list="{{b.rows}}" as="x" hint-placeholder-count="2">
                   <div style="{{hol.row}}">
-                    <sc-if value="{{x.kr}}" hint-placeholder-val="{{ true }}"><span style="width: 150px; flex: none; font-size: 13px; font-weight: 600; color: #3A4450">{{x.day}}</span><span style="width: 220px; flex: none; font-size: 13px; color: #17201C">{{x.name}}</span></sc-if>
-                    <sc-if value="{{x.custom}}" hint-placeholder-val="{{ false }}"><input id="{{x.idDate}}" type="date" value="{{x.date}}" disabled="{{x.lock}}" onChange="{{x.setDate}}" aria-label="날짜" style="width: 150px; flex: none; box-sizing: border-box; height: 30px; padding: 0 8px; border-radius: 8px; border: 1px solid #DDE2DF; font-size: 13px; color: #17201C"><input id="{{x.idName}}" type="text" defaultValue="{{x.name}}" disabled="{{x.lock}}" onBlur="{{x.setName}}" placeholder="이름 (예: 여름 휴가)" aria-label="휴일 이름" style="height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; font-size: 13px; color: #17201C; width: 220px; flex: none; box-sizing: border-box"></sc-if>
-                    <span style="display: flex; gap: 4px"><sc-for list="{{x.tags}}" as="g" hint-placeholder-count="1"><span style="{{g.style}}">{{g.t}}</span></sc-for></span>
+                    <span style="width: 150px; flex: none; font-size: 13px; font-weight: 600; color: #3A4450">{{x.day}}</span><span style="width: 220px; flex: none; font-size: 13px; color: #17201C">{{x.name}}</span>
+                    <span style="display: flex; gap: 4px; min-width: 120px"><sc-for list="{{x.tags}}" as="g" hint-placeholder-count="1"><span style="{{g.style}}">{{g.t}}</span></sc-for></span>
                     <span style="display: flex; gap: 5px"><sc-for list="{{x.kinds}}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{o.pick}}" disabled="{{x.lock}}" style="{{o.style}}">{{o.label}}</button></sc-for></span>
-                    <sc-if value="{{x.custom}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{x.every.pick}}" disabled="{{x.lock}}" title="매년 같은 날 반복" style="{{x.every.style}}">{{x.every.label}}</button><span style="display: flex; flex-wrap: wrap; gap: 5px; flex: 1 1 200px"><sc-for list="{{x.teachers}}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{t.pick}}" disabled="{{x.lock}}" style="{{t.style}}">{{t.label}}</button></sc-for></span><sc-if value="{{hol.can}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp noprint" onClick="{{x.del}}" aria-label="휴일 지우기" style="width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #8A949E; font-size: 15px; cursor: pointer">×</button></sc-if></sc-if>
+                    <sc-if value="{{x.custom}}" hint-placeholder-val="{{ false }}"><span style="flex: 1 1 auto"></span><sc-if value="{{hol.can}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp noprint" onClick="{{x.edit}}" style="height: 28px; padding: 0 12px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 12px; font-weight: 600; cursor: pointer">수정</button><button type="button" class="noexp noprint" onClick="{{x.del}}" aria-label="휴일 지우기" style="width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #8A949E; font-size: 15px; cursor: pointer">×</button></sc-if></sc-if>
                   </div>
                 </sc-for>
                 <sc-if value="{{b.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 12px 14px; font-size: 13px; color: #8A949E">없음</div></sc-if>
@@ -302,7 +301,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.98.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.98.1</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -351,6 +350,16 @@ html.bwp .printonly .pcell{border-color:#000!important}
         <button type="button" onClick="{{ed.close}}" style="height: 48px; padding: 0 22px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">취소</button>
         <button type="button" onClick="{{ed.save}}" style="height: 48px; padding: 0 34px; border-radius: 14px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{ed.saveLabel}}</button>
       </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{hol.ed.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{hol.ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.28)"></div>
+    <div class="noprint" role="dialog" aria-label="{{hol.ed.title}}" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 520px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.22)">
+      <div style="display: flex; align-items: center; gap: 8px"><span style="font-size: 18px; font-weight: 600; color: #17201C">{{hol.ed.title}}</span><span style="flex: 1"></span><button type="button" onClick="{{hol.ed.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 9px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
+      <div style="display: flex; gap: 10px"><label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873">날짜<input id="hol_ed_date" type="date" value="{{hol.ed.date}}" onChange="{{hol.ed.setDate}}" style="height: 38px; padding: 0 10px; border-radius: 10px; border: 1px solid #DDE2DF; font-size: 14px; color: #17201C"></label><label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873">이름<input id="hol_ed_name" type="text" defaultValue="{{hol.ed.name}}" onInput="{{hol.ed.typeName}}" placeholder="예: 여름 휴가" style="height: 38px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; font-size: 14px; color: #17201C; min-width: 0"></label></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 600; color: #5E6873">수업</span><span style="display: flex; gap: 6px"><sc-for list="{{hol.ed.kinds}}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for><span style="flex: 1"></span><button type="button" onClick="{{hol.ed.every.pick}}" style="{{hol.ed.every.style}}">{{hol.ed.every.label}}</button></span></div>
+      <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 12px; font-weight: 600; color: #5E6873">적용할 강사</span><span style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{hol.ed.teachers}}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{t.pick}}" style="{{t.style}}">{{t.label}}</button></sc-for></span></div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px"><button type="button" onClick="{{hol.ed.close}}" style="height: 44px; padding: 0 22px; border-radius: 12px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 14px; font-weight: 600; cursor: pointer">취소</button><button type="button" onClick="{{hol.ed.save}}" style="height: 44px; padding: 0 28px; border-radius: 12px; border: none; background: #00A6AB; color: #FFFFFF; font-size: 14px; font-weight: 600; cursor: pointer">저장</button></div>
     </div>
   </sc-if>
   <sc-if value="{{lv.open}}" hint-placeholder-val="{{ false }}">
@@ -629,7 +638,7 @@ class Component extends DCLogic {
       ['hangul', '한글날', [at('10-09')], 'we'], ['xmas', '성탄절', [at('12-25')], 'we']];
     const out = [], S = {}, N = {};
     EV.forEach(e => e[2].forEach(t => { N[ds(t)] = (N[ds(t)] || 0) + 1; }));   // 같은 날 겹친 공휴일(설·추석·어린이날은 겹쳐도 대체공휴일)
-    EV.forEach(e => e[2].forEach((t, i) => { const nm = e[2].length > 1 && i !== 1 ? e[1] + ' 연휴' : e[1]; out.push({ key: e[2].length > 1 ? e[0] + (i - 1 || '') : e[0], date: ds(t), name: nm, sub: false }); S[ds(t)] = 1; }));
+    EV.forEach(e => e[2].forEach((t, i) => { const nm = e[2].length > 1 && i !== 1 ? e[1] + ' 연휴' : e[1]; out.push({ key: e[0], date: ds(t), name: nm, sub: false }); S[ds(t)] = 1; }));
     Object.keys(ELEC).forEach(d => { if (d.slice(0, 4) === String(Y)) { out.push({ key: 'elec', date: d, name: ELEC[d], sub: false }); S[d] = 1; } });
     EV.slice().sort((a, b) => a[2][0] - b[2][0]).forEach(e => {
       const ov = (e[3] === 'sun' || e[0] === 'children') && e[2].some(t => N[ds(t)] > 1);
@@ -648,7 +657,7 @@ class Component extends DCLogic {
     const kr = {}, old = v.kr && typeof v.kr === 'object' ? v.kr : {};
     Object.keys(old).forEach(k => {
       if (/^\d{4}-\d\d-\d\d$/.test(k)) { const h = this.krHolidays(+k.slice(0, 4)).find(x => x.date === k); if (h) (kr[h.key] = kr[h.key] || {})[k.slice(0, 4)] = old[k]; }   // 예전(날짜별) 저장값
-      else if (old[k] && typeof old[k] === 'object') kr[k] = Object.assign(kr[k] || {}, old[k]);
+      else if (old[k] && typeof old[k] === 'object') { const k2 = k.replace(/^(seol|chuseok)-?1$/, '$1'); kr[k2] = k2 === k ? Object.assign(kr[k2] || {}, old[k]) : Object.assign({}, old[k], kr[k2] || {}); }
     });
     return { kr: kr, custom: Array.isArray(v.custom) ? v.custom : [] };
   }
@@ -680,14 +689,11 @@ class Component extends DCLogic {
       if (h.kr) return { kind: h.kind, kr: true, custom: false, day: lab(h.date), name: h.name, lock: !can,
         tags: [tag('공휴일', '#F1F3F2', '#6B7570')].concat(h.sub ? [tag('대체', '#F1F3F2', '#6B7570')] : []),
         kinds: seg(h.kind, KINDS, k => { if (!can) return; const c = this.holidayCfg(); (c.kr[h.key] = c.kr[h.key] || {})[Y] = k; this.saveHol(c); }) };
-      const x = cfg.custom.find(o => o.id === h.id), ts = h.teachers.filter(n => T.indexOf(n) >= 0);
-      return { kind: h.kind, kr: false, custom: true, id: h.id, idDate: 'hol_d_' + h.id + '_' + Y, idName: 'hol_n_' + h.id + '_' + Y, date: h.date, name: h.name, lock: !can, day: lab(h.date),
-        tags: [tag('학원', '#E6F6F6', '#007A7E')],
-        setDate: e => { const v = e.target.value; if (/^\d{4}-\d\d-\d\d$/.test(v)) upd(h.id, o => { o.date = h.base ? (x.date || '').slice(0, 4) + v.slice(4) : v; }); },
-        setName: e => { const v = e.target.value.trim(); if (v !== h.name) upd(h.id, o => { o.name = v; }); },
+      const ts = h.teachers.filter(n => T.indexOf(n) >= 0);
+      return { kind: h.kind, kr: false, custom: true, id: h.id, day: lab(h.date), name: h.name || '(이름 없음)', lock: !can,
+        tags: [tag('학원', '#E6F6F6', '#007A7E')].concat(h.every ? [tag('매년', '#E6F6F6', '#007A7E')] : []).concat(ts.length ? [tag(ts.join(', '), '#F1F3F2', '#5E6873')] : []),
         kinds: seg(h.kind, KINDS.slice(0, 2), k => upd(h.id, o => { o.kind = k; })),
-        every: { label: '매년', style: chip(h.every), pick: () => upd(h.id, o => { o.every = !o.every; }) },
-        teachers: [{ label: '모든 강사', style: chip(!ts.length), pick: () => upd(h.id, o => { o.teachers = []; }) }].concat(T.map(n => ({ label: n, style: chip(ts.indexOf(n) >= 0), pick: () => upd(h.id, o => { let a = ts.slice(); a = a.indexOf(n) >= 0 ? a.filter(m => m !== n) : a.concat(n); o.teachers = a.length >= T.length ? [] : a; }) }))),
+        edit: () => { if (!can) return; const x = cfg.custom.find(o => o.id === h.id); this.setState({ holEd: { id: h.id, date: h.base ? h.date : x.date, base: h.base, name: x.name || '', kind: x.kind === 'short' ? 'short' : 'off', every: !!x.every, teachers: ts.slice() } }); },
         del: () => { if (!can) return; if (!window.confirm((h.name || '이 휴일') + (h.every ? '을(를) 지울까요? (매년 반복도 모두 지워집니다)' : '을(를) 지울까요?'))) return; const c = this.holidayCfg(); c.custom = c.custom.filter(o => o.id !== h.id); this.saveHol(c); } };
     });
     const box = (k, title, note) => { const r = rows.filter(x => x.kind === k); return { title, note, count: r.length + '일', rows: r, empty: !r.length,
@@ -696,7 +702,28 @@ class Component extends DCLogic {
     return { year: Y, can: can, noPrev: Y <= 2026, noNext: Y >= 2040,
       boxes: [box('off', '휴일', '수업 없음'), box('short', '단축수업', '수업은 하되 짧게'), box('normal', '정상수업', '공휴일이지만 평소처럼 수업')],
       prev: () => this.setState({ holYear: Math.max(2026, Y - 1) }), next: () => this.setState({ holYear: Math.min(2040, Y + 1) }),
-      add: () => { if (!can) return; const c = this.holidayCfg(), t = new Date(), ds = t.getFullYear() === Y ? t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0') : Y + '-01-01'; c.custom.push({ id: 'H' + Date.now().toString(36), date: ds, name: '', kind: 'off', teachers: [], every: true }); c.custom.sort((a, b) => (a.date || '').localeCompare(b.date || '')); this.saveHol(c); },
+      add: () => { if (!can) return; const t = new Date(), ds = t.getFullYear() === Y ? t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0') : Y + '-01-01'; this.setState({ holEd: { id: '', date: ds, name: '', kind: 'off', every: true, teachers: [] } }); },
+      ed: (() => {
+        const E = this.state.holEd; if (!E) return { open: false };
+        const set = p => this.setState({ holEd: Object.assign({}, this.state.holEd, p) });
+        const close = () => this.setState({ holEd: null });
+        return { open: true, title: E.id ? '학원 휴일 수정' : '학원 휴일 추가', date: E.date, name: E.name, isEdit: !!E.id,
+          setDate: e => { const v = e.target.value; if (/^\d{4}-\d\d-\d\d$/.test(v)) set({ date: v }); },
+          typeName: e => { this.state.holEd.name = e.target.value; },
+          kinds: seg(E.kind, KINDS.slice(0, 2), k => set({ kind: k })),
+          every: { label: '매년 같은 날 반복', style: chip(E.every), pick: () => set({ every: !E.every }) },
+          teachers: [{ label: '모든 강사', style: chip(!E.teachers.length), pick: () => set({ teachers: [] }) }].concat(T.map(n => ({ label: n, style: chip(E.teachers.indexOf(n) >= 0), pick: () => { let a = E.teachers.indexOf(n) >= 0 ? E.teachers.filter(m => m !== n) : E.teachers.concat(n); set({ teachers: a.length >= T.length ? [] : a }); } }))),
+          close: close,
+          save: () => {
+            const el = document.getElementById('hol_ed_name'), nm = ((el ? el.value : E.name) || '').trim();
+            if (!nm) { window.alert('휴일 이름을 적어 주세요'); return; }
+            const c = this.holidayCfg(); let x = E.id ? c.custom.find(o => o.id === E.id) : null;
+            if (!x) { x = { id: 'H' + Date.now().toString(36) }; c.custom.push(x); }
+            x.date = E.base && x.date ? x.date.slice(0, 4) + E.date.slice(4) : E.date; x.name = nm; x.kind = E.kind; x.every = E.every; x.teachers = E.teachers;
+            c.custom.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+            this.state.holEd = null; this.saveHol(c);
+          } };
+      })(),
       navBtn: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 16px; cursor: pointer',
       row: 'display: flex; flex-wrap: wrap; align-items: center; gap: 10px; min-height: 30px; padding: 7px 14px; border-bottom: 1px solid #EEF1EF',
       print: rows.map(x => [x.day, x.name, ({ off: '휴일', short: '단축수업', normal: '정상수업' })[x.kind], x.kr ? '대한민국 공휴일' : '학원 휴일 · ' + ((cfg.custom.find(o => o.id === x.id).teachers || []).join(', ') || '모든 강사')]) };
@@ -1302,7 +1329,7 @@ class Component extends DCLogic {
     const d = new Date();
     const V = st.view || 'hub', F = this.featureOf(V);
     const PV = V;
-    const HOL = V === 'holidays' ? this.holView(this.canEdit()) : { kr: [], custom: [], print: [] };
+    const HOL = V === 'holidays' ? this.holView(this.canEdit()) : { kr: [], custom: [], print: [], ed: { open: false } };
     const printHead = PV === 'holidays' ? ['날짜', '이름', '수업', '구분'] : PV === 'sorder' ? ['순서', '성명', '직명', '사용'] : PV === 'staff' ? VIS.map(c => c.label) : PV === 'subjects' ? ['순서', '수강과목', '맡은 직원'] : ['순서', '탭 이름', '종류', '보이기'];
     const printRows = PV === 'holidays' ? HOL.print : PV === 'sorder' ? SO.map((e, i) => [i + 1, e.name + (this.isDismissed(e) ? ' (해임)' : ''), this.titlesOf(e).join(','), e.use ? '사용' : '사용 안 함']) : PV === 'staff' ? SHOWN.filter(e => !this._sq || [e.name, e.phone, e.addr, e.duty, (e.subjects || []).join(' '), e.email].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|').indexOf(String(this._sq).replace(/[-\s]/g, '').toLowerCase()) >= 0).map(e => VIS.map(c => plainOf(c, e)))
       : PV === 'subjects' ? SUB.map((s, i) => [i + 1, s.name, usedBy(s.name) ? usedBy(s.name) + '명' : ''])
