@@ -210,15 +210,20 @@
         A.trialTried = true;
         if (qs[7] && !qs[7].error) {
           A.trialReady = true;
-          var trL = [], acT = {}, plT = [];
+          var trL = [], acT = {}, plT = [], trFix = false;
           try { acT = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; plT = JSON.parse(localStorage.getItem('academy.payments') || '[]') || []; } catch (x) {}
           Object.keys(acT).forEach(function (ym) { Object.keys(acT[ym] || {}).forEach(function (k) { if (/^X/.test(k)) delete acT[ym][k]; }); });
           plT = plT.filter(function (p) { return !(p && p.kind === 'trial'); });
           (qs[7].data || []).forEach(function (r) { var d = r.data || {}; if (!d.info) return; trL.push(d.info);
             Object.keys(d.cells || {}).forEach(function (ym) { (acT[ym] = acT[ym] || {})['X' + d.info.id] = d.cells[ym]; });
-            (d.pays || []).forEach(function (p) { plT.push(p); }); });
+            (d.pays || []).forEach(function (p) { plT.push(p);
+              // 수납 기록은 있는데 출석부 칸에 ₩ 표시가 빠졌으면 되살림 (저장이 엇갈려 칸만 지워진 경우)
+              var m = /^(\d{4}-\d{2})-(\d{2})$/.exec(String(p && p.date || '')); if (!m || p.kind === 'repay' || p.refund) return;
+              var dd = +m[2], row = ((acT[m[1]] = acT[m[1]] || {})['X' + d.info.id] = acT[m[1]]['X' + d.info.id] || {});
+              if (!row['p' + dd] && row[dd] !== 'V') { row['p' + dd] = true; trFix = true; } }); });
           rawSet('academy.trials', JSON.stringify(trL)); rawSet('academy.attCells', JSON.stringify(acT)); rawSet('academy.payments', JSON.stringify(plT));
           known.trial = trialData();
+          if (trFix) { known.trial = {}; setTimeout(syncTrials, 500); }
         }
         // 수업일지·업무일지 (011 SQL). 이 브라우저에만 있던 글은 처음 한 번 서버에 올림(서버에 같은 칸이 있으면 서버 글을 씀)
         A.logTried = true;
