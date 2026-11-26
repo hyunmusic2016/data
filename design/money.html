@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.102.2"></script>
+<script src="db.js?v=0.102.3"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
@@ -61,6 +61,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <button type="button" class="noexp" onClick="{{nextM}}" aria-label="다음 달" style="{{navBtn}}">›</button>
         </span>
         <span style="flex: 1"></span>
+        <span class="noexp noprint" style="position: relative; display: inline-flex; align-items: center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="position: absolute; left: 11px; pointer-events: none"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input id="money_q" type="text" placeholder="찾기 (항목·이름·비고·금액)" aria-label="찾기" onInput="{{qIn}}" style="width: 220px; height: 38px; padding: 0 30px 0 32px; box-sizing: border-box; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 13px; color: #17201C"></span>
         <sc-if value="{{reOn}}" hint-placeholder-val="{{ false }}"><span class="noexp" style="font-size: 13px; font-weight: 600; color: #007E82">줄을 누른 채 위아래로 끌어 순서를 바꾸세요</span></sc-if>
         <button type="button" class="noexp" onClick="{{reToggle}}" aria-pressed="{{reOnStr}}" style="{{reBtn}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"></path></svg>{{reLabel}}</button>
       </div>
@@ -130,7 +131,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.2</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.3</span>
     </div>
   </main>
 
@@ -434,7 +435,17 @@ class Component extends DCLogic {
       await this.saveBlob(this.expName('pdf'), pdf.output('blob'));
     } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
   }
+  applyQ() {
+    const el = document.getElementById('money_q'), q = el ? el.value.trim().replace(/,/g, '') : '';
+    if (!document.getElementById('money_qcss')) { const st = document.createElement('style'); st.id = 'money_qcss'; st.textContent = '.qhide{display:none!important}'; document.head.appendChild(st); }
+    document.querySelectorAll('[data-rg]').forEach(r => {
+      const txt = (r.textContent + ' ' + [...r.querySelectorAll('input, textarea')].map(i => i.value).join(' ')).replace(/,/g, '');
+      r.classList.toggle('qhide', !!q && txt.indexOf(q) < 0);
+    });
+  }
   componentDidMount() {
+    // 다시 그려도 찾기 그대로 (줄이 새로 그려지면 다시 거름)
+    if (!this._qObs) { let t = 0; this._qObs = new MutationObserver(() => { if (!t) t = requestAnimationFrame(() => { t = 0; const el = document.getElementById('money_q'); if (el && el.value.trim()) this.applyQ(); }); }); this._qObs.observe(document.body, { childList: true, subtree: true }); }
     // 시트로 보기 창이 '다른 달'을 볼 때 띄우는 보이지 않는 수입·지출 (?sheetfor=1&ym=&key=): 그 달로 그려서 시트 내용만 key에 씀
     { const SP = new URLSearchParams(location.search); if (SP.get('sheetfor')) { this._sheetKey = SP.get('key') || ''; this.setState({ ym: SP.get('ym') || this.state.ym }); } }
     this.installPopupDrag();
@@ -688,6 +699,8 @@ class Component extends DCLogic {
       // 금액 칸: 치는 동안 1,000 단위 쉼표 (커서 자리 유지)
       commaIn: e => { const el = e.target, v = el.value, pos = el.selectionStart || 0; const neg = /^\s*-/.test(v); const dBefore = v.slice(0, pos).replace(/[^0-9]/g, '').length; const digits = v.replace(/[^0-9]/g, ''); const out = (neg ? '-' : '') + (digits ? (+digits).toLocaleString('ko-KR') : ''); if (out === v) return; el.value = out; let k = 0, c = neg ? 1 : 0; while (c < out.length && k < dBefore) { if (/[0-9]/.test(out[c])) k++; c++; } try { el.setSelectionRange(c, c); } catch (x) {} },
       // 순서 바꾸기 스위치: 켜면 글 칸이 잠기고 줄을 끌어 순서를 바꿈, 다시 누르면 평소대로
+      // 찾기: 글자를 치는 동안 다시 그리지 않고 줄만 숨김 (네 상자 줄의 글자·칸 값에서 찾음)
+      qIn: () => this.applyQ(),
       reOn: !!st.reorder, reOnStr: st.reorder ? 'true' : 'false', reCls: st.reorder ? 'reorder' : '', reLabel: st.reorder ? '순서 바꾸기 끝내기' : '순서 바꾸기',
       reToggle: () => { const a = document.activeElement; if (a && a.blur) a.blur(); this.setState({ reorder: !st.reorder }); },
       reBtn: 'display: inline-flex; align-items: center; gap: 6px; height: 38px; padding: 0 14px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (st.reorder ? 'border: 2px solid #00A6AB; background: #00A6AB; color: #FFFFFF' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450'),
