@@ -406,15 +406,27 @@
   function attIdx(ac) { var o = {}; Object.keys(ac || {}).forEach(function (ym) { Object.keys(ac[ym] || {}).forEach(function (k) { if (/^D\d+$/.test(k)) o[ym + '|' + k] = JSON.stringify(ac[ym][k]); }); }); return o; }
   function syncAtt(ac) {
     if (!A.attReady) { if (A.attTried) toast('출석부를 저장하려면 Supabase에서 008 SQL을 먼저 실행해 주세요'); return; }
-    var prev = known.att || {}, now = attIdx(ac), up = [];
+    var prev = known.att || {}, now = attIdx(ac), up = [], patches = [];
     Object.keys(now).forEach(function (k) {
       if (prev[k] === now[k]) return;
-      var p = k.split('|'), cells = JSON.parse(now[k]);
-      if (!Object.keys(cells).length) { if (prev[k]) sb.from('attendance_cells').delete().eq('student_id', +p[1].slice(1)).eq('ym', p[0]).then(function (r) { report(r, '출석부 저장'); }); return; }
-      up.push({ student_id: +p[1].slice(1), ym: p[0], cells: cells, updated_by: A.staff.id, updated_at: new Date().toISOString() });
+      var p = k.split('|'), cells = JSON.parse(now[k]), old = prev[k] ? JSON.parse(prev[k]) : {}, set = {}, del = [];
+      Object.keys(cells).forEach(function (c) { if (JSON.stringify(cells[c]) !== JSON.stringify(old[c])) set[c] = cells[c]; });
+      Object.keys(old).forEach(function (c) { if (!(c in cells)) del.push(c); });
+      patches.push({ p_student: +p[1].slice(1), p_ym: p[0], p_set: set, p_del: del, full: cells });
     });
-    Object.keys(prev).forEach(function (k) { if (!(k in now)) { var p = k.split('|'); sb.from('attendance_cells').delete().eq('student_id', +p[1].slice(1)).eq('ym', p[0]).then(function (r) { report(r, '출석부 저장'); }); } });
-    if (up.length) sb.from('attendance_cells').upsert(up, { onConflict: 'student_id,ym' }).then(function (r) { report(r, '출석부 저장'); });
+    Object.keys(prev).forEach(function (k) { if (!(k in now)) { var p = k.split('|'); patches.push({ p_student: +p[1].slice(1), p_ym: p[0], p_set: {}, p_del: Object.keys(JSON.parse(prev[k])), full: {} }); } });
+    // 바뀐 칸만 서버에서 합침(012 SQL, att_patch) → 다른 사람이 같은 원생·달의 다른 칸을 동시에 고쳐도 안 덮음
+    function oldWay(x) {
+      if (!Object.keys(x.full).length) return sb.from('attendance_cells').delete().eq('student_id', x.p_student).eq('ym', x.p_ym).then(function (r) { report(r, '출석부 저장'); });
+      sb.from('attendance_cells').upsert({ student_id: x.p_student, ym: x.p_ym, cells: x.full, updated_by: A.staff.id, updated_at: new Date().toISOString() }, { onConflict: 'student_id,ym' }).then(function (r) { report(r, '출석부 저장'); });
+    }
+    patches.forEach(function (x) {
+      if (A.attPatch === false) return oldWay(x);
+      sb.rpc('att_patch', { p_student: x.p_student, p_ym: x.p_ym, p_set: x.p_set, p_del: x.p_del }).then(function (r) {
+        if (r && r.error && (r.error.code === 'PGRST202' || /att_patch/.test(r.error.message || ''))) { A.attPatch = false; console.warn('012 SQL 없음 → 예전 방식', r.error); toast('Supabase에서 012 SQL을 실행하면 동시 입력이 더 안전해집니다'); return oldWay(x); }
+        report(r, '출석부 저장');
+      });
+    });
     known.att = now;
   }
   function trialData() {
