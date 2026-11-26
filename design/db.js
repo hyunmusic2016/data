@@ -768,7 +768,8 @@
     rtDraw = false; rerender();
   }
   function rtStart() {
-    if (rtChan || CALC_HOST || !A.staff || !sb.channel) return;
+    // 숨은 계산 창(다른 화면 안)은 실시간 알림을 받지 않음: 옛 내용을 저장소에 써서 출석부 창의 방금 넣은 칸을 덮는 것 막기
+    if (rtChan || CALC_HOST || window !== window.top || !A.staff || !sb.channel) return;
     rtChan = sb.channel('att-cells').on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_cells' }, function (m) {
       if (m.eventType === 'DELETE') rtApply(m.old, true); else rtApply(m.new, false);
     }).subscribe(function (st) {
