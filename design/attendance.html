@@ -6,7 +6,8 @@
 <title>학원 출석부</title>
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-<script src="db.js?v=0.99.1"></script>
+<script src="logpanel.js?v=1"></script>
+<script src="db.js?v=0.99.2"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -243,7 +244,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.99.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.99.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -374,7 +375,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
       </div>
     </div>
   </sc-if>
-  <sc-if value="{{hist.open}}" hint-placeholder-val="{{ false }}">
+  <sc-if value="{{hist.legacy}}" hint-placeholder-val="{{ false }}">
     <div class="noprint noexp" role="dialog" aria-label="변경 기록" style="position: fixed; top: 52px; right: 0; bottom: 0; z-index: 1002; border-top: 1px solid #DDE2DF; border-top-left-radius: 14px; width: 340px; max-width: 92vw; display: flex; flex-direction: column; background: #FFFFFF; border-left: 1px solid #DDE2DF; box-shadow: -8px 0 24px rgba(23, 32, 28, 0.08)">
       <div style="display: flex; align-items: center; gap: 8px; padding: 16px 16px 10px">
         <span style="font-size: 17px; font-weight: 600; color: #17201C">변경 기록</span>
@@ -2740,7 +2741,26 @@ class Component extends DCLogic {
         where: (H.scope || 'me') !== 'me' ? v.tab.replace(' 원장님', '') + ' 탭 · ' + this.kLabel(this.kOf(v.ym + '-01')) : '', lines: lines,
         style: 'padding: 10px 10px; margin: 2px 0; border-radius: 10px; cursor: pointer; border: 1px solid ' + (on ? '#7FCF95' : 'transparent') + '; background: ' + (on ? '#E6F6EA' : '#FFFFFF'),
         pick: () => this.histPick(v) }; });
+    // 공통 '변경 기록' 칸(logpanel.js, 모든 페이지 같은 디자인)으로 그림. 없으면(캔버스) 아래 예전 칸
+    if (window.LogPanel) {
+      const groups = V.slice(0, 300).map(v => { const on = H.sel === v.id, cells = v.list.filter(e => e.k !== 'EV').length;
+        const lines = v.list.slice(0, on ? 50 : 3).map(e => { if (e.k === 'EV') return { who: e.name, head: e.b, add: true }; const dd = (/(\d+)$/.exec(e.k) || [])[1]; return { who: e.name, head: (+e.ym.slice(5)) + '/' + dd, a: this.cellWhat(e.k, e.a) || '빈칸', b: this.cellWhat(e.k, e.b) || '빈칸', bad: !e.b, add: !!e.b }; });
+        if (!on && v.list.length > 3) lines.push('… 외 ' + (v.list.length - 3) + '칸 (누르면 모두)');
+        return { at: v.start, who: v.who, sel: on, n: v.list.length, count: cells ? '칸 ' + cells + '개' : v.list.length + '건', where: (H.scope || 'me') !== 'me' ? v.tab.replace(' 원장님', '') + ' 탭 · ' + this.kLabel(this.kOf(v.ym + '-01')) : '', lines: lines }; });
+      const sc = (H.scope || 'me');
+      clearTimeout(this._lpT);
+      this._lpT = setTimeout(() => {
+        if (!H.open) { if (this._lpOn && window.LogPanel.isOpen()) window.LogPanel.close(); this._lpOn = false; return; }
+        this._lpOn = true;
+        window.LogPanel.render({ sub: '출석부', color: ['#00A6AB', '#E6F6F6', '#BFEAEB'], groups: groups,
+          scopes: scopeL.map(s => ({ label: s[1], on: sc === s[0] })),
+          onScope: i => { const s = scopeL[i]; this.setState({ hist: Object.assign({}, H, { scope: s[0], sel: null, hl: null, stu: s[0] === 'stu' ? (curStu || H.stu || '') : H.stu }) }); },
+          note: sc === 'stu' ? (H.stu ? H.stu + ' 원생의 모든 기록' : '출석부에서 원생 칸을 하나 고른 뒤 다시 누르세요') : (sc === 'all' ? '이 달 모든 강사 탭의 기록' : '지금 보는 출석부의 기록') + ' · 누르면 바뀐 칸이 초록색',
+          onPick: i => this.histPick(V[i]), onClose: () => { this._lpOn = false; this.setState({ hist: null }); } });
+      }, 0);
+    }
     return {
+      legacy: !!H.open && !window.LogPanel,
       open: !!H.open, empty: H.open && !items.length, items: items,
       note: (H.scope || 'me') === 'stu' ? (H.stu ? H.stu + ' 원생의 모든 기록' : '출석부에서 원생 칸을 하나 고른 뒤 다시 누르세요') : (H.scope === 'all' ? '이 달 모든 강사 탭의 기록' : '지금 보는 출석부의 기록') + ' · 누르면 바뀐 칸이 초록색',
       scopes: scopeL.map(s => ({ label: s[1], style: 'height: 30px; padding: 0 10px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid ' + ((H.scope || 'me') === s[0] ? '#00A6AB; background: #E6F6F6; color: #007E82' : '#D9DEE3; background: #FFFFFF; color: #3A4450'),

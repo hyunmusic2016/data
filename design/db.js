@@ -868,91 +868,36 @@
     var now = Date.now(), e = { id: 'C' + now + '-' + Math.random().toString(36).slice(2, 6), at: now, who: A.staff.name || '', page: clPage(), lines: lines.slice(0, 200) };
     var L = jp(localStorage.getItem('academy.changeLog'), []); L.push(e); origSet.call(localStorage, 'academy.changeLog', JSON.stringify(L.slice(-3000)));
     if (A.clReady !== false) sb.from('change_log').insert({ local_id: e.id, at: new Date(now).toISOString(), who: e.who, page: e.page, lines: e.lines }).then(function (r) { if (r && r.error) { A.clReady = false; console.warn('변경 기록 저장 안 됨(014 SQL?)', r.error); } });
-    if (clPanel && clPanel.isConnected) clDraw();
+    clDraw();
   }
   A.clAdd = clAdd;
   // ── 기록 버튼·오른쪽 칸 ──
-  var clPanel = null, clQ = '', clServer = [];
+  var clServer = [];
   function clLoad() {
     sb.from('change_log').select('local_id,at,who,page,lines').eq('page', clPage()).order('at', { ascending: false }).limit(2000).then(function (r) {
       if (r.error) { A.clReady = false; return; }
       A.clReady = true; clServer = (r.data || []).map(function (x) { return { id: x.local_id, at: Date.parse(x.at), who: x.who, page: x.page, lines: x.lines || [] }; });
-      if (clPanel && clPanel.isConnected) clDraw();
+      clDraw();
     });
   }
-  function clEsc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   var CL_FONT = "'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
-  // 페이지 색 [진한 색, 옅은 바탕, 형광펜]
+  // 페이지 색 [진한 색, 옅은 바탕, 형광펜] — 칸 모양은 logpanel.js(모든 페이지 공통)
   var CL_COLOR = { students: ['#00A6AB', '#E6F6F6', '#BFEAEB'], notice: ['#3C1E1E', '#FFF7C2', '#FFF0A0'], money: ['#5B86C9', '#EAF0FA', '#CFDDF3'], settings: ['#00A6AB', '#E6F6F6', '#BFEAEB'] };
-  function clCol() { return CL_COLOR[clPage()] || CL_COLOR.students; }
-  // 한 줄 글 → '이름 · 내용 a → b' 를 이름 칩 + 내용 + (지운 값 취소선 → 새 값) 으로
-  function clLine(l) {
-    var C = clCol(), who = '', body = l, m = /^(.+?) · (.+)$/.exec(l);
-    if (m && m[1].length <= 24) { who = m[1]; body = m[2]; }
-    var arrow = / (\S+(?: \S+)*?) → (.+)$/.exec(body), head = body, a = '', b = '';
-    if (arrow && body.indexOf(' → ') > 0) { var i = body.lastIndexOf(' → '), left = body.slice(0, i), sp = left.lastIndexOf(' '); head = sp > 0 ? left.slice(0, sp) : ''; a = sp > 0 ? left.slice(sp + 1) : left; b = body.slice(i + 3); }
-    var bad = /지움|삭제|취소|뺌/.test(l), add = !bad && /추가|발송|수납|복귀|되살림|등록/.test(l);
-    var dot = bad ? '#D9746C' : add ? C[0] : '#AEB7B2';
-    return '<div style="display: flex; gap: 8px; align-items: flex-start; padding: 5px 0; border-top: 1px dashed #EEF1EF">'
-      + '<span style="flex: none; width: 6px; height: 6px; margin-top: 7px; border-radius: 50%; background: ' + dot + '"></span>'
-      + '<span style="min-width: 0; font-size: 13px; line-height: 1.55; color: #3A4450; word-break: keep-all; overflow-wrap: anywhere">'
-      + (who ? '<span style="display: inline-block; margin-right: 5px; padding: 0 7px; border-radius: 6px; background: ' + C[1] + '; color: ' + (clPage() === 'notice' ? '#3C1E1E' : C[0]) + '; font-size: 12px; font-weight: 600; line-height: 20px">' + clEsc(who) + '</span>' : '')
-      + clEsc(head)
-      + (a || b ? ' <span style="color: #8A949E; text-decoration: line-through; text-decoration-color: #C9D0CC">' + clEsc(a) + '</span> <span style="color: #AEB7B2">→</span> <span style="font-weight: 600; color: #17201C; background: linear-gradient(transparent 58%, ' + C[2] + ' 58%)">' + clEsc(b) + '</span>' : '')
-      + '</span></div>';
-  }
   function clDraw() {
-    var seen = {}, all = [], C = clCol();
+    if (!window.LogPanel || !LogPanel.isOpen()) return;
+    var seen = {}, all = [], groups = [], nt = clPage() === 'notice', C = CL_COLOR[clPage()] || CL_COLOR.students;
     clServer.concat(jp(localStorage.getItem('academy.changeLog'), []).filter(function (x) { return x.page === clPage(); })).forEach(function (x) { if (!seen[x.id]) { seen[x.id] = 1; all.push(x); } });
-    all.sort(function (a, b) { return b.at - a.at; });
-    var qq = clQ.trim(), groups = [], total = 0;
-    all.forEach(function (x) {
-      var lines = qq ? x.lines.filter(function (l) { return l.indexOf(qq) >= 0 || (x.who || '').indexOf(qq) >= 0; }) : x.lines; if (!lines.length) return;
-      total += lines.length;
+    all.sort(function (a, b) { return b.at - a.at; }).forEach(function (x) {
       var g = groups[groups.length - 1];   // 같은 사람이 3분 안에 이어서 바꾼 것은 한 묶음
-      if (g && g.who === x.who && g.last - x.at < 180000) { g.lines = lines.concat(g.lines); g.last = x.at; } else groups.push({ who: x.who, at: x.at, last: x.at, lines: lines.slice() });
+      if (g && g.who === x.who && g.last - x.at < 180000) { g.lines = x.lines.concat(g.lines); g.last = x.at; } else groups.push({ who: x.who, at: x.at, last: x.at, lines: x.lines.slice() });
     });
-    var WD = '일월화수목금토', h = '', day = '', td = new Date(), yd = new Date(Date.now() - 864e5);
-    var same = function (a, b) { return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate(); };
-    groups.forEach(function (g) {
-      var t = new Date(g.at), dk = (t.getMonth() + 1) + '월 ' + t.getDate() + '일 (' + WD[t.getDay()] + ')';
-      if (dk !== day) {
-        day = dk; var tag = same(t, td) ? '오늘' : same(t, yd) ? '어제' : '';
-        h += '<div style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 6px; padding: 14px 4px 8px; background: #F7F9F8"><span style="font-size: 13px; font-weight: 600; color: #17201C">' + dk + '</span>' + (tag ? '<span style="padding: 1px 8px; border-radius: 999px; background: ' + C[0] + '; color: ' + (clPage() === 'notice' ? '#FEE500' : '#FFFFFF') + '; font-size: 11px; font-weight: 600">' + tag + '</span>' : '') + '<span style="flex: 1; height: 1px; background: #E1E6E3"></span></div>';
-      }
-      var hh = t.getHours() % 12 || 12, tm = hh + ':' + String(t.getMinutes()).padStart(2, '0'), ini = (g.who || '?').replace(/ 원장님| 강사님/, '').slice(0, 1);
-      h += '<div style="position: relative; display: flex; gap: 10px; margin: 0 0 10px">'
-        + '<span style="flex: none; width: 30px; height: 30px; border-radius: 50%; background: ' + C[1] + '; color: ' + (clPage() === 'notice' ? '#3C1E1E' : C[0]) + '; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px ' + C[2] + '">' + clEsc(ini) + '</span>'
-        + '<div style="flex: 1; min-width: 0; padding: 10px 12px 6px; border-radius: 14px; border: 1px solid #E6EAE8; background: #FFFFFF; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">'
-        + '<div style="display: flex; align-items: baseline; gap: 6px; margin-bottom: 4px"><span style="font-size: 14px; font-weight: 600; color: #17201C">' + clEsc(g.who || '알 수 없음') + '</span><span style="font-size: 12px; color: #8A949E">' + tm + '</span><span style="margin-left: auto; padding: 0 7px; border-radius: 999px; background: #F1F3F2; color: #6B7570; font-size: 11px; font-weight: 600; line-height: 18px">' + g.lines.length + '건</span></div>'
-        + g.lines.map(clLine).join('') + '</div></div>';
-    });
-    var list = clPanel.querySelector('[data-cl-list]');
-    list.innerHTML = h || '<div style="padding: 48px 12px; text-align: center; color: #8A949E"><div style="width: 44px; height: 44px; margin: 0 auto 10px; border-radius: 14px; background: ' + C[1] + '; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="' + (clPage() === 'notice' ? '#3C1E1E' : C[0]) + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8v4l3 2"></path><circle cx="12" cy="12" r="9"></circle></svg></div><div style="font-size: 13px">' + (qq ? '찾는 기록이 없습니다' : '아직 기록이 없습니다') + '</div></div>';
-    clPanel.querySelector('[data-cl-count]').textContent = total ? total + '건' : '';
-    var note = clPanel.querySelector('[data-cl-note]'); note.style.display = A.clReady === false ? 'block' : 'none';
+    LogPanel.render({ sub: CL_PAGE_NAME[clPage()] || '', color: C, chipFg: nt ? '#3C1E1E' : C[0], iconBg: nt ? '#FEE500' : C[0], iconFg: nt ? '#3C1E1E' : '#FFFFFF', tagFg: nt ? '#FEE500' : '#FFFFFF', countFg: nt ? '#8A6410' : C[0], focus: nt ? '#C9A400' : C[0],
+      groups: groups, note: A.clReady === false ? 'Supabase에서 014 SQL을 실행하면 다른 컴퓨터와 같이 봅니다 (지금은 이 브라우저에만)' : '', noteWarn: true, onClose: function () {} });
   }
   function clOpen() {
-    if (clPanel && clPanel.isConnected) { clPanel.remove(); clPanel = null; return; }
-    var C = clCol(), nt = clPage() === 'notice';
-    clPanel = document.createElement('div');
-    clPanel.className = 'noprint noexp'; clPanel.setAttribute('role', 'dialog'); clPanel.setAttribute('aria-label', '변경 기록');
-    clPanel.style.cssText = 'position: fixed; top: 52px; right: 0; bottom: 0; z-index: 1002; width: 380px; max-width: 94vw; display: flex; flex-direction: column; background: #F7F9F8; border-top: 1px solid #DDE2DF; border-left: 1px solid #DDE2DF; border-top-left-radius: 18px; box-shadow: -12px 0 32px rgba(23, 32, 28, 0.10); font-family: ' + CL_FONT + '; color: #17201C; overflow: hidden';
-    clPanel.innerHTML = '<div style="padding: 18px 18px 12px; background: #FFFFFF; border-bottom: 1px solid #E6EAE8">'
-      + '<div style="display: flex; align-items: center; gap: 10px">'
-      + '<span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: ' + (nt ? '#FEE500' : C[0]) + '; color: ' + (nt ? '#3C1E1E' : '#FFFFFF') + '; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(23, 32, 28, 0.12)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l3 2"></path></svg></span>'
-      + '<span style="display: flex; flex-direction: column; gap: 1px"><span style="font-size: 18px; font-weight: 600; letter-spacing: -0.2px; background: linear-gradient(transparent 60%, ' + C[2] + ' 60%); padding: 0 2px">변경 기록</span><span style="font-size: 12px; color: #8A949E">' + clEsc(CL_PAGE_NAME[clPage()] || '') + ' <span data-cl-count style="color: ' + (nt ? '#8A6410' : C[0]) + '; font-weight: 600"></span></span></span>'
-      + '<button type="button" data-cl-close aria-label="닫기" style="margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-family: ' + CL_FONT + '; font-size: 17px; cursor: pointer">×</button></div>'
-      + '<div style="position: relative; margin-top: 12px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#8A949E" stroke-width="2.2" stroke-linecap="round" style="position: absolute; left: 11px; top: 10px"><circle cx="11" cy="11" r="7"></circle><path d="M20 20l-3.5-3.5"></path></svg><input id="cl_search" type="text" data-noclear="1" placeholder="이름·내용 찾기" aria-label="기록 찾기" style="width: 100%; box-sizing: border-box; height: 36px; padding: 0 12px 0 32px; border-radius: 10px; border: 1px solid #DDE2DF; background: #F7F9F8; font-family: ' + CL_FONT + '; font-size: 13px; color: #17201C; outline: none"></div>'
-      + '<div data-cl-note style="display: none; margin-top: 10px; padding: 8px 10px; border-radius: 9px; background: #FFF4E0; color: #9A5B00; font-size: 12px; font-weight: 600">Supabase에서 014 SQL을 실행하면 다른 컴퓨터와 같이 봅니다 (지금은 이 브라우저에만)</div></div>'
-      + '<div data-cl-list style="flex: 1; overflow: auto; padding: 0 14px 18px"></div>';
-    document.body.appendChild(clPanel);
-    var inp = clPanel.querySelector('#cl_search');
-    inp.onfocus = function () { inp.style.borderColor = nt ? '#C9A400' : C[0]; inp.style.background = '#FFFFFF'; };
-    inp.onblur = function () { inp.style.borderColor = '#DDE2DF'; inp.style.background = '#F7F9F8'; };
-    clPanel.querySelector('[data-cl-close]').onclick = function () { clPanel.remove(); clPanel = null; };
-    inp.oninput = function (e) { clQ = e.target.value; clDraw(); };
-    clDraw(); clLoad();
+    if (!window.LogPanel) return;
+    if (LogPanel.isOpen()) { LogPanel.close(); return; }
+    LogPanel.render({ groups: [] }); clDraw(); clLoad();
   }
   A.openChangeLog = clOpen;
   function clButton() {
