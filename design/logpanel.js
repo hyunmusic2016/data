@@ -36,7 +36,7 @@
         day = dk; var tag = same(t, td) ? '오늘' : same(t, yd) ? '어제' : '';
         h += '<div style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; gap: 6px; padding: 14px 4px 8px; background: #F7F9F8"><span style="font-size: 13px; font-weight: 600; color: #17201C">' + dk + '</span>' + (tag ? '<span style="padding: 1px 8px; border-radius: 999px; background: ' + C[0] + '; color: ' + (o.tagFg || '#FFFFFF') + '; font-size: 11px; font-weight: 600">' + tag + '</span>' : '') + '<span style="flex: 1; height: 1px; background: #E1E6E3"></span></div>';
       }
-      var tm = ((t.getHours() % 12) || 12) + ':' + String(t.getMinutes()).padStart(2, '0'), ini = (g.who || '?').replace(/ 원장님| 강사님/, '').slice(0, 1);
+      var tm = String(t.getHours()).padStart(2, '0') + ':' + String(t.getMinutes()).padStart(2, '0'), ini = (g.who || '?').replace(/ 원장님| 강사님/, '').slice(0, 1);
       h += '<div data-lp-g="' + gi + '" style="display: flex; gap: 10px; margin: 0 0 10px;' + (o.onPick ? ' cursor: pointer' : '') + '">'
         + '<span style="flex: none; width: 30px; height: 30px; border-radius: 50%; background: ' + C[1] + '; color: ' + chipFg + '; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3px ' + C[2] + '">' + esc(ini) + '</span>'
         + '<div style="flex: 1; min-width: 0; padding: 10px 12px 6px; border-radius: 14px; border: 1px solid ' + (g.sel ? '#7FCF95' : '#E6EAE8') + '; background: ' + (g.sel ? '#F1FAF3' : '#FFFFFF') + '; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">'
