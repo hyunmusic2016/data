@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.3</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3025,7 +3025,7 @@ class Component extends DCLogic {
     let a = {}, b = {};
     try { a = JSON.parse(oldJs || '{}') || {}; } catch (e) {}
     try { b = JSON.parse(newJs || '{}') || {}; } catch (e) {}
-    const KEY = /^(?!by\d)/, out = [], now = Date.now(), tab = this.tKey() || '', who = (this.writerName() || '원장님') + (this._logTag ? ' · ' + this._logTag : '');
+    const KEY = /./, out = [], now = Date.now(), tab = this.tKey() || '', who = (this.writerName() || '원장님') + (this._logTag ? ' · ' + this._logTag : '');
     this._logTag = '';
     const nameOf = rid => { if (rid === '_mk') return '보강 시간'; if (rid === '_ml') return '보강 날짜'; const s = this.students().find(x => String(x.id) === String(rid)); return s ? s.name.replace('$', '') : rid; };
     const keys = (x, y) => Object.keys(Object.assign({}, x || {}, y || {}));
@@ -3043,6 +3043,7 @@ class Component extends DCLogic {
     if (pre === 'p' || pre === 'L') return '수납';
     if (pre === 'R') return '환불';
     if (pre === 'n') return v + '회차로 맞춤';
+    if (pre === 'by') return '칸 주인 ' + v;
     if (pre === 'nm') return v === 'show' ? '숫자만 바꾸기' : v;
     if (pre === 'dp' || pre === 'LD') return '차액 수납 ' + (+v || 0).toLocaleString('ko-KR') + '원';
     if (pre) return v === 'true' ? '표시' : v;
