@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3025,12 +3025,12 @@ class Component extends DCLogic {
     let a = {}, b = {};
     try { a = JSON.parse(oldJs || '{}') || {}; } catch (e) {}
     try { b = JSON.parse(newJs || '{}') || {}; } catch (e) {}
-    const KEY = /^(?:p|s|u|dp|L|LD|R|nm|n)?\d+$/, out = [], now = Date.now(), tab = this.tKey() || '', who = (this.writerName() || '원장님') + (this._logTag ? ' · ' + this._logTag : '');
+    const KEY = /^(?!by\d)/, out = [], now = Date.now(), tab = this.tKey() || '', who = (this.writerName() || '원장님') + (this._logTag ? ' · ' + this._logTag : '');
     this._logTag = '';
-    const nameOf = rid => { const s = this.students().find(x => String(x.id) === String(rid)); return s ? s.name.replace('$', '') : rid; };
+    const nameOf = rid => { if (rid === '_mk') return '보강 시간'; if (rid === '_ml') return '보강 날짜'; const s = this.students().find(x => String(x.id) === String(rid)); return s ? s.name.replace('$', '') : rid; };
     const keys = (x, y) => Object.keys(Object.assign({}, x || {}, y || {}));
     keys(a, b).forEach(ym => keys(a[ym], b[ym]).forEach(sk => { const A0 = (a[ym] || {})[sk] || {}, B0 = (b[ym] || {})[sk] || {};
-      keys(A0, B0).forEach(rid => { if (rid === '_mk' || rid === '_ml') return; const r1 = A0[rid] || {}, r2 = B0[rid] || {};
+      keys(A0, B0).forEach(rid => { const r1 = A0[rid] || {}, r2 = B0[rid] || {};
         keys(r1, r2).forEach(k => { if (!KEY.test(k)) return; const v1 = r1[k] == null ? '' : String(r1[k]), v2 = r2[k] == null ? '' : String(r2[k]);
           if (v1 !== v2) out.push({ id: 'C' + now + '-' + out.length, at: now, who: who, tab: tab, ym: ym, rid: rid, name: nameOf(rid), k: k, a: v1, b: v2 }); }); }); }));
     if (!out.length) return;
