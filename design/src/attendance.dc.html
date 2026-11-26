@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.7</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.8</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3805,7 +3805,7 @@ class Component extends DCLogic {
           wo: () => { const w = this.woOf(P.name); if (w) { this.saveWriteOff(P.name, 0, 0, false); upd({ woAsk: false }); } else if (!P.woAsk) upd({ woAsk: true }); else { this.saveWriteOff(P.name, P.debtN, P.debtDiff, true); this.setState({ pay: null }); this.focusSheet(); } },
           showRecs: multiOk, addPressed: P.add ? 'true' : 'false',
           recs: (P.recIds || []).map((id, i) => { const x = pays0.find(y => y.id === id) || {}; const on = !P.add && P.recId === id;
-            return { label: (i + 1) + '번째 · ' + won(x.total || x.amount) + '원', pick: () => pickRec(id), on: on ? 'true' : 'false',
+            return { label: (i + 1) + '번째 · ' + won(x.amount != null ? x.amount : x.total) + '원', pick: () => pickRec(id), on: on ? 'true' : 'false',
               style: 'height: 32px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 1px solid #E2C35F; background: #FAEFD2; color: #7A5C12' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }),
           addOn: () => upd({ add: true, paid: false, recId: null, count: (P.base || P).count, unit: (P.base || P).unit, total: (P.base || P).total, date: P.origDate, cancelAsk: false, err: '' }),
           addStyle: 'height: 32px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (P.add ? 'border: 1px solid #E2C35F; background: #FAEFD2; color: #7A5C12' : 'border: 1px dashed #C9B26A; background: #FFFDF6; color: #7A5C12'),
