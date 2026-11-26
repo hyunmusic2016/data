@@ -73,7 +73,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
           <span style="{{c.headName}}">이름<span class="cgrip noexp noprint" onMouseDown="{{c.rzName}}" onDblClick="{{c.rzNameReset}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -1px; width: 8px; cursor: col-resize"></span></span>
           <span style="{{c.headStart}}">수강<span class="cgrip noexp noprint" onMouseDown="{{c.rzTk}}" onDblClick="{{c.rzTkReset}}" title="끌어서 폭 조절 · 두 번 누르면 원래 폭" style="position: absolute; top: 0; bottom: 0; right: -1px; width: 8px; cursor: col-resize"></span></span>
           <sc-for list="{{days}}" as="h" hint-placeholder-count="30">
-            <span style="{{h.cell}}"><span onClick="{{h.pick}}" title="{{h.tip}}" style="{{h.style}}"><span>{{h.d}}</span><span style="font-size: 10px; font-weight: 600; line-height: 1; opacity: 0.85">{{h.wd}}</span></span></span>
+            <span style="{{h.cell}}"><span onClick="{{h.pick}}" title="{{h.tip}}" data-chg="{{h.hol}}" style="{{h.style}}"><span>{{h.d}}</span><span style="font-size: 10px; font-weight: 600; line-height: 1; opacity: 0.85">{{h.wd}}</span></span></span>
           </sc-for>
           <sc-for list="{{fillers}}" as="fl" hint-placeholder-count="1"><span style="{{c.headLast}}"></span></sc-for>
         </div>
@@ -238,7 +238,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.98.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.98.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -383,7 +383,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
         <sc-if value="{{hist.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 24px 8px; text-align: center; font-size: 13px; color: #8A949E">기록이 없습니다</div></sc-if>
         <sc-for list="{{hist.items}}" as="h" hint-placeholder-count="4">
           <sc-if value="{{h.day}}" hint-placeholder-val="{{ false }}"><div style="padding: 12px 6px 4px; font-size: 12px; font-weight: 600; color: #8A949E">{{h.day}}</div></sc-if>
-          <div onClick="{{h.pick}}" title="{{h.tip}}" style="{{h.style}}">
+          <div onClick="{{h.pick}}" title="{{h.tip}}" data-chg="{{h.hol}}" style="{{h.style}}">
             <div style="display: flex; align-items: baseline; gap: 8px"><span style="font-size: 14px; font-weight: 600; color: #17201C">{{h.time}}</span><span style="font-size: 12px; color: #5B6670">{{h.who}}</span><span style="margin-left: auto; font-size: 11px; color: #8A949E">{{h.count}}</span></div>
             <sc-if value="{{h.where}}" hint-placeholder-val="{{ false }}"><div style="font-size: 12px; color: #2952A3">{{h.where}}</div></sc-if>
             <sc-for list="{{h.lines}}" as="ln" hint-placeholder-count="2"><div style="font-size: 12px; color: #3A4450; line-height: 1.5">{{ln}}</div></sc-for>
@@ -2835,7 +2835,7 @@ class Component extends DCLogic {
       const H = this.holidayOn(MON, d), HC = H ? ({ off: ['#FBD3D0', '#D92D20'], short: ['#FDE9E7', '#E8766C'], normal: ['#E9ECEB', '#8A949E'] })[H.kind] : null;
       const bgC = HC ? HC[0] : w === 0 ? '#FBD3D0' : w === 6 ? '#CFE0FB' : d === TODAY ? '#00A6AB' : 'transparent';
       const fgC = HC ? HC[1] : w === 0 ? '#D92D20' : w === 6 ? '#2563EB' : d === TODAY ? '#FFFFFF' : '#3A4450';
-      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, tip: H ? H.name + ' · ' + ({ off: '휴일', short: '단축수업', normal: '정상수업' })[H.kind] : '이 날짜 세로줄 표시', pick: () => this.setState({ colDay: this.state.colDay === d ? 0 : d }), style: 'cursor: pointer; ' + (d === st.colDay ? 'outline: 2px solid ' + this.dayTint(MON, d)[1] + '; outline-offset: -2px; ' : '') + s + 'background: ' + bgC + '; ' + (d === TODAY && (HC || w === 0 || w === 6) ? 'box-shadow: inset 0 0 0 1px ' + fgC + '; ' : '') + 'color: ' + fgC });
+      days.push({ d: d, wd: '일월화수목금토'[w], cell: c.headDay, tip: H ? '' : '이 날짜 세로줄 표시', hol: H ? H.name + ' · ' + ({ off: '휴일', short: '단축수업', normal: '정상수업' })[H.kind] : '', pick: () => this.setState({ colDay: this.state.colDay === d ? 0 : d }), style: 'cursor: pointer; ' + (d === st.colDay ? 'outline: 2px solid ' + this.dayTint(MON, d)[1] + '; outline-offset: -2px; ' : '') + s + 'background: ' + bgC + '; ' + (d === TODAY && (HC || w === 0 || w === 6) ? 'box-shadow: inset 0 0 0 1px ' + fgC + '; ' : '') + 'color: ' + fgC });
     }
 
     let lessonCount = 0, lessonHobby = 0, lessonPro = 0; const lessonBy = {};
