@@ -239,7 +239,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.107.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.107.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -495,7 +495,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
         <sc-if value="{{pv.sibShow}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 12px; background: #F7F8F8; border: 1px solid #E3E7E5">
             <span style="display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: #3A4450"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0"></path></svg>형제도 같이 수납</span>
-            <sc-for list="{{pv.sibs}}" as="sb" hint-placeholder-count="1"><label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #17201C"><input id="{{sb.cid}}" type="checkbox" style="width: 18px; height: 18px; accent-color: #00A6AB"><span style="font-weight: 600">{{sb.name}}</span><span style="font-size: 12px; color: #5E6873">{{sb.sub}}</span><span style="flex: 1"></span><input id="{{sb.aid}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{sb.amt}}" onInput="{{sb.amtIn}}" aria-label="{{sb.name}} 수납 금액" style="width: 110px; height: 34px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; font-family: inherit; font-size: 14px; text-align: right"><span style="font-size: 13px; color: #5E6873">원</span></label></sc-for>
+            <sc-for list="{{pv.sibs}}" as="sb" hint-placeholder-count="1"><label style="display: flex; align-items: center; gap: 8px; font-size: 14px; color: #17201C"><input id="{{sb.cid}}" type="checkbox" checked="{{sb.on}}" onChange="{{sb.tog}}" style="width: 18px; height: 18px; accent-color: #00A6AB"><span style="font-weight: 600">{{sb.name}}</span><span style="font-size: 12px; color: #5E6873">{{sb.sub}}</span><span style="flex: 1"></span><input id="{{sb.aid}}" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{sb.amt}}" onInput="{{sb.amtIn}}" aria-label="{{sb.name}} 수납 금액" style="width: 110px; height: 34px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; font-family: inherit; font-size: 14px; text-align: right"><span style="font-size: 13px; color: #5E6873">원</span></label></sc-for>
           </div>
         </sc-if>
       </div>
@@ -2377,7 +2377,7 @@ class Component extends DCLogic {
     }
     // 새 수납: 칸에 ₩가 없는데 같은 날짜 예전 기록이 남아 있으면 먼저 지운다 (지운 수납이 다시 살아나 쌓이지 않게)
     // 형제도 같이 수납: 체크한 형제마다 같은 날짜로 수납 기록 + 그 형제 줄 그날 칸에 ₩ (형제는 grp로 묶어 수입·지출에 합계)
-    const sibOn = this.sibsOf(P.name).map((n, i) => { const c = document.getElementById('pay_sib_' + i), a = document.getElementById('pay_siba_' + i); return c && c.checked ? { name: n, amt: parseInt(String(a ? a.value : '').replace(/[^0-9]/g, ''), 10) || 0 } : null; }).filter(Boolean);
+    const sibOn = this.sibsOf(P.name).map((n, i) => { const c = document.getElementById('pay_sib_' + i), a = document.getElementById('pay_siba_' + i); return ((P.sibOn || {})[n] || (c && c.checked)) ? { name: n, amt: parseInt(String(a ? a.value : '').replace(/[^0-9]/g, ''), 10) || 0 } : null; }).filter(Boolean);
     const now0 = Date.now(), grp = sibOn.length ? 'G' + now0 : '';
     if (grp) rec.grp = grp;
     const sibRecs = [], sibOps = [], A1 = window.academy, rd = +rec.date.slice(8, 10), rm = this.kOf(rec.date);
@@ -3996,7 +3996,7 @@ class Component extends DCLogic {
           bens: [['', '없음'], ['free', '무료'], ['half', '50%']].map(b => { const on = ((P.ben && P.ben.kind) || '') === b[0], K = b[0] ? this.trialKinds().find(x => x[0] === b[0]) : ['', '', '#E6F6F6', '#007E82']; return { label: b[1], on: on ? 'true' : 'false', style: 'height: 32px; padding: 0 12px; border-radius: 9px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1.5px solid ' + (on ? K[3] : '#DDE2DF') + '; background: ' + (on ? K[2] : '#FFFFFF') + '; color: ' + (on ? K[3] : '#5E6873'),
             pick: () => { const el = document.getElementById('pay_benN'); const n = el ? (parseInt(String(el.value).replace(/[^0-9]/g, ''), 10) || 0) : ((P.ben && P.ben.n) || 1); upd({ ben: { kind: b[0], n: n } }); } }; }),
           cashOn: P.cash,
-          ...(() => { if (P.paid || P.trial || P.add) return { sibShow: false, sibs: [] }; const L = this.sibsOf(P.name).map((n, i) => { const I = this.stuInfo(n) || {}; return { name: n, sub: [I.teacher, I.count ? I.count + '회' : ''].filter(Boolean).join(' · '), cid: 'pay_sib_' + i, aid: 'pay_siba_' + i, amt: Number(I.total || 0).toLocaleString('ko-KR'), amtIn: e => { const el = e.target, dg = el.value.replace(/[^0-9]/g, ''); el.value = dg ? Number(dg).toLocaleString('ko-KR') : ''; } }; }); return { sibShow: L.length > 0, sibs: L }; })(),
+          ...(() => { if (P.paid || P.trial || P.add) return { sibShow: false, sibs: [] }; const L = this.sibsOf(P.name).map((n, i) => { const I = this.stuInfo(n) || {}; return { name: n, sub: [I.teacher, I.count ? I.count + '회' : ''].filter(Boolean).join(' · '), cid: 'pay_sib_' + i, aid: 'pay_siba_' + i, on: !!(P.sibOn || {})[n], tog: e => { const on = !!e.target.checked, P1 = this.state.pay; if (P1) this.setState({ pay: Object.assign({}, P1, { sibOn: Object.assign({}, P1.sibOn, { [n]: on }) }) }); }, amt: (P.sibAmt || {})[n] != null ? P.sibAmt[n] : Number(I.total || 0).toLocaleString('ko-KR'), amtIn: e => { const el = e.target, dg = el.value.replace(/[^0-9]/g, ''); el.value = dg ? Number(dg).toLocaleString('ko-KR') : ''; const P1 = this.state.pay; if (P1) { P1.sibAmt = Object.assign({}, P1.sibAmt, { [n]: el.value }); } } }; }); return { sibShow: L.length > 0, sibs: L }; })(),
           cashLine: (P.cashType === 'biz' ? '사업자 (지출증빙)' : '개인 (소득공제)') + ' · 발급 번호 ' + (P.cashNo || '—') + ' · 현금으로 받으면 학원 단말기로 ' + won(P.total - this.benDisc(P)) + '원 발급',
           closeLabel: P.paid ? '닫기' : '취소',
           goLabel: P.add ? '추가 수납하기' : P.paid ? '수정 저장' : P.umode ? '미납금액 수납하기' : '수납하기',
