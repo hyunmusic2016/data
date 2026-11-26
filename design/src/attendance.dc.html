@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.6</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.113.7</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1231,14 +1231,11 @@ class Component extends DCLogic {
   clNextLesson(s, allRows, m, d) {
     const nm = s.name.replace('$', ''), WD = ['일', '월', '화', '수', '목', '금', '토'];
     const days = allRows.filter(r => r.name.replace('$', '') === nm && /^[월화수목금토]$/.test(r.g)).map(r => r.g);
-    for (let mm = m; mm <= m + 3; mm++) {
-      const E = (this.monthEvents(mm) || {})[s.id] || {}, nd = new Date(2026, mm, 0).getDate();
-      for (let dd = mm === m ? d + 1 : 1; dd <= nd; dd++) {
-        const v = E[dd]; if (v === '수') return { m: mm, d: dd };
-        if (v) continue;
-        if (days.indexOf(WD[new Date(2026, mm - 1, dd).getDay()]) >= 0) return { m: mm, d: dd };
-      }
-    }
+    // 같은 원생의 모든 줄(요일마다 한 줄)에서 다음 출석한 날을 먼저 찾고, 없으면 원생 요일에 맞는 빈 날
+    const ids = allRows.filter(r => r.name.replace('$', '') === nm).map(r => r.id).concat([s.id]);
+    const at = (mm, dd) => { const ev = this.monthEvents(mm) || {}; for (const id of ids) { const v = (ev[id] || {})[dd]; if (v) return v; } return ''; };
+    for (let mm = m; mm <= m + 3; mm++) { const nd = new Date(2026, mm, 0).getDate(); for (let dd = mm === m ? d + 1 : 1; dd <= nd; dd++) if (at(mm, dd) === '수') return { m: mm, d: dd }; }
+    for (let mm = m; mm <= m + 3; mm++) { const nd = new Date(2026, mm, 0).getDate(); for (let dd = mm === m ? d + 1 : 1; dd <= nd; dd++) { if (at(mm, dd)) continue; if (days.indexOf(WD[new Date(2026, mm - 1, dd).getDay()]) >= 0) return { m: mm, d: dd }; } }
     return null;
   }
   clCopyVals(s, allRows, key, m, d, raw) {
