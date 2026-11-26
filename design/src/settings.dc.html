@@ -97,6 +97,27 @@ html.bwp .printonly .pcell{border-color:#000!important}
           </div>
         </sc-if>
 
+        <sc-if value="{{viewHol}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1180px; padding: 20px 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
+            <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">휴일은 원장님만 바꿀 수 있습니다.</div></sc-if>
+            <div style="display: flex; align-items: center; gap: 8px"><button type="button" class="noexp noprint" onClick="{{hol.prev}}" aria-label="이전 해" style="{{hol.navBtn}}">‹</button><span style="font-size: 16px; font-weight: 600; color: #17201C; min-width: 64px; text-align: center">{{hol.year}}년</span><button type="button" class="noexp noprint" onClick="{{hol.next}}" aria-label="다음 해" style="{{hol.navBtn}}">›</button></div>
+            <div style="font-size: 14px; font-weight: 600; color: #17201C">대한민국 공휴일</div>
+            <div style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: auto">
+              <sc-for list="{{hol.kr}}" as="h" hint-placeholder-count="3">
+                <div style="{{hol.krRow}}"><span style="font-size: 13px; font-weight: 600; color: #3A4450">{{h.date}}</span><span style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: #17201C">{{h.name}}<sc-if value="{{h.sub}}" hint-placeholder-val="{{ false }}"><span style="padding: 1px 7px; border-radius: 9px; background: #F1F3F2; color: #6B7570; font-size: 11px; font-weight: 600">대체</span></sc-if></span><span style="display: flex; gap: 6px"><sc-for list="{{h.kinds}}" as="o" hint-placeholder-count="3"><button type="button" onClick="{{o.pick}}" disabled="{{h.lock}}" style="{{o.style}}">{{o.label}}</button></sc-for></span></div>
+              </sc-for>
+              <sc-if value="{{hol.krEmpty}}" hint-placeholder-val="{{ false }}"><div style="padding: 14px; font-size: 13px; color: #8A949E">이 해의 공휴일 자료가 아직 없습니다.</div></sc-if>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px"><span style="font-size: 14px; font-weight: 600; color: #17201C">학원 휴일</span><span style="flex: 1 1 auto"></span><sc-if value="{{hol.can}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp noprint" onClick="{{hol.add}}" style="height: 32px; padding: 0 14px; border-radius: 9px; border: 1px solid #00A6AB; background: #00A6AB; color: #FFFFFF; font-size: 13px; font-weight: 600; cursor: pointer">+ 휴일 추가</button></sc-if></div>
+            <div style="display: flex; flex-direction: column; border: 1px solid #E3E8E5; border-radius: 12px; overflow: auto">
+              <sc-for list="{{hol.custom}}" as="x" hint-placeholder-count="1">
+                <div style="{{hol.cuRow}}"><input id="{{x.idDate}}" type="date" value="{{x.date}}" disabled="{{x.lock}}" onChange="{{x.setDate}}" aria-label="날짜" style="height: 32px; padding: 0 8px; border-radius: 8px; border: 1px solid #DDE2DF; font-size: 13px; color: #17201C"><input id="{{x.idName}}" type="text" defaultValue="{{x.name}}" disabled="{{x.lock}}" onBlur="{{x.setName}}" placeholder="이름 (예: 여름 휴가)" aria-label="휴일 이름" style="height: 32px; padding: 0 10px; border-radius: 8px; border: 1px solid #DDE2DF; font-size: 13px; color: #17201C; min-width: 0"><span style="display: flex; gap: 6px"><sc-for list="{{x.kinds}}" as="o" hint-placeholder-count="2"><button type="button" onClick="{{o.pick}}" disabled="{{x.lock}}" style="{{o.style}}">{{o.label}}</button></sc-for></span><span style="display: flex; flex-wrap: wrap; gap: 5px"><sc-for list="{{x.teachers}}" as="t" hint-placeholder-count="3"><button type="button" onClick="{{t.pick}}" disabled="{{x.lock}}" style="{{t.style}}">{{t.label}}</button></sc-for></span><sc-if value="{{hol.can}}" hint-placeholder-val="{{ true }}"><button type="button" class="noexp noprint" onClick="{{x.del}}" aria-label="휴일 지우기" style="width: 28px; height: 28px; border-radius: 7px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #8A949E; font-size: 15px; cursor: pointer">×</button></sc-if></div>
+              </sc-for>
+              <sc-if value="{{hol.customEmpty}}" hint-placeholder-val="{{ false }}"><div style="padding: 14px; font-size: 13px; color: #8A949E">이 해에 추가한 학원 휴일이 없습니다.</div></sc-if>
+            </div>
+          </div>
+        </sc-if>
+
         <sc-if value="{{viewLT}}" hint-placeholder-val="{{ false }}">
           <div style="display: flex; flex-direction: column; gap: 14px; max-width: 1180px; padding: 20px 22px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E3E8E5">
             <sc-if value="{{readOnly}}" hint-placeholder-val="{{ false }}"><div style="padding: 10px 12px; border-radius: 10px; background: #FFF4E0; color: #9A5B00; font-size: 13px; font-weight: 600">레슨 유형은 원장님만 바꿀 수 있습니다.</div></sc-if>
@@ -280,7 +301,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.96.1</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.97.0</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -575,7 +596,7 @@ class Component extends DCLogic {
   features() {
     return [
       { title: '화면·메뉴', items: [{ id: 'menu', label: '메뉴 탭', ready: true }] },
-      { title: '수업', items: [{ id: 'subjects', label: '수강과목', ready: true }, { id: 'ltypes', label: '레슨 유형', ready: true }] },
+      { title: '수업', items: [{ id: 'subjects', label: '수강과목', ready: true }, { id: 'ltypes', label: '레슨 유형', ready: true }, { id: 'holidays', label: '휴일', ready: true }] },
       // 직원명부는 원장님만 (강사 계정에는 보이지 않음)
       { title: '직원', items: this.isTeacherUser() ? [] : [{ id: 'staff', label: '직원명부', ready: true }] }
     ].filter(g => g.items.length);
@@ -587,6 +608,58 @@ class Component extends DCLogic {
   openView(id) {
     try { if (id === 'hub') history.replaceState(null, '', location.pathname + location.search); else location.hash = id; } catch (e) {}
     this.setState({ view: id, err: '', resetAsk: false });
+  }
+  // ---------- 휴일 (설정 > 수업 > 휴일, 출석부 날짜 머리글 색) ----------
+  // 대한민국 공휴일 [날짜, 이름, 대체공휴일]. 해마다 여기 추가. 'academy.holidays' = { kr: {날짜: 'off'|'short'|'normal'}, custom: [{id, date, name, kind, teachers: [이름]}] } / app_settings 'holidays'
+  krHolidays() {
+    return [
+      ['2026-01-01', '신정'], ['2026-02-16', '설날 연휴'], ['2026-02-17', '설날'], ['2026-02-18', '설날 연휴'], ['2026-03-01', '삼일절'], ['2026-03-02', '대체공휴일(삼일절)', 1],
+      ['2026-05-05', '어린이날'], ['2026-05-24', '부처님오신날'], ['2026-05-25', '대체공휴일(부처님오신날)', 1], ['2026-06-03', '전국동시지방선거'], ['2026-06-06', '현충일'],
+      ['2026-07-17', '제헌절'], ['2026-08-15', '광복절'], ['2026-08-17', '대체공휴일(광복절)', 1], ['2026-09-24', '추석 연휴'], ['2026-09-25', '추석'], ['2026-09-26', '추석 연휴'],
+      ['2026-10-03', '개천절'], ['2026-10-05', '대체공휴일(개천절)', 1], ['2026-10-09', '한글날'], ['2026-12-25', '성탄절'],
+      ['2027-01-01', '신정'], ['2027-02-06', '설날 연휴'], ['2027-02-07', '설날'], ['2027-02-08', '설날 연휴'], ['2027-02-09', '대체공휴일(설날)', 1], ['2027-03-01', '삼일절'],
+      ['2027-05-05', '어린이날'], ['2027-05-13', '부처님오신날'], ['2027-06-06', '현충일'], ['2027-07-17', '제헌절'], ['2027-07-19', '대체공휴일(제헌절)', 1],
+      ['2027-08-15', '광복절'], ['2027-08-16', '대체공휴일(광복절)', 1], ['2027-09-14', '추석 연휴'], ['2027-09-15', '추석'], ['2027-09-16', '추석 연휴'],
+      ['2027-10-03', '개천절'], ['2027-10-04', '대체공휴일(개천절)', 1], ['2027-10-09', '한글날'], ['2027-10-11', '대체공휴일(한글날)', 1], ['2027-12-25', '성탄절'], ['2027-12-27', '대체공휴일(성탄절)', 1]
+    ].map(x => ({ date: x[0], name: x[1], sub: !!x[2] }));
+  }
+  holidayCfg() {
+    let v = null;
+    try { v = JSON.parse(localStorage.getItem('academy.holidays') || 'null'); } catch (e) {}
+    v = v && typeof v === 'object' ? v : {};
+    return { kr: v.kr && typeof v.kr === 'object' ? v.kr : {}, custom: Array.isArray(v.custom) ? v.custom : [] };
+  }
+  saveHol(cfg) { try { localStorage.setItem('academy.holidays', JSON.stringify(cfg)); } catch (e) {} this.setState({}); }
+  holView(can) {
+    const Y = this.state.holYear || new Date().getFullYear(), cfg = this.holidayCfg(), WD = '일월화수목금토';
+    const lab = ds => { const t = new Date(ds + 'T00:00:00'); return isNaN(t) ? ds : (t.getMonth() + 1) + '/' + t.getDate() + ' (' + WD[t.getDay()] + ')'; };
+    const KC = { off: ['#FBD3D0', '#D92D20', '#E8A5A0'], short: ['#FDE9E7', '#E8766C', '#F3B9B3'], normal: ['#E9ECEB', '#5E6873', '#C9D0CC'] };
+    const seg = (cur, list, pick) => list.map(o => ({ label: o[1], pick: () => pick(o[0]), style: 'height: 30px; padding: 0 12px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: ' + (can ? 'pointer' : 'default') + '; border: 1px solid ' + (cur === o[0] ? KC[o[0]][2] : '#DDE2DF') + '; background: ' + (cur === o[0] ? KC[o[0]][0] : '#FFFFFF') + '; color: ' + (cur === o[0] ? KC[o[0]][1] : '#8A949E') }));
+    const KINDS = [['off', '휴일'], ['short', '단축수업'], ['normal', '정상수업']];
+    const kr = this.krHolidays().filter(h => h.date.slice(0, 4) === String(Y)).map(h => {
+      const cur = cfg.kr[h.date] || 'off';
+      return { date: lab(h.date), name: h.name, sub: h.sub, lock: !can, kinds: seg(cur, KINDS, k => { if (!can) return; const c = this.holidayCfg(); c.kr[h.date] = k; this.saveHol(c); }) };
+    });
+    const T = this.staffOrdered().filter(e => e.use && e.tab !== false && !this.isDismissed(e)).map(e => e.name);
+    const upd = (id, f) => { if (!can) return; const c = this.holidayCfg(), x = c.custom.find(o => o.id === id); if (!x) return; f(x); c.custom.sort((a, b) => (a.date || '').localeCompare(b.date || '')); this.saveHol(c); };
+    const chip = on => 'height: 26px; padding: 0 10px; border-radius: 13px; font-size: 12px; font-weight: 600; cursor: ' + (can ? 'pointer' : 'default') + '; border: 1px solid ' + (on ? '#00A6AB' : '#DDE2DF') + '; background: ' + (on ? '#E6F6F6' : '#FFFFFF') + '; color: ' + (on ? '#007A7E' : '#8A949E');
+    const custom = cfg.custom.filter(x => (x.date || '').slice(0, 4) === String(Y)).map(x => {
+      const ts = Array.isArray(x.teachers) ? x.teachers.filter(n => T.indexOf(n) >= 0) : [];
+      return { id: x.id, idDate: 'hol_d_' + x.id, idName: 'hol_n_' + x.id, date: x.date, name: x.name || '', lock: !can, day: lab(x.date),
+        setDate: e => { const v = e.target.value; if (/^\d{4}-\d\d-\d\d$/.test(v)) upd(x.id, o => { o.date = v; }); },
+        setName: e => { const v = e.target.value.trim(); if (v !== (x.name || '')) upd(x.id, o => { o.name = v; }); },
+        kinds: seg(x.kind === 'short' ? 'short' : 'off', KINDS.slice(0, 2), k => upd(x.id, o => { o.kind = k; })),
+        teachers: [{ label: '모든 강사', style: chip(!ts.length), pick: () => upd(x.id, o => { o.teachers = []; }) }].concat(T.map(n => ({ label: n, style: chip(ts.indexOf(n) >= 0), pick: () => upd(x.id, o => { let a = ts.slice(); a = a.indexOf(n) >= 0 ? a.filter(m => m !== n) : a.concat(n); o.teachers = a.length >= T.length ? [] : a; }) }))),
+        del: () => { if (!can) return; if (!window.confirm((x.name || '이 휴일') + '을(를) 지울까요?')) return; const c = this.holidayCfg(); c.custom = c.custom.filter(o => o.id !== x.id); this.saveHol(c); } };
+    });
+    return { year: Y, kr: kr, krEmpty: !kr.length, custom: custom, customEmpty: !custom.length, can: can,
+      prev: () => this.setState({ holYear: Y - 1 }), next: () => this.setState({ holYear: Y + 1 }),
+      add: () => { if (!can) return; const c = this.holidayCfg(), t = new Date(), ds = t.getFullYear() === Y ? t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0') : Y + '-01-01'; c.custom.push({ id: 'H' + Date.now().toString(36), date: ds, name: '', kind: 'off', teachers: [] }); c.custom.sort((a, b) => (a.date || '').localeCompare(b.date || '')); this.saveHol(c); },
+      navBtn: 'width: 30px; height: 30px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-size: 16px; cursor: pointer',
+      krRow: 'display: grid; grid-template-columns: 100px minmax(160px, 1fr) auto; align-items: center; gap: 12px; padding: 8px 14px; border-bottom: 1px solid #EEF1EF',
+      cuRow: 'display: grid; grid-template-columns: 150px minmax(140px, 220px) auto minmax(200px, 1fr) 32px; align-items: center; gap: 12px; padding: 8px 14px; border-bottom: 1px solid #EEF1EF',
+      print: this.krHolidays().filter(h => h.date.slice(0, 4) === String(Y)).map(h => [lab(h.date), h.name, ({ off: '휴일', short: '단축수업', normal: '정상수업' })[cfg.kr[h.date] || 'off'], '대한민국 공휴일'])
+        .concat(cfg.custom.filter(x => (x.date || '').slice(0, 4) === String(Y)).map(x => [lab(x.date), x.name || '', x.kind === 'short' ? '단축수업' : '휴일', '학원 휴일 · ' + ((x.teachers || []).join(', ') || '모든 강사')])) };
   }
   // ---------- 레슨 유형 (설정 > 수업) ----------
   // 'academy.lessonTypes' = [{ id, cls: 'hobby'|'pro', count, dur, unit, bg, fg }] (로그인 사이트는 app_settings 'lessonTypes'). 이름은 반·횟수·시간으로 저절로
@@ -1189,8 +1262,9 @@ class Component extends DCLogic {
     const d = new Date();
     const V = st.view || 'hub', F = this.featureOf(V);
     const PV = V;
-    const printHead = PV === 'sorder' ? ['순서', '성명', '직명', '사용'] : PV === 'staff' ? VIS.map(c => c.label) : PV === 'subjects' ? ['순서', '수강과목', '맡은 직원'] : ['순서', '탭 이름', '종류', '보이기'];
-    const printRows = PV === 'sorder' ? SO.map((e, i) => [i + 1, e.name + (this.isDismissed(e) ? ' (해임)' : ''), this.titlesOf(e).join(','), e.use ? '사용' : '사용 안 함']) : PV === 'staff' ? SHOWN.filter(e => !this._sq || [e.name, e.phone, e.addr, e.duty, (e.subjects || []).join(' '), e.email].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|').indexOf(String(this._sq).replace(/[-\s]/g, '').toLowerCase()) >= 0).map(e => VIS.map(c => plainOf(c, e)))
+    const HOL = V === 'holidays' ? this.holView(this.canEdit()) : { kr: [], custom: [], print: [] };
+    const printHead = PV === 'holidays' ? ['날짜', '이름', '수업', '구분'] : PV === 'sorder' ? ['순서', '성명', '직명', '사용'] : PV === 'staff' ? VIS.map(c => c.label) : PV === 'subjects' ? ['순서', '수강과목', '맡은 직원'] : ['순서', '탭 이름', '종류', '보이기'];
+    const printRows = PV === 'holidays' ? HOL.print : PV === 'sorder' ? SO.map((e, i) => [i + 1, e.name + (this.isDismissed(e) ? ' (해임)' : ''), this.titlesOf(e).join(','), e.use ? '사용' : '사용 안 함']) : PV === 'staff' ? SHOWN.filter(e => !this._sq || [e.name, e.phone, e.addr, e.duty, (e.subjects || []).join(' '), e.email].map(v => String(v || '').replace(/[-\s]/g, '').toLowerCase()).join('|').indexOf(String(this._sq).replace(/[-\s]/g, '').toLowerCase()) >= 0).map(e => VIS.map(c => plainOf(c, e)))
       : PV === 'subjects' ? SUB.map((s, i) => [i + 1, s.name, usedBy(s.name) ? usedBy(s.name) + '명' : ''])
       : items.map((t, i) => [i + 1, t.label, t.custom ? '추가한 탭' : '기본 탭', t.hidden ? '숨김' : '보임']);
     const groups = this.features().map(g => ({ title: g.title, items: g.items.map((it, k) => ({ label: it.label, soon: !it.ready, open: () => this.openView(it.id),
@@ -1202,6 +1276,7 @@ class Component extends DCLogic {
       ltOff: !st.ltDraft, ltDirty: !!st.ltDraft, ltSaveMsg: st.ltDraft ? '저장하지 않은 변경이 있습니다' : st.ltSaved ? '저장했습니다' : '', ltSave: () => this.commitLT(), ltCancel: () => this.setState({ ltDraft: null, err: '' }),
       ltSaveStyle: 'height: 40px; padding: 0 22px; border-radius: 10px; border: none; font-family: inherit; font-size: 14px; font-weight: 600; ' + (st.ltDraft ? 'background: #00A6AB; color: #FFFFFF; cursor: pointer' : 'background: #E3E8E5; color: #8A949E; cursor: default'),
       ltMsgStyle: 'font-size: 13px; font-weight: 600; color: ' + (st.ltDraft ? '#9A5B00' : '#007E82'),
+      viewHol: V === 'holidays', hol: HOL,
       viewLT: V === 'ltypes', ltRows: ltRows, ltAdd: () => this.addLT(), ltHead: LTC + '; background: #F7F9F8; border-bottom: 1px solid #E1E6E3',
       lc: { h: 'height: 36px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; color: #5E6873', c: 'display: flex; align-items: center; justify-content: center; padding: 6px 4px; box-sizing: border-box', inp: 'width: 56px; height: 32px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 14px; text-align: center; color: #17201C', inpW: 'width: 92px; height: 32px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; font-family: inherit; font-size: 14px; text-align: right; color: #17201C' },
       subjRows: subjRows, addSubj: () => this.addSubject(), subjKey: e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); this.addSubject(); } },
