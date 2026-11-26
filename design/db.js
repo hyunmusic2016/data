@@ -905,7 +905,7 @@
     var sheet = Array.prototype.find.call(document.querySelectorAll('button, a'), function (b) { return /시트로 보기/.test(b.textContent || '') && b.offsetParent && !b.hasAttribute('data-cl-btn'); });
     if (!sheet || (sheet.previousElementSibling && sheet.previousElementSibling.hasAttribute('data-cl-btn'))) return;
     var b = document.createElement('button'); b.type = 'button'; b.setAttribute('data-cl-btn', '1'); b.className = 'noexp noprint'; b.setAttribute('aria-label', '변경 기록 보기');
-    b.style.cssText = (sheet.getAttribute('style') || '') + '; cursor: pointer; font-family: ' + CL_FONT; b.textContent = '기록'; b.onclick = clOpen;
+    b.style.cssText = (sheet.getAttribute('style') || '') + '; cursor: pointer; font-family: ' + CL_FONT; b.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"></path></svg>기록'; b.onclick = clOpen;
     sheet.parentNode.insertBefore(b, sheet);
   }
   if (window === window.top) {
