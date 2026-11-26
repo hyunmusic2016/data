@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -464,8 +464,8 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       </div>
 
       <div style="display: flex; gap: 10px">
-        <sc-if value="{{pv.rfShow}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.rfGo}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.rfLabel}}</button></sc-if>
-        <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
+        <sc-if value="{{pv.rfShow}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.rfGo}}" style="flex: 1; height: 50px; border-radius: 14px; border: none; background: #C0392B; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.rfLabel}}</button></sc-if>
+        <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
         <button type="button" onClick="{{pv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.closeLabel}}</button>
         <button type="button" onClick="{{pv.go}}" style="{{pv.goStyle}}">{{pv.goLabel}}</button>
       </div>
