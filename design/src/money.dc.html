@@ -126,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.100.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.100.1</span>
     </div>
   </main>
 
@@ -429,6 +429,8 @@ class Component extends DCLogic {
     } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
   }
   componentDidMount() {
+    // 시트로 보기 창이 '다른 달'을 볼 때 띄우는 보이지 않는 수입·지출 (?sheetfor=1&ym=&key=): 그 달로 그려서 시트 내용만 key에 씀
+    { const SP = new URLSearchParams(location.search); if (SP.get('sheetfor')) { this._sheetKey = SP.get('key') || ''; this.setState({ ym: SP.get('ym') || this.state.ym }); } }
     this.installPopupDrag();
     this.installTextInputs();
     this._st = e => { if (/^academy\.(payments|attCells|ledger|ledgerItems|menu|employees|staffOrder)$/.test(e.key || '')) this.setState({ tick: Date.now() }); };
@@ -694,11 +696,12 @@ class Component extends DCLogic {
         const vis = months.filter(k => HID.indexOf(k) < 0 || k === ym);
         const TC = st.tabCtx;
         // 시트로 보기 창 아래 달 막대(sheetbar.js): 같은 탭·목록, 누른 것은 sheetCmd로 처리
-        this._bar = { color: '#5B86C9', onBg: '#EEF4FC', label: '수입·지출', tabs: vis.map(k => ({ id: k, name: nm(k), on: k === ym })), all: months.map(k => ({ id: k, name: nm(k), on: k === ym, hidden: HID.indexOf(k) >= 0 })) };
+        this._bar = { frame: 'money.html?sheetfor=1', color: '#5B86C9', onBg: '#EEF4FC', label: '수입·지출', tabs: vis.map(k => ({ id: k, name: nm(k), on: k === ym })), all: months.map(k => ({ id: k, name: nm(k), on: k === ym, hidden: HID.indexOf(k) >= 0 })) };
         this._sheetCmd = c => {
-          if (c.act === 'pick') { if (months.indexOf(c.id) < 0) return; if (HID.indexOf(c.id) >= 0) setHid(HID.filter(x => x !== c.id)); go(c.id); }
+          if (c.act === 'show') { if (HID.indexOf(c.id) >= 0) { setHid(HID.filter(x => x !== c.id)); this.setState({ tick: Date.now() }); } }
+          else if (c.act === 'pick') { if (months.indexOf(c.id) < 0) return; if (HID.indexOf(c.id) >= 0) setHid(HID.filter(x => x !== c.id)); go(c.id); }
           else if (c.act === 'hide') { const ids = (c.ids || []).filter(k => months.indexOf(k) >= 0 && HID.indexOf(k) < 0); const L = HID.concat(ids); const rest = months.filter(k => L.indexOf(k) < 0); if (!ids.length || !rest.length) return; setHid(L); this.setState({ tabCtx: null, ym: L.indexOf(ym) >= 0 ? rest[0] : ym }); }
-          else if (c.act === 'add') { if (months.indexOf(c.id) < 0) this.saveMonth(c.id, this.month(c.id)); go(c.id); }
+          else if (c.act === 'add') { if (months.indexOf(c.id) < 0) { this.saveMonth(c.id, this.month(c.id)); this.setState({ tick: Date.now() }); } }   // 원래 화면은 지금 보던 달 그대로
         };
         return {
           sheetTabs: vis.map(k => { const on = k === ym; return { name: nm(k), on: on ? 'true' : 'false', pick: () => go(k), ctx: e => { e.preventDefault(); this.setState({ tabCtx: { x: e.clientX, y: e.clientY, k: k }, addMenu: null, sheetList: false }); },
@@ -765,7 +768,7 @@ class Component extends DCLogic {
       }
     };
     // '시트로 보기' 새 창(money-sheet.html)이 읽는 표 내용 (보기 전용, 이 브라우저에만)
-    try { const js = JSON.stringify({ bar: this._bar, month: V.monthLabel, boxes: V.printBoxes.map(b => ({ key: b.key, head: b.head, raw: b.raw })) }); if (js !== this._sheetJs) { this._sheetJs = js; localStorage.setItem('money.sheet', js); } } catch (e) {}
+    try { const js = JSON.stringify({ bar: this._bar, month: V.monthLabel, boxes: V.printBoxes.map(b => ({ key: b.key, head: b.head, raw: b.raw })) }); if (js !== this._sheetJs) { this._sheetJs = js; localStorage.setItem(this._sheetKey || 'money.sheet', js); } } catch (e) {}
     return V;
   }
 }

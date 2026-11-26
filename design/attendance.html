@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.100.0"></script>
+<script src="db.js?v=0.100.1"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -244,7 +244,7 @@ button:focus-visible{outline:2px solid #2563EB;outline-offset:-2px}
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.100.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.100.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1941,6 +1941,19 @@ class Component extends DCLogic {
     }, true);
   }
   componentDidMount() {
+    // 시트로 보기 창이 '다른 달'을 볼 때 띄우는 보이지 않는 출석부 (?sheetfor=1&teacher=&ym=&key=): 그 강사·달로 그려서 시트 내용만 key에 씀
+    { const SP = new URLSearchParams(location.search);
+      if (SP.get('sheetfor')) {
+        const key = SP.get('key') || '', ym = SP.get('ym') || '', ti = +SP.get('teacher') || 0;
+        this._sheetFor = true;
+        const go = () => { let i = this.sheetList().findIndex(x => x[1] > 0 && this.ymK(x[1]) === ym);
+          if (i < 0) { const m = this.kOf(ym + '-01'); this.setState({ extra: this.state.extra.concat([m]).sort((a, b) => b - a) }); const j = this.sheetList().findIndex(x => x[1] === m); if (j >= 0) this.setState({ sheet: j, logView: null }); }
+          else this.setState({ sheet: i, logView: null }); };
+        this.setState(Object.assign({ teacher: ti }, this.sheetFor(ti))); go();   // 이 화면의 setState는 바로 그리고 콜백은 안 부름
+        [300, 1200].forEach(ms => setTimeout(() => { const c = this.sheetList()[this.state.sheet]; if (!c || this.ymK(c[1]) !== ym || (this.state.teacher || 0) !== ti) { this.setState({ teacher: ti }); go(); } }, ms));   // 처음 열 때 '오늘 달'로 돌아가는 것 막기
+        let last = '';
+        setInterval(() => { try { if (!this._exp) return; const js = JSON.stringify(this.sheetData()); if (js !== last) { last = js; localStorage.setItem(key, js); } } catch (e) {} }, 700);
+      } }
     this.installPopupDrag();
     this.installTextInputs();
     window.addEventListener('mousedown', () => { this._wlDown = true; }, true); window.addEventListener('mouseup', () => { this._wlDown = false; }, true); this._wlTrack = 1;
@@ -2788,17 +2801,18 @@ class Component extends DCLogic {
     const sheets = this.sheetList(), st = this.state, hidden = st.hiddenSheets || [];
     const idxOf = id => sheets.findIndex(x => x[1] > 0 && this.ymK(x[1]) === id);
     const after = () => setTimeout(() => { if (this._shPut) this._shPut(); }, 60);
-    if (c.act === 'pick') { const i = idxOf(c.id); if (i < 0) return; const nm = sheets[i][0]; this.setState({ sheet: i, hiddenSheets: hidden.filter(h => h !== nm), sheetList: false, sheetCtx: null, logView: null }, after); }
+    if (c.act === 'show') { const i = idxOf(c.id); if (i >= 0) { this.setState({ hiddenSheets: hidden.filter(h => h !== sheets[i][0]) }); after(); } }
+    else if (c.act === 'pick') { const i = idxOf(c.id); if (i < 0) return; const nm = sheets[i][0]; this.setState({ sheet: i, hiddenSheets: hidden.filter(h => h !== nm), sheetList: false, sheetCtx: null, logView: null }); after(); }
     else if (c.act === 'hide') {
       const names = (c.ids || []).map(idxOf).filter(i => i >= 0).map(i => sheets[i][0]).filter(n => hidden.indexOf(n) < 0);
       const vis = sheets.filter(t => hidden.indexOf(t[0]) < 0).length; if (!names.length || vis - names.length < 1) return;
       const nh = hidden.concat(names); let ns = st.sheet;
       if (nh.indexOf((sheets[ns] || [])[0]) >= 0) { const nx = sheets.findIndex(t => nh.indexOf(t[0]) < 0); ns = nx < 0 ? 0 : nx; }
-      this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null, tabMulti: null }, after);
+      this.setState({ hiddenSheets: nh, sheet: ns, sheetCtx: null, tabMulti: null }); after();
     } else if (c.act === 'add') {
-      const m = this.kOf(c.id + '-01'); if (sheets.some(x => x[1] === m)) return this.sheetCmd({ act: 'pick', id: c.id });
-      this.setState({ extra: this.state.extra.concat([m]).sort((a, b) => b - a), addMenu: null }, () => { const i = this.sheetList().findIndex(x => x[1] === m); if (i >= 0) this.setState({ sheet: i, logView: null }, after); });
-      setTimeout(() => { const i = this.sheetList().findIndex(x => x[1] === m); if (i >= 0 && this.state.sheet !== i) this.setState({ sheet: i, logView: null }, after); }, 80);
+      const m = this.kOf(c.id + '-01'); if (sheets.some(x => x[1] === m)) return;
+      const curName = (sheets[st.sheet] || [])[0];
+      this.setState({ extra: this.state.extra.concat([m]).sort((a, b) => b - a), addMenu: null }); const i = this.sheetList().findIndex(x => x[0] === curName); if (i >= 0 && i !== this.state.sheet) this.setState({ sheet: i }); after();   // 원래 화면은 지금 보던 달 그대로
     }
   }
   sheetData() {
@@ -3441,7 +3455,7 @@ class Component extends DCLogic {
     try {
       const mem = this.sheetMem(), curS = (sheets[st.sheet] || [])[0] || '';
       const now = JSON.stringify({ sheet: curS, hidden: hidden });
-      if (TK && JSON.stringify(mem[TK] || {}) !== now) { mem[TK] = { sheet: curS, hidden: hidden }; localStorage.setItem('attendance.sheetByTeacher', JSON.stringify(mem)); }
+      if (TK && !this._sheetFor && JSON.stringify(mem[TK] || {}) !== now) { mem[TK] = { sheet: curS, hidden: hidden }; localStorage.setItem('attendance.sheetByTeacher', JSON.stringify(mem)); }
     } catch (e) {}
     const ordIdx = o => { const k = tabOrder.indexOf(o.t[0]); return k < 0 ? 1000 + o.i : k; };
     const shown = sheets.map((t, i) => ({ t: t, i: i })).filter(o => hidden.indexOf(o.t[0]) < 0);
@@ -3505,7 +3519,7 @@ class Component extends DCLogic {
     const hideNames = ctx ? ((st.tabMulti || []).indexOf(sheets[ctx.i][0]) >= 0 ? st.tabMulti.filter(n => hidden.indexOf(n) < 0) : [sheets[ctx.i][0]]) : [];
     // 시트로 보기 창 아래 달 막대(sheetbar.js)에 줄 내용: 출석부 달 시트만
     { const tc0 = this.teacherColor((this.tKey() || '').replace(' 원장님', '')), dc = tc0 && tc0[0] && tc0[1] !== '#3A4450' ? tc0[0] : '#F2A3A3';
-      this._bar = { color: dc, onBg: '#FDF1F1', label: '출석부', tabs: tabsOrd.filter(o => o.t[1] > 0).map(o => ({ id: this.ymK(o.t[1]), name: o.t[0], on: o.i === st.sheet, dot: dc })),
+      this._bar = { frame: 'attendance.html?sheetfor=1&teacher=' + (st.teacher || 0), color: dc, onBg: '#FDF1F1', label: '출석부', tabs: tabsOrd.filter(o => o.t[1] > 0).map(o => ({ id: this.ymK(o.t[1]), name: o.t[0], on: o.i === st.sheet, dot: dc })),
         all: ordered.filter(o => o.t[1] > 0).map(o => ({ id: this.ymK(o.t[1]), name: o.t[0], on: o.i === st.sheet, hidden: hidden.indexOf(o.t[0]) >= 0 })) }; }
     const sm = {
       anyOpen: !!ctx || !!st.sheetList,

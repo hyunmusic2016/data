@@ -2,7 +2,8 @@
 // + = 해·월 골라 달 추가, ≡ = 모든 시트 목록(숨긴 시트 흐리게 + '숨김', 누르면 다시 보임), 탭 누르기 = 그 달 보기,
 // 탭 오른쪽 클릭 = '시트 숨기기'(Shift+누르기로 여러 개 고르기, 하나는 꼭 남김).
 // 원래 화면이 시트 내용에 bar = { color, tabs: [{ id: 'YYYY-MM', name, on }], all: [{ id, name, on, hidden }] } 를 넣어 주고,
-// 누르면 localStorage 'sheetcmd.<page>' = { act: 'pick'|'hide'|'add', id, ids, t } 를 써서 원래 화면이 그대로 처리 → 시트 내용이 바뀌면 이 창도 따라감.
+// 탭·목록 누르기 = 이 창만 그 달로(원래 화면 그대로, bar.frame 숨은 창). 추가·숨기기·숨김 풀기는 원래 화면에 보냄
+// (opener.__sheetCmd 또는 localStorage 'sheetcmd.<page>' = { act: 'add'|'hide'|'show', id, ids, t }).
 (function () {
   var FONT = "'Paperlogy', 'Paperlogy 4 Regular', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif";
   var el = null, pop = null, page = '', bar = null, multi = [], anchor = '';
@@ -13,6 +14,16 @@
     try { localStorage.setItem('sheetcmd.' + page, JSON.stringify(o)); } catch (e) {}   // 창을 링크로 열어 opener가 없으면 저장소로 전함
   }
   function closePop() { if (pop) { pop.remove(); pop = null; } }
+  // 이 창에서만 다른 달 보기: 보이지 않는 원래 화면(bar.frame + ym)을 하나 띄워 그 달 내용을 따로 쓰게 함 → 원래 화면은 그대로
+  var frame = null, altKey = 'sheetalt.' + Math.random().toString(36).slice(2, 8);
+  function pickLocal(id) {
+    if (!bar || !bar.frame) { send({ act: 'pick', id: id }); return; }
+    closePop();
+    window.SHEET_ALT = altKey;
+    if (!frame) { frame = document.createElement('iframe'); frame.setAttribute('aria-hidden', 'true'); frame.tabIndex = -1; frame.style.cssText = 'position: fixed; left: -10000px; top: 0; width: 1400px; height: 900px; border: 0; visibility: hidden; pointer-events: none'; document.body.appendChild(frame); }
+    frame.src = bar.frame + (bar.frame.indexOf('?') < 0 ? '?' : '&') + 'ym=' + encodeURIComponent(id) + '&key=' + encodeURIComponent(altKey);
+  }
+  window.addEventListener('beforeunload', function () { try { localStorage.removeItem(altKey); } catch (e) {} });
   function popAt(x, y, w, html) {
     closePop();
     pop = document.createElement('div');
@@ -23,7 +34,7 @@
     var have = (bar.all || []).map(function (a) { return a.id; }), h = '<div style="display: flex; align-items: center; justify-content: space-between; padding: 2px 4px 8px"><button data-y="-1" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; cursor: pointer">‹</button><b style="font-size: 14px">' + Y + '년</b><button data-y="1" style="width: 28px; height: 28px; border-radius: 8px; border: 1px solid #DDE2DF; background: #FFFFFF; cursor: pointer">›</button></div><div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px">';
     for (var m = 1; m <= 12; m++) { var id = Y + '-' + String(m).padStart(2, '0'), has = have.indexOf(id) >= 0; h += '<button ' + (has ? 'disabled' : 'data-add="' + id + '"') + ' style="height: 34px; border-radius: 9px; font-family: ' + FONT + '; font-size: 13px; font-weight: 600; ' + (has ? 'border: 1px solid #EEF1F0; background: #F7F9F8; color: #B5BDB8' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #17201C; cursor: pointer') + '">' + m + '월</button>'; }
     var p = popAt(x, y, 230, h + '</div>');
-    p.onclick = function (e) { var b = e.target.closest('button'); if (!b) return; if (b.dataset.y) addMenu(x, y, Y + (+b.dataset.y)); else if (b.dataset.add) send({ act: 'add', id: b.dataset.add }); };
+    p.onclick = function (e) { var b = e.target.closest('button'); if (!b) return; if (b.dataset.y) addMenu(x, y, Y + (+b.dataset.y)); else if (b.dataset.add) { var nid = b.dataset.add; send({ act: 'add', id: nid }); setTimeout(function () { pickLocal(nid); }, 300); } };
   }
   function listMenu(x, y) {
     var C = bar.color || '#00A6AB', all = bar.all || [];
@@ -31,7 +42,7 @@
       return '<button data-pick="' + a.id + '" style="display: flex; align-items: center; gap: 10px; width: 100%; height: 36px; padding: 0 10px; border: none; border-radius: 7px; font-family: ' + FONT + '; font-size: 13px; cursor: pointer; text-align: left; ' + (a.on ? 'background: #EEF8F8; color: #17201C; font-weight: 600' : 'background: #FFFFFF; font-weight: 500; color: ' + (a.hidden ? '#8A949E' : '#17201C')) + '"><span style="width: 7px; height: 7px; border-radius: 50%; flex: none; background: ' + C + (a.hidden ? '; opacity: 0.4' : '') + '"></span><span style="flex: 1">' + esc(a.name) + '</span>' + (a.hidden ? '<span style="font-size: 10px; font-weight: 600; color: #5E6873; background: #EEF1F0; padding: 2px 6px; border-radius: 5px">숨김</span>' : '') + '</button>';
     }).join('');
     var p = popAt(x, y, 240, h);
-    p.onclick = function (e) { var b = e.target.closest('[data-pick]'); if (b) send({ act: 'pick', id: b.dataset.pick }); };
+    p.onclick = function (e) { var b = e.target.closest('[data-pick]'); if (!b) return; var a = (bar.all || []).filter(function (x) { return x.id === b.dataset.pick; })[0]; if (a && a.hidden) send({ act: 'show', id: b.dataset.pick }); pickLocal(b.dataset.pick); };
   }
   function ctxMenu(x, y, id) {
     var ids = multi.indexOf(id) >= 0 ? multi.slice() : [id], vis = (bar.tabs || []).length, dis = vis - ids.length < 1;
@@ -54,7 +65,7 @@
         if (b.dataset.act === 'list') { if (pop) closePop(); else listMenu(r.left, r.top); return; }
         var id = b.dataset.tab; if (!id) return;
         if (e.shiftKey && anchor) { var ids = (bar.tabs || []).map(function (t) { return t.id; }), a = ids.indexOf(anchor), z = ids.indexOf(id); if (a >= 0 && z >= 0) { multi = ids.slice(Math.min(a, z), Math.max(a, z) + 1); draw(); return; } }
-        anchor = id; multi = []; send({ act: 'pick', id: id });
+        anchor = id; multi = []; pickLocal(id);
       });
       el.addEventListener('contextmenu', function (e) { var b = e.target.closest('[data-tab]'); if (!b) return; e.preventDefault(); ctxMenu(e.clientX, e.clientY, b.dataset.tab); });
       document.addEventListener('mousedown', function (e) { if (pop && !pop.contains(e.target) && !el.contains(e.target)) closePop(); });

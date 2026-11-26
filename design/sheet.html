@@ -52,7 +52,7 @@ th.col,th.row,th.corner{cursor:pointer}
 <div class="fbar"><span class="nm" id="nm"></span><span class="fx">fx</span><span class="val" id="val"></span><span class="sp"></span><span class="agg" id="agg"></span></div>
 <div class="wrap" id="wrap"><table id="t"></table></div>
 <div class="toast" id="toast"></div>
-<script src="sheetbar.js?v=1"></script>
+<script src="sheetbar.js?v=2"></script>
 <script>
 // 공통 시트 보기 (보기 전용): 각 페이지가 'sheet.<이름>'에 { title, sub, widths, grid: [[칸]] }을 써 두고 sheet.html?k=<이름>으로 연다.
 // 칸 = 글자·숫자, 또는 { v, bg, b(굵게), span(가로 합치기), al('c'|'r') }
@@ -61,7 +61,7 @@ const colName = i => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; 
 const KEY = 'sheet.' + (new URLSearchParams(location.search).get('k') || '');
 let GRID = [], NC_ = 0, SEL = { r1: 0, c1: 0, r2: 0, c2: 0 }, ANC = { r: 0, c: 0 }, dragging = false;
 function build() {
-  let d = null; try { d = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch (e) {}
+  let d = null; try { d = JSON.parse(localStorage.getItem(window.SHEET_ALT || KEY) || 'null'); } catch (e) {}   // SHEET_ALT = 이 창에서 고른 다른 달 (sheetbar.js)
   if (window.SheetBar) SheetBar.render(d && d.bar, (new URLSearchParams(location.search).get('k') || ''));   // 아래 달 막대 (출석부·수입·지출·통계)
   const t = document.getElementById('t');
   if (!d || !Array.isArray(d.grid)) { t.innerHTML = '<tr><td style="padding:24px;border:none">원래 화면에서 \'시트로 보기\'를 다시 눌러 주세요.</td></tr>'; return; }
@@ -145,7 +145,8 @@ document.addEventListener('copy', e => {
   e.preventDefault(); e.clipboardData.setData('text/plain', tsv); e.clipboardData.setData('text/html', html);
   const el = document.getElementById('toast'); el.textContent = '복사했습니다 (' + D.length + '줄 × ' + (D[0] || []).length + '칸)'; el.style.display = 'block'; clearTimeout(window._tt); window._tt = setTimeout(() => { el.style.display = 'none'; }, 1800);
 });
-window.addEventListener('storage', e => { if (e.key === KEY) build(); });
+window.addEventListener('storage', e => { if (e.key === (window.SHEET_ALT || KEY)) build(); });
+window.SHEET_BUILD = build;
 build();
 
 // 열 폭 조정: 열 글자 오른쪽 끝을 끌면 폭이 바뀜, 두 번 누르면 원래 폭 (이 브라우저에 저장)
