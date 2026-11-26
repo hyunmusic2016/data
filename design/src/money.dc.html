@@ -127,7 +127,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.114.0</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.114.1</span>
     </div>
   </main>
 
@@ -430,7 +430,7 @@ class Component extends DCLogic {
     } catch (e) { window.console && console.warn('PDF로 내보내지 못했습니다', e); }
   }
   // 형제 같이 수납(grp): '형제 합계 300,000 (형 · 동생)'
-  grpTxt(p) { if (!p || !p.grp) return ''; const L = this.rd('academy.payments', []).filter(x => x && x.grp === p.grp && x.kind !== 'repay'); if (L.length < 2) return ''; return '형제 합계 ' + L.reduce((a, x) => a + (+x.amount || 0), 0).toLocaleString('ko-KR') + ' (' + L.map(x => x.name).join(' · ') + ')'; }
+  grpTxt(p) { if (!p || !p.grp) return ''; const L = this.rd('academy.payments', []).filter(x => x && x.grp === p.grp && x.kind !== 'repay'); if (L.length < 2) return ''; return '형제 합계 ' + L.reduce((a, x) => a + (+x.amount || 0), 0).toLocaleString('ko-KR'); }
   applyQ() {
     const el = document.getElementById('money_q'), q = el ? el.value.trim().replace(/,/g, '') : '';
     if (!document.getElementById('money_qcss')) { const st = document.createElement('style'); st.id = 'money_qcss'; st.textContent = '.qhide{display:none!important}.qon .samed{color:inherit!important}'; document.head.appendChild(st); }
