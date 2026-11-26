@@ -717,6 +717,41 @@
   document.addEventListener('visibilitychange', function () { if (!document.hidden && Date.now() - lastLoad >= 20000) refresh(); });
   document.addEventListener('academy:data', function () { lastLoad = Date.now(); });
 
+  // ── 실시간 반영 (012 SQL로 attendance_cells 알림 켬): 다른 사람이 출결·수납 칸을 저장하면 1~2초 안에 이 화면에도 ──
+  // 칸은 바로 바꿔 넣고, 수납 기록 등 나머지는 3초 뒤 한 번 다시 불러옴(refresh, 바쁘면 미룸). 글자 입력 중·창이 열려 있으면 다시 그리기만 미룸.
+  var rtChan = null, rtDraw = false, rtLoadT = 0;
+  function rtApply(row, gone) {
+    if (!row || row.student_id == null || !row.ym || !A.data || !A.data.byId[row.student_id]) return;
+    var key = row.ym + '|D' + row.student_id, val = gone ? null : (row.cells || {});
+    var now = val && Object.keys(val).length ? JSON.stringify(val) : undefined;
+    known.att = known.att || {};
+    if (known.att[key] === now) return;   // 내가 저장한 것이 되돌아온 알림
+    var ac = {}; try { ac = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; } catch (x) {}
+    if (now) (ac[row.ym] = ac[row.ym] || {})['D' + row.student_id] = val; else if (ac[row.ym]) delete ac[row.ym]['D' + row.student_id];
+    rawSet('academy.attCells', JSON.stringify(ac));
+    if (now) known.att[key] = now; else delete known.att[key];
+    rtDraw = true; rtTick();
+    clearTimeout(rtLoadT); rtLoadT = setTimeout(function () { lastLoad = 0; refresh(); }, 3000);
+  }
+  function rtTick() {
+    if (!rtDraw) return;
+    var a = document.activeElement, typing = a && (a.tagName === 'TEXTAREA' || a.tagName === 'SELECT' || (a.tagName === 'INPUT' && a.type !== 'checkbox' && a.type !== 'button'));
+    if (A.busy || (window === window.top && (typing || document.querySelector('[role="dialog"]')))) return setTimeout(rtTick, 1000);
+    rtDraw = false; rerender();
+  }
+  function rtStart() {
+    if (rtChan || CALC_HOST || !A.staff || !sb.channel) return;
+    rtChan = sb.channel('att-cells').on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_cells' }, function (m) {
+      if (m.eventType === 'DELETE') rtApply(m.old, true); else rtApply(m.new, false);
+    }).subscribe(function (st) {
+      if (st === 'SUBSCRIBED' && A.rtWas) { lastLoad = 0; refresh(); }   // 끊겼다 다시 이어지면 놓친 것 채우기
+      if (st === 'SUBSCRIBED') A.rtWas = true;
+    });
+  }
+  document.addEventListener('academy:login', rtStart);
+  document.addEventListener('academy:data', rtStart);
+  if (A.fromCache) setTimeout(rtStart, 1500);
+
   // ── 출석부를 열지 않아도 수강권 계산(수업완료·미납·차액 → 'academy.tickets')이 되도록 ──
   // 수납 안내·수강생대장은 보이지 않는 출석부(attendance.html?calc=1)를 하나 띄워 둔다. 출석부와 똑같은 계산을 그대로 쓰고,
   // 그 창이 90초마다 서버에서 다시 불러와 다시 계산하면 결과가 이 창에도 바로 들어온다.
