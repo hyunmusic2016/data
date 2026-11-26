@@ -95,7 +95,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: flex-end; gap: 5px{{r.tkHide}}"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span data-bw="{{dd.bw}}" style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
                     <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25{{r.tkHide}}"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{r.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{r.lateLine}}</span></sc-if><sc-if value="{{r.diffLine}}" hint-placeholder-val="{{ false }}"><span style="{{r.diffStyle}}">{{r.diffLine}}</span></sc-if>
-                    <sc-if value="{{r.pool}}" hint-placeholder-val="{{ false }}"><span title="{{r.pool.title}}" aria-label="{{r.pool.title}}" style="display: flex"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.pool.lines}}" as="pl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><span style="min-width: 26px; font-size: 10px; font-weight: 600; color: #5E6873; white-space: nowrap">{{pl.label}}</span><sc-for list="{{pl.groups}}" as="pg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{pg.dots}}" as="pd" hint-placeholder-count="4"><span data-bw="{{pd.bw}}" style="{{pd.style}}"></span></sc-for></span></sc-for></span></sc-for></span></span></sc-if>
+                    <sc-if value="{{r.pool}}" hint-placeholder-val="{{ false }}"><span title="{{r.pool.title}}" aria-label="{{r.pool.title}}" style="display: flex; flex-direction: column; gap: 2px; line-height: 1"><span style="display: flex; flex-direction: column; gap: 2px"><sc-for list="{{r.pool.lines}}" as="pl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><span style="min-width: 26px; font-size: 10px; line-height: 1; font-weight: 600; color: #5E6873; white-space: nowrap">{{pl.label}}</span><sc-for list="{{pl.groups}}" as="pg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{pg.dots}}" as="pd" hint-placeholder-count="4"><span data-bw="{{pd.bw}}" style="{{pd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><span style="font-size: 10px; line-height: 1; color: #8A949E">{{r.pool.cnt}}</span></span></sc-if>
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.4</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -3512,7 +3512,7 @@ class Component extends DCLogic {
         (this._diffLeft = this._diffLeft || {})[s.id] = Math.max(0, (r.diffDue || 0) - (r.diffPaid || 0));
         const qn = r.queue.reduce((n, c) => n + c, 0);
         return {
-          pool: pool ? { lines: pool.lines, title: pool.title } : null,
+          pool: pool ? { lines: pool.lines, title: pool.title, cnt: Math.min(pool.fill, pool.cap) + '/' + pool.cap } : null,
           name: s.name.replace('$', ''),
           quick: () => { if (s.trial) { this.openTrial(s.trial); return; } if (s.g !== '퇴휴') this.openQuick(s); else if (s.canBack) this.openBack(s); else if (s.canInfo) this.setState({ tinfo: Object.assign({ rowId: s.id, name: s.name.replace('$', ''), ticket: (this._tk || {})[s.id] || '' }, s.tInfo) }); setTimeout(() => { const d = document.getElementById('tiDlg'); if (d) d.focus(); }, 30); },
           rowCls: 'arow' + (this._flash && this._flash.key === String(s.sid || s.id).replace(/^K/, '') ? ' aflash' : ''),
@@ -3535,7 +3535,7 @@ class Component extends DCLogic {
           // 넘어온 원생이 복귀·재등록하면 '← 예전 강사' 옆에 복귀·재등록 배지를 따로
           ...(() => { const T = this.subjTagOf(s); return { subjTag: T ? T.t : '', subjChip: T ? T.st : '', subjIcon: T ? T.icon : '', sibTip: s.trial ? '' : (() => { const L = this.sibsOf(String(s.name || '').replace('$', '')); return L.length ? '형제: ' + L.join(', ') : ''; })() }; })(),
           check2: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && !s.status && s.backTag) ? s.backTag : '', check2Chip: (s.mvT && s.dimBefore && s.mvT.me === s.mvT.to && !s.status && s.backTag) ? pill('#E6F6F6', '#007E82') + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none' : 'display: none' + '; height: 17px; padding: 0 5px; border-radius: 5px; font-size: 10px; flex: none',
-          ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT + (pool ? pool.over : !movedAway && !this.woOf(s.name.replace('$', '')) && ((this._unpaid[s.id] || 0) > 0 || (this._diffLeft[s.id] || 0) > 0) ? '; background: #FDEEEE' : ''),
+          ticketCell: cell + 'justify-content: flex-start; padding-left: 12px; border-right: 1px solid ' + SPLIT + ((pool ? pool.over : !movedAway && !this.woOf(s.name.replace('$', '')) && ((this._unpaid[s.id] || 0) > 0 || (this._diffLeft[s.id] || 0) > 0)) ? '; background: #FDEEEE' : ''),
           // 형제 묶음 원생은 개인 수강은 빼고 형제 합계만
           tkHide: pool ? '; display: none' : '',
           dotGroups: pool ? [] : dotGroups, dotLines: pool ? [] : dotLines,
