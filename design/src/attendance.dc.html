@@ -198,6 +198,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
           <div style="position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: 8px; height: 42px; padding: 0 10px 0 14px; box-sizing: border-box; background: #FFF8E1; border-bottom: 1px solid #DDE2DF">
             <span style="font-size: 15px; font-weight: 700; letter-spacing: 0.08em; color: #8A6400">MEMO</span>
             <span style="flex: 1 1 auto"></span>
+            <button type="button" class="noexp noprint" onClick="{{lg.wpOpen}}" style="display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #D6CBEF; background: #FFFFFF; color: #6B4FB0; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5M12 7v5l3 2"></path></svg>지난 기록</button>
           </div>
           <sc-if value="{{lg.w.mm.editing}}" hint-placeholder-val="{{ false }}"><textarea id="wl_memo" class="wltxt" aria-label="메모" onBlur="{{lg.w.mm.save}}" style="flex: 1 1 auto; width: 100%; box-sizing: border-box; padding: 10px 12px; border: none; outline: none; background: transparent; resize: none; font-family: inherit; font-size: 13px; line-height: 1.5; color: #17201C">{{lg.w.mm.text}}</textarea></sc-if><sc-if value="{{lg.w.mm.viewing}}" hint-placeholder-val="{{ true }}"><div onMouseDown="{{lg.w.mm.edit}}" title="눌러서 고치기" style="flex: 1 1 auto; min-height: 120px; display: flex; flex-direction: column; gap: 1px; padding: 8px 10px; cursor: text"><sc-for list="{{lg.w.mm.lines}}" as="ln" hint-placeholder-count="3"><div class="wlrow" style="{{ln.row}}"><sc-if value="{{ln.item}}" hint-placeholder-val="{{ true }}"><button type="button" data-wlbtn="1" onMouseDown="{{ln.tog}}" aria-label="{{ln.chkLabel}}" title="{{ln.chkLabel}}" style="{{ln.chkSt}}">{{ln.chk}}</button></sc-if><span style="{{ln.tSt}}">{{ln.t}}</span><sc-if value="{{ln.item}}" hint-placeholder-val="{{ true }}"><button type="button" data-wlbtn="1" class="{{ln.impCls}}" onMouseDown="{{ln.imp}}" aria-label="{{ln.impLabel}}" title="{{ln.impLabel}}" style="{{ln.impSt}}">!</button></sc-if></div></sc-for></div></sc-if></div>
       </div>
@@ -238,7 +239,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.105.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.106.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -408,6 +409,25 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
               </div>
             </sc-for>
           </sc-if>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{wp.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint noexp" role="dialog" aria-label="업무일지 지난 기록" style="position: fixed; top: 52px; right: 0; bottom: 0; z-index: 1002; width: 380px; max-width: 94vw; display: flex; flex-direction: column; background: #F8F6FD; border-top: 1px solid #DDE2DF; border-left: 1px solid #DDE2DF; border-top-left-radius: 18px; box-shadow: -12px 0 32px rgba(23, 32, 28, 0.10); overflow: hidden">
+      <div style="padding: 18px 18px 12px; background: #FFFFFF; border-bottom: 1px solid #E6EAE8; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #8B6CC9; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l3 2"></path></svg></span><span style="font-size: 18px; font-weight: 600; color: #17201C; background: linear-gradient(transparent 60%, #DCD1F3 60%); padding: 0 2px">지난 기록</span><span style="font-size: 12px; color: #8A949E">업무일지</span><button type="button" onClick="{{wp.close}}" aria-label="닫기" style="margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 17px; cursor: pointer">×</button></div>
+        <div style="display: flex; gap: 6px"><button type="button" onClick="{{wp.showAll}}" style="{{wp.allSt}}">모두</button><button type="button" onClick="{{wp.showOpen}}" style="{{wp.openSt}}">안 끝난 일만</button></div>
+        <input id="wp_q" type="text" data-noclear="1" placeholder="할 일 찾기" aria-label="할 일 찾기" onInput="{{wp.qIn}}" style="width: 100%; box-sizing: border-box; height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #DDE2DF; background: #F7F9F8; font-family: inherit; font-size: 13px; color: #17201C">
+        <sc-if value="{{wp.msg}}" hint-placeholder-val="{{ false }}"><div style="padding: 8px 10px; border-radius: 9px; background: #E6F6EA; color: #1F7A44; font-size: 12px; font-weight: 600">{{wp.msg}}</div></sc-if>
+      </div>
+      <div style="flex: 1; overflow: auto; padding: 4px 14px 18px">
+        <sc-if value="{{wp.empty}}" hint-placeholder-val="{{ false }}"><div style="padding: 40px 0; text-align: center; font-size: 13px; color: #8A949E">지난 기록이 없습니다</div></sc-if>
+        <sc-for list="{{wp.days}}" as="dy" hint-placeholder-count="3">
+          <div data-wpday="1" style="margin-top: 12px; padding: 10px 12px; border-radius: 14px; border: 1px solid #E6EAE8; background: #FFFFFF">
+            <button type="button" onClick="{{dy.go}}" title="그 달 업무일지로" style="padding: 0; border: none; background: none; font-family: inherit; font-size: 13px; font-weight: 600; color: #6B4FB0; cursor: pointer">{{dy.date}}</button>
+            <sc-for list="{{dy.lines}}" as="ln" hint-placeholder-count="2"><div data-wpq="{{ln.q}}" style="display: flex; align-items: flex-start; gap: 6px; padding: 5px 0; border-top: 1px dashed #EEF1EF; margin-top: 4px"><span style="{{ln.mst}}">{{ln.mark}}</span><span style="{{ln.tst}}">{{ln.t}}</span><sc-if value="{{ln.canBring}}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ln.bring}}" disabled="{{ln.bringDis}}" style="flex: none; height: 24px; padding: 0 8px; border-radius: 7px; border: 1px solid #D6CBEF; background: #FFFFFF; color: #6B4FB0; font-family: inherit; font-size: 11px; font-weight: 600; cursor: pointer">{{ln.bringLabel}}</button></sc-if></div></sc-for>
+          </div>
         </sc-for>
       </div>
     </div>
@@ -996,6 +1016,31 @@ class Component extends DCLogic {
     const v = (this.readLog('academy.workLog', {})[this.ymOf(m)]);
     if (Array.isArray(v)) { const o = {}; v.forEach(x => { if (x && x.d && x.text) o[x.d] = (o[x.d] ? o[x.d] + '\n' : '') + x.text; }); return o; }
     return v && typeof v === 'object' ? v : {};
+  }
+  // 업무일지 '지난 기록' 칸 (오른쪽): 오늘 전 날짜의 할 일을 최신부터, '안 끝난 일만'·찾기(치는 동안 줄만 숨김), 줄마다 '오늘로'(오늘 칸 끝에 붙임), 날짜 누르면 그 달로
+  wpView() {
+    const W = this.state.wp; if (!W) return { open: false };
+    const today = this.todayYmd(), tk = this.kOf(today), td = +today.slice(8, 10), WD = ['일', '월', '화', '수', '목', '금', '토'], days = [];
+    const tdLines = this.wlParse(this.workDays(tk)[td] || '').map(x => x.t.trim());
+    for (let mm = tk; mm > tk - 12; mm--) {
+      const D = this.workDays(mm);
+      Object.keys(D).map(Number).filter(d => mm < tk || d < td).sort((a, b) => b - a).forEach(d => {
+        const lines = this.wlParse(D[d]).filter(x => x.t.trim()).filter(x => !W.open || !x.done);
+        if (!lines.length) return;
+        days.push({ date: (this.kY(mm) !== this.kY(tk) ? this.kY(mm) + '년 ' : '') + this.kM(mm) + '월 ' + d + '일 (' + WD[new Date(2026, mm - 1, d).getDay()] + ')',
+          go: () => { const i = this.sheetList().findIndex(x => x[1] === mm); if (i >= 0) this.setState({ sheet: i, logView: 'work' }); },
+          lines: lines.map(x => { const have = tdLines.indexOf(x.t.trim()) >= 0;
+            return { t: x.t, q: x.t, done: x.done, imp: x.imp, canBring: !x.done, bringLabel: have ? '오늘에 있음' : '오늘로', bringDis: have,
+              tst: 'flex: 1; min-width: 0; font-size: 13px; line-height: 1.5; word-break: break-word; ' + (x.done ? 'color: #9AA3A8; text-decoration: line-through' : x.imp ? 'color: #C0392B; font-weight: 600' : 'color: #17201C'),
+              mark: x.done ? '✓' : x.imp ? '!' : '•', mst: 'flex: none; width: 14px; text-align: center; font-size: 12px; font-weight: 700; color: ' + (x.done ? '#AEB7B2' : x.imp ? '#C0392B' : '#8B6CC9'),
+              bring: () => { if (have) return; const cur = this.workDays(tk)[td] || ''; this.saveWorkDay(tk, td, (cur ? cur.replace(/\s+$/, '') + '\n' : '') + (x.imp ? '! ' : '') + x.t); this.setState({ wp: Object.assign({}, this.state.wp, { msg: '오늘(' + this.kM(tk) + '/' + td + ')로 가져왔어요', at: Date.now() }) }); clearTimeout(this._wpT); this._wpT = setTimeout(() => this.setState({ wp: this.state.wp ? Object.assign({}, this.state.wp, { msg: '' }) : null }), 2200); } }; }) });
+      });
+    }
+    const onBtn = on => 'height: 30px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid ' + (on ? '#8B6CC9; background: #EFEAF9; color: #6B4FB0' : '#DDE2DF; background: #FFFFFF; color: #5E6873');
+    return { open: true, days: days, empty: !days.length, msg: W.msg || '', openOnly: !!W.open, allSt: onBtn(!W.open), openSt: onBtn(!!W.open),
+      showAll: () => this.setState({ wp: Object.assign({}, W, { open: false }) }), showOpen: () => this.setState({ wp: Object.assign({}, W, { open: true }) }),
+      close: () => this.setState({ wp: null }),
+      qIn: e => { const q = e.target.value.trim(); document.querySelectorAll('[data-wpday]').forEach(day => { let any = false; day.querySelectorAll('[data-wpq]').forEach(r => { const ok = !q || r.getAttribute('data-wpq').indexOf(q) >= 0; r.style.display = ok ? '' : 'none'; if (ok) any = true; }); day.style.display = any ? '' : 'none'; }); } };
   }
   saveWorkDay(m, d, text) {
     const LOG = this.readLog('academy.workLog', {}), ym = this.ymOf(m);
@@ -3566,7 +3611,7 @@ class Component extends DCLogic {
     };
     // 수업일지·업무일지 화면 값
     const lgM = cur[1] || 11;
-    const lg = { isClass: st.logView === 'class' && this.logAllow().cls, isWork: st.logView === 'work' && this.logAllow().work, teacher: String(this.tKey() || '') };
+    const lg = { isClass: st.logView === 'class' && this.logAllow().cls, isWork: st.logView === 'work' && this.logAllow().work, teacher: String(this.tKey() || ''), wpOpen: () => this.setState({ wp: this.state.wp ? null : { open: false } }) };
     if (lg.isClass) { const C = this.classLogVals(lgM); C.headsS = C.heads.map((h, i) => Object.assign({}, h, { style: C.headStyles[i] })); lg.c = C; } else lg.c = { groups: [], heads: [], headsS: [] };
     lg.w = lg.isWork ? this.workLogVals(lgM) : { cells: [] };
     lg.w.heads = ['월', '화', '수', '목', '금', '토'].map((x, i) => ({ label: x, style: 'position: sticky; top: 0; z-index: 2; display: flex; align-items: center; justify-content: center; height: 42px; background: ' + (i === 6 ? '#FFF8E1' : '#F4F6F5') + '; border-right: 1px solid #EBEEEC; border-bottom: 1px solid #DDE2DF; font-size: ' + (i === 6 ? 15 : 17) + 'px; font-weight: 700; letter-spacing: ' + (i === 6 ? '0.08em' : '0') + '; color: ' + (i === 5 ? '#2952A3' : i === 6 ? '#8A6400' : '#3A4450') }));
@@ -3857,6 +3902,7 @@ class Component extends DCLogic {
       printX: () => this.printSheet(),
       hist: this.histBlock(),
       rf: this.refundView(),
+      wp: this.wpView(),
       ca: this.clAllView(),
       pv: (() => {
         const P = st.pay;
