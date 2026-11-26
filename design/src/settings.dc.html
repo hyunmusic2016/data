@@ -301,7 +301,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.104.0</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.104.1</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -330,6 +330,10 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <div style="display: flex; flex-wrap: wrap; gap: 8px">
             <sc-for list="{{ed.subj}}" as="o" hint-placeholder-count="6"><button type="button" role="checkbox" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for>
           </div>
+          <sc-if value="{{ed.mainShow}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; background: #F7F9F8; border: 1px solid #E3E8E5">
+            <span style="display: flex; flex-direction: column; gap: 2px; font-size: 13px; font-weight: 600; color: #3A4450"><span style="white-space: nowrap">대표 과목</span><span style="font-size: 12px; font-weight: 500; color: #8A949E">나머지는 추가 과목 — 출석부에서 추가 과목 원생은 이름 앞에 과목 아이콘</span></span>
+            <div role="radiogroup" aria-label="대표 과목" style="display: flex; flex-wrap: wrap; gap: 6px"><sc-for list="{{ed.mains}}" as="o" hint-placeholder-count="2"><button type="button" role="radio" aria-checked="{{o.on}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+          </div></sc-if>
           <span style="font-size: 13px; font-weight: 600; color: #5E6873; margin-top: 4px">강사 이름 색</span>
           <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
             <button type="button" role="radio" aria-checked="{{ed.colorAuto.on}}" onClick="{{ed.colorAuto.pick}}" style="{{ed.colorAuto.style}}">자동 (교습과목 색)</button>
@@ -1276,6 +1280,10 @@ class Component extends DCLogic {
           pick: () => upd(Object.assign(keepTyped(), { titles: on ? (ED.titles || []).filter(x => x !== r) : (ED.titles || []).concat([r]) })),
           box: 'width: 18px; height: 18px; flex: none; box-sizing: border-box; border-radius: 5px; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; ' + (on ? 'background: #00A6AB; color: #FFFFFF' : 'background: #FFFFFF; color: transparent; border: 1.5px solid #CDD4D0'),
           style: 'display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 12px; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') }; }),
+        // 대표 과목 = 교습과목 첫 번째 (고르면 맨 앞으로 옮김). 둘 이상 고른 때만 보임
+        mainShow: (ED.subjects || []).length > 1,
+        mains: (ED.subjects || []).map((n, i) => ({ label: (i === 0 ? '★ ' : '') + n, on: i === 0 ? 'true' : 'false', pick: () => upd(Object.assign(keepTyped(), { subjects: [n].concat(ED.subjects.filter(x => x !== n)) })),
+          style: 'height: 32px; padding: 0 12px; border-radius: 999px; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer; ' + (i === 0 ? 'border: 1.5px solid #00A6AB; background: #E6F6F6; color: #007E82' : 'border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873') })),
         subj: SUB.map(s => { const on = (ED.subjects || []).indexOf(s.name) >= 0; return { label: s.name, on: on ? 'true' : 'false',
           pick: () => upd(Object.assign(keepTyped(), { subjects: on ? ED.subjects.filter(x => x !== s.name) : (ED.subjects || []).concat([s.name]) })),
           style: 'height: 36px; padding: 0 14px; border-radius: 999px; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; ' + (on ? 'background: ' + s.bg + '; color: ' + s.fg + '; border: 2px solid ' + s.fg : 'background: #FFFFFF; color: #8A949E; border: 1px solid #DDE2DF') }; }),
