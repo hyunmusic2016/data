@@ -851,8 +851,12 @@
       var pa = {}, pb = {}, KN = { late: '미납 수납', trial: '체험 수납', unpaid: '미입금' };
       jp(ov, []).forEach(function (x) { pa[x.id] = x; }); jp(nv, []).forEach(function (x) { pb[x.id] = x; });
       var amt = function (x) { return won(x.amount != null ? x.amount : x.total); };
-      Object.keys(pb).forEach(function (id) { var x = pa[id], y = pb[id]; if (!x) { L.push((KN[y.kind] || '수납') + ' · ' + y.name + ' ' + amt(y) + '원 (' + md(y.date) + ')'); return; } if (x.date !== y.date) L.push('수납 날짜 고침 · ' + y.name + ' ' + md(x.date) + ' → ' + md(y.date)); if (amt(x) !== amt(y)) L.push('수납 금액 고침 · ' + y.name + ' ' + amt(x) + ' → ' + amt(y)); });
-      Object.keys(pa).forEach(function (id) { if (!pb[id]) { var x = pa[id]; L.push('수납 기록 지움 · ' + x.name + ' ' + amt(x) + '원 (' + md(x.date) + ')'); } });
+      Object.keys(pb).forEach(function (id) { var x = pa[id], y = pb[id];
+        if (y.kind === 'repay') return;   // 재결제는 아래 '환불' 줄에 같이
+        if (x && !x.refund && y.refund) { L.push('환불 · ' + y.name + ' ' + md(y.date) + ' 결제 ' + amt(y) + '원 취소 → 재결제 ' + (+y.refund.count || 0) + '회 ' + won(y.refund.amt) + '원 (' + md(y.refund.date) + ')'); return; }
+        if (x && x.refund && !y.refund) { L.push('환불 취소 · ' + y.name + ' ' + md(y.date) + ' 결제 ' + amt(y) + '원으로 되돌림'); return; }
+        if (!x) { L.push((KN[y.kind] || '수납') + ' · ' + y.name + ' ' + amt(y) + '원 (' + md(y.date) + ')'); return; } if (x.date !== y.date) L.push('수납 날짜 고침 · ' + y.name + ' ' + md(x.date) + ' → ' + md(y.date)); if (amt(x) !== amt(y)) L.push('수납 금액 고침 · ' + y.name + ' ' + amt(x) + ' → ' + amt(y)); });
+      Object.keys(pa).forEach(function (id) { if (!pb[id] && pa[id].kind !== 'repay') { var x = pa[id]; L.push('수납 기록 지움 · ' + x.name + ' ' + amt(x) + '원 (' + md(x.date) + ')'); } });
     } else if (k === 'academy.writeOffs') {
       var wa = jp(ov, []).map(function (x) { return JSON.stringify(x); }), wb = jp(nv, []).map(function (x) { return JSON.stringify(x); });
       wb.forEach(function (s) { if (wa.indexOf(s) < 0) { var x = JSON.parse(s); L.push('미납 정리 · ' + (x.name || '')); } });

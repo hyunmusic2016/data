@@ -126,7 +126,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.101.4</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.102.0</span>
     </div>
   </main>
 
@@ -500,7 +500,10 @@ class Component extends DCLogic {
   // 이 달 수입: 출석부·수강생대장 수납 기록(academy.payments) + 차액 수납(출석부 칸 dp·LD)
   incomeAuto(ym) {
     const out = [];
-    this.rd('academy.payments', []).forEach(p => { if (p && String(p.date || '').slice(0, 7) === ym && +p.amount) { const o = this.orphanPay(p); out.push({ at: +p.at || 0, d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: o ? '출석부에 없음' : p.kind === 'late' ? '미납 수납' : p.kind === 'trial' ? '체험수업' : p.ben && p.ben.kind ? '첫 ' + p.ben.n + '회 ' + (p.ben.kind === 'free' ? '무료' : '50%') : '', pid: p.id, orphan: o }); } });
+    // 환불: 취소한 날에 '결제 취소 −원래 금액' + 재결제 기록(kind 'repay')은 '재결제 N회 +금액'
+    this.rd('academy.payments', []).forEach(p => { if (p && p.refund && String(p.refund.date || '').slice(0, 7) === ym) { const a0 = +(p.amount != null ? p.amount : p.total) || 0; if (a0) out.push({ at: (+p.refund.at || 0) - 1, d: +String(p.refund.date).slice(8, 10), item: p.name, amt: -a0, memo: '결제 취소 (' + (+p.date.slice(5, 7)) + '/' + (+p.date.slice(8, 10)) + ' 결제)', pid: p.id + '#cancel', orphan: false }); } });
+    this.rd('academy.payments', []).forEach(p => { if (p && p.kind === 'repay' && String(p.date || '').slice(0, 7) === ym && +p.amount) { out.push({ at: +p.at || 0, d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: '재결제 ' + (+p.count || 0) + '회', pid: p.id, orphan: false }); } });
+    this.rd('academy.payments', []).forEach(p => { if (p && p.kind !== 'repay' && String(p.date || '').slice(0, 7) === ym && +p.amount) { const o = this.orphanPay(p); out.push({ at: +p.at || 0, d: +String(p.date).slice(8, 10), item: p.name, amt: +p.amount, memo: o ? '출석부에 없음' : p.kind === 'late' ? '미납 수납' : p.kind === 'trial' ? '체험수업' : p.ben && p.ben.kind ? '첫 ' + p.ben.n + '회 ' + (p.ben.kind === 'free' ? '무료' : '50%') : '', pid: p.id, orphan: o }); } });
     const AC = this.rd('academy.attCells', {}), A = window.academy, S = (A && A.data && A.data.students) || [];
     const nameOf = sk => { const r = S.find(x => 'D' + x.dbId === sk); return r ? r.name : sk; };
     Object.keys(AC || {}).forEach(ym0 => Object.keys(AC[ym0] || {}).forEach(sk => { const c = AC[ym0][sk] || {};
@@ -515,7 +518,7 @@ class Component extends DCLogic {
   }
   // 수납 기록인데 출석부 그날 칸에 ₩ 표시(p+날짜 또는 'V')가 없으면 남은 찌꺼기 (로그인 사이트에서만 판단, 미납 수납(late)은 빼고)
   orphanPay(p) {
-    const A = window.academy; if (!(A && A.data && Array.isArray(A.data.students)) || p.kind === 'late' || p.kind === 'trial') return false;
+    const A = window.academy; if (!(A && A.data && Array.isArray(A.data.students)) || p.kind === 'late' || p.kind === 'trial' || p.kind === 'repay') return false;
     const nm = String(p.name || '').replace('$', ''), same = A.data.students.filter(x => String(x.name || '').replace('$', '') === nm); if (same.length !== 1) return false; const st = same[0];
     const ym = String(p.date).slice(0, 7), d = +String(p.date).slice(8, 10);
     const cells = ((this.rd('academy.attCells', {}) || {})[ym] || {})['D' + st.dbId] || {};

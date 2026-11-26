@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.101.4</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.102.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -392,6 +392,21 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       </div>
     </div>
   </sc-if>
+  <sc-if value="{{rf.open}}" hint-placeholder-val="{{ false }}">
+    <div class="noprint" onMouseDown="{{rf.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
+    <div class="noprint" role="dialog" aria-label="환불" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 460px; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 22px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24)">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="width: 34px; height: 34px; border-radius: 10px; background: #FCEBEA; color: #B4332B; display: inline-flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 600">₩</span><span style="display: flex; flex-direction: column"><span style="font-size: 19px; font-weight: 600; color: #17201C">환불 · {{rf.name}}</span><span style="font-size: 12px; color: #6B7570">원래 결제를 취소하고 들은 만큼 다시 결제</span></span><button type="button" onClick="{{rf.close}}" aria-label="닫기" style="margin-left: auto; width: 34px; height: 34px; border-radius: 10px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #5E6873; font-size: 17px; cursor: pointer">×</button></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; border-radius: 12px; background: #F7F9F8; font-size: 13px"><span style="color: #5E6873">원래 결제</span><span style="font-weight: 600; color: #17201C">{{rf.orig}}</span></div>
+      <label style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873">취소 날짜<input id="rf_date" type="date" value="{{rf.today}}" style="height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 14px; color: #17201C"></label>
+      <div style="display: flex; gap: 10px">
+        <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873">재결제 회차<input id="rf_cnt" type="text" inputmode="numeric" data-noclear="1" defaultValue="{{rf.cnt}}" style="height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 14px; color: #17201C"><span style="font-weight: 500; color: #8A949E">지금까지 들은 회차: {{rf.used}}</span></label>
+        <label style="flex: 1; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: #5E6873">재결제 금액<input id="rf_amt" type="text" inputmode="numeric" data-noclear="1" placeholder="0" onInput="{{rf.amtIn}}" style="height: 40px; padding: 0 10px; border-radius: 10px; border: 1px solid #DDE2DF; font-family: inherit; font-size: 14px; color: #17201C; text-align: right"><span style="font-weight: 500; color: #8A949E">재결제 없으면 0</span></label>
+      </div>
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 14px; border-radius: 12px; background: #FCEBEA"><span style="font-size: 13px; font-weight: 600; color: #B4332B">돌려줄 금액</span><span id="rf_back" style="font-size: 18px; font-weight: 600; color: #B4332B">{{rf.back0}}</span></div>
+      <sc-if value="{{rf.err}}" hint-placeholder-val="{{ false }}"><div style="font-size: 13px; font-weight: 600; color: #B4332B">{{rf.err}}</div></sc-if>
+      <div style="display: flex; gap: 10px"><button type="button" onClick="{{rf.close}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">닫기</button><button type="button" onClick="{{rf.save}}" style="flex: 2; height: 48px; border-radius: 14px; border: none; background: #D9534F; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">환불하기</button></div>
+    </div>
+  </sc-if>
   <sc-if value="{{pv.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{pv.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
     <div class="noprint" role="dialog" aria-label="수납" onKeyDown="{{pv.key}}" tabIndex="-1" id="payDlg" style="position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 45; width: 760px; max-width: calc(100vw - 32px); max-height: calc(100vh - 48px); overflow: auto; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 16px; background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 24px; box-shadow: 0 24px 60px rgba(23, 32, 28, 0.24); outline: none">
@@ -449,6 +464,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       </div>
 
       <div style="display: flex; gap: 10px">
+        <sc-if value="{{pv.rfShow}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.rfGo}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FFFFFF; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.rfLabel}}</button></sc-if>
         <sc-if value="{{pv.paid}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{pv.cancelPay}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.cancelLabel}}</button></sc-if>
         <button type="button" onClick="{{pv.close}}" style="flex: 1; height: 50px; border-radius: 14px; border: 1px solid #DDE2DF; background: #FFFFFF; color: #3A4450; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">{{pv.closeLabel}}</button>
         <button type="button" onClick="{{pv.go}}" style="{{pv.goStyle}}">{{pv.goLabel}}</button>
@@ -2162,7 +2178,7 @@ class Component extends DCLogic {
     // 이미 수납된 칸이면 그때 저장한 수강료 내용을 보여 준다
     let rec = null;
     let recs = [];
-    try { recs = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).filter(x => x.name === name && x.date === recDate).sort((a, b) => (a.at || 0) - (b.at || 0)); } catch (e) {}
+    try { recs = (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).filter(x => x.name === name && x.date === recDate && x.kind !== 'repay').sort((a, b) => (a.at || 0) - (b.at || 0)); } catch (e) {}
     rec = recs[0] || null;
     const base = { count: count, unit: unit, total: total };
     if (paid && rec) { count = rec.count || count; unit = rec.unit || unit; total = rec.total || rec.amount || total; }
@@ -2248,7 +2264,7 @@ class Component extends DCLogic {
       return;
     }
     // 새 수납: 칸에 ₩가 없는데 같은 날짜 예전 기록이 남아 있으면 먼저 지운다 (지운 수납이 다시 살아나 쌓이지 않게)
-    this.writePays(this.readPays().filter(x => !(x.name === rec.name && x.date === rec.date)).concat([Object.assign({ id: 'P' + Date.now(), at: Date.now() }, rec)]));
+    this.writePays(this.readPays().filter(x => !(x.name === rec.name && x.date === rec.date && x.kind !== 'repay')).concat([Object.assign({ id: 'P' + Date.now(), at: Date.now() }, rec)]));
     this.setState({ pay: null });
     this.applyMark('V', { noNotice: true });
     // 현금영수증 발급 대상자는 수납한 뒤에도 발급 안내 창을 한 번 더 띄운다 (이번 수납 금액·횟수로)
@@ -2272,11 +2288,63 @@ class Component extends DCLogic {
     this.commit(patch);
     this.focusSheet();
   }
+  // ---------- 환불 (원래 결제 취소 + 들은 만큼 재결제) ----------
+  // 원래 결제 기록에 refund = { date, count, amt, id(재결제 기록 id), at }, 재결제 기록 = { kind: 'repay', of: 원래 id, date: 환불 날짜, count, amount }
+  // 수강권은 원래 결제 날짜에서 재결제 회차만큼(0회면 없음). 원래 수납 칸·환불한 날 칸('R'+날짜) ₩는 빨강
+  refundUsed(sid, name, from) {
+    const pays = this.readPays().filter(x => x.name === name && x.kind !== 'repay' && x.kind !== 'trial' && x.date > from).map(x => x.date).sort();
+    const until = pays[0] || '9999-12-31', today = this.todayYmd();
+    let n = 0;
+    for (let m = this.kOf(from); m <= this.kOf(today); m++) {
+      const row = (this.monthEvents(m) || {})[sid] || {};
+      for (let d = 1; d <= 31; d++) { const ymd = this.ymK(m) + '-' + String(d).padStart(2, '0'); if (ymd < from || ymd >= until || ymd > today) continue; if (row[d] === '수' || row[d] === '결') n++; }
+    }
+    return n;
+  }
+  openRefund(P, rec) {
+    this.setState({ pay: null, refund: { sid: P.sid, name: P.name, rec: rec, used: this.refundUsed(P.sid, P.name, rec.date), err: '' } });
+  }
+  saveRefund() {
+    const R = this.state.refund; if (!R) return;
+    const val = id => { const el = document.getElementById(id); return el ? String(el.value || '') : ''; };
+    const date = val('rf_date'), cnt = parseInt(val('rf_cnt').replace(/[^0-9]/g, ''), 10), amt = parseInt(val('rf_amt').replace(/[^0-9]/g, ''), 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) { this.setState({ refund: Object.assign({}, R, { err: '취소 날짜를 골라 주세요.' }) }); return; }
+    if (date < R.rec.date) { this.setState({ refund: Object.assign({}, R, { err: '취소 날짜는 원래 수납 날짜보다 앞설 수 없습니다.' }) }); return; }
+    if (isNaN(cnt) || isNaN(amt)) { this.setState({ refund: Object.assign({}, R, { err: '재결제 회차와 금액을 적어 주세요. (재결제 없으면 0)' }) }); return; }
+    const now = Date.now(), rid = 'P' + now + 'r';
+    const list = this.readPays().map(x => x.id === R.rec.id ? Object.assign({}, x, { refund: { date: date, count: cnt, amt: amt, id: rid, at: now } }) : x);
+    if (cnt > 0 || amt > 0) list.push({ id: rid, at: now, name: R.name, date: date, count: cnt, amount: amt, total: amt, kind: 'repay', of: R.rec.id, cls: R.rec.cls, unit: R.rec.unit, dur: R.rec.dur });
+    this.writePays(list);
+    const d = +date.slice(8, 10), patch = this.writeCells([{ m: this.kOf(date), sid: R.sid, d: d, key: 'R' + d, v: R.rec.id }], '');
+    patch.refund = null;
+    this.commit(patch);
+    this.focusSheet();
+  }
+  undoRefund(rec, sid) {
+    if (!rec || !rec.refund) return;
+    if (!window.confirm('환불을 취소하고 원래 결제(' + (+rec.date.slice(5, 7)) + '/' + (+rec.date.slice(8, 10)) + ' · ' + Number(rec.amount != null ? rec.amount : rec.total || 0).toLocaleString('ko-KR') + '원)로 되돌릴까요?')) return;
+    const R0 = rec.refund, list = this.readPays().filter(x => x.id !== R0.id).map(x => { if (x.id !== rec.id) return x; const y = Object.assign({}, x); delete y.refund; return y; });
+    this.writePays(list);
+    const d = +R0.date.slice(8, 10), patch = this.writeCells([{ m: this.kOf(R0.date), sid: sid, d: d, key: 'R' + d, v: '' }], '');
+    patch.pay = null; patch.refund = null;
+    this.commit(patch);
+    this.focusSheet();
+  }
+  refundView() {
+    const R = this.state.refund; if (!R) return { open: false };
+    const won = n => Number(n || 0).toLocaleString('ko-KR'), rec = R.rec, paidAmt = +(rec.amount != null ? rec.amount : rec.total) || 0;
+    const back = () => { const el = document.getElementById('rf_amt'), out = document.getElementById('rf_back'); if (!el || !out) return; const a = parseInt(String(el.value).replace(/[^0-9]/g, ''), 10) || 0; out.textContent = won(Math.max(0, paidAmt - a)) + '원'; };
+    return { open: true, name: R.name, err: R.err || '', used: R.used + '회',
+      orig: (+rec.date.slice(5, 7)) + '월 ' + (+rec.date.slice(8, 10)) + '일 · ' + won(paidAmt) + '원 · ' + (+rec.count || 0) + '회',
+      today: this.todayYmd(), cnt: String(R.used), back0: won(paidAmt) + '원',
+      amtIn: e => { const el = e.target, digits = el.value.replace(/[^0-9]/g, ''); el.value = digits ? Number(digits).toLocaleString('ko-KR') : ''; back(); },
+      close: () => { this.setState({ refund: null }); this.focusSheet(); }, save: () => this.saveRefund() };
+  }
   cancelPay() {
     const P = this.state.pay;
     if (!P) return;
     if (!P.cancelAsk) { this.setState({ pay: Object.assign({}, P, { cancelAsk: true }) }); return; }
-    const all0 = this.readPays(), multi = !P.late && !P.umode && P.recId && all0.filter(x => x.name === P.name && x.date === P.origDate).length > 1;
+    const all0 = this.readPays(), multi = !P.late && !P.umode && P.recId && all0.filter(x => x.name === P.name && x.date === P.origDate && x.kind !== 'repay').length > 1;
     if (multi) {
       // 같은 날 여러 건 중 한 건만 취소: 칸 표시는 남긴다
       this.writePays(all0.filter(x => x.id !== P.recId));
@@ -2284,7 +2352,7 @@ class Component extends DCLogic {
       this.focusSheet();
       return;
     }
-    this.writePays(all0.filter(x => !(x.name === P.name && x.date === P.origDate)));
+    this.writePays(all0.filter(x => !(x.name === P.name && x.date === P.origDate && x.kind !== 'repay')));
     const patch = this.writeCells(P.late ? [{ m: P.m, sid: P.sid, d: 0, key: 'L' + P.origDate, v: '' }]
       : [{ m: P.m, sid: P.sid, d: P.d, key: 'p' + P.d, v: '' }, { m: P.m, sid: P.sid, d: P.d, key: 'u' + P.d, v: '' }], '');
     patch.pay = null;
@@ -2313,11 +2381,11 @@ class Component extends DCLogic {
     months.forEach(m => { const ev = this.monthEvents(m) || {}; Object.keys(ev).filter(isMine).forEach(k => { const e = ev[k] || {}; Object.keys(e).forEach(d => { if (!/^\d+$/.test(d)) return; const ymd = this.ymK(m) + '-' + p2(+d); if (e[d] === '수' || e[d] === '결') lessons.push({ ymd: ymd, kind: e[d] }); else if (e[d] === '연' || e[d] === '보' || (e[d] === 'M' && (e['s' + d] === '수' || e['s' + d] === '결'))) others.push({ ymd: ymd, kind: e[d], ms: e['s' + d] || '' }); }); }); });
     lessons.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : 0);
     const TR = T.s && T.s.trial;
-    let pays = this.readPays().filter(p => p && (TR ? p.trial === TR.id : (p.name === T.name && p.kind !== 'trial'))).slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
+    let pays = this.readPays().filter(p => p && (TR ? p.trial === TR.id : (p.name === T.name && p.kind !== 'trial' && p.kind !== 'repay'))).slice().sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)));
     if (TR && !pays.length) pays = [{ date: TR.date, count: 1, amount: +TR.fee || 0, total: +TR.fee || 0, virt: true, freeTrial: TR.kind === 'free' }];
     // 결제 순서대로 수업을 앞에서부터 채움 (출석부 수강권 계산과 같은 순서)
     let li = 0;
-    const rows = pays.map(p => { const c = +p.count || 0, used = lessons.slice(li, li + c); li += used.length; return { p: p, used: used, c: c }; });
+    const rows = pays.map(p => { const c = p.refund ? (+p.refund.count || 0) : (+p.count || 0), used = lessons.slice(li, li + c); li += used.length; return { p: p, used: used, c: c }; });
     // 연기·보강은 그 날짜가 들어가는 결제(그 결제의 첫 수업 날짜 이후 중 가장 늦은 결제)에 끼워 넣음
     others.sort((a, b) => a.ymd < b.ymd ? -1 : 1).forEach(o => { let t = null; rows.forEach(r => { if (r.used.length && r.used[0].ymd <= o.ymd) t = r; }); if (!t) t = rows.find(r => r.used.length) || rows[0]; if (t) (t.oth = t.oth || []).push(o); });
     // 결제 없이 한 수업: 같은 카드 모양(빨간 점선), 입금하면 위 결제 카드로 들어감
@@ -2702,7 +2770,7 @@ class Component extends DCLogic {
     let a = {}, b = {};
     try { a = JSON.parse(oldJs || '{}') || {}; } catch (e) {}
     try { b = JSON.parse(newJs || '{}') || {}; } catch (e) {}
-    const KEY = /^(?:p|s|u|dp|L|LD)?\d+$/, out = [], now = Date.now(), tab = this.tKey() || '', who = (this.writerName() || '원장님') + (this._logTag ? ' · ' + this._logTag : '');
+    const KEY = /^(?:p|s|u|dp|L|LD|R)?\d+$/, out = [], now = Date.now(), tab = this.tKey() || '', who = (this.writerName() || '원장님') + (this._logTag ? ' · ' + this._logTag : '');
     this._logTag = '';
     const nameOf = rid => { const s = this.students().find(x => String(x.id) === String(rid)); return s ? s.name.replace('$', '') : rid; };
     const keys = (x, y) => Object.keys(Object.assign({}, x || {}, y || {}));
@@ -2718,6 +2786,7 @@ class Component extends DCLogic {
     if (!v || v === 'false') return '빈칸';
     const pre = (/^([a-zA-Z]*)/.exec(k) || [])[1] || '';
     if (pre === 'p' || pre === 'L') return '수납';
+    if (pre === 'R') return '환불';
     if (pre === 'dp' || pre === 'LD') return '차액 수납 ' + (+v || 0).toLocaleString('ko-KR') + '원';
     if (pre) return v === 'true' ? '표시' : v;
     return ({ '수': '출석', '결': '결석', '보': '보강', '연': '연기', 'V': '수납' })[v] || v;
@@ -2912,7 +2981,7 @@ class Component extends DCLogic {
     const PAYS = {};
     // 같은 날 수납이 여러 건이면 받은 순서대로 모두 수강권에 넣는다 (PAYS[이름|날짜] = 첫 건, PAYL = 모든 건)
     const PAYL = {};
-    try { (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).slice().sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(x => { const k0 = x.name + '|' + x.date; if (!PAYS[k0]) PAYS[k0] = x; (PAYL[k0] = PAYL[k0] || []).push(x); }); } catch (e) {}
+    try { (JSON.parse(localStorage.getItem('academy.payments') || '[]') || []).filter(x => x.kind !== 'repay').slice().sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(x => { const k0 = x.name + '|' + x.date; if (!PAYS[k0]) PAYS[k0] = x; (PAYL[k0] = PAYL[k0] || []).push(x); }); } catch (e) {}
     const keyOf = s => s.sid || s.id;
     // 월 마감: 마감한 달 마지막 날의 수강권 상태(원생별). 다음 달은 가장 최근 마감 상태에서 출발한다
     const CLOSE = this.readCloses();
@@ -3042,9 +3111,13 @@ class Component extends DCLogic {
             if (!v) { o.text = '₩' + (pn > 1 ? pn : ''); o.kind = 'V'; }
             o.what = o.what ? o.what + ' · 수납' + (pn > 1 ? ' ' + pn + '건' : '') : '수납' + (pn > 1 ? ' ' + pn + '건' : '');
             o.pay = !!v; o.upay = !!e['u' + d]; o.payN = pn;
-            if (prs.length && !e['u' + d]) prs.forEach(pr => payNow(pr.count || T0, new Date(2026, Mm - 1, d), pr.ben));
+            // 환불(취소 후 재결제)한 결제는 재결제 회차만큼만 수강권 (0회면 수강권 없음), 칸 ₩는 빨강
+            if (prs.some(pr => pr.refund)) { o.upay = true; o.what += ' · 환불됨'; }
+            if (prs.length && !e['u' + d]) prs.forEach(pr => { const c = pr.refund ? (+pr.refund.count || 0) : (pr.count || T0); if (c > 0) payNow(c, new Date(2026, Mm - 1, d), pr.ben); });
             else { const pr = prs[0]; payNow((pr && pr.count) || T0, new Date(2026, Mm - 1, d), pr && pr.ben); }
           }
+          // 환불한 날(취소·재결제) 칸: 빨간 ₩ (돈만, 수강권은 원래 결제 날짜에서 계산)
+          if (e['R' + d]) { o.upay = true; if (!o.text) { o.text = '₩'; o.kind = 'V'; } else if (o.kind !== 'V') o.pay = true; o.what = (o.what ? o.what + ' · ' : '') + '환불(취소·재결제)'; }
           if (e['dp' + d]) {
             diffPaid += +e['dp' + d] || 0; diffDate = this.kM(Mm) + '/' + d; diffDateM = Mm;
             o.dpay = true; if (!o.text) { o.text = '₩'; o.kind = 'DV'; }
@@ -3653,6 +3726,7 @@ class Component extends DCLogic {
                 const bcol = k => B && k < B.n ? (B.kind === 'free' ? '#8A949E' : '#E08A3C') : lcol(k);
                 const GS = (r.c % 4 !== 0 && r.c % 5 === 0) ? 5 : 4, grp = a => { const o = []; for (let q = 0; q < a.length; q += GS) o.push({ items: a.slice(q, q + GS) }); return o; };
                 const tags = p.unpaidV ? [{ t: '미납 ' + r.c + '회', st: pill('#FCEBEA', '#B4332B') }] : (TR0 ? [{ t: LT.name, st: pill(LT.bg, LT.fg) }] : []).concat(B ? [{ t: '첫 ' + B.n + '회 ' + (B.kind === 'free' ? '무료' : '50%'), st: B.kind === 'free' ? pill('#E5E9EC', '#3A4450') : pill('#FDE7D2', '#9A4A12') }] : []).concat(p.virt && !p.freeTrial ? [{ t: '미입금', st: pill('#FCEBEA', '#B4332B') }] : []).concat(p.kind === 'late' ? [{ t: '미납 수납', st: pill('#FCEBEA', '#B4332B') }] : []).concat(done ? [{ t: '수업완료', st: pill('#DFF2E4', '#2F6B43') }] : []);
+                if (p.refund) tags.push({ t: '환불 ' + (+p.refund.date.slice(5, 7)) + '/' + (+p.refund.date.slice(8, 10)) + ' · 재결제 ' + (+p.refund.count || 0) + '회 ' + won(+p.refund.amt || 0) + '원', st: pill('#FCEBEA', '#B4332B') });
                 const dots = []; for (let k = 0; k < (r.c || 0); k++) { const l = r.used[k], bn = bcol(k); dots.push({ st: 'width: 12px; height: 12px; border-radius: 50%; box-sizing: border-box; ' + (l ? 'background: ' + (l.kind === '결' ? '#E0605A' : bn) : 'border: 1.5px solid ' + bn) }); }
                 const cid = 'thc_' + String(p.id || p.date).replace(/[^A-Za-z0-9]/g, '') + '_' + (p.unpaidV ? 'u' : '');
                 return { cid: cid, save: () => this.saveCardImg(cid, T.name + '_수강내역_' + p.date + (p.unpaidV ? '_미입금' : ''), '현실용음악학원 · ' + T.name + ' 수강 내역'), dateTxt: p.date.slice(0, 4) + '년 ' + (+p.date.slice(5, 7)) + '월 ' + (+p.date.slice(8, 10)) + '일 (' + wd + ')', amt: p.unpaidV ? '미입금' : p.freeTrial ? '무료' : p.virt ? won(p.amount) + '원' : won(p.amount != null ? p.amount : p.total) + '원', amtSt: 'font-size: 18px; font-weight: 600; letter-spacing: -0.02em; color: ' + (p.unpaidV ? '#B4332B' : LT.fg), dateLbl: p.unpaidV ? '결제 없이 한 수업 · 첫 수업' : p.virt ? '체험 날짜' : '수납 날짜', orig: B ? won(p.total) + '원' : '',
@@ -3721,6 +3795,7 @@ class Component extends DCLogic {
       },
       printX: () => this.printSheet(),
       hist: this.histBlock(),
+      rf: this.refundView(),
       pv: (() => {
         const P = st.pay;
         if (!P) return { open: false };
@@ -3753,6 +3828,9 @@ class Component extends DCLogic {
           dateStyle: 'height: 30px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 600; ' + (P.umode ? 'border: 1px solid #E8A9A4; background: #FDF1F0; color: #B4332B' : 'border: 1px solid #E2C35E; background: #FBF6E8; color: #7A5C12'),
           setDate: e => upd({ date: e.target.value, err: '' }),
           cancelPay: () => this.cancelPay(),
+          // 환불 (취소 후 재결제) / 환불 취소
+          ...(() => { const rec = P.paid && !P.late && !P.umode ? (pays0.find(x => x.id === P.recId) || pays0.find(x => x.name === P.name && x.date === P.origDate && x.kind !== 'repay' && x.kind !== 'trial')) : null;
+            return { rfShow: !!rec, rfLabel: rec && rec.refund ? '환불 취소' : '환불', rfGo: () => { if (!rec) return; if (rec.refund) this.undoRefund(rec, P.sid); else this.openRefund(P, rec); } }; })(),
           cancelLabel: P.cancelAsk ? '한 번 더 누르면 취소' : '수납 취소',
           // 레슨 유형 고르기 → 반·횟수·시간·회당·합계 채움 (이번 수납에만)
           ltOpts: this.lessonTypes().filter(t => !t.off || ((t.cls === 'pro') === !!P.pro && +t.count === +P.count && (+t.dur || 60) === (+P.dur || 60) && +t.unit === +P.unit)).map(t => { const on = (t.cls === 'pro') === !!P.pro && +t.count === +P.count && (+t.dur || 60) === (+P.dur || 60) && +t.unit === +P.unit;
