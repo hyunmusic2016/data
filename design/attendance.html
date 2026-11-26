@@ -95,7 +95,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
                   <span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start">
                     <span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span data-bw="{{dd.bw}}" style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.queueTxt}}</span></sc-if></span>
                     <span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25"><sc-for list="{{r.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{r.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{r.lateLine}}</span></sc-if><sc-if value="{{r.diffLine}}" hint-placeholder-val="{{ false }}"><span style="{{r.diffStyle}}">{{r.diffLine}}</span></sc-if>
-                    <sc-if value="{{r.pool}}" hint-placeholder-val="{{ false }}"><span title="{{r.pool.title}}" aria-label="{{r.pool.title}}" style="display: flex; margin-top: 1px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.pool.lines}}" as="pl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{pl.groups}}" as="pg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{pg.dots}}" as="pd" hint-placeholder-count="4"><span data-bw="{{pd.bw}}" style="{{pd.style}}"></span></sc-for></span></sc-for></span></sc-for></span></span></sc-if>
+                    <sc-if value="{{r.pool}}" hint-placeholder-val="{{ false }}"><span title="{{r.pool.title}}" aria-label="{{r.pool.title}}" style="display: flex; margin-top: 1px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.pool.lines}}" as="pl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><span style="min-width: 26px; font-size: 10px; font-weight: 600; color: #5E6873; white-space: nowrap">{{pl.label}}</span><sc-for list="{{pl.groups}}" as="pg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{pg.dots}}" as="pd" hint-placeholder-count="4"><span data-bw="{{pd.bw}}" style="{{pd.style}}"></span></sc-for></span></sc-for></span></sc-for></span></span></sc-if>
                   </span>
                 </span>
                 <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="30">
@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.110.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.111.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2261,8 +2261,8 @@ class Component extends DCLogic {
     if (!from) from = g0.date;
     const packs = [], seen = {};
     pays.filter(x => x.date > g0.date || (x.date === g0.date && (x.at || 0) >= (g0.at || 0)) || x.grp === g0.grp).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).forEach(x => {
-      if (x.grp) { if (seen[x.grp]) { seen[x.grp].cap += +x.count || 0; return; } seen[x.grp] = { cap: +x.count || 0, date: x.date }; packs.push(seen[x.grp]); }
-      else packs.push({ cap: +x.count || 0, date: x.date });
+      if (x.grp) { if (seen[x.grp]) { seen[x.grp].cap += +x.count || 0; seen[x.grp].by[x.name] = (seen[x.grp].by[x.name] || 0) + (+x.count || 0); return; } seen[x.grp] = { cap: +x.count || 0, date: x.date, by: { [x.name]: +x.count || 0 } }; packs.push(seen[x.grp]); }
+      else packs.push({ cap: +x.count || 0, date: x.date, by: { [x.name]: +x.count || 0 } });
     });
     const les = [];
     names.forEach((n, i) => {
@@ -2276,11 +2276,17 @@ class Component extends DCLogic {
     if (packs.length) { const target = due ? total - 1 : L; while (k < packs.length - 1 && start + packs[k].cap <= target) { start += packs[k].cap; k++; } }
     const cap = packs.length ? packs[k].cap : 0;
     const D = 'display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; flex: none; ';
-    const dots = [];
-    for (let j = 0; j < cap; j++) { const l = les[start + j]; dots.push(l ? { bw: 'd-on', style: D + 'background: ' + (l.abs ? '#E5484D' : '#00A6AB') } : { bw: '', style: D + 'border: 1.5px solid #C9D0CC' }); }
-    if (due) for (let j = total; j < L; j++) dots.push({ bw: '', style: D + 'border: 1.5px dashed #D92D20' });
-    const groups = []; for (let j = 0; j < dots.length; j += 4) groups.push({ dots: dots.slice(j, j + 4) });
-    const lines = []; for (let j = 0; j < groups.length; j += 2) lines.push({ groups: groups.slice(j, j + 2) });
+    // 아이마다 한 줄 (형(언니) = 묶음 맨 앞이 위): 그 묶음에서 그 아이 몫만큼 동그라미, 자기 수업부터 채우고 넘친 수업은 다른 아이 빈자리로
+    const by = packs.length ? packs[k].by || {} : {}, blk = les.slice(start, start + cap);
+    const slots = names.map((n, i) => ({ n: n, i: i, share: +by[n] || 0, got: [] }));
+    const spill = [];
+    blk.forEach(l => { const sl = slots[l.i]; if (sl && sl.got.length < sl.share) sl.got.push(l); else spill.push(l); });
+    spill.forEach(l => { const sl = slots.find(x => x.got.length < x.share); if (sl) sl.got.push(l); });
+    const dot = l => l ? { bw: 'd-on', style: D + 'background: ' + (l.abs ? '#E5484D' : '#00A6AB') } : { bw: '', style: D + 'border: 1.5px solid #C9D0CC' };
+    const short = n => n.length >= 3 ? n.slice(1) : n;
+    const lineOf = (label, ds) => { const groups = []; for (let j = 0; j < ds.length; j += 4) groups.push({ dots: ds.slice(j, j + 4) }); return { label: label, groups: groups }; };
+    const lines = slots.filter(sl => sl.share > 0).map(sl => { const ds = []; for (let j = 0; j < sl.share; j++) ds.push(dot(sl.got[j])); return lineOf(short(sl.n), ds); });
+    if (due && L > total) { const ds = []; for (let j = total; j < L; j++) ds.push({ bw: '', style: D + 'border: 1.5px dashed #D92D20' }); lines.push(lineOf('미납', ds)); }
     const used = Math.max(0, Math.min(L - start, cap)), wait = packs.slice(k + 1).reduce((a, p) => a + p.cap, 0);
     const md = d => (+d.slice(5, 7)) + '/' + (+d.slice(8, 10));
     return { cap: cap, fill: used, due: due, over: due && L > total, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map((n, i) => n + ' ' + les.filter(l => l.i === i).length).join(' · ') + ')' };
@@ -3898,7 +3904,7 @@ class Component extends DCLogic {
         const tdy = this.todayYmd(), proT = s0.reg != null ? this.proOn(s0, tdy) : !!s0.rowBg;
         // 수납 안내 탭: 재원생이 마지막 회차를 쓴 순간(수업완료) 또는 미납 중이면 due. cyc = 마지막 수납 날짜(새로 수납하면 바뀌어 발송 기록이 새로 시작)
         const pool0 = sm ? null : this.sibPool(nm, calcOf(mm), baseAll);
-        const dueNow = !sm && s0.dbStatus !== 'rest' && s0.dbStatus !== 'out' && (pool0 ? pool0.due : ((x.paid && x.used >= x.T && !qn) || (!x.paid && !(x.newReg && x.used === 0))));
+        const dueNow = !sm && s0.dbStatus !== 'rest' && s0.dbStatus !== 'out' && (pool0 ? pool0.due && (this.sibGroups().find(g => g.indexOf(nm) >= 0) || [nm])[0] === nm : ((x.paid && x.used >= x.T && !qn) || (!x.paid && !(x.newReg && x.used === 0))));
         tks[nm] = { due: dueNow, stKind: sm && stx ? stx.kind : '', stDate: sm && stx ? String(stx.date || '') : '', stAt: sm && stx ? (stx.at || 0) : 0, cyc: String(x.payDate == null ? '' : x.payDate), teacher: s0.teacher || '', days: baseAll.filter(z => (z.sid || z.id) === (s0.sid || s0.id)).map(z => z.g), left: x.paid ? Math.max(0, x.T - x.used) + x.queue.reduce((n, c) => n + c, 0) : 0, n: !x.paid && !(x.newReg && x.used === 0) ? x.used : 0, diffLeft: Math.max(0, (x.diffDue || 0) - (x.diffPaid || 0)), unit: (s0.reg != null && this.unitOn(s0, tdy)) || (proT ? 62500 : 40000), pro: proT, rid: s0.id, sm: sm, text: doneOut ? '수업완료' : text, line: doneOut ? '수업완료' : v.subParts.map(p => p.t).join('') + (v.lateLine ? ' · ' + v.lateLine : ''),
           dotLines: v.dotLines.map(l => ({ groups: l.groups.map(g => ({ dots: g.dots.map(d => ({ style: d.style, bw: d.bw || '' })) })) })),
           subParts: doneOut ? [{ t: '수업완료', style: 'color: #007E82; font-weight: 600' }] : v.subParts, lateLine: v.lateLine, queueTxt: v.queueTxt };
