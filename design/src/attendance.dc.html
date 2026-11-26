@@ -238,7 +238,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.105.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.105.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -1653,7 +1653,7 @@ class Component extends DCLogic {
     const ids = (ids0 || []).map(String).concat([String(me.id)]).filter((v, i, a) => a.indexOf(v) === i);
     const key = me.dbId ? 'D' + me.dbId : me.name.replace('$', ''), LOG = this.readLog('academy.classLog', {});
     const today = this.todayYmd(), tk = this.kOf(today), td = +today.slice(8, 10), WD = ['일', '월', '화', '수', '목', '금', '토'], out = [];
-    for (let mm = tk; mm > tk - 12 && out.length < 40; mm--) {
+    for (let mm = tk; mm > tk - 3 && out.length < 40; mm--) {   // 최근 3달치만 (이번 달 포함)
       const ev = this.monthEvents(mm) || {}, days = {};
       ids.forEach(id => { const E = ev[id] || ev[+id] || {}; Object.keys(E).forEach(k => { if (/^\d+$/.test(k) && E[k] === '수' && (mm < tk || +k <= td)) days[+k] = 1; }); });
       Object.keys(days).map(Number).sort((a, b) => b - a).forEach(d => {
