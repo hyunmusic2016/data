@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.101.1"></script>
+<script src="db.js?v=0.101.2"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}
 body{margin:0;background:#F3F5F4}
@@ -130,7 +130,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
         </div>
       </sc-if>
       </span>
-      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.101.1</span>
+      <span style="font-size: 11px; color: #8A949E; padding-left: 6px">v0.101.2</span>
     </div>
   </main>
 
@@ -181,7 +181,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
 <div class="printonly" style="font-family: 'Paperlogy', 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #17201C">
   <div style="font-size: 20px; font-weight: 800; margin-bottom: 4px">현실용음악학원 수입·지출 · {{monthLabel}}</div>
   <div style="display: grid; grid-template-columns: 1fr 1fr 1.3fr 0.8fr; gap: 8px; align-items: start; font-size: 10px">
-    <sc-for list="{{printBoxes}}" as="b" hint-placeholder-count="4"><table style="border-collapse: collapse; width: 100%"><thead><tr><th class="pcell" colspan="{{b.span}}" style="border: 1px solid #C9D0CC; padding: 4px; background: #EEF2EE; font-weight: 600">{{b.title}}</th></tr><tr><sc-for list="{{b.head}}" as="h" hint-placeholder-count="4"><th class="pcell" style="border: 1px solid #C9D0CC; padding: 3px; font-weight: 600">{{h}}</th></sc-for></tr></thead><tbody><sc-for list="{{b.rows}}" as="rr" hint-placeholder-count="4"><tr><sc-for list="{{rr}}" as="v" hint-placeholder-count="4"><td class="pcell" style="border: 1px solid #C9D0CC; padding: 3px">{{v}}</td></sc-for></tr></sc-for></tbody></table></sc-for>
+    <sc-for list="{{printBoxes}}" as="b" hint-placeholder-count="4"><div style="display: table; border-collapse: collapse; width: 100%"><div style="display: table-caption; border: 1px solid #C9D0CC; border-bottom: none; padding: 4px; background: #EEF2EE; font-weight: 600; text-align: center" class="pcell">{{b.title}}</div><div style="display: table-row"><sc-for list="{{b.headO}}" as="h" hint-placeholder-count="4"><div class="pcell" style="display: table-cell; border: 1px solid #C9D0CC; padding: 3px; font-weight: 600; text-align: center">{{h.t}}</div></sc-for></div><sc-for list="{{b.rowsO}}" as="rr" hint-placeholder-count="4"><div style="display: table-row"><sc-for list="{{rr.c}}" as="v" hint-placeholder-count="4"><div class="pcell" style="{{v.st}}">{{v.t}}</div></sc-for></div></sc-for></div></sc-for>
   </div>
 </div>
 </template>
@@ -760,7 +760,10 @@ class Component extends DCLogic {
         { key: 'fx', title: '고정 지출', span: 5, head: ['연번', '일', '항목', '금액', '비고'], raw: items.map(it => { const f = M.fix[it.id] || {}; return [f.d || '', it.name, +f.amt || '', f.memo || '']; }) },
         { key: 'va', title: '변동 지출', span: 6, head: ['연번', '일', '항목', '구입처', '금액', '비고'], raw: M.vars.map(r => [r.d || '', r.item || '', r.shop || '', +r.amt || 0, r.memo || '']) },
         { key: 'sum', title: '합계', span: 2, head: ['구분', '금액'], raw: [['수입', incSum], ['고정 지출', fixSum], ['변동 지출', varSum], ['합 (수입−지출)', net]] }
-      ].map(b => { if (b.key !== 'sum') b.raw = b.raw.map((r, i) => [String(i + 1)].concat(r)); return b; }).map(b => Object.assign(b, { rows: b.raw.map(r => r.map(x => typeof x === 'number' ? this.won(x) : x)) })),
+      ].map(b => { if (b.key !== 'sum') b.raw = b.raw.map((r, i) => [String(i + 1)].concat(r)); return b; }).map(b => Object.assign(b, { rows: b.raw.map(r => r.map(x => typeof x === 'number' ? this.won(x) : x)) })).map(b => Object.assign(b, {
+        // 인쇄 표: 템플릿 반복은 글자·숫자 목록을 못 그려서(undefined) 칸마다 { t } 로 감쌈
+        headO: b.head.map(t => ({ t: t })),
+        rowsO: b.rows.map((r, ri) => ({ c: r.map((x, ci) => ({ t: b.key === 'sum' && typeof b.raw[ri][ci] === 'number' && !x ? '0' : x == null ? '' : x, st: 'display: table-cell; border: 1px solid #C9D0CC; padding: 3px' + (typeof b.raw[ri][ci] === 'number' ? '; text-align: right' : '') })) })) })),
       printX: () => this.setState({ printOpen: true }),
       pr: {
         open: !!st.printOpen, close: () => this.setState({ printOpen: false }), go: () => this.doPrint(),
