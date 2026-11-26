@@ -243,7 +243,7 @@
           rawSet('academy.ticketPlans', JSON.stringify(tp)); known.tkp = tp;
         }
         var q = qs[0];
-        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
         if (!qs[2].error) {
@@ -376,6 +376,10 @@
       else if (k === 'academy.ledger' || k === 'academy.ledgerItems') {
         if (!A.staff || A.staff.role !== 'owner') { toast('수입·지출은 원장님만 바꿀 수 있습니다'); return; }
         ledgerWrite(k, ledOld, v);
+      }
+      else if (k === 'academy.siblings') {
+        if (!A.staff || A.staff.role !== 'owner') { toast('형제는 원장님만 바꿀 수 있습니다'); return; }
+        sb.from('app_settings').upsert({ key: 'siblings', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '형제'); });
       }
       else if (k === 'academy.holidays') {
         if (!A.staff || A.staff.role !== 'owner') { toast('휴일은 원장님만 바꿀 수 있습니다'); return; }
@@ -800,7 +804,7 @@
   // ── 페이지 변경 기록 (출석부 말고 모든 페이지 공통, 014 SQL change_log) ──
   // 내용이 바뀌면(저장소 쓰기를 전후 비교) 알아보기 쉬운 줄로 남김: { id, at, who, page, lines: [글] } → 'academy.changeLog' + 서버 change_log
   // 페이지 맨 아래 '시트로 보기' 왼쪽에 '기록' 버튼을 저절로 붙이고, 누르면 오른쪽에 그 페이지 기록 칸이 열림 (새 페이지도 저절로)
-  var CL_KEYS = { 'academy.payNotice': 1, 'academy.ledger': 1, 'academy.ledgerItems': 1, 'academy.payments': 1, 'academy.writeOffs': 1, 'academy.ticketPlans': 1 };
+  var CL_KEYS = { 'academy.payNotice': 1, 'academy.ledger': 1, 'academy.ledgerItems': 1, 'academy.payments': 1, 'academy.writeOffs': 1, 'academy.ticketPlans': 1, 'academy.siblings': 1 };
   var CL_PAGE_NAME = { students: '수강생대장', notice: '수납 안내', 'notice-list': '수납 안내', money: '수입·지출', settings: '설정' };
   function clPage() { var p = pPage(); return p === 'notice-list' ? 'notice' : p; }
   function clOn() { var p = pPage(); return window === window.top && p !== 'attendance' && p !== 'sheet' && p !== 'money-sheet'; }
@@ -861,6 +865,10 @@
       var wa = jp(ov, []).map(function (x) { return JSON.stringify(x); }), wb = jp(nv, []).map(function (x) { return JSON.stringify(x); });
       wb.forEach(function (s) { if (wa.indexOf(s) < 0) { var x = JSON.parse(s); L.push('미납 정리 · ' + (x.name || '')); } });
       wa.forEach(function (s) { if (wb.indexOf(s) < 0) { var x = JSON.parse(s); L.push('미납 정리 취소 · ' + (x.name || '')); } });
+    } else if (k === 'academy.siblings') {
+      var ga = jp(ov, []).map(function (g) { return (g || []).slice().sort().join(', '); }), gb = jp(nv, []).map(function (g) { return (g || []).slice().sort().join(', '); });
+      gb.forEach(function (g) { if (ga.indexOf(g) < 0) L.push('형제 묶음 · ' + g); });
+      ga.forEach(function (g) { if (gb.indexOf(g) < 0) L.push('형제 묶음 풀림 · ' + g); });
     } else if (k === 'academy.ticketPlans') {
       var ta = jp(ov, {}), tb = jp(nv, {});
       Object.keys(Object.assign({}, ta, tb)).forEach(function (n) { if ((ta[n] || '') !== (tb[n] || '')) L.push(n + ' · 레슨시작일 예정 ' + (md(ta[n]) || '없음') + ' → ' + (md(tb[n]) || '없음')); });

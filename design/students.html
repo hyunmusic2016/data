@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.106.0"></script>
+<script src="db.js?v=0.107.0"></script>
 <script src="fx.js?v=5"></script>
 <style>.expitem:hover{background:#F2F5F3!important}.shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
@@ -127,7 +127,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
             <sc-if value="{{r.grpHead}}" hint-placeholder-val="{{ false }}"><div class="sgrp" style="{{grpHeadRow}}"><span style="{{grpHeadCell}}"><span style="position: sticky; left: 16px">{{r.grpLabel}}</span></span></div></sc-if>
             <div class="{{r.rowCls}}" data-s="{{r.sKey}}" style="{{gridRow}}">
               <sc-for list="{{r.cells}}" as="x" hint-placeholder-count="12">
-                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span data-chg="{{x.chgTip}}" style="{{x.nameStyle}}; position: relative">{{x.text}}<sc-if value="{{x.chgTip}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-label="최근 3일 안에 바뀐 내용 있음" style="position: absolute; top: -2px; right: -8px; width: 7px; height: 7px; border-radius: 50%; background: #F08A3C"></span></sc-if></span><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if></span>
+                <span style="{{x.cell}}"><sc-if value="{{x.isName}}" hint-placeholder-val="{{ false }}"><span data-chg="{{x.chgTip}}" style="{{x.nameStyle}}; position: relative">{{x.text}}<sc-if value="{{x.sibTip}}" hint-placeholder-val="{{ false }}"><span title="{{x.sibTip}}" aria-label="{{x.sibTip}}" style="display: inline-flex; vertical-align: -2px; margin-left: 4px; color: #5E6873"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0"></path></svg></span></sc-if><sc-if value="{{x.chgTip}}" hint-placeholder-val="{{ false }}"><span class="noexp noprint" aria-label="최근 3일 안에 바뀐 내용 있음" style="position: absolute; top: -2px; right: -8px; width: 7px; height: 7px; border-radius: 50%; background: #F08A3C"></span></sc-if></span><span style="font-size: 12px; color: #8A949E">{{x.sub}}</span><sc-if value="{{x.flashTag}}" hint-placeholder-val="{{ false }}"><span class="flashtag" style="{{x.flashStyle}}">{{x.flashTag}}</span></sc-if></sc-if><sc-if value="{{x.isChip}}" hint-placeholder-val="{{ false }}"><span style="{{x.chip}}">{{x.text}}</span></sc-if><sc-if value="{{x.isText}}" hint-placeholder-val="{{ true }}">{{x.text}}</sc-if><sc-if value="{{x.isTk}}" hint-placeholder-val="{{ false }}"><span style="display: flex; flex-direction: column; gap: 3px; align-items: flex-start; padding: 6px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{x.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{x.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{x.queueTxt}}</span></sc-if></span><span style="font-size: 10px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{x.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span><sc-if value="{{x.lateLine}}" hint-placeholder-val="{{ false }}"><span style="font-size: 10px; font-weight: 600; letter-spacing: -0.02em; color: #007E82; white-space: nowrap">{{x.lateLine}}</span></sc-if></span></sc-if></span>
               </sc-for>
               <span style="{{r.fill}}"></span>
               <sc-for list="{{r.xcells}}" as="x" hint-placeholder-count="0">
@@ -172,7 +172,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.106.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.107.0</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -296,6 +296,14 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
           <label for="r_note" style="position: absolute; left: -9999px">원생 메모</label>
           <textarea id="r_note" rows="3" onInput="{{reg.set.note}}" style="width: 100%; min-height: 96px; padding: 12px 14px; box-sizing: border-box; border-radius: 12px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 15px; line-height: 1.6; color: #17201C; resize: vertical">{{reg.f.note}}</textarea>
         </section>
+        <sc-if value="{{reg.isEdit}}" hint-placeholder-val="{{ false }}"><section aria-label="형제" style="{{reg.card}}; grid-column: span 2">
+          <span style="{{reg.secTitle}}"><span style="{{reg.secIcon}}; background: #EEF1F0; color: #3A4450"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M13 7a4 4 0 1 1-8 0a4 4 0 1 1 8 0"></path></svg></span>형제</span>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <sc-for list="{{reg.sibs}}" as="sb" hint-placeholder-count="1"><span style="display: inline-flex; align-items: center; gap: 4px; height: 32px; padding: 0 6px 0 12px; border-radius: 999px; background: #EEF1F0; font-size: 14px; color: #17201C">{{sb.name}}<button type="button" onClick="{{sb.del}}" aria-label="{{sb.name}} 형제에서 빼기" style="width: 22px; height: 22px; border: none; border-radius: 50%; background: transparent; color: #8A949E; cursor: pointer; font-size: 15px">×</button></span></sc-for>
+            <label for="r_sib" style="position: absolute; left: -9999px">형제 추가</label>
+            <select id="r_sib" onChange="{{reg.sibAdd}}" style="height: 34px; padding: 0 10px; border-radius: 10px; border: 1px solid #D5DBD8; background: #FFFFFF; font-family: inherit; font-size: 14px; color: #3A4450"><option value="">+ 형제 추가</option><sc-for list="{{reg.sibOpts}}" as="o" hint-placeholder-count="2"><option value="{{o.t}}">{{o.t}}</option></sc-for></select>
+          </div>
+        </section></sc-if>
       </div>
 
       <div style="display: flex; align-items: center; gap: 12px; padding: 16px 28px; border-top: 1px solid #E8ECEA; background: #FFFFFF">
@@ -597,6 +605,12 @@ class Component extends DCLogic {
       cashOn: !!fl.cash, stick: s.extra && ex.stickBox !== undefined ? !!ex.stickBox : (s.part === '드럼' && (s.id % 3 === 0 || (s.memo || '').indexOf('스틱') >= 0))
     });
   }
+  // 형제 묶음 ('academy.siblings' = [[이름, 이름, ...], ...] / app_settings 'siblings')
+  sibGroups() { try { const v = JSON.parse(localStorage.getItem('academy.siblings') || '[]'); return Array.isArray(v) ? v.filter(g => Array.isArray(g)) : []; } catch (e) { return []; } }
+  sibsOf(name) { const g = this.sibGroups().find(x => x.indexOf(name) >= 0); return g ? g.filter(n => n !== name) : []; }
+  sibSave(gs) { try { localStorage.setItem('academy.siblings', JSON.stringify(gs.filter(g => g.length > 1))); } catch (e) {} this.setState({}); }
+  sibAdd(me, other) { if (!me || !other || me === other) return; let gs = this.sibGroups(); const a = gs.find(g => g.indexOf(me) >= 0), b = gs.find(g => g.indexOf(other) >= 0); if (a && a === b) return; gs = gs.filter(g => g !== a && g !== b); gs.push(Array.from(new Set((a || [me]).concat(b || [other])))); this.sibSave(gs); }
+  sibDel(me, other) { const gs = this.sibGroups().map(g => g.indexOf(me) >= 0 ? g.filter(n => n !== other) : g); this.sibSave(gs); }
   students() {
     // changes: 수정·휴원·퇴원으로 바로 바뀐 내용 / hist: 적용 날짜가 있는 변경 (오늘까지 시작된 것만 반영)
     const ch = this.state.changes || {}, today = this.todayYmd();
@@ -840,7 +854,7 @@ class Component extends DCLogic {
     const ymd = v => { const m = /^(\d{2,4})\.(\d{2})\.(\d{2})$/.exec(v || ''); return m ? (m[1].length === 2 ? '20' + m[1] : m[1]) + '-' + m[2] + '-' + m[3] : ''; };
     const digits = v => String(v || '').replace(/[^0-9]/g, '');
     const regObj = {
-      editId: s.id, multiDay: (s.days || []).length > 1, note: s.note || '', cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
+      editId: s.id, name0: s.name, multiDay: (s.days || []).length > 1, note: s.note || '', cls: s.cls, name: s.name, guardian: s.guardian || '', phone: digits(s.phone), gphone: digits(s.gphone), birth: ymd(s.birth), addr: s.addr || '',
       gender: s.gender || '', age: s.age, teacher: s.teacher, part: s.part, days: days[0] === '변동' && !s.extra ? ['변동'] : days, times: times, idVal: null,
       stick: !!s.stick, join: ymd(s.join), cash: !!s.cashOn, cashType: ex.cashType || 'person', cashNo: ex.cashNo || '', err: '',
       count: s.count, dur: s.dur, unit: s.unit, pay: s.pay, total: s.total
@@ -1568,7 +1582,7 @@ class Component extends DCLogic {
         id: () => T(s.id, 'color: #5E6873; font-size: 12px'),
         cls: () => CH(pro ? '전문반' : '취미반', pro ? ['#EDE6FA', '#7A5FBF'] : ['#E6F6F6', '#007E82'], 56),
         part: () => CH(s.part, PART[s.part] || PART['원장'], 60),
-        name: () => ({ isName: true, chgTip: s.ghost ? '' : (CHG[s.name] || []).join('\n'), flashTag: fl ? FLT[fl][0] : '', flashStyle: fl ? 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; margin-left: 4px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ' + FLT[fl][1] + '; color: ' + FLT[fl][2] : '', text: s.name, cash: s.cashOn, sub: s.guardian ? '/ ' + s.guardian : '', cell: CL, nameStyle: 'font-size: 14px; font-weight: 600; color: #17201C' }),
+        name: () => ({ isName: true, sibTip: s.ghost ? '' : (() => { const L = this.sibsOf(s.name); return L.length ? '형제: ' + L.join(', ') : ''; })(), chgTip: s.ghost ? '' : (CHG[s.name] || []).join('\n'), flashTag: fl ? FLT[fl][0] : '', flashStyle: fl ? 'display: inline-flex; align-items: center; height: 20px; padding: 0 7px; margin-left: 4px; border-radius: 6px; font-size: 11px; font-weight: 600; background: ' + FLT[fl][1] + '; color: ' + FLT[fl][2] : '', text: s.name, cash: s.cashOn, sub: s.guardian ? '/ ' + s.guardian : '', cell: CL, nameStyle: 'font-size: 14px; font-weight: 600; color: #17201C' }),
         teacher: () => CH(s.teacher, tp, 64),
         day: () => CH(s.day, DAY[s.days[0]] || DAY['변동'], 60),
         time: () => T(s.timeTxt, 'font-size: 13px'),
@@ -1746,6 +1760,7 @@ class Component extends DCLogic {
       const parts = TEACH[R.teacher] || [];
       reg = {
         open: true, isEdit: R.editId != null,
+        ...(() => { const me = R.name0 || R.name || '', L = this.sibsOf(me); let all = []; try { all = this.students().map(x => x.name); } catch (e) {} return { sibs: L.map(n => ({ name: n, del: () => this.sibDel(me, n) })), sibOpts: Array.from(new Set(all)).filter(n => n && n !== me && L.indexOf(n) < 0).sort().map(n => ({ t: n })), sibAdd: e => { const v = e.target.value; e.target.value = ''; this.sibAdd(me, v); } }; })(),
         lock: (() => { const d = R.dates || {}, e = R.editId != null; return { lesson: e && !d.lesson ? 'true' : 'false', fee: e && !d.fee ? 'true' : 'false', cash: e && !d.cash ? 'true' : 'false' }; })(),
         dates: R.dates || { lesson: '', fee: '', cash: '' },
         sched: (() => {
