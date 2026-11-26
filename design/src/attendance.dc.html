@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.114.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.114.3</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -291,7 +291,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       <div style="display: flex; align-items: center; gap: 8px; padding-top: 4px">
         <sc-if value="{{tr.edit}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.remove}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #F2C6C2; background: #FCEBEA; color: #B4332B; font-family: inherit; font-size: 12px; font-weight: 600; cursor: pointer">{{tr.delLabel}}</button></sc-if>
         <span style="flex: 1"></span>
-        <sc-if value="{{tr.canReg}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.reg}}" style="height: 40px; padding: 0 14px; border-radius: 11px; border: 1px solid #00A6AB; background: #FFFFFF; color: #007E82; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">정식 등록</button></sc-if>
+        <sc-if value="{{tr.canReg}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{tr.reg}}" style="height: 40px; padding: 0 14px; border-radius: 11px; border: 1px solid #00A6AB; background: #FFFFFF; color: #007E82; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">+ 원생 등록</button></sc-if>
         <button type="button" onClick="{{tr.save}}" style="height: 40px; padding: 0 18px; border-radius: 11px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">저장</button>
       </div>
     </div>
