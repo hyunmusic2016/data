@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.117.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.118.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2300,7 +2300,7 @@ class Component extends DCLogic {
   // 형제 정리('academy.sibEnds' [{id, names, date, left, to, leaver, pending}] / app_settings 'sibEnds'): 형제 합계가 끝날 때 남은 회차를 누가 쓸지
   readSibEnds() { try { const v = JSON.parse(localStorage.getItem('academy.sibEnds') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
   writeSibEnds(L) { try { localStorage.setItem('academy.sibEnds', JSON.stringify(L)); } catch (e) {} }
-  sibCarry() { let o = {}; try { o = this.sibAutoCarry(); } catch (e) {} this.readSibEnds().filter(r => r && !r.pending).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { o[n] = { date: r.date, left: n === r.to ? (+r.left || 0) : 0 }; })); return o; }
+  sibCarry() { let o = {}; try { o = this.sibAutoCarry(); } catch (e) {} this.readSibEnds().filter(r => r && !r.pending).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { (o[n] = o[n] || []).push({ date: r.date, left: n === r.to ? (+r.left || 0) : 0 }); })); return o; }
   // 휴원·퇴원으로 형제 한 명이 빠질 때: 묶음을 풀고 정리 기록(pending)을 남긴 뒤 고르는 창
   sibEndStart(name, date, leaver) {
     const G = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!G) return;
@@ -2325,74 +2325,90 @@ class Component extends DCLogic {
   // 형제 합계 시작일 ('academy.sibFrom' {이름|이름(가나다순): 'YYYY-MM-DD'} / app_settings 'sibFrom'), 없으면 처음 '형제도 같이 수납'한 날
   sibKey(names) { return names.slice().sort().join('|'); }
   sibFromSet() { try { const v = JSON.parse(localStorage.getItem('academy.sibFrom') || '{}'); return v && typeof v === 'object' ? v : {}; } catch (e) { return {}; } }
-  // 형제 합계 구간: 시작일부터, 형제 중 한 명만 남는 날(휴원·퇴원 날짜)에 끝남. 복귀해서 둘 이상이 되면 그 뒤 처음 '형제도 같이 수납'한 날부터 새로 시작
-  sibSegs(names) {
-    const pays = this.readPays().filter(x => x && names.indexOf(x.name) >= 0 && x.kind !== 'repay' && x.kind !== 'trial' && !x.refund && x.date);
-    const grpDates = pays.filter(x => x.grp).map(x => x.date).sort();
-    let from = this.sibFromSet()[this.sibKey(names)] || grpDates[0] || ''; if (!from) return [];
+  // ── 형제 합계 ──
+  // 구간(sibSegs): 시작일(직접 정한 날 또는 처음 '형제도 같이 수납'한 날)부터, 형제 중 한 명만 남는 날(휴원·퇴원 날짜)까지.
+  // 끝나면 남은 회차는 남은 아이가 먼저 쓰고(날짜 칸은 숫자 없는 동그라미) 그다음부터 개인 회차 ①.
+  // 다시 둘 이상이 되면(복귀) 그날 바로 새 구간 — 남은 아이의 개인 수강권 남은 회차(init)를 합계로 가져옴.
+  sibPays(names) { return this.readPays().filter(x => x && names.indexOf(x.name) >= 0 && x.kind !== 'repay' && x.kind !== 'trial' && !x.refund && x.date).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)); }
+  sibLes(names, baseL) {
+    const rows = baseL || this.baseRows(), maxM = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0)), out = [];
+    names.forEach((n, i) => { const ids = rows.filter(z => String(z.name || '').replace('$', '') === n).map(z => z.id);
+      for (let m = 1; m <= maxM; m++) { const ev = this.monthEvents(m) || {}; ids.forEach(id => { const r = ev[id] || {}; for (let d = 1; d <= 31; d++) { const v = r[d]; if (v === '수' || v === '결') out.push({ ymd: this.ymK(m) + '-' + String(d).padStart(2, '0'), i: i, n: n, abs: v === '결' }); } }); } });
+    return out.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : a.i - b.i);
+  }
+  sibSegs(names, baseL) {
+    const pays = this.sibPays(names), LES = this.sibLes(names, baseL);
+    const from0 = this.sibFromSet()[this.sibKey(names)] || (pays.find(x => x.grp) || {}).date || ''; if (!from0) return [];
     const ST = (this.state.statusList || this.readStatus() || []).filter(e => e && names.indexOf(e.name) >= 0 && e.date && (e.kind === 'rest' || e.kind === 'out' || e.kind === 'back'))
       .slice().sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0));
     const activeAt = d => names.filter(n => { const L = ST.filter(e => e.name === n && e.date <= d); const l = L[L.length - 1]; return !l || l.kind === 'back'; });
-    const segs = [];
+    const segs = []; let from = from0, init = 0;
     for (let guard = 0; guard < 50 && from; guard++) {
       const end = ST.filter(e => e.date >= from && (e.kind === 'rest' || e.kind === 'out')).map(e => e.date).find(d => activeAt(d).length < 2) || '';
-      segs.push({ from: from, end: end, keep: end ? activeAt(end) : [] });
+      const sg = { from: from, init: init, end: end, keep: end ? activeAt(end) : [] };
+      const P = this.sibPoolCalc(names[0], names, sg.from, sg.end, baseL, sg.init, pays, LES); sg.left = P ? P.left : 0; sg.to = sg.keep[0] || names[0];
+      segs.push(sg);
       if (!end) break;
       const back = ST.filter(e => e.date >= end && e.kind === 'back').map(e => e.date).find(d => activeAt(d).length >= 2);
-      from = back ? (grpDates.find(d => d >= back) || '') : '';
+      if (!back) break;
+      // 끝난 뒤 남은 아이 개인 수강권: 받은 남은 회차 + 그 사이 혼자 낸 회차 − 그 사이 수업 (모자라면 음수 = 미납 수업)
+      const cap = sg.left + pays.filter(x => x.name === sg.to && x.date >= end && x.date < back).reduce((a, x) => a + (+x.count || 0), 0);
+      const used = LES.filter(l => l.n === sg.to && l.ymd >= end && l.ymd < back).length;
+      from = back; init = cap - used;
     }
     return segs;
   }
   sibPool(name, calcF, baseL, namesOv) {
     const names = namesOv || this.sibGroups().find(g => g.indexOf(name) >= 0); if (!names || names.length < 2) return null;
-    const segs = this.sibSegs(names), cur = segs[segs.length - 1];
+    const segs = this.sibSegs(names, baseL), cur = segs[segs.length - 1];
     if (!cur) return null;
-    if (namesOv) return this.sibPoolCalc(name, names, cur.from, cur.end, baseL);
+    if (namesOv) return this.sibPoolCalc(name, names, cur.from, cur.end, baseL, cur.init);
     if (cur.end) return null;   // 한 명만 남아 합계가 끝남 → 각자 일반 원생처럼
-    return this.sibPoolCalc(name, names, cur.from, '', baseL);
+    return this.sibPoolCalc(name, names, cur.from, '', baseL, cur.init);
   }
-  // 합계가 끝난 날: 남은 회차는 남은 아이(없으면 형(언니))에게, 다른 아이는 0 → 그날부터 각자 수강권 (mkCalc CARRY)
+  // 합계가 끝난 날마다: 남은 회차는 남은 아이(없으면 형(언니))에게, 다른 아이는 0 → 그날부터 각자 수강권 (mkCalc CARRY, 이름마다 목록)
   sibAutoCarry() {
     const o = {};
-    this.sibGroups().forEach(G => { if (!G || G.length < 2) return; let segs = []; try { segs = this.sibSegs(G); } catch (e) {} const last = segs.filter(x => x.end).pop(); if (!last) return;
-      let left = 0; try { const P = this.sibPoolCalc(G[0], G, last.from, last.end); left = P ? P.left : 0; } catch (e) {}
-      const to = last.keep[0] || G[0]; G.forEach(n => { o[n] = { date: last.end, left: n === to ? left : 0 }; }); });
+    this.sibGroups().forEach(G => { if (!G || G.length < 2) return; let segs = []; try { segs = this.sibSegs(G); } catch (e) {}
+      segs.filter(x => x.end).forEach(sg => G.forEach(n => { (o[n] = o[n] || []).push({ date: sg.end, left: n === sg.to ? sg.left : 0 }); })); });
     return o;
   }
-  sibPoolCalc(name, names, from, until, baseL) {
-    // 형제 합계 = 끊기지 않고 이어지는 묶음 줄. 시작 = 처음 '형제도 같이 수납'한 날(그날 수업 포함).
-    // 그 뒤 형제 결제(같이 낸 건 한 묶음)를 날짜순으로 이어 붙여 묶음마다 회차 합만큼, 형제 출석·결석을 날짜순으로 채움.
-    // 결제가 늦으면 그 사이 수업은 미납(빨간 점선) → 내면 채워짐, 미리 내면 다음 묶음으로 대기.
-    const pays = this.readPays().filter(x => x && names.indexOf(x.name) >= 0 && x.kind !== 'repay' && x.kind !== 'trial' && !x.refund && x.date);
-    // 구간(from ~ until 전날) 안의 형제 결제(같이 낸 건 한 묶음, 한 명만 낸 것도)를 날짜순으로 이어 붙임
+  // 날짜 칸을 숫자 없는 동그라미로 그릴 날: 형제 합계 구간의 모든 수업 + 끝난 뒤 남은 아이가 남은 회차를 쓰는 수업. {날짜: 'on'|'abs'|'un'|'unabs'}
+  sibDots(name) {
+    this._sdc = this._sdc || {}; if (this._sdc[name] !== undefined) return this._sdc[name];
+    const G = this.sibGroups().find(g => g.indexOf(name) >= 0); let o = null;
+    if (G && G.length > 1) { try { const pays = this.sibPays(G), LES = this.sibLes(G);
+      this.sibSegs(G).forEach(sg => { const P = this.sibPoolCalc(name, G, sg.from, sg.end, null, sg.init, pays, LES); if (P && P.les) P.les.forEach((l, k) => { if (l.n !== name) return; o = o || {}; const un = k >= P.total; o[l.ymd] = (un ? 'un' : 'on') + (l.abs ? 'abs' : ''); });
+        if (sg.end && sg.to === name && sg.left > 0) LES.filter(l => l.n === name && l.ymd >= sg.end).slice(0, sg.left).forEach(l => { o = o || {}; o[l.ymd] = l.abs ? 'onabs' : 'on'; }); });
+    } catch (e) { o = null; } }
+    this._sdc[name] = o; return o;
+  }
+  sibPoolCalc(name, names, from, until, baseL, init, paysIn, lesIn) {
     if (!from) return null;
-    const rows = baseL || this.baseRows(), maxM = Math.max.apply(null, this.sheetList().map(x => x[1]).filter(m => m > 0));
+    init = +init || 0;
+    const pays = (paysIn || this.sibPays(names)).filter(x => x.date >= from && (!until || x.date < until));
     const packs = [], seen = {};
-    pays.filter(x => x.date >= from && (!until || x.date < until)).sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.at || 0) - (b.at || 0)).forEach(x => {
-      if (x.grp) { if (seen[x.grp]) { seen[x.grp].cap += +x.count || 0; seen[x.grp].by[x.name] = (seen[x.grp].by[x.name] || 0) + (+x.count || 0); return; } seen[x.grp] = { cap: +x.count || 0, date: x.date, by: { [x.name]: +x.count || 0 } }; packs.push(seen[x.grp]); }
-      else packs.push({ cap: +x.count || 0, date: x.date, by: { [x.name]: +x.count || 0 } });
+    if (init > 0) packs.push({ cap: init, date: from, by: {} });
+    pays.forEach(x => {
+      if (x.grp) { if (seen[x.grp]) { seen[x.grp].cap += +x.count || 0; return; } seen[x.grp] = { cap: +x.count || 0, date: x.date }; packs.push(seen[x.grp]); }
+      else packs.push({ cap: +x.count || 0, date: x.date });
     });
-    const les = [];
-    names.forEach((n, i) => {
-      const ids = rows.filter(z => String(z.name || '').replace('$', '') === n).map(z => z.id);
-      for (let m = this.kOf(from); m <= Math.max(maxM, this.kOf(from)); m++) { const ev = this.monthEvents(m) || {}; ids.forEach(id => { const r = ev[id] || {}; for (let d = 1; d <= 31; d++) { const v = r[d]; if (v !== '수' && v !== '결') continue; const ymd = this.ymK(m) + '-' + String(d).padStart(2, '0'); if (ymd >= from && (!until || ymd < until)) les.push({ ymd: ymd, i: i, abs: v === '결' }); } }); }
-    });
-    les.sort((a, b) => a.ymd < b.ymd ? -1 : a.ymd > b.ymd ? 1 : a.i - b.i);
-    const total = packs.reduce((a, p) => a + p.cap, 0), L = les.length, due = L >= total;
-    // 보여 줄 묶음: 다 썼으면 마지막 묶음(+넘친 미납), 아니면 다음 수업이 들어갈 묶음
+    const les = (lesIn || this.sibLes(names, baseL)).filter(l => l.ymd >= from && (!until || l.ymd < until));
+    // 개인 수강권에서 모자랐던 수업(init 음수)은 앞에 미리 쓴 회차로
+    const all = (init < 0 ? Array.from({ length: -init }, () => ({ ymd: from, i: -1, n: '', abs: false })) : []).concat(les);
+    const total = packs.reduce((a, p) => a + p.cap, 0), L = all.length, due = L >= total;
     let k = 0, start = 0;
     if (packs.length) { const target = due ? total - 1 : L; while (k < packs.length - 1 && start + packs[k].cap <= target) { start += packs[k].cap; k++; } }
     const cap = packs.length ? packs[k].cap : 0;
     const D = 'display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; flex: none; ';
-    // 한 줄로 날짜순 (4개씩, 한 줄 8개)
     const dots = [];
-    for (let j = 0; j < cap; j++) { const l = les[start + j]; dots.push(l ? { bw: 'd-on', style: D + 'background: ' + (l.abs ? '#E5484D' : '#00A6AB') } : { bw: '', style: D + 'border: 1.5px solid #C9D0CC' }); }
+    for (let j = 0; j < cap; j++) { const l = all[start + j]; dots.push(l ? { bw: 'd-on', style: D + 'background: ' + (l.abs ? '#E5484D' : '#00A6AB') } : { bw: '', style: D + 'border: 1.5px solid #C9D0CC' }); }
     if (due) for (let j = total; j < L; j++) dots.push({ bw: '', style: D + 'border: 1.5px dashed #D92D20' });
     const groups = []; for (let j = 0; j < dots.length; j += 4) groups.push({ dots: dots.slice(j, j + 4) });
     const lines = []; for (let j = 0; j < groups.length; j += 2) lines.push({ groups: groups.slice(j, j + 2) });
     const used = Math.max(0, Math.min(L - start, cap)), wait = packs.slice(k + 1).reduce((a, p) => a + p.cap, 0);
     const md = d => (+d.slice(5, 7)) + '/' + (+d.slice(8, 10));
-    return { cap: cap, fill: used, due: due, left: Math.max(0, total - L), over: due && L > total, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map((n, i) => n + ' ' + les.filter(l => l.i === i).length).join(' · ') + ')' };
+    return { cap: cap, fill: used, due: due, total: total, les: all, left: Math.max(0, total - L), over: due && L > total, lines: lines, title: '형제 합계 ' + used + '/' + cap + '회' + (wait ? ' · 다음 묶음 ' + wait + '회 대기' : '') + (due && L > total ? ' · 미납 ' + (L - total) + '회' : '') + ' (' + md(from) + '부터 이어서, ' + names.map(n => n + ' ' + les.filter(l => l.n === n).length).join(' · ') + ')' };
   }
   subjTagOf(s) {
     if (!s || s.trial) return null;
@@ -3394,13 +3410,14 @@ class Component extends DCLogic {
       const ymdOf = (Mm, d) => this.ymK(Mm) + '-' + String(d).padStart(2, '0');
       // 퇴원 뒤 '새로 시작'으로 재등록한 날: 그날부터 신규처럼 수강권을 처음부터 (그 전 기록은 그대로)
       const CARRY = (this._carry || {})[s0.name.replace('$', '')];
+      let cyLeft = 0;   // 형제 합계가 끝나고 받은 남은 회차: 그 수업들은 레슨시작일에 넣지 않음
       const FRESH = (this.state.statusList || []).filter(e => e.name === s0.name.replace('$', '') && e.kind === 'back' && e.ticket === 'NEW').map(e => e.date);
       const runMonth = (Mm, cur) => {
         const EVm = cur ? EV : this.monthEvents(Mm);
         const NDm = new Date(2026, Mm, 0).getDate();
         for (let d = 1; d <= NDm; d++) {
           // 형제 정리: 형제 합계가 끝난 날부터 각자 수강권으로 (받은 남은 회차만큼 남기고, 못 받은 아이는 다 쓴 상태)
-          if (CARRY && ymdOf(Mm, d) === CARRY.date) { const lf = +CARRY.left || 0; paid = true; newReg = false; T = Math.max(T, lf || T); used = T - lf; marks = marks.slice(0, used); queue.length = 0; queueD.length = 0; queueB.length = 0; for (let mi = 0; mi < used; mi++) if (marks[mi] == null) marks[mi] = '수#00A6AB'; }
+          const CY = CARRY && CARRY.find(c => c.date === ymdOf(Mm, d)); if (CY) { const lf = +CY.left || 0; paid = true; newReg = false; queue.length = 0; queueD.length = 0; queueB.length = 0; curBen = null; if (lf > 0) { T = lf; used = 0; marks = []; firstDate = ''; tCells = []; cyLeft = lf; } else { used = T; marks = marks.slice(0, used); for (let mi = 0; mi < used; mi++) if (marks[mi] == null) marks[mi] = '수#00A6AB'; } }
           if (FRESH.length && FRESH.indexOf(ymdOf(Mm, d)) >= 0) { keepStart(firstDate, lastLesson); curBen = null; queueB.length = 0; T = T0; used = 0; paid = false; newReg = true; prevT = 0; prevMarks = []; marks = []; firstDate = ''; queue.length = 0; queueD.length = 0; payDate = null; tCells = []; diffDue = 0; diffPaid = 0; diffSeq = -1; tkSeq++; latePaid = ''; }
           if (s0.reg != null && d > 1 || s0.reg != null && Mm > M0) {
             const u0 = this.unitOn(s0, d > 1 ? ymdOf(Mm, d - 1) : ymdOf(Mm - 1, new Date(2026, Mm - 1, 0).getDate())), u1 = this.unitOn(s0, ymdOf(Mm, d));
@@ -3423,7 +3440,7 @@ class Component extends DCLogic {
             const benNow = paid && curBen && used <= curBen.n ? curBen : null, Lm = benNow ? benSt(benNow.kind, ymdOf(Mm, d)) : this.ltStyle(s0, ymdOf(Mm, d));
             marks[used - 1] = v + (this.proOn(s0, ymdOf(Mm, d)) ? 'P' : '') + Lm.dot;
             if (benNow) { o.ben = benNow.kind; o.benBg = Lm.cellBg; o.benDot = Lm.dot; }
-            if (used === 1) firstDate = this.kM(Mm) + '/' + d;
+            if (cyLeft > 0) cyLeft--; else if (used === 1) firstDate = this.kM(Mm) + '/' + d;
             lastLesson = new Date(2026, Mm - 1, d);
             if (cur && counting && this.cellMine(s0, e, Mm, d)) { lessonCount++; if (this.proOn(s0, this.ymK(Mm) + '-' + String(d).padStart(2, '0'))) lessonPro++; else lessonHobby++; addCnt(o, Lm); }
             for (let mi = 0; mi < used - 1; mi++) if (marks[mi] == null) marks[mi] = marks[used - 1];
@@ -3501,6 +3518,7 @@ class Component extends DCLogic {
       return calcCache[k][s.id];
     };
     };
+    this._sdc = {};
     this._carry = this.sibCarry();
     let calcMain = null;
     const calc = s => (calcMain = calcMain || mkCalc(MON, EV, all, true))(s);
@@ -3626,6 +3644,8 @@ class Component extends DCLogic {
         if (movedAway) { this._unpaid[s.id] = 0; (this._diffLeft = this._diffLeft || {})[s.id] = 0; (this._remain = this._remain || {})[s.id] = 0; }
         const pool = movedAway || s.trial ? null : this.sibPool(s.name.replace('$', ''), (this._poolCalc = this._poolCalc && this._poolCalc.m === EV ? this._poolCalc : { m: EV, f: mkCalc(MON, EV, this.baseRows(), false) }).f, this.baseRows());
         const poolOk = !!(pool && !pool.due && !r.paid);
+        // 형제 합계로 센 수업: 날짜 칸은 숫자 없는 동그라미 (출석 = 빈 동그라미, 결석 = 빨간 꽉 찬 동그라미, 미납 = 빨간 점선)
+        const SDm = movedAway || s.trial ? null : this.sibDots(s.name.replace('$', ''));
         const dotGroups = V.dotGroups, dotLines = V.dotLines, canPlan = V.canPlan, plan = V.plan, tk = V.tk, lateLine = V.lateLine;
         const subParts = poolOk ? V.subParts.map(p => /미납 \d+회/.test(p.t) ? Object.assign({}, p, { t: p.t.replace(/미납 (\d+)회/, '형제 몫 $1회'), style: 'color: #8A949E; font-weight: 600' }) : p) : V.subParts;
         expRow.since = subParts.map(x => x.t).join('') + (lateLine ? ' · ' + lateLine : '') + (V.diffLine ? ' · ' + V.diffLine : '');
@@ -3683,6 +3703,7 @@ class Component extends DCLogic {
               if (x.d === SEL.c2) edges.push('inset -2px 0 0 ' + BLUE);
             }
             const corner = inSel && R === SEL.r2 && x.d === SEL.c2;
+            const SDk = SDm && (x.kind === '수' || x.kind === '결') ? SDm[this.ymK(MON) + '-' + String(x.d).padStart(2, '0')] || '' : '';
             const LD = this.ltStyle(s, this.ymK(MON) + '-' + String(x.d).padStart(2, '0')), rowD = x.ben ? x.benBg : s.trial ? ((x.kind === '수' || x.kind === '결') ? LD.cellBg : '') : LD.row;
             const bg = x.kind === 'DV' ? '#FDEBD8' : rowD ? rowD : x.d === st.colDay ? this.dayTint(MON, x.d)[0] : (w === 0 || w === 6) ? tintWe : tint;
             return {
@@ -3690,7 +3711,7 @@ class Component extends DCLogic {
               // 흑백 인쇄용 표시 (색 대신 회색·무늬): pro 전문반 · abs 결석 · unpaid 미납 · free/half 무료·50% · pay 수납
               bw: [LD.pro ? 'pro' : '', x.kind === '결' ? 'abs' : '', /!/.test(x.text || '') ? 'unpaid' : '', (x.ben || (s.trial && (x.kind === '수' || x.kind === '결') ? s.trial.kind : '')) === 'free' ? 'free' : '', (x.ben || (s.trial && (x.kind === '수' || x.kind === '결') ? s.trial.kind : '')) === 'half' ? 'half' : '', x.pay ? 'pay' : ''].filter(Boolean).join(' '),
               pdot: x.pay ? 'position: absolute; top: -6px; right: -9px; font-size: 10px; font-weight: 600; line-height: 1; color: ' + (x.upay ? '#C0392B' : '#B8860B') : '',
-              text: x.text.replace('!', '').replace(/^결(\d+)$/, '$1'), chip: x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); min-width: max-content; min-height: max-content; padding: 2px 4px; line-height: 1.15; box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over && !pool ? (/^결\d+$/.test(x.text) ? '; border: 1.5px dashed #FFFFFF; box-shadow: 0 0 0 1.5px #E0605A' : '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4') : ''),
+              text: SDk ? '' : x.text.replace('!', '').replace(/^결(\d+)$/, '$1'), chip: SDk ? 'display: inline-block; width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; ' + (SDk === 'on' ? 'border: 2px solid ' + (x.benDot || LD.dot) : SDk === 'onabs' ? 'background: #E0605A' : SDk === 'un' ? 'border: 2px dashed #E0605A' : 'background: #E0605A; box-shadow: 0 0 0 1.5px #FFFFFF, 0 0 0 3px #E0605A') : x.plan ? 'display: inline-flex; flex-direction: column; align-items: center; justify-content: center; width: calc(100% - 4px); height: calc(100% - 6px); min-width: max-content; min-height: max-content; padding: 2px 4px; line-height: 1.15; box-sizing: border-box; border-radius: 6px; border: 1.5px solid ' + LD.dot + '; background: ' + LD.bg + '; color: ' + LD.fg + '; font-size: 10px; font-weight: 600; line-height: 1.15; white-space: pre-line; text-align: center' : x.kind === 'DV' ? 'display: inline-flex; align-items: center; justify-content: center; min-width: 22px; height: 22px; padding: 0 4px; box-sizing: border-box; border-radius: 6px; background: #FBD5A8; color: #B45309; font-size: 12px; font-weight: 600' : (x.kind === 'M' ? (x.mstat === '수' ? MARK['Mo'] : x.mstat === '결' ? MARK['Mx'] : MARK['M']) : rowD ? chipFor(x.text).replace(/#1F7A5A/g, x.benDot || LD.dot) : chipFor(x.text)) + (x.upay && x.kind === 'V' ? '; background: #FBE3E1; color: #B4332B' : '') + (x.over && !pool && !SDk ? (/^결\d+$/.test(x.text) ? '; border: 1.5px dashed #FFFFFF; box-shadow: 0 0 0 1.5px #E0605A' : '; border: 1.5px dashed #E0605A; color: #C2410C; background: #FFF5F4') : ''),
               label: this.kM(MON) + '월 ' + x.d + '일 ' + s.name.replace('$', '') + (x.what ? ' ' + x.what : ' 비어 있음'),
               key: R + '-' + x.d,
               title: x.kind === '보' && st.mkLinks[MON + '-' + x.d + '-' + s.id] ? '보강 → ' + st.mkLinks[MON + '-' + x.d + '-' + s.id] : x.kind === 'M' ? x.what : st.mkTimes[MON + '-' + x.d + '-' + s.id] ? x.what + ' · 보강 일정 ' + st.mkTimes[MON + '-' + x.d + '-' + s.id] : '',
