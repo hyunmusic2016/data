@@ -96,7 +96,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
 .card.pro{background:var(--pro-bg)}
 .chead{display:flex;align-items:center;gap:6px}
-.chead .nm{padding:0;flex-direction:row;align-items:center;gap:6px}
+.chead{align-items:stretch;gap:6px}
+.cbtn{border:1px solid #D5DBD8 !important;border-radius:11px !important;background:#fff !important;box-shadow:0 1px 0 #D5DBD8;display:flex !important;align-items:center;gap:6px;min-height:46px;transition:transform .1s}
+.cbtn:active{transform:translateY(1px);box-shadow:none}
+.cbtn svg{flex:none;color:var(--mute);margin-left:auto}
+.chead .nm{flex:none;flex-direction:row;padding:0 8px 0 10px;max-width:46%}
+.nmw{display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.chead .nm small{display:flex;align-items:center;gap:4px;white-space:nowrap}
+.badge{white-space:nowrap}
+.card .tkt{white-space:nowrap}
+.card .dots{flex-wrap:nowrap}.card .d{width:9px;height:9px}
+.card .chead .tk{flex:1;min-width:0;padding:0 8px 0 10px;border-left:1px solid #D5DBD8}
+.card .chead .tk.unpaid{background:var(--red-bg) !important;border-color:#F4C9C5 !important}
+.pro .cbtn{background:#FBFAFE !important}
 .ltc{margin-left:auto;display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;font-size:11px;font-weight:600;background:var(--teal-bg);color:#00797D}
 .pro .ltc{background:var(--pro-chip);color:var(--pro)}
 .card .tk{border:0;border-radius:10px;background:#F7F9F8;flex-direction:row;align-items:center;gap:8px;padding:7px 10px;width:100%}
@@ -177,15 +189,15 @@ const WDC={월:['#FCE8D9','#B5622A'],화:['#FBE3E8','#B5475F'],수:['#E3F0DA','#
 const TEACHERS=[{n:'원장',bg:'#F3E6C4',fg:'#7A5C12'},{n:'김선생',bg:'#D9F2F2',fg:'#00797D',subj:'기타'},{n:'이선생',bg:'#ECE3F7',fg:'#7A5FBF'},{n:'박선생',bg:'#FCE8D9',fg:'#B5622A'}];
 const Y=2026,M=11,TODAY=27,LAST=30;
 const ST=[
- {id:1,name:'김하늘',days:{금:'3:00'},pro:false,cnt:4,unit:40000,before:0,chg:false},
- {id:2,name:'이서준',days:{화:'4:00',금:'4:00'},pro:true,cnt:4,unit:62500,before:0,chg:true},
- {id:3,name:'박지우',days:{금:'5:00'},pro:false,cnt:4,unit:40000,before:0,badge:'신규',chg:true,nopay:true},
- {id:4,name:'최민서',days:{월:'6:00',금:'5:00'},pro:false,cnt:8,unit:40000,before:0},
- {id:5,name:'정유나',days:{금:'7:00'},pro:false,cnt:4,unit:40000,before:2,badge:'복귀'},
- {id:6,name:'한도윤',days:{목:'3:00'},pro:false,cnt:4,unit:40000,before:1},
- {id:7,name:'오시우',days:{토:'2:00'},pro:true,cnt:4,unit:62500,before:0},
- {id:8,name:'윤채원',days:{월:'4:00',수:'4:00'},pro:false,cnt:8,unit:40000,before:0},
- {id:9,name:'강예린',days:{화:'6:00'},pro:false,cnt:4,unit:40000,before:3},
+ {id:1,tel:'010-0000-1001',ptel:'010-0000-2001',prel:'어머니',name:'김하늘',days:{금:'3:00'},pro:false,cnt:4,unit:40000,before:0,chg:false},
+ {id:2,tel:'010-0000-1002',name:'이서준',days:{화:'4:00',금:'4:00'},pro:true,cnt:4,unit:62500,before:0,chg:true},
+ {id:3,tel:'010-0000-1003',ptel:'010-0000-2003',prel:'아버지',name:'박지우',days:{금:'5:00'},pro:false,cnt:4,unit:40000,before:0,badge:'신규',chg:true,nopay:true},
+ {id:4,tel:'010-0000-1004',ptel:'010-0000-2004',prel:'어머니',name:'최민서',days:{월:'6:00',금:'5:00'},pro:false,cnt:8,unit:40000,before:0},
+ {id:5,tel:'010-0000-1005',name:'정유나',days:{금:'7:00'},pro:false,cnt:4,unit:40000,before:2,badge:'복귀'},
+ {id:6,tel:'010-0000-1006',ptel:'010-0000-2006',prel:'어머니',name:'한도윤',days:{목:'3:00'},pro:false,cnt:4,unit:40000,before:1},
+ {id:7,tel:'010-0000-1007',name:'오시우',days:{토:'2:00'},pro:true,cnt:4,unit:62500,before:0},
+ {id:8,tel:'010-0000-1008',ptel:'010-0000-2008',prel:'어머니',name:'윤채원',days:{월:'4:00',수:'4:00'},pro:false,cnt:8,unit:40000,before:0},
+ {id:9,tel:'010-0000-1009',name:'강예린',days:{화:'6:00'},pro:false,cnt:4,unit:40000,before:3},
 ];
 const LOG={2:[['11/25','펜타토닉 1·2 포지션 연결, 즉흥 16마디.'],['11/24','결석'],['11/18','블루스 12마디 셔플 리듬.']],1:[['11/20','코드 G-C-D 전환 연습.'],['11/13','오른손 스트로크, 메트로놈 70.'],['11/6','']]};
 const S={teacher:1,view:'att',date:TODAY,cells:{},pays:{},pop:null,clIdx:0,plans:{},memo:'12/1 발표회 곡 정하기\n오시우 다음 달 전문반 상담'};
@@ -233,8 +245,9 @@ function renderBody(){
     const hl=w===sw,c=WDC[w];
     h+='<section class="grp'+(hl?' hl':sw!=='일'?' dim':'')+'"><div class="gh"><span class="wchip" style="background:'+c[0]+';color:'+c[1]+'">'+w+'</span>'+rows.length+'명'+(hl?' · '+M+'/'+S.date+' 수업':'')+'</div>';
     h+='<div class="cards">';rows.forEach(s=>{const t=ticket(s),v=S.cells[s.id+'|'+S.date];const bd=s.badge==='신규'?'<span class="badge" style="background:#FFF1C9;color:#8A6400">신규</span>':s.badge==='복귀'?'<span class="badge" style="background:var(--teal-bg);color:#00797D">복귀</span>':'';
-      h+='<article class="card'+(s.pro?' pro':'')+'"><div class="chead"><button class="nm" data-n="'+s.id+'"><b>'+s.name+(s.chg?'<span class="dot"></span>':'')+'</b><small>'+s.days[w]+'</small></button>'+bd+(S.plans[s.id]?'<span class="ltc" style="background:var(--blue-bg);color:var(--blue)">보강 예정 '+S.plans[s.id]+'</span>':'')+'</div>'
-      +'<button class="tk'+(t.due?' unpaid':'')+'" data-k="'+s.id+'">'+dots(t.view)+'<span class="tkt">'+t.txt+'</span></button>'
+      h+='<article class="card'+(s.pro?' pro':'')+'"><div class="chead"><button class="nm cbtn" data-n="'+s.id+'"><span class="nmw"><b>'+s.name+(s.chg?'<span class="dot"></span>':'')+'</b><small>'+s.days[w]+' '+bd+'</small></span>'+I.r.replace(/16/g,'14')+'</button>'
+      +'<button class="tk cbtn'+(t.due?' unpaid':'')+'" data-k="'+s.id+'">'+dots(t.view)+'<span class="tkt">'+t.txt+'</span>'+I.r.replace(/16/g,'14')+'</button></div>'
+      +(S.plans[s.id]?'<span class="ltc" style="margin:0;align-self:flex-start;background:var(--blue-bg);color:var(--blue)">보강 예정 '+S.plans[s.id]+'</span>':'')
       +'<div class="acts">'+[['att','출석'],['abs','결석'],['mkup','보강'],['pp','연기']].map(x=>'<button class="ab '+x[0]+(v===x[0]?' on':'')+'" data-q="'+x[0]+'" data-id="'+s.id+'">'+x[1]+'</button>').join('')+'</div></article>';});h+='</div>';
     h+='</section>';});
   h+='<div class="memo"><label for="memo">MEMO</label><textarea id="memo">'+S.memo+'</textarea></div>'
@@ -250,6 +263,7 @@ function popHtml(){
     +'<div class="btnrow"><button class="btn gold" data-pay>'+(p?'₩ 수납 수정':'₩ 수납')+'</button><button class="btn" data-etc>기타</button><button class="btn del" data-clr>지우기</button></div></div>';}
   if(P.type==='name'){const w=Object.keys(s.days);
     return head(s.name,'<button class="fb" style="margin-left:auto" data-hist>기록</button>').replace('<button class="x"','<button class="x" style="margin-left:6px"')
+    +'<div class="box" style="gap:8px">'+[['원생',s.tel],['보호자'+(s.ptel&&s.prel?' ('+s.prel+')':''),s.ptel]].filter(x=>x[1]).map(x=>'<a href="tel:'+x[1]+'" style="display:flex;align-items:center;gap:8px;height:44px;padding:0 12px;border-radius:11px;background:#fff;border:1px solid var(--line);color:var(--ink);text-decoration:none"><span class="lbl" style="width:84px">'+x[0]+'</span><b style="font-size:16px;font-weight:600">'+x[1]+'</b><span style="margin-left:auto;color:var(--teal);font-size:13px;font-weight:600">전화</span></a>').join('')+'</div>'
     +'<div class="box"><span class="lbl">적용 날짜</span><input type="date" id="ap" value="'+Y+'-'+M+'-'+String(TODAY).padStart(2,'0')+'"><span class="lbl">요일</span><div class="days">'+GW.map(d=>'<button class="dy'+(P.days[d]?' on':'')+'" data-dy="'+d+'">'+d+'</button>').join('')+'</div>'
     +'<span class="lbl">요일별 시간</span>'+GW.filter(d=>P.days[d]).map(d=>'<label class="tmr"><span>'+d+'</span><input type="text" id="tm'+d+'" value="'+P.days[d]+'"></label>').join('')+'</div>'
     +'<div class="btnrow"><button class="btn warn">휴원</button><button class="btn del">퇴원</button><button class="btn pri" data-save>저장</button></div></div>';}
@@ -267,6 +281,8 @@ function popHtml(){
     +'<span class="lbl">보강 시간</span><div class="btnrow" style="align-items:center"><input type="text" inputmode="numeric" id="mkH" value="'+hh+'"'+dis+'><span>시</span><input type="text" inputmode="numeric" id="mkM" value="'+mm+'"'+dis+'><span>분</span></div>'
     +'<span style="font-size:11px;color:var(--mute)">시간 기본값은 원생의 수업 시간입니다.</span></div>'
     +'<div class="btnrow"><button class="btn" data-close>뒤로</button><button class="btn pri" data-mksave style="flex:2;background:#4A78C9;border-color:#4A78C9">'+(P.on?'보강 일정 저장':'보강으로 표시')+'</button></div></div>';}
+  if(P.type==='cf'){const L={att:'출석',abs:'결석',mkup:'보강',pp:'연기'};
+    return head(s.name+' · '+M+'/'+S.date+' ('+wdOf(S.date)+')')+'<p style="margin:4px 0 8px;font-size:16px;line-height:1.6;text-align:center">'+(P.to?'<b>'+L[P.from]+'</b>을(를) <b>'+L[P.to]+'</b>(으)로 바꾸시겠습니까?':'<b>'+L[P.from]+'</b>을(를) 지우시겠습니까?')+'</p><div class="btnrow"><button class="btn" data-close>취소</button><button class="btn '+(P.to?'pri':'del')+'" data-cfok>'+(P.to?'바꾸기':'지우기')+'</button></div></div>';}
   if(P.type==='lc'){const lc=lessonCount();
     return head('레슨횟수 · '+TEACHERS[S.teacher].n)+'<div class="box" style="align-items:center"><span class="lbl">'+M+'월 합계</span><strong style="font-size:34px">'+(lc.hob+lc.pro)+'회</strong></div><div class="lt"><div class="ltr" style="background:var(--teal-bg);color:#00797D">취미 4회<b>'+lc.hob+'</b></div><div class="ltr" style="background:var(--pro-chip);color:var(--pro)">전문 4회<b>'+lc.pro+'</b></div></div></div>';}
   return '';
@@ -279,7 +295,8 @@ document.addEventListener('click',e=>{const g=a=>e.target.closest('['+a+']');let
   if(el=g('data-t')){S.teacher=+el.dataset.t;render();return;}
   if(el=g('data-v')){S.view=el.dataset.v;render();return;}
   if(el=g('data-d')){S.date=+el.dataset.d;render();scrollToDate();return;}
-  if((el=g('data-q'))&&el.dataset.q==='mkup'&&S.cells[el.dataset.id+'|'+S.date]!=='mkup'){const s=ST.find(x=>x.id==el.dataset.id);S.pop={type:'mk',id:s.id,on:false,time:(s.days[wdOf(S.date)]||Object.values(s.days)[0])};renderPop();return;}
+  if((el=g('data-q'))&&el.dataset.q==='mkup'&&!S.cells[el.dataset.id+'|'+S.date]){const s=ST.find(x=>x.id==el.dataset.id);S.pop={type:'mk',id:s.id,on:false,time:(s.days[wdOf(S.date)]||Object.values(s.days)[0])};renderPop();return;}
+  if((el=g('data-q'))&&S.cells[el.dataset.id+'|'+S.date]){const k=el.dataset.id+'|'+S.date;S.pop={type:'cf',id:+el.dataset.id,k,from:S.cells[k],to:el.dataset.q===S.cells[k]?null:el.dataset.q};renderPop();return;}
   if(el=g('data-q')){const k=el.dataset.id+'|'+S.date,v=el.dataset.q;S.cells[k]=S.cells[k]===v?undefined:v;if(!S.cells[k])delete S.cells[k];render();if(S.cells[k])toast(ST.find(x=>x.id==el.dataset.id).name+' '+M+'/'+S.date+' '+{att:'출석',abs:'결석',mkup:'보강',pp:'연기'}[v]);return;}
   if(el=g('data-c')){const id=+el.dataset.c;S.pop={type:'cell',id,k:id+'|'+S.date};render();return;}
   if(el=g('data-n')){const s=ST.find(x=>x.id==el.dataset.n);S.pop={type:'name',id:s.id,days:{...s.days}};renderPop();return;}
@@ -290,6 +307,7 @@ document.addEventListener('click',e=>{const g=a=>e.target.closest('['+a+']');let
   if(g('data-clr')){delete S.cells[S.pop.k];delete S.pays[S.pop.k];S.pop=null;render();return;}
   if(el=g('data-dy')){const d=el.dataset.dy;GW.forEach(x=>{const i=$('tm'+x);if(i)S.pop.days[x]=i.value;});if(S.pop.days[d])delete S.pop.days[d];else S.pop.days[d]='3:00';renderPop();return;}
   if(g('data-save')){const s=ST.find(x=>x.id===S.pop.id);GW.forEach(x=>{const i=$('tm'+x);if(i)S.pop.days[x]=i.value;});if(Object.keys(S.pop.days).length)s.days=S.pop.days;S.pop=null;render();toast('수업 정보 저장');return;}
+  if(g('data-cfok')){const P=S.pop;if(P.to==='mkup'){S.pop={type:'mk',id:P.id,on:false,time:(ST.find(x=>x.id===P.id).days[wdOf(S.date)]||'3:00')};renderPop();return;}if(P.to)S.cells[P.k]=P.to;else delete S.cells[P.k];S.pop=null;render();toast(P.to?'바꿨어요':'지웠어요');return;}
   if(g('data-mksw')){S.pop.on=!S.pop.on;renderPop();return;}
   if(g('data-mksave')){const P=S.pop,s=ST.find(x=>x.id===P.id);S.cells[P.id+'|'+S.date]='mkup';if(P.on){const d=$('mkDate').value.split('-');S.plans[P.id]=(+d[1])+'/'+(+d[2])+' '+$('mkH').value+':'+String($('mkM').value||'00').padStart(2,'0');}S.pop=null;render();toast(s.name+' 보강'+(P.on?' · '+S.plans[P.id]:''));return;}
   if(el=g('data-cl')){S.clIdx=Math.max(0,S.clIdx+ +el.dataset.cl);renderPop();return;}
