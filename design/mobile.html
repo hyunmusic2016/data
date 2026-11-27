@@ -14,7 +14,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .phone{width:390px;height:844px;background:var(--bg);border-radius:44px;border:10px solid #17201C;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(23,32,28,.25)}
 @media (max-width:520px){html,body{background:var(--bg)}.stage{padding:0;gap:0;justify-content:flex-start}.cap{display:none}.phone{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}}
 /* 머리 */
-.top{flex:none;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px 8px;display:flex;flex-direction:column;gap:8px}
+.top{flex:none;background:#fff;border-bottom:1px solid var(--line);padding:14px 26px 8px;display:flex;flex-direction:column;gap:8px}
 .trow{display:flex;align-items:center;gap:8px}
 .ticon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
 .ttl{font-size:16px;font-weight:800;position:relative;white-space:nowrap}
@@ -245,7 +245,7 @@ function dayBtn(d,inMonth){const w=wdOf(d);return '<button class="dt'+(w==='토'
 function renderDates(){
   const w0=new Date(Y,M-1,S.date).getDay(),mon=S.date-((w0+6)%7);let wk='';
   for(let i=0;i<7;i++){const d=mon+i;wk+=d>=1&&d<=LAST?dayBtn(d):'<span></span>';}
-  $('dates').innerHTML='<div class="dbar"><button class="dar" data-step="-1" aria-label="전날">'+I.l+'</button><button class="dmain" data-cal aria-label="달력 열기">'+I.cal.replace('#fff','currentColor')+M+'월 '+S.date+'일 ('+wdOf(S.date)+')'+(S.date===TODAY?'<span class="tdy">오늘</span>':'')+'</button><button class="dar" data-step="1" aria-label="다음 날">'+I.r+'</button>'+(S.date!==TODAY?'<button class="gotd" data-d="'+TODAY+'">오늘로</button>':'')+'</div><div class="wk">'+wk+'</div>';
+  $('dates').innerHTML='<div class="dbar"><button class="dar" data-step="-1" aria-label="전날">'+I.l+'</button><button class="dmain" data-cal aria-label="달력 열기">'+I.cal.replace('#fff','currentColor')+M+'월 '+S.date+'일 ('+wdOf(S.date)+')'+(S.date===TODAY?'<span class="tdy">오늘</span>':'')+'</button><button class="dar" data-step="1" aria-label="다음 날">'+I.r+'</button>'+(S.date!==TODAY?'<button class="gotd" data-d="'+TODAY+'">오늘로</button>':'')+'</div>';
 }
 function cellHtml(s){
   const k=s.id+'|'+S.date,v=S.cells[k],p=S.pays[k];
