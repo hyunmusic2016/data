@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.0</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.1</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2314,7 +2314,7 @@ class Component extends DCLogic {
   // 형제 정리('academy.sibEnds' [{id, names, date, left, to, leaver, pending}] / app_settings 'sibEnds'): 형제 합계가 끝날 때 남은 회차를 누가 쓸지
   readSibEnds() { try { const v = JSON.parse(localStorage.getItem('academy.sibEnds') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
   writeSibEnds(L) { try { localStorage.setItem('academy.sibEnds', JSON.stringify(L)); } catch (e) {} }
-  sibCarry() { let o = {}; try { o = this.sibAutoCarry(); } catch (e) {} this.readSibEnds().filter(r => r && !r.pending && !r.leaver).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { (o[n] = o[n] || []).push({ date: r.date, left: n === r.to ? (+r.left || 0) : 0 }); })); return o; }
+  sibCarry() { let o = {}; try { o = this.sibAutoCarry(); } catch (e) {} this.readSibEnds().filter(r => r && !r.pending && !r.leaver && !this.sibGroups().some(g => (r.names || []).length > 1 && (r.names || []).every(n => g.indexOf(n) >= 0))).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { (o[n] = o[n] || []).push({ date: r.date, left: n === r.to ? (+r.left || 0) : 0 }); })); return o; }
   // 휴원·퇴원으로 형제 한 명이 빠질 때: 묶음을 풀고 정리 기록(pending)을 남긴 뒤 고르는 창
   sibEndStart(name, date, leaver) {
     const G = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!G) return;
@@ -2379,7 +2379,7 @@ class Component extends DCLogic {
     L.push('', '[휴원·퇴원·복귀]'); (this.state.statusList || this.readStatus() || []).filter(e => e && G.indexOf(e.name) >= 0).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(e => L.push('  ' + e.date + ' ' + e.name + ' ' + ({ rest: '휴원', out: '퇴원', back: '복귀' }[e.kind] || e.kind) + (e.ticket ? ' (' + e.ticket + ')' : '')));
     L.push('', '[수납]'); this.sibPays(G).forEach(x => L.push('  ' + x.date + ' ' + x.name + ' ' + (+x.count || 0) + '회' + (x.grp ? ' 같이(' + String(x.grp).slice(-4) + ')' : '') + (x.kind && x.kind !== 'normal' ? ' ' + x.kind : '')));
     L.push('', '[출석·결석]'); const LES = this.sibLes(G); G.forEach(n => L.push('  ' + n + ': ' + (LES.filter(l => l.n === n).map(l => l.ymd.slice(5) + (l.abs ? '결' : '')).join(' ') || '없음')));
-    L.push('', '[형제 정리 기록]'); this.readSibEnds().filter(r => r && (r.names || []).some(n => G.indexOf(n) >= 0)).forEach(r => L.push('  ' + r.date + ' 남은 ' + (r.left || 0) + '회 → ' + (r.to || '-') + (r.leaver ? ' (예전 휴원 기록, 무시됨)' : '') + (r.pending ? ' (처리 전)' : '')));
+    L.push('', '[형제 정리 기록]'); this.readSibEnds().filter(r => r && (r.names || []).some(n => G.indexOf(n) >= 0)).forEach(r => L.push('  ' + r.date + ' 남은 ' + (r.left || 0) + '회 → ' + (r.to || '-') + (r.leaver ? ' (예전 휴원 기록, 무시됨)' : (r.names || []).every(n => G.indexOf(n) >= 0) ? ' (다시 묶여서 무시됨)' : '') + (r.pending ? ' (처리 전)' : '')));
     L.push('', '[계산 구간]'); this.sibSegs(G).forEach((sg, k) => L.push('  ' + (k + 1) + ') ' + sg.from + ' ~ ' + (sg.end || '지금') + ' · 시작 회차 ' + sg.init + ' · 끝날 때 남은 ' + (sg.end ? sg.left + '회 → ' + sg.to : '-')));
     const C = this.sibCarry(); L.push('', '[끝난 뒤 넘겨받기]'); G.forEach(n => L.push('  ' + n + ': ' + ((C[n] || []).map(c => c.date + ' ' + c.left + '회').join(', ') || '없음')));
     const P = this.sibPool(name); L.push('', '[지금] ' + (P ? P.title + (P.due ? ' · 수납 안내 대상' : '') : '형제 합계 아님 (각자 개인)'));
