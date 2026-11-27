@@ -672,7 +672,7 @@ function build(node,scope,out){
     if(a.name.startsWith('hint-'))continue;
     if(a.name==='selected'){const sv=interp(a.value,scope);if(sv===true||sv==='true')el.setAttribute('selected','');continue;}
     if(a.name==='checked'){const cv=interp(a.value,scope);if(cv===true||cv==='true')el.setAttribute('checked','');continue;}
-    if(a.name==='disabled'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('disabled','');continue;}
+    if(a.name==='disabled'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('disabled','');continue;}if(a.name==='readonly'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('readonly','');continue;}
     if(a.name==='defaultvalue'){el.setAttribute('value',interp(a.value,scope));continue;}
     el.setAttribute(a.name,interp(a.value,scope))}
   if(tag==='textarea'){el.value=interp(node.textContent,scope);out.appendChild(el);return}

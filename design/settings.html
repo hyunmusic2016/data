@@ -304,7 +304,7 @@ html.bwp .printonly .pcell{border-color:#000!important}
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.116.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.116.4</div>
 
   <sc-if value="{{ed.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{ed.close}}" style="position: fixed; inset: 0; z-index: 44; background: rgba(23, 32, 28, 0.32)"></div>
@@ -1410,7 +1410,7 @@ function build(node,scope,out){
     if(/^on[A-Z]/.test(a.name)||/^on[a-z]/.test(a.name)&&a.value.includes('{{')){const fn=interp(a.value,scope);if(typeof fn==='function')el.addEventListener(a.name.slice(2).toLowerCase(),fn);continue}
     if(a.name.startsWith('hint-'))continue;
     if(a.name==='selected'){const sv=interp(a.value,scope);if(sv===true||sv==='true')el.setAttribute('selected','');continue;}
-    if(a.name==='disabled'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('disabled','');continue;}
+    if(a.name==='disabled'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('disabled','');continue;}if(a.name==='readonly'){const dv=interp(a.value,scope);if(dv===true||dv==='true')el.setAttribute('readonly','');continue;}
     if(a.name==='defaultvalue'){el.setAttribute('value',interp(a.value,scope));continue;}
     el.setAttribute(a.name,interp(a.value,scope))}
   if(tag==='textarea'){el.value=interp(node.textContent,scope);out.appendChild(el);return}
