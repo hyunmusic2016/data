@@ -169,7 +169,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.119.4</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.119.5</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1364,6 +1364,8 @@ class Component extends DCLogic {
   saveReg() {
     const r = this.state.reg;
     if (!r.name.trim()) { this.setReg({ err: '원생 이름을 입력해 주세요.' }); return; }
+    // 수납·휴원·형제 기록이 이름으로 이어지므로 같은 이름(재원·휴원·퇴원 모두)은 막음
+    { const nm = r.name.trim(), dup = this.baseStudents().concat(this.state.added || []).find(x => x.id !== r.editId && String(x.name || '').replace('$', '').trim() === nm); if (dup) { this.setReg({ err: '같은 이름의 원생(' + nm + ')이 이미 있습니다. 이름 뒤에 구분을 붙여 주세요 (예: ' + nm + '2).' }); return; } }
     const used = this.baseStudents().concat(this.state.added || []).map(x => x.id);
     const manual = r.idVal ? parseInt(r.idVal, 10) : 0;
     if (manual && used.indexOf(manual) >= 0) { this.setReg({ err: '등록번호 ' + manual + '번은 이미 있습니다.' }); return; }

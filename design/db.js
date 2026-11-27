@@ -109,7 +109,25 @@
   var LONG = { '월': '월요일', '화': '화요일', '수': '수요일', '목': '목요일', '금': '금요일', '토': '토요일', 'R': '변동' };
   var SHORT = { '월요일': '월', '화요일': '화', '수요일': '수', '목요일': '목', '금요일': '금', '토요일': '토', '변동': 'R' };
   var origSet = Storage.prototype.setItem;
-  function rawSet(k, v) { origSet.call(localStorage, k, v); }
+  // 브라우저 저장 공간(약 5MB)이 차면 setItem이 실패해 뒤따르는 서버 저장까지 멈춤 → 줄여도 되는 칸(변경 기록·화면 캐시)을 줄이고 다시 씀
+  function quotaErr(e) { return !!e && (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED' || e.code === 22 || e.code === 1014 || /quota/i.test(e.message || '')); }
+  function trimKey(k, n) { try { var L = JSON.parse(localStorage.getItem(k) || '[]'); if (Array.isArray(L) && L.length > n) origSet.call(localStorage, k, JSON.stringify(L.slice(-n))); } catch (e) {} }
+  var fullWarned = 0;
+  function safeSet(store, k, v) {
+    try { origSet.call(store, k, v); return true; } catch (e) {
+      if (!quotaErr(e)) throw e;
+      try { if (k !== 'academy.cache') localStorage.removeItem('academy.cache'); } catch (x) {}
+      if (k !== 'academy.cellLog') trimKey('academy.cellLog', 1000);
+      if (k !== 'academy.changeLog') trimKey('academy.changeLog', 500);
+      try { origSet.call(store, k, v); return true; } catch (e2) {
+        if ((k === 'academy.cellLog' || k === 'academy.changeLog')) { try { var L = JSON.parse(v || '[]'); origSet.call(store, k, JSON.stringify(L.slice(-500))); return true; } catch (e3) {} }
+        if (Date.now() - fullWarned > 60000) { fullWarned = Date.now(); try { toast('브라우저 저장 공간이 가득 찼습니다. 입력은 서버에 저장됩니다 — 새로고침해 주세요'); } catch (x) {} }
+        console.warn('localStorage 가득 참', k);
+        return false;
+      }
+    }
+  }
+  function rawSet(k, v) { safeSet(localStorage, k, v); }
   function ymdToShort(d) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : ''; }
   function anyToYmd(v) { var m = /^(\d{2,4})[.\-](\d{1,2})[.\-](\d{1,2})$/.exec(String(v || '').trim()); if (!m) return null; var y = m[1].length === 2 ? '20' + m[1] : m[1]; return y + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2); }
   function msOf(t) { var n = Date.parse(t); return isNaN(n) ? 0 : n; }
@@ -134,11 +152,11 @@
 
   A.load = function () {
     return Promise.all([
-      sb.from('students').select('*').order('reg_no'),
+      fetchAll(function () { return sb.from('students').select('*').order('reg_no').order('id'); }),
       // 저장한 순서(id)로: 원생마다 처음 것이 등록 때 정보, 그 뒤가 변경 (적용 날짜가 등록일보다 앞선 변경도 변경으로 읽음)
-      sb.from('student_terms').select('*').order('id'),
-      sb.from('status_changes').select('*').order('id'),
-      sb.from('activity_log').select('*').order('at')
+      fetchAll(function () { return sb.from('student_terms').select('*').order('id'); }),
+      fetchAll(function () { return sb.from('status_changes').select('*').order('id'); }),
+      fetchAll(function () { return sb.from('activity_log').select('*').order('at').order('id'); })
     ]).then(function (rs) {
       rs.forEach(function (r) { if (r.error) throw r.error; });
       var studs = rs[0].data, terms = rs[1].data, stats = rs[2].data, logs = rs[3].data;
@@ -181,12 +199,12 @@
         sb.from('app_settings').select('key,value'),
         sb.from('employees').select('*').order('seq'),
         sb.from('subjects').select('*').order('sort'),
-        sb.from('attendance_cells').select('student_id,ym,cells'),
-        sb.from('payments').select('*').order('id'),
-        sb.from('ticket_plans').select('student_id,plan_date'),
-        sb.from('cell_log').select('local_id,at,who,tab,ym,rid,name,k,a,b').order('at', { ascending: false }).limit(20000),
-        sb.from('trials').select('id,data'),
-        sb.from('log_notes').select('kind,ym,k1,k2,body')
+        fetchAll(function () { return sb.from('attendance_cells').select('student_id,ym,cells').order('student_id').order('ym'); }),
+        fetchAll(function () { return sb.from('payments').select('*').order('id'); }),
+        fetchAll(function () { return sb.from('ticket_plans').select('student_id,plan_date').order('student_id'); }),
+        fetchAll(function () { return sb.from('cell_log').select('local_id,at,who,tab,ym,rid,name,k,a,b').order('at', { ascending: false }).order('id', { ascending: false }); }, 4000),
+        fetchAll(function () { return sb.from('trials').select('id,data').order('id'); }),
+        fetchAll(function () { return sb.from('log_notes').select('kind,ym,k1,k2,body').order('kind').order('ym').order('k1').order('k2'); })
       ]).then(function (qs) {
         // 출석부 변경 기록 (009 SQL). 표가 없으면 이 브라우저에만 남김
         if (!qs[6].error) {
@@ -251,7 +269,7 @@
         }
         var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); if (r.key === 'sibFrom' && r.value && typeof r.value === 'object') rawSet('academy.sibFrom', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');
-        // 형제 기록 한 번 비우기 (v0.119.4, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
+        // 형제 기록 한 번 비우기 (v0.119.5, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
         if (!q.error && A.staff && A.staff.role === 'owner' && !(q.data || []).some(function (r) { return r.key === 'sibReset1'; })) { var nowIso = new Date().toISOString(); rawSet('academy.sibEnds', '[]'); rawSet('academy.sibFrom', '{}'); sb.from('app_settings').upsert([{ key: 'sibEnds', value: [], updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibFrom', value: {}, updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibReset1', value: true, updated_by: A.staff.id, updated_at: nowIso }]).then(function (r) { report(r, '형제 기록 비우기'); }); };
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
@@ -270,6 +288,19 @@
 
   function sidOfName(name) { var s = A.data && A.data.byName[name]; return s ? s.id : null; }
   function sidOfReg(reg) { var r = A.data && A.data.students.find(function (x) { return x.id === reg; }); return r ? r.dbId : null; }
+  // Supabase는 한 번에 최대 1000줄(기본 max rows)만 돌려줌 → 끝까지 나눠서 불러옴. make() = 새 쿼리(정렬 포함), cap = 최대 줄 수
+  function fetchAll(make, cap) {
+    cap = cap || 500000; var out = [];
+    function page(from) {
+      return Promise.resolve(make().range(from, from + 999)).then(function (r) {
+        if (r && r.error) return { data: out, error: r.error };
+        var d = (r && r.data) || []; out = out.concat(d);
+        if (!d.length || out.length >= cap) return { data: out.slice(0, cap), error: null };
+        return page(from + d.length);
+      });
+    }
+    return page(0);
+  }
   function report(r, what) { if (r && r.error) { console.warn(what, r.error); toast('저장하지 못했습니다: ' + what); } return r; }
   function toast(msg) {
     var t = document.getElementById('acToast');
@@ -362,7 +393,7 @@
     var evOld = (this === window.localStorage && A.data && (k === 'academy.lessonChanges' || k === 'academy.statusChanges')) ? this.getItem(k) : null;
     var ledOld = (this === window.localStorage && (k === 'academy.ledger' || k === 'academy.ledgerItems')) ? this.getItem(k) : null;
     var clTrack = this === window.localStorage && CL_KEYS[k] && A.staff, clOld = clTrack ? this.getItem(k) : null;
-    origSet.call(this, k, v);
+    if (this === window.localStorage) safeSet(this, k, v); else origSet.call(this, k, v);
     if (this === window.localStorage && /^academy\./.test(k)) A.lastWrite = Date.now();
     if (evOld !== null) { try { evDiff(k, evOld, v); } catch (e) {} }
     if (clTrack && clOld !== v) { try { clAdd(clDescribe(k, clOld, v)); } catch (e) { console.warn(e); } }
@@ -923,7 +954,7 @@
   // ── 기록 버튼·오른쪽 칸 ──
   var clServer = [];
   function clLoad() {
-    sb.from('change_log').select('local_id,at,who,page,lines').eq('page', clPage()).order('at', { ascending: false }).limit(2000).then(function (r) {
+    fetchAll(function () { return sb.from('change_log').select('local_id,at,who,page,lines').eq('page', clPage()).order('at', { ascending: false }).order('id', { ascending: false }); }, 2000).then(function (r) {
       if (r.error) { A.clReady = false; return; }
       A.clReady = true; clServer = (r.data || []).map(function (x) { return { id: x.local_id, at: Date.parse(x.at), who: x.who, page: x.page, lines: x.lines || [] }; });
       clDraw();
