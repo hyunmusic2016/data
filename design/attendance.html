@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.118.2</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.118.3</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2308,7 +2308,7 @@ class Component extends DCLogic {
   // 형제 정리('academy.sibEnds' [{id, names, date, left, to, leaver, pending}] / app_settings 'sibEnds'): 형제 합계가 끝날 때 남은 회차를 누가 쓸지
   readSibEnds() { try { const v = JSON.parse(localStorage.getItem('academy.sibEnds') || '[]'); return Array.isArray(v) ? v : []; } catch (e) { return []; } }
   writeSibEnds(L) { try { localStorage.setItem('academy.sibEnds', JSON.stringify(L)); } catch (e) {} }
-  sibCarry() { let o = {}; try { o = this.sibAutoCarry(); } catch (e) {} this.readSibEnds().filter(r => r && !r.pending).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { (o[n] = o[n] || []).push({ date: r.date, left: n === r.to ? (+r.left || 0) : 0 }); })); return o; }
+  sibCarry() { let o = {}; try { o = this.sibAutoCarry(); } catch (e) {} this.readSibEnds().filter(r => r && !r.pending && !r.leaver).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(r => (r.names || []).forEach(n => { (o[n] = o[n] || []).push({ date: r.date, left: n === r.to ? (+r.left || 0) : 0 }); })); return o; }
   // 휴원·퇴원으로 형제 한 명이 빠질 때: 묶음을 풀고 정리 기록(pending)을 남긴 뒤 고르는 창
   sibEndStart(name, date, leaver) {
     const G = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!G) return;
@@ -3425,7 +3425,7 @@ class Component extends DCLogic {
         const NDm = new Date(2026, Mm, 0).getDate();
         for (let d = 1; d <= NDm; d++) {
           // 형제 정리: 형제 합계가 끝난 날부터 각자 수강권으로 (받은 남은 회차만큼 남기고, 못 받은 아이는 다 쓴 상태)
-          const CY = CARRY && CARRY.find(c => c.date === ymdOf(Mm, d)); if (CY) { const lf = +CY.left || 0; paid = true; newReg = false; queue.length = 0; queueD.length = 0; queueB.length = 0; curBen = null; if (lf > 0) { T = lf; used = 0; marks = []; firstDate = ''; tCells = []; cyLeft = lf; } else { paid = false; newReg = true; T = T0; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; payDate = null; } }
+          const CY = CARRY && CARRY.find(c => c.date === ymdOf(Mm, d)); if (CY) { const lf = +CY.left || 0; paid = true; newReg = false; queue.length = 0; queueD.length = 0; queueB.length = 0; curBen = null; if (lf > 0) { T = lf; used = 0; marks = []; firstDate = ''; tCells = []; cyLeft = lf; prevT = 0; prevMarks = []; newReg = false; } else { paid = false; newReg = true; T = T0; used = 0; marks = []; firstDate = ''; tCells = []; prevT = 0; prevMarks = []; payDate = null; } }
           if (FRESH.length && FRESH.indexOf(ymdOf(Mm, d)) >= 0) { keepStart(firstDate, lastLesson); curBen = null; queueB.length = 0; T = T0; used = 0; paid = false; newReg = true; prevT = 0; prevMarks = []; marks = []; firstDate = ''; queue.length = 0; queueD.length = 0; payDate = null; tCells = []; diffDue = 0; diffPaid = 0; diffSeq = -1; tkSeq++; latePaid = ''; }
           if (s0.reg != null && d > 1 || s0.reg != null && Mm > M0) {
             const u0 = this.unitOn(s0, d > 1 ? ymdOf(Mm, d - 1) : ymdOf(Mm - 1, new Date(2026, Mm - 1, 0).getDate())), u1 = this.unitOn(s0, ymdOf(Mm, d));
