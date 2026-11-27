@@ -14,7 +14,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .phone{width:390px;height:844px;background:var(--bg);border-radius:44px;border:10px solid #17201C;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(23,32,28,.25)}
 @media (max-width:520px){html,body{background:var(--bg)}.stage{padding:0;gap:0;justify-content:flex-start}.cap{display:none}.phone{width:100%;height:100dvh;border:0;border-radius:0;box-shadow:none}}
 /* 머리 */
-.top{flex:none;background:#fff;border-bottom:1px solid var(--line);padding:12px 12px 8px;display:flex;flex-direction:column;gap:8px}
+.top{flex:none;background:#fff;border-bottom:1px solid var(--line);padding:10px 12px 8px;display:flex;flex-direction:column;gap:8px}
 .trow{display:flex;align-items:center;gap:8px}
 .ticon{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
 .ttl{font-size:16px;font-weight:800;position:relative;white-space:nowrap}
@@ -28,15 +28,19 @@ button{font:inherit;color:inherit;cursor:pointer}
 .tt.on{border-width:2px}
 .views{display:flex;gap:6px}
 .vb{flex:1;height:32px;border-radius:10px;border:1px solid;font-size:13px;font-weight:600}
-.stats{display:grid;grid-template-columns:1fr 1fr 1.5fr;gap:6px}
-.st{border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px 8px;display:flex;flex-direction:column;gap:3px;text-align:left;min-height:52px}
+.stats{display:flex;gap:6px;align-items:center}
+.st{border:1px solid var(--line);border-radius:10px;background:#fff;height:30px;padding:0 8px;display:flex;align-items:center;gap:5px;text-align:left;white-space:nowrap}
 .st small{font-size:11px;color:var(--mute);font-weight:600}
-.st strong{font-size:18px;font-weight:600}
+.st strong{font-size:14px;font-weight:600}
+.st.tc{margin-left:auto;border:0;padding:0;background:none;min-width:0;overflow:hidden}
+.st.tc .tch div{overflow:hidden;text-overflow:ellipsis}
+.stats{min-width:0}.top,.body,.dates{min-width:0;max-width:100%}
+.phone{overflow:clip}
 .chips{display:flex;gap:3px;flex-wrap:wrap}
 .chip{height:16px;padding:0 5px;border-radius:8px;font-size:10px;font-weight:600;display:inline-flex;align-items:center}
 .tch{display:flex;align-items:center;gap:7px}
-.av{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
-.tch div{font-size:12px;line-height:1.3}.tch div b{font-size:14px;font-weight:600;display:block}
+.av{width:24px;height:24px;border-radius:50%;flex:none;display:grid;place-items:center;border:2px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.tch div{font-size:12px;color:var(--sub)}.tch div b{font-size:13px;font-weight:600;color:var(--ink);margin-right:3px}
 /* 날짜 띠 */
 .dates{flex:none;display:flex;gap:3px;overflow-x:auto;scrollbar-width:none;padding:8px 12px;background:#fff;border-bottom:1px solid var(--line)}
 .dates::-webkit-scrollbar{display:none}
@@ -48,9 +52,10 @@ button{font:inherit;color:inherit;cursor:pointer}
 /* 표 */
 .body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding-bottom:16px}
 .grp{margin:8px 8px 0;background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;transition:opacity .2s}
-.grp.dim{opacity:.42}
+.grp.dim .gh{color:var(--mute)}
 .gh{display:flex;align-items:center;gap:6px;padding:6px 10px;font-size:12px;font-weight:600;border-bottom:1px solid var(--line)}
-.grp.hl{border:2px solid var(--teal);box-shadow:0 2px 10px rgba(0,166,171,.15)}
+.grp.hl{border:2px solid var(--teal);background:#F2FBFB;box-shadow:0 4px 14px rgba(0,166,171,.22)}
+.grp.hl .card{border-color:#BFEAEB}
 .grp.hl .gh{background:var(--teal);color:#fff}
 .grp.hl .gh .wchip{background:#fff}
 .wchip{height:20px;min-width:24px;padding:0 6px;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;font-size:12px}
@@ -183,7 +188,7 @@ const ST=[
  {id:9,name:'강예린',days:{화:'6:00'},pro:false,cnt:4,unit:40000,before:3},
 ];
 const LOG={2:[['11/25','펜타토닉 1·2 포지션 연결, 즉흥 16마디.'],['11/24','결석'],['11/18','블루스 12마디 셔플 리듬.']],1:[['11/20','코드 G-C-D 전환 연습.'],['11/13','오른손 스트로크, 메트로놈 70.'],['11/6','']]};
-const S={teacher:1,view:'att',date:TODAY,cells:{},pays:{},pop:null,clIdx:0,memo:'12/1 발표회 곡 정하기\n오시우 다음 달 전문반 상담'};
+const S={teacher:1,view:'att',date:TODAY,cells:{},pays:{},pop:null,clIdx:0,plans:{},memo:'12/1 발표회 곡 정하기\n오시우 다음 달 전문반 상담'};
 const wdOf=d=>WD[new Date(Y,M-1,d).getDay()];
 // 지난 날짜 샘플 출결 채우기
 (function seed(){for(let d=1;d<TODAY;d++){const w=wdOf(d);ST.forEach(s=>{if(s.days[w]&&!s.nopay){const k=s.id+'|'+d;S.cells[k]=(s.id===2&&d===24)||(s.id===7&&d===21)?'abs':'att';}});}
@@ -208,9 +213,9 @@ function lessonCount(){let hob=0,pro=0;ST.forEach(s=>marks(s).forEach(()=>s.pro?
 function renderTop(){
   const T=TEACHERS[S.teacher], lc=lessonCount();
   $('top').innerHTML='<div class="trow"><div class="ticon" style="background:'+T.fg+'">'+I.cal+'</div><div class="ttl"><i style="background:'+T.bg+'"></i><span>현실용음악학원 출석부</span></div><span class="mon">'+Y+'년 '+M+'월</span></div>'
-  +'<div class="stats"><button class="st" data-lc><small>레슨횟수</small><strong>'+(lc.hob+lc.pro)+'</strong><span class="chips"><span class="chip" style="background:var(--teal-bg);color:#00797D">취미 '+lc.hob+'</span><span class="chip" style="background:var(--pro-chip);color:var(--pro)">전문 '+lc.pro+'</span></span></button>'
+  +'<div class="stats"><button class="st" data-lc><small>레슨횟수</small><strong>'+(lc.hob+lc.pro)+'</strong><span class="chip" style="background:var(--teal-bg);color:#00797D">취미 '+lc.hob+'</span><span class="chip" style="background:var(--pro-chip);color:var(--pro)">전문 '+lc.pro+'</span></button>'
   +'<div class="st"><small>재원</small><strong>'+ST.length+'</strong></div>'
-  +'<div class="st"><small>담당 강사</small><div class="tch"><span class="av" style="background:'+T.fg+'">'+I.gt+'</span><div><b>'+T.n+'</b>'+(T.subj||'기타')+' 담당 강사</div></div></div></div>';
+  +'<div class="st tc"><div class="tch"><span class="av" style="background:'+T.fg+'">'+I.gt.replace(/15/g,'12')+'</span><div><b>'+T.n+'</b>'+(T.subj||'기타')+' 담당</div></div></div></div>';
 }
 function renderDates(){
   let h='';for(let d=1;d<=LAST;d++){const w=wdOf(d);h+='<button role="tab" aria-selected="'+(d===S.date)+'" class="dt'+(w==='토'?' sat':'')+(w==='일'?' sun':'')+(d===TODAY?' today':'')+(d===S.date?' on':'')+'" data-d="'+d+'">'+w+'<strong>'+d+'</strong></button>';}
@@ -228,7 +233,7 @@ function renderBody(){
     const hl=w===sw,c=WDC[w];
     h+='<section class="grp'+(hl?' hl':sw!=='일'?' dim':'')+'"><div class="gh"><span class="wchip" style="background:'+c[0]+';color:'+c[1]+'">'+w+'</span>'+rows.length+'명'+(hl?' · '+M+'/'+S.date+' 수업':'')+'</div>';
     h+='<div class="cards">';rows.forEach(s=>{const t=ticket(s),v=S.cells[s.id+'|'+S.date];const bd=s.badge==='신규'?'<span class="badge" style="background:#FFF1C9;color:#8A6400">신규</span>':s.badge==='복귀'?'<span class="badge" style="background:var(--teal-bg);color:#00797D">복귀</span>':'';
-      h+='<article class="card'+(s.pro?' pro':'')+'"><div class="chead"><button class="nm" data-n="'+s.id+'"><b>'+s.name+(s.chg?'<span class="dot"></span>':'')+'</b><small>'+s.days[w]+'</small></button>'+bd+'<span class="ltc">'+(s.pro?'전문':'취미')+' '+s.cnt+'회</span></div>'
+      h+='<article class="card'+(s.pro?' pro':'')+'"><div class="chead"><button class="nm" data-n="'+s.id+'"><b>'+s.name+(s.chg?'<span class="dot"></span>':'')+'</b><small>'+s.days[w]+'</small></button>'+bd+(S.plans[s.id]?'<span class="ltc" style="background:var(--blue-bg);color:var(--blue)">보강 예정 '+S.plans[s.id]+'</span>':'')+'</div>'
       +'<button class="tk'+(t.due?' unpaid':'')+'" data-k="'+s.id+'">'+dots(t.view)+'<span class="tkt">'+t.txt+'</span></button>'
       +'<div class="acts">'+[['att','출석'],['abs','결석'],['mkup','보강'],['pp','연기']].map(x=>'<button class="ab '+x[0]+(v===x[0]?' on':'')+'" data-q="'+x[0]+'" data-id="'+s.id+'">'+x[1]+'</button>').join('')+'</div></article>';});h+='</div>';
     h+='</section>';});
@@ -244,7 +249,7 @@ function popHtml(){
     return head(s.name+' · '+M+'/'+S.date+' ('+wdOf(S.date)+')')+'<div class="box"><span class="lbl">출결</span><div class="grid4">'+[['att','출석'],['abs','결석'],['mkup','보강'],['pp','연기']].map(x=>'<button class="big '+x[0]+(v===x[0]?' on':'')+'" data-m="'+x[0]+'">'+x[1]+'</button>').join('')+'</div></div>'
     +'<div class="btnrow"><button class="btn gold" data-pay>'+(p?'₩ 수납 수정':'₩ 수납')+'</button><button class="btn" data-etc>기타</button><button class="btn del" data-clr>지우기</button></div></div>';}
   if(P.type==='name'){const w=Object.keys(s.days);
-    return head(s.name,'<span class="pill" style="margin-left:4px;'+(s.pro?'background:var(--pro-chip);color:var(--pro)':'background:var(--teal-bg);color:#00797D')+'">'+(s.pro?'전문':'취미')+' '+s.cnt+'회</span><button class="fb" style="margin-left:auto" data-hist>기록</button>').replace('<button class="x"','<button class="x" style="margin-left:6px"')
+    return head(s.name,'<button class="fb" style="margin-left:auto" data-hist>기록</button>').replace('<button class="x"','<button class="x" style="margin-left:6px"')
     +'<div class="box"><span class="lbl">적용 날짜</span><input type="date" id="ap" value="'+Y+'-'+M+'-'+String(TODAY).padStart(2,'0')+'"><span class="lbl">요일</span><div class="days">'+GW.map(d=>'<button class="dy'+(P.days[d]?' on':'')+'" data-dy="'+d+'">'+d+'</button>').join('')+'</div>'
     +'<span class="lbl">요일별 시간</span>'+GW.filter(d=>P.days[d]).map(d=>'<label class="tmr"><span>'+d+'</span><input type="text" id="tm'+d+'" value="'+P.days[d]+'"></label>').join('')+'</div>'
     +'<div class="btnrow"><button class="btn warn">휴원</button><button class="btn del">퇴원</button><button class="btn pri" data-save>저장</button></div></div>';}
@@ -255,6 +260,13 @@ function popHtml(){
     Object.keys(S.pays).filter(k=>k.startsWith(s.id+'|')).map(k=>+k.split('|')[1]).sort((a,b)=>b-a).forEach(d=>{
       h+='<div class="pc"><div class="pch"><span class="l">수납 날짜<b>'+Y+'년 '+M+'월 '+d+'일 ('+wdOf(d)+')</b></span><span class="amt">'+(s.cnt*s.unit).toLocaleString()+'</span></div><div class="les">'+t.ms.filter(m=>m.d>=d).slice(0,s.cnt).map((m,j)=>'<span class="lc'+(m.v==='abs'?' abs':'')+'"><i>'+(j+1)+'</i>'+M+'/'+m.d+' ('+wdOf(m.d)+') '+(m.v==='abs'?'결석':'출석')+'</span>').join('')+'</div></div>';});
     return h+'</div>';}
+  if(P.type==='mk'){const [hh,mm]=P.time.split(':');const dis=P.on?'':' disabled style="opacity:.45"';
+    return head('보강 · '+s.name)+'<div class="box" style="background:#F4F7FD;border-color:#DCE5F7"><span class="lbl" style="color:#1E4FA8">'+M+'/'+S.date+' ('+wdOf(S.date)+') 보강</span>'
+    +'<button class="btn" role="switch" aria-checked="'+P.on+'" data-mksw style="display:flex;align-items:center;justify-content:space-between;padding:0 12px;text-align:left">보강 일정 정하기<span style="width:40px;height:24px;border-radius:12px;background:'+(P.on?'#4A78C9':'#D5DBD8')+';position:relative"><span style="position:absolute;top:3px;'+(P.on?'right':'left')+':3px;width:18px;height:18px;border-radius:50%;background:#fff"></span></span></button>'
+    +'<label class="lbl" for="mkDate">보강 날짜</label><input type="date" id="mkDate" value="'+Y+'-'+M+'-'+String(Math.min(S.date+1,LAST)).padStart(2,'0')+'"'+dis+'>'
+    +'<span class="lbl">보강 시간</span><div class="btnrow" style="align-items:center"><input type="text" inputmode="numeric" id="mkH" value="'+hh+'"'+dis+'><span>시</span><input type="text" inputmode="numeric" id="mkM" value="'+mm+'"'+dis+'><span>분</span></div>'
+    +'<span style="font-size:11px;color:var(--mute)">시간 기본값은 원생의 수업 시간입니다.</span></div>'
+    +'<div class="btnrow"><button class="btn" data-close>뒤로</button><button class="btn pri" data-mksave style="flex:2;background:#4A78C9;border-color:#4A78C9">'+(P.on?'보강 일정 저장':'보강으로 표시')+'</button></div></div>';}
   if(P.type==='lc'){const lc=lessonCount();
     return head('레슨횟수 · '+TEACHERS[S.teacher].n)+'<div class="box" style="align-items:center"><span class="lbl">'+M+'월 합계</span><strong style="font-size:34px">'+(lc.hob+lc.pro)+'회</strong></div><div class="lt"><div class="ltr" style="background:var(--teal-bg);color:#00797D">취미 4회<b>'+lc.hob+'</b></div><div class="ltr" style="background:var(--pro-chip);color:var(--pro)">전문 4회<b>'+lc.pro+'</b></div></div></div>';}
   return '';
@@ -267,6 +279,7 @@ document.addEventListener('click',e=>{const g=a=>e.target.closest('['+a+']');let
   if(el=g('data-t')){S.teacher=+el.dataset.t;render();return;}
   if(el=g('data-v')){S.view=el.dataset.v;render();return;}
   if(el=g('data-d')){S.date=+el.dataset.d;render();scrollToDate();return;}
+  if((el=g('data-q'))&&el.dataset.q==='mkup'&&S.cells[el.dataset.id+'|'+S.date]!=='mkup'){const s=ST.find(x=>x.id==el.dataset.id);S.pop={type:'mk',id:s.id,on:false,time:(s.days[wdOf(S.date)]||Object.values(s.days)[0])};renderPop();return;}
   if(el=g('data-q')){const k=el.dataset.id+'|'+S.date,v=el.dataset.q;S.cells[k]=S.cells[k]===v?undefined:v;if(!S.cells[k])delete S.cells[k];render();if(S.cells[k])toast(ST.find(x=>x.id==el.dataset.id).name+' '+M+'/'+S.date+' '+{att:'출석',abs:'결석',mkup:'보강',pp:'연기'}[v]);return;}
   if(el=g('data-c')){const id=+el.dataset.c;S.pop={type:'cell',id,k:id+'|'+S.date};render();return;}
   if(el=g('data-n')){const s=ST.find(x=>x.id==el.dataset.n);S.pop={type:'name',id:s.id,days:{...s.days}};renderPop();return;}
@@ -277,6 +290,8 @@ document.addEventListener('click',e=>{const g=a=>e.target.closest('['+a+']');let
   if(g('data-clr')){delete S.cells[S.pop.k];delete S.pays[S.pop.k];S.pop=null;render();return;}
   if(el=g('data-dy')){const d=el.dataset.dy;GW.forEach(x=>{const i=$('tm'+x);if(i)S.pop.days[x]=i.value;});if(S.pop.days[d])delete S.pop.days[d];else S.pop.days[d]='3:00';renderPop();return;}
   if(g('data-save')){const s=ST.find(x=>x.id===S.pop.id);GW.forEach(x=>{const i=$('tm'+x);if(i)S.pop.days[x]=i.value;});if(Object.keys(S.pop.days).length)s.days=S.pop.days;S.pop=null;render();toast('수업 정보 저장');return;}
+  if(g('data-mksw')){S.pop.on=!S.pop.on;renderPop();return;}
+  if(g('data-mksave')){const P=S.pop,s=ST.find(x=>x.id===P.id);S.cells[P.id+'|'+S.date]='mkup';if(P.on){const d=$('mkDate').value.split('-');S.plans[P.id]=(+d[1])+'/'+(+d[2])+' '+$('mkH').value+':'+String($('mkM').value||'00').padStart(2,'0');}S.pop=null;render();toast(s.name+' 보강'+(P.on?' · '+S.plans[P.id]:''));return;}
   if(el=g('data-cl')){S.clIdx=Math.max(0,S.clIdx+ +el.dataset.cl);renderPop();return;}
   if(g('data-close')||e.target.id==='scrim'){S.pop=null;render();}
 });
