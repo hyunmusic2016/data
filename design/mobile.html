@@ -86,11 +86,28 @@ button{font:inherit;color:inherit;cursor:pointer}
 .sh{flex:none;height:30px;padding:0 10px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:12px;display:flex;align-items:center;gap:5px}
 .sh.on{background:var(--teal-bg);border-color:var(--teal);font-weight:600}
 .sh b{width:9px;height:9px;border-radius:50%}
+/* 카드 */
+.cards{display:flex;flex-direction:column;gap:8px;padding:8px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.card.pro{background:var(--pro-bg)}
+.chead{display:flex;align-items:center;gap:6px}
+.chead .nm{padding:0;flex-direction:row;align-items:center;gap:6px}
+.ltc{margin-left:auto;display:inline-flex;align-items:center;height:22px;padding:0 8px;border-radius:11px;font-size:11px;font-weight:600;background:var(--teal-bg);color:#00797D}
+.pro .ltc{background:var(--pro-chip);color:var(--pro)}
+.card .tk{border:0;border-radius:10px;background:#F7F9F8;flex-direction:row;align-items:center;gap:8px;padding:7px 10px;width:100%}
+.pro .tk{background:#EFEAFB}.card .tk.unpaid{background:var(--red-bg)}
+.card .dots{max-width:none}.card .tkt{margin-left:auto;font-size:12px}
+.acts{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.ab{height:42px;border-radius:11px;border:1px solid var(--line);background:#fff;font-size:14px;font-weight:600}
+.ab.on.att{background:var(--teal);border-color:var(--teal);color:#fff}.pro .ab.on.att{background:var(--pro);border-color:var(--pro)}
+.ab.on.abs{background:var(--red);border-color:var(--red);color:#fff}.ab.on.mkup{background:var(--blue);border-color:var(--blue);color:#fff}.ab.on.pp{background:var(--mute);border-color:var(--mute);color:#fff}
+.grp .cards{padding:8px}
 /* 팝업 */
 .scrim{position:absolute;inset:0;background:rgba(23,32,28,.35);opacity:0;pointer-events:none;transition:opacity .2s;z-index:10}
 .scrim.on{opacity:1;pointer-events:auto}
-.pop{position:absolute;left:0;right:0;bottom:0;max-height:88%;background:#fff;border-radius:22px 22px 0 0;transform:translateY(100%);transition:transform .25s;z-index:11;display:flex;flex-direction:column}
-.pop.on{transform:none}
+.pop{position:absolute;left:16px;right:16px;top:50%;max-height:80%;background:#fff;border-radius:22px;transform:translateY(-50%) scale(.94);opacity:0;pointer-events:none;transition:transform .2s,opacity .2s;z-index:11;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(23,32,28,.25)}
+.pop.on{transform:translateY(-50%);opacity:1;pointer-events:auto}
+.pop .grab{display:none}.pop .ph{padding-top:16px}
 .grab{width:40px;height:5px;border-radius:3px;background:#D5DBD8;margin:8px auto 4px;flex:none}
 .ph{display:flex;align-items:center;gap:8px;padding:4px 16px 10px;flex:none}
 .ph h2{margin:0;font-size:17px;font-weight:600}
@@ -139,12 +156,11 @@ input[type=date],input[type=text]{height:40px;border:1px solid var(--line);borde
 </head>
 <body>
 <div class="stage">
-  <div class="cap"><b>모바일 출석부 시안</b> · 샘플 원생(실제 정보 아님) · 데스크톱 출석부와 같은 기능<br>날짜를 고르면 그 요일 원생이 강조됩니다</div>
+  <div class="cap"><b>모바일 출석부 시안</b> · 샘플 원생(실제 정보 아님) · 강사용<br>날짜를 고르면 그 요일 원생이 강조됩니다</div>
   <div class="phone">
     <header class="top" id="top"></header>
     <nav class="dates" id="dates" role="tablist" aria-label="날짜"></nav>
     <main class="body" id="body"></main>
-    <nav class="sheets" aria-label="시트"><button class="sh">≡</button><button class="sh on"><b style="background:#D9F2F2"></b>26' 11월 출석부</button><button class="sh"><b style="background:#D9F2F2"></b>26' 10월 출석부</button><button class="sh">+</button></nav>
     <div class="scrim" id="scrim"></div>
     <section class="pop" id="pop" role="dialog" aria-label="창"></section>
     <div class="toast" id="toast"></div>
@@ -192,8 +208,6 @@ function lessonCount(){let hob=0,pro=0;ST.forEach(s=>marks(s).forEach(()=>s.pro?
 function renderTop(){
   const T=TEACHERS[S.teacher], lc=lessonCount();
   $('top').innerHTML='<div class="trow"><div class="ticon" style="background:'+T.fg+'">'+I.cal+'</div><div class="ttl"><i style="background:'+T.bg+'"></i><span>현실용음악학원 출석부</span></div><span class="mon">'+Y+'년 '+M+'월</span></div>'
-  +'<div class="ttabs" role="tablist" aria-label="강사">'+TEACHERS.map((t,i)=>'<button role="tab" aria-selected="'+(i===S.teacher)+'" class="tt'+(i===S.teacher?' on':'')+'" data-t="'+i+'" style="'+(i===S.teacher?'background:'+t.bg+';border-color:'+t.fg+';color:'+t.fg:'')+'"><b style="background:'+t.bg+'"></b>'+t.n+'</button>').join('')+'</div>'
-  +'<div class="views" role="tablist" aria-label="화면">'+[['att','출석부',T.fg,T.bg],['cl','수업일지','#5B86C9','#EAF0FA'],['wl','업무일지','#8B6CC9','#EDE7F8']].map(v=>'<button role="tab" aria-selected="'+(S.view===v[0])+'" class="vb" data-v="'+v[0]+'" style="'+(S.view===v[0]?'background:'+v[2]+';color:#fff;border-color:'+v[2]:'background:'+v[3]+';color:'+v[2]+';border-color:'+v[3])+'">'+v[1]+'</button>').join('')+'</div>'
   +'<div class="stats"><button class="st" data-lc><small>레슨횟수</small><strong>'+(lc.hob+lc.pro)+'</strong><span class="chips"><span class="chip" style="background:var(--teal-bg);color:#00797D">취미 '+lc.hob+'</span><span class="chip" style="background:var(--pro-chip);color:var(--pro)">전문 '+lc.pro+'</span></span></button>'
   +'<div class="st"><small>재원</small><strong>'+ST.length+'</strong></div>'
   +'<div class="st"><small>담당 강사</small><div class="tch"><span class="av" style="background:'+T.fg+'">'+I.gt+'</span><div><b>'+T.n+'</b>'+(T.subj||'기타')+' 담당 강사</div></div></div></div>';
@@ -213,13 +227,13 @@ function renderBody(){
   GW.forEach(w=>{const rows=ST.filter(s=>s.days[w]).sort((a,b)=>parseInt(a.days[w])-parseInt(b.days[w])||a.name.localeCompare(b.name));if(!rows.length)return;
     const hl=w===sw,c=WDC[w];
     h+='<section class="grp'+(hl?' hl':sw!=='일'?' dim':'')+'"><div class="gh"><span class="wchip" style="background:'+c[0]+';color:'+c[1]+'">'+w+'</span>'+rows.length+'명'+(hl?' · '+M+'/'+S.date+' 수업':'')+'</div>';
-    rows.forEach(s=>{const t=ticket(s);const bd=s.badge==='신규'?'<span class="badge" style="background:#FFF1C9;color:#8A6400">신규</span>':s.badge==='복귀'?'<span class="badge" style="background:var(--teal-bg);color:#00797D">복귀</span>':'';
-      h+='<div class="row'+(s.pro?' pro':'')+'"><button class="nm" data-n="'+s.id+'"><b>'+s.name+(s.chg?'<span class="dot"></span>':'')+'</b><small>'+s.days[w]+' '+bd+'</small></button>'
-      +'<button class="tk'+(t.due?' unpaid':'')+'" data-k="'+s.id+'">'+dots(t.view)+'<span class="tkt">'+t.txt+'</span></button>'+cellHtml(s)+'</div>';});
+    h+='<div class="cards">';rows.forEach(s=>{const t=ticket(s),v=S.cells[s.id+'|'+S.date];const bd=s.badge==='신규'?'<span class="badge" style="background:#FFF1C9;color:#8A6400">신규</span>':s.badge==='복귀'?'<span class="badge" style="background:var(--teal-bg);color:#00797D">복귀</span>':'';
+      h+='<article class="card'+(s.pro?' pro':'')+'"><div class="chead"><button class="nm" data-n="'+s.id+'"><b>'+s.name+(s.chg?'<span class="dot"></span>':'')+'</b><small>'+s.days[w]+'</small></button>'+bd+'<span class="ltc">'+(s.pro?'전문':'취미')+' '+s.cnt+'회</span></div>'
+      +'<button class="tk'+(t.due?' unpaid':'')+'" data-k="'+s.id+'">'+dots(t.view)+'<span class="tkt">'+t.txt+'</span></button>'
+      +'<div class="acts">'+[['att','출석'],['abs','결석'],['mkup','보강'],['pp','연기']].map(x=>'<button class="ab '+x[0]+(v===x[0]?' on':'')+'" data-q="'+x[0]+'" data-id="'+s.id+'">'+x[1]+'</button>').join('')+'</div></article>';});h+='</div>';
     h+='</section>';});
   h+='<div class="memo"><label for="memo">MEMO</label><textarea id="memo">'+S.memo+'</textarea></div>'
-   +'<div class="foot"><button class="fb">+ 체험레슨</button><button class="fb">2026년 11월 마감</button></div>'
-   +'<div class="foot"><button class="fb">기록</button><button class="fb">시트로 보기</button><button class="fb">인쇄</button><button class="fb">내보내기</button><span class="ver">시안 · v0.119.9</span></div>';
+  ;
   $('body').innerHTML=h;
 }
 function popHtml(){
@@ -240,7 +254,7 @@ function popHtml(){
     if(t.due)h+='<div class="pc due"><div class="pch"><span class="l">결제 없이 한 수업<b>미입금</b></span><span class="amt" style="color:var(--red)">미납 '+t.due+'회</span></div></div>';
     Object.keys(S.pays).filter(k=>k.startsWith(s.id+'|')).map(k=>+k.split('|')[1]).sort((a,b)=>b-a).forEach(d=>{
       h+='<div class="pc"><div class="pch"><span class="l">수납 날짜<b>'+Y+'년 '+M+'월 '+d+'일 ('+wdOf(d)+')</b></span><span class="amt">'+(s.cnt*s.unit).toLocaleString()+'</span></div><div class="les">'+t.ms.filter(m=>m.d>=d).slice(0,s.cnt).map((m,j)=>'<span class="lc'+(m.v==='abs'?' abs':'')+'"><i>'+(j+1)+'</i>'+M+'/'+m.d+' ('+wdOf(m.d)+') '+(m.v==='abs'?'결석':'출석')+'</span>').join('')+'</div></div>';});
-    return h+'<div class="btnrow"><button class="btn" style="color:#5B7FB8">레슨시작일 넣기</button><button class="btn">미납금액 수납 보기</button></div></div>';}
+    return h+'</div>';}
   if(P.type==='lc'){const lc=lessonCount();
     return head('레슨횟수 · '+TEACHERS[S.teacher].n)+'<div class="box" style="align-items:center"><span class="lbl">'+M+'월 합계</span><strong style="font-size:34px">'+(lc.hob+lc.pro)+'회</strong></div><div class="lt"><div class="ltr" style="background:var(--teal-bg);color:#00797D">취미 4회<b>'+lc.hob+'</b></div><div class="ltr" style="background:var(--pro-chip);color:var(--pro)">전문 4회<b>'+lc.pro+'</b></div></div></div>';}
   return '';
@@ -253,6 +267,7 @@ document.addEventListener('click',e=>{const g=a=>e.target.closest('['+a+']');let
   if(el=g('data-t')){S.teacher=+el.dataset.t;render();return;}
   if(el=g('data-v')){S.view=el.dataset.v;render();return;}
   if(el=g('data-d')){S.date=+el.dataset.d;render();scrollToDate();return;}
+  if(el=g('data-q')){const k=el.dataset.id+'|'+S.date,v=el.dataset.q;S.cells[k]=S.cells[k]===v?undefined:v;if(!S.cells[k])delete S.cells[k];render();if(S.cells[k])toast(ST.find(x=>x.id==el.dataset.id).name+' '+M+'/'+S.date+' '+{att:'출석',abs:'결석',mkup:'보강',pp:'연기'}[v]);return;}
   if(el=g('data-c')){const id=+el.dataset.c;S.pop={type:'cell',id,k:id+'|'+S.date};render();return;}
   if(el=g('data-n')){const s=ST.find(x=>x.id==el.dataset.n);S.pop={type:'name',id:s.id,days:{...s.days}};renderPop();return;}
   if(el=g('data-k')){S.pop={type:'tk',id:+el.dataset.k};S.clIdx=0;renderPop();return;}
