@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.116.1"></script>
+<script src="db.js?v=0.119.2"></script>
 <script src="fx.js?v=5"></script>
 <style>.tav{transition:transform .28s cubic-bezier(.3,1.6,.5,1),box-shadow .28s}.tav:hover{transform:rotate(-10deg) scale(1.1)}.tav svg{transition:transform .28s}.tav:hover svg{transform:scale(1.08)}@keyframes onlPulse{0%{box-shadow:0 0 0 0 rgba(61,190,110,.55)}70%{box-shadow:0 0 0 6px rgba(61,190,110,0)}100%{box-shadow:0 0 0 0 rgba(61,190,110,0)}}.onl-pulse{animation:onlPulse 1.8s ease-out infinite}@media (prefers-reduced-motion:reduce){.onl-pulse{animation:none}.tav,.tav svg{transition:none}}.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
