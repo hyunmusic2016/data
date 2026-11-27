@@ -40,18 +40,22 @@ html.bwp .printonly .pcell{border-color:#000!important}
 .ntable .nhead>*:not(:first-child){display:none!important}
 .ntable .nhead>*:first-child{gap:8px;padding:0 4px}
 .mobonly{display:none}.ntable .nhead .mobonly{display:inline!important}
-.ntable .nrow{grid-template-columns:40px auto 1fr auto auto!important;grid-template-areas:"chk name day date cnt" "chk tk tk t t" "chk memo memo memo memo";padding:6px 6px 8px 0;column-gap:4px}
+.ntable .nrow{grid-template-columns:34px auto auto auto 1fr auto auto!important;grid-template-areas:"chk name day t . date cnt" "chk tk tk tk memo memo memo";padding:4px 6px 5px 0;column-gap:4px;row-gap:2px;align-items:center!important}
 .nrow:hover>*{box-shadow:none!important}
+.nrow>*{min-height:0!important;padding:0!important}
 .nrow .c-chk{grid-area:chk;align-self:stretch}
-.nrow .c-chk input{width:20px!important;height:20px!important}
-.nrow .c-name{grid-area:name;align-items:flex-start!important;font-size:16px!important}
-.nrow .c-day{grid-area:day;justify-content:flex-start!important}
+.nrow .c-chk input{width:18px!important;height:18px!important}
+.nrow .c-name{grid-area:name;flex-direction:row!important;gap:4px!important;align-items:baseline!important;font-size:15px!important;white-space:nowrap}
+.nrow .c-day{grid-area:day;justify-content:flex-start!important;flex-wrap:nowrap!important}
+.nrow .c-day>span{height:18px!important;font-size:10px!important;padding:0 4px!important}
+.nrow .c-t{grid-area:t;justify-content:flex-start!important}
 .nrow .c-date{grid-area:date}
 .nrow .c-cnt{grid-area:cnt}
-.nrow .c-tk{grid-area:tk;min-height:0!important;padding-left:2px!important}
-.nrow .c-t{grid-area:t;min-height:0!important;justify-content:flex-end!important}
-.nrow .c-memo{grid-area:memo;min-height:0!important;padding:2px 0!important}
-.nrow .c-memo input{height:38px!important;font-size:16px!important;border-color:#E1E6E3!important;background:#FAFBFA!important;padding:0 10px!important}
+.nrow .c-cnt>span{font-size:13px!important}
+.nrow .c-tk{grid-area:tk;align-self:center}
+.nrow .c-tk>span{padding:0!important}
+.nrow .c-memo{grid-area:memo;align-self:center}
+.nrow .c-memo input{height:30px!important;font-size:16px!important;border-color:#E1E6E3!important;background:#FAFBFA!important;padding:0 8px!important}
 }
 .memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
 </style>
