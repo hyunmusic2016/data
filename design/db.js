@@ -134,15 +134,21 @@
     var o, n; try { o = JSON.parse(oldStr || '{}') || {}; n = JSON.parse(newStr || '{}') || {}; } catch (e) { return; }
     var ch = {}, any = false; Object.keys(Object.assign({}, o, n)).forEach(function (x) { if (JSON.stringify(o[x]) !== JSON.stringify(n[x])) { ch[x] = n[x] === undefined ? null : n[x]; any = true; } });
     if (!any) return;
+    mergePush(key, ch, what);
+  }
+  var mergePend = {};
+  function mergePush(key, ch, what) {
+    var fail = function () { mergePend[key] = { ch: Object.assign({}, (mergePend[key] || {}).ch, ch), what: what }; unsentAdd('mg', key, function () {}); };
     mergeQ[key] = (mergeQ[key] || Promise.resolve()).then(function () {
       return sb.from('app_settings').select('value').eq('key', key).maybeSingle().then(function (q) {
-        if (q && q.error) { report(q, what); return; }
+        if (q && q.error) { report(q, what); return fail(); }
         var cur = q && q.data && q.data.value && typeof q.data.value === 'object' && !Array.isArray(q.data.value) ? q.data.value : {};
         Object.keys(ch).forEach(function (x) { if (ch[x] === null) delete cur[x]; else cur[x] = ch[x]; });
-        return sb.from('app_settings').upsert({ key: key, value: cur, updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, what); });
+        return sb.from('app_settings').upsert({ key: key, value: cur, updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, what); if (r && r.error) fail(); else unsentDel('mg', key); });
       });
-    }).catch(function (e) { console.warn(what, e); });
+    }).catch(function (e) { console.warn(what, e); fail(); });
   }
+  function resendMerges() { Object.keys(mergePend).forEach(function (key) { var p = mergePend[key]; delete mergePend[key]; mergePush(key, p.ch, p.what); }); }
   function ymdToShort(d) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : ''; }
   function anyToYmd(v) { var m = /^(\d{2,4})[.\-](\d{1,2})[.\-](\d{1,2})$/.exec(String(v || '').trim()); if (!m) return null; var y = m[1].length === 2 ? '20' + m[1] : m[1]; return y + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2); }
   function msOf(t) { var n = Date.parse(t); return isNaN(n) ? 0 : n; }
@@ -293,7 +299,7 @@
         }
         var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); if (r.key === 'sibFrom' && r.value && typeof r.value === 'object') rawSet('academy.sibFrom', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');
-        // 형제 기록 한 번 비우기 (v0.119.8, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
+        // 형제 기록 한 번 비우기 (v0.119.9, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
         if (!q.error && A.staff && A.staff.role === 'owner' && !(q.data || []).some(function (r) { return r.key === 'sibReset1'; })) { var nowIso = new Date().toISOString(); rawSet('academy.sibEnds', '[]'); rawSet('academy.sibFrom', '{}'); sb.from('app_settings').upsert([{ key: 'sibEnds', value: [], updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibFrom', value: {}, updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibReset1', value: true, updated_by: A.staff.id, updated_at: nowIso }]).then(function (r) { report(r, '형제 기록 비우기'); }); };
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
@@ -357,10 +363,19 @@
     try { syncList(rd('academy.lessonChanges', []), 'shared', saveLesson, 'student_terms'); } catch (e) {}
     try { syncLogs(); } catch (e) {}
     try { syncTrials(); } catch (e) {}
+    try { resendSettings(); } catch (e) {}
+    try { resendMerges(); } catch (e) {}
     clearTimeout(unsentT); unsentT = setTimeout(function () { if (A.unsentCount()) resend(); }, 20000);
   }
   window.addEventListener('online', function () { setTimeout(resend, 1000); });
   window.addEventListener('beforeunload', function (e) { if (A.unsentCount()) { e.preventDefault(); e.returnValue = ''; } });
+  // 설정(app_settings) 저장: 실패하면 그 설정을 남겨 두고 다시 보냄 (다시 보낼 때는 이 브라우저의 지금 값)
+  function setUp(key, v, dflt, what) {
+    sb.from('app_settings').upsert({ key: key, value: JSON.parse(v || dflt), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) {
+      report(r, what); if (r && r.error) { setFail[key] = [dflt, what]; unsentAdd('set', key, function () {}); } else { delete setFail[key]; unsentDel('set', key); } });
+  }
+  var setFail = {};
+  function resendSettings() { Object.keys(setFail).forEach(function (key) { var f = setFail[key]; setUp(key, localStorage.getItem('academy.' + key), f[0], f[1]); }); }
   function syncBar() {
     var b = document.getElementById('acSyncBar'), n = A.unsentCount();
     if (!n) { if (b) b.remove(); return; }
@@ -455,7 +470,7 @@
       else if (k === 'academy.subjects') syncRows(JSON.parse(v || '[]'), 'subj', 'subjects', 'J', function (e, i) { return { name: e.name, bg: e.bg || null, fg: e.fg || null, sort: i + 1 }; }, k);
       else if (k === 'academy.menu') {
         if (!A.staff || A.staff.role !== 'owner') { toast('메뉴 탭은 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'menu', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '메뉴 탭 설정'); });
+        setUp('menu', v, 'null', '메뉴 탭 설정');
       }
       else if (k === 'academy.attCells') syncAtt(JSON.parse(v || '{}'));
       else if (k === 'academy.cellLog') syncClog(JSON.parse(v || '[]'));
@@ -469,7 +484,7 @@
       }
       else if (k === 'academy.sibEnds') {
         if (!A.staff || A.staff.role !== 'owner') return;
-        sb.from('app_settings').upsert({ key: 'sibEnds', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '형제 정리'); });
+        setUp('sibEnds', v, '[]', '형제 정리');
       }
       else if (k === 'academy.sibFrom') {
         if (!A.staff || A.staff.role !== 'owner') { toast('형제 합계 시작일은 원장님만 바꿀 수 있습니다'); return; }
@@ -477,15 +492,15 @@
       }
       else if (k === 'academy.siblings') {
         if (!A.staff || A.staff.role !== 'owner') { toast('형제는 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'siblings', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '형제'); });
+        setUp('siblings', v, '[]', '형제');
       }
       else if (k === 'academy.holidays') {
         if (!A.staff || A.staff.role !== 'owner') { toast('휴일은 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'holidays', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '휴일'); });
+        setUp('holidays', v, '{}', '휴일');
       }
       else if (k === 'academy.lessonTypes') {
         if (!A.staff || A.staff.role !== 'owner') { toast('레슨 유형은 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'lessonTypes', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '레슨 유형'); });
+        setUp('lessonTypes', v, '[]', '레슨 유형');
       }
       else if (k === 'academy.payNotice') {
         // 수납 안내 발송 기록 (원장님만)
@@ -493,7 +508,7 @@
       }
       else if (k === 'academy.writeOffs') {
         if (!A.staff || A.staff.role !== 'owner') { toast('미납 정리는 원장님만 할 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'writeOffs', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '미납 정리'); });
+        setUp('writeOffs', v, '[]', '미납 정리');
       }
       else if (k === 'academy.monthClose') {
         if (!A.staff || A.staff.role !== 'owner') { toast('출석부 마감은 원장님만 할 수 있습니다'); return; }
@@ -501,7 +516,7 @@
       }
       else if (k === 'academy.staffOrder') {
         if (!A.staff || A.staff.role !== 'owner') { toast('직원 순서는 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'staffOrder', value: JSON.parse(v || 'null'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '직원 순서'); });
+        setUp('staffOrder', v, 'null', '직원 순서');
       }
     } catch (e) { console.warn(e); }
   };
