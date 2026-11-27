@@ -121,6 +121,9 @@
 - 수업일지·업무일지 되돌리기: 글 칸 밖에서 Ctrl+Z / Ctrl+Y(Shift+Ctrl+Z), 글 칸 안에서는 브라우저 글자 되돌리기, 팝업 열려 있으면 안 함. 저장(`jSet`)마다 저장소 앞·뒤 값과 그때 강사 탭·시트·일지 화면을 남기고(최근 100개, 화면을 연 동안만, `_jPast`/`_jFut`), 되돌리면 그 화면으로 가서 앞 값을 다시 씀(`jStep`) → 서버에도 반영. 버튼은 없음.
 - 수업일지·업무일지 서버 저장(011 SQL, 표 log_notes, 글 한 칸 = 한 줄: kind 'class'(k1 원생 줄 키·k2 날짜)/'work'(k2 날짜)/'workmemo'): db.js가 classLog·workLog·workMemo 쓰기를 전후 비교해 바뀐 칸만 올리고 지운 칸은 지움(`logFlat`/`logWrite`/`syncLogs`), 불러올 때 서버 글로 채움. 브라우저마다 처음 한 번은 그 브라우저에만 있던 글 중 서버에 없는 칸을 올림('academy.logsUp'). 강사 계정도 저장 가능(is_staff).
 
+## 모바일 출석부 시안 (design/mobile.html)
+- 시안만(샘플 원생, 저장·서버 연결 없음, 두 벌 규칙 없음). 컴퓨터에선 휴대폰 틀 390×844, 휴대폰에선 화면 가득. 아래 탭 오늘·원생·수업일지·더보기. 오늘 = 이번 주 요일 띠 + 시간별 원생 카드(이름·배지·유형 칩·회차 동그라미·[출석][결석][보강][연기][₩], 출석하면 지난 수업 글 + '오늘 수업 내용' 칸). 이름·수강 줄 누르면 아래에서 '수강 내역' 시트(맨 위 수업일지 상자 펼친 채 한 번에 한 회차, ‹ › 로 넘김 + 결제 카드). 원장님 의견 받아 고친 뒤 실제 페이지로 만들 예정.
+
 ## Supabase (design/db.js)
 - 로그인(이메일+비밀번호, staff 표 활성 직원만, RLS). 로그인 화면 번쩍임 방지용 'academy.cache'. claude.ai 시안은 연결 안 하고 샘플 원생으로 동작.
 - db.js가 localStorage 쓰기를 가로채 저장: lessonChanges/statusChanges → student_terms/status_changes, employees/subjects, menu/staffOrder → app_settings, attCells → attendance_cells(원생·달마다 한 줄, 바뀐 칸만 `att_patch`(012 SQL)로 서버에서 합침 — 동시 입력해도 다른 칸은 안 덮음, 012 없으면 예전처럼 줄 통째로), payments → payments(local_id), ticketPlans → ticket_plans. 수강생대장 등록·수정은 academy.addStudent/saveEdit/deleteTerm/logEvent.
