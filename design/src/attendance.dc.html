@@ -240,7 +240,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.118.3</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.0</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -671,7 +671,13 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
       <div style="display: flex; align-items: center; gap: 10px"><span style="flex: 1; font-size: 18px; font-weight: 600; color: #17201C">기타 <span style="font-size: 13px; font-weight: 500; color: #5E6873">{{etcV.title}}</span></span><button type="button" onClick="{{etcV.close}}" aria-label="닫기" style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid #E1E6E3; background: #FFFFFF; color: #5E6873; font-size: 16px; cursor: pointer">×</button></div>
       <sc-if value="{{etcV.isMenu}}" hint-placeholder-val="{{ true }}"><div style="display: flex; flex-direction: column; gap: 8px">
         <button type="button" onClick="{{etcV.goAdj}}" style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; cursor: pointer">회차 맞추기<span style="color: #8A949E">›</span></button>
-        <sc-if value="{{etcV.hasSibEnd}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{etcV.sibEndOpen}}" style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; cursor: pointer">형제 정리 바꾸기<span style="color: #8A949E">›</span></button></sc-if>
+        <sc-if value="{{etcV.hasSib}}" hint-placeholder-val="{{ false }}"><button type="button" onClick="{{etcV.goSib}}" style="display: flex; align-items: center; justify-content: space-between; height: 52px; padding: 0 16px; border-radius: 14px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 600; color: #17201C; cursor: pointer">형제 계산 보기<span style="color: #8A949E">›</span></button></sc-if>
+      </div></sc-if>
+      <sc-if value="{{etcV.isSib}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 12px">
+        <button type="button" onClick="{{etcV.back}}" style="align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 12px; color: #5E6873; cursor: pointer">‹ 기타</button>
+        <span style="font-size: 15px; font-weight: 600; color: #17201C">형제 계산 보기</span>
+        <textarea id="etc_sib" readonly aria-label="형제 계산 내용" style="width: 100%; height: 300px; box-sizing: border-box; padding: 10px; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.5; color: #17201C; resize: vertical">{{etcV.sibTxt}}</textarea>
+        <div style="display: flex; gap: 8px; justify-content: flex-end; align-items: center"><span style="font-size: 12px; color: #007E82">{{etcV.sibMsg}}</span><button type="button" onClick="{{etcV.sibCopy}}" style="height: 40px; padding: 0 16px; border-radius: 10px; border: none; background: #00A6AB; color: #FFFFFF; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">복사</button></div>
       </div></sc-if>
       <sc-if value="{{etcV.isAdj}}" hint-placeholder-val="{{ false }}"><div style="display: flex; flex-direction: column; gap: 12px">
         <button type="button" onClick="{{etcV.back}}" style="align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 8px; border: 1px solid #E1E6E3; background: #FFFFFF; font-family: inherit; font-size: 12px; color: #5E6873; cursor: pointer">‹ 기타</button>
@@ -2358,6 +2364,21 @@ class Component extends DCLogic {
     }
     return segs;
   }
+  // 기타 › 형제 계산 보기: 형제 묶음의 기록과 계산을 글로 (원장님이 복사해 보내 주면 그대로 확인)
+  sibReport(name) {
+    const G = this.sibGroups().find(g => g.indexOf(name) >= 0); if (!G) return '형제 묶음 없음';
+    const L = ['형제: ' + G.join(', ') + ' (형/언니: ' + G[0] + ')', '합계 시작일(직접): ' + (this.sibFromSet()[this.sibKey(G)] || '없음 → 처음 같이 수납한 날'), '버전: ' + (document.title || '') + ' ' + ((document.body.innerText.match(/v0\.\d+\.\d+/) || [''])[0])];
+    L.push('', '[휴원·퇴원·복귀]'); (this.state.statusList || this.readStatus() || []).filter(e => e && G.indexOf(e.name) >= 0).sort((a, b) => (a.at || 0) - (b.at || 0)).forEach(e => L.push('  ' + e.date + ' ' + e.name + ' ' + ({ rest: '휴원', out: '퇴원', back: '복귀' }[e.kind] || e.kind) + (e.ticket ? ' (' + e.ticket + ')' : '')));
+    L.push('', '[수납]'); this.sibPays(G).forEach(x => L.push('  ' + x.date + ' ' + x.name + ' ' + (+x.count || 0) + '회' + (x.grp ? ' 같이(' + String(x.grp).slice(-4) + ')' : '') + (x.kind && x.kind !== 'normal' ? ' ' + x.kind : '')));
+    L.push('', '[출석·결석]'); const LES = this.sibLes(G); G.forEach(n => L.push('  ' + n + ': ' + (LES.filter(l => l.n === n).map(l => l.ymd.slice(5) + (l.abs ? '결' : '')).join(' ') || '없음')));
+    L.push('', '[형제 정리 기록]'); this.readSibEnds().filter(r => r && (r.names || []).some(n => G.indexOf(n) >= 0)).forEach(r => L.push('  ' + r.date + ' 남은 ' + (r.left || 0) + '회 → ' + (r.to || '-') + (r.leaver ? ' (예전 휴원 기록, 무시됨)' : '') + (r.pending ? ' (처리 전)' : '')));
+    L.push('', '[계산 구간]'); this.sibSegs(G).forEach((sg, k) => L.push('  ' + (k + 1) + ') ' + sg.from + ' ~ ' + (sg.end || '지금') + ' · 시작 회차 ' + sg.init + ' · 끝날 때 남은 ' + (sg.end ? sg.left + '회 → ' + sg.to : '-')));
+    const C = this.sibCarry(); L.push('', '[끝난 뒤 넘겨받기]'); G.forEach(n => L.push('  ' + n + ': ' + ((C[n] || []).map(c => c.date + ' ' + c.left + '회').join(', ') || '없음')));
+    const P = this.sibPool(name); L.push('', '[지금] ' + (P ? P.title + (P.due ? ' · 수납 안내 대상' : '') : '형제 합계 아님 (각자 개인)'));
+    let T = {}; try { T = JSON.parse(localStorage.getItem('academy.tickets') || '{}') || {}; } catch (e) {}
+    G.forEach(n => { const t = T[n]; if (t) L.push('  ' + n + ' 수강 칸: ' + (t.text || '') + ' | ' + (t.subParts || []).map(p => p.t).join('') + (t.due ? ' · 수납 안내' : '')); });
+    return L.join('\n');
+  }
   sibPool(name, calcF, baseL, namesOv) {
     const names = namesOv || this.sibGroups().find(g => g.indexOf(name) >= 0); if (!names || names.length < 2) return null;
     const segs = this.sibSegs(names, baseL), cur = segs[segs.length - 1];
@@ -3802,6 +3823,10 @@ class Component extends DCLogic {
     const etcV = E0 ? {
       open: true, title: E0.name + ' · ' + this.kM(E0.m) + '월 ' + E0.d + '일',
       isMenu: E0.step === 'menu', isAdj: E0.step === 'adj',
+      isSib: E0.step === 'sib', hasSib: this.sibsOf(E0.name).length > 0, sibMsg: E0.sibMsg || '',
+      goSib: () => this.setState({ etc: Object.assign({}, E0, { step: 'sib', sibMsg: '' }) }),
+      sibTxt: E0.step === 'sib' ? this.sibReport(E0.name) : '',
+      sibCopy: () => { const t = document.getElementById('etc_sib'); const v = t ? t.value : ''; const ok = () => this.setState({ etc: Object.assign({}, this.state.etc, { sibMsg: '복사했어요' }) }); try { navigator.clipboard.writeText(v).then(ok, () => { if (t) { t.select(); document.execCommand('copy'); } ok(); }); } catch (e) { if (t) { t.select(); document.execCommand('copy'); } ok(); } },
       hasSibEnd: false && !!this.readSibEnds().filter(r => r && !r.pending && +r.left > 0 && (r.names || []).indexOf(E0.name) >= 0).length,
       sibEndOpen: () => { const r = this.readSibEnds().filter(x => x && !x.pending && +x.left > 0 && (x.names || []).indexOf(E0.name) >= 0).sort((a, b) => (a.at || 0) - (b.at || 0)).pop(); if (r) this.setState({ etc: null, sibEnd: { id: r.id, names: r.names, left: r.left, leaver: r.leaver || '', to: r.to || '', change: true } }); },
       goAdj: () => { this.setState({ etc: Object.assign({}, E0, { step: 'adj' }) }); setTimeout(() => { const el = document.getElementById('etc_n'); if (el) el.focus(); }, 30); },
