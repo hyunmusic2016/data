@@ -172,7 +172,7 @@ html.bwp .printonly .pcell,html.bwp .printonly .phead{border-color:#000!importan
     </div>
   </main>
 
-  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.119.3</div>
+  <div style="display: flex; justify-content: flex-end; padding: 8px 16px; border-top: 1px solid #DDE2DF; background: #FFFFFF; font-size: 11px; color: #8A949E">v0.119.4</div>
   <sc-if value="{{colsCfg.isOpen}}" hint-placeholder-val="{{ false }}">
     <div onMouseDown="{{colsCfg.close}}" style="position: fixed; inset: 0; z-index: 40; background: rgba(23, 32, 28, 0.32)"></div>
     <div role="dialog" aria-label="설정" onKeyDown="{{colsCfg.key}}" tabIndex="-1" id="cfgDlg" style="outline: none; position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 41; width: 940px; max-width: calc(100vw - 48px); max-height: calc(100vh - 48px); box-sizing: border-box; display: flex; flex-direction: column; background: #F6F8F7; border: 1px solid #DDE2DF; border-radius: 26px; box-shadow: 0 30px 80px rgba(23, 32, 28, 0.28); overflow: hidden">
@@ -1395,6 +1395,12 @@ class Component extends DCLogic {
       const newH = changed.filter(k => k !== 'lesson').map(k => ({ hid: 'h' + Date.now() + k, sec: k, from: r.dates[k], prev: was[k], patch: now[k] }));
       H[r.editId] = (H[r.editId] || []).filter(h => drop.indexOf(h.hid) < 0).concat(newH);
       // Supabase: 기본 정보는 바로, 수강료·현금영수증 날짜별 변경 저장 (수업 정보는 아래 출석부 공용 기록으로 저장됨)
+      // 이름을 바꾸면 형제 묶음·합계 시작일·형제 정리 기록의 이름도 같이 바꿈 (형제 연결이 끊기지 않게)
+      { const oldN = ((this.students().find(x => x.id === r.editId) || {}).name || '').replace('$', ''), newN = String((now.basic || {}).name || '').trim();
+        if (oldN && newN && oldN !== newN) { const rd = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } }, wr = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }, ren = n => n === oldN ? newN : n;
+          const SG = rd('academy.siblings', []); if (SG.some(g => (g || []).indexOf(oldN) >= 0)) wr('academy.siblings', SG.map(g => (g || []).map(ren)));
+          const SF = rd('academy.sibFrom', {}); if (Object.keys(SF).some(k => k.split('|').indexOf(oldN) >= 0)) { const F2 = {}; Object.keys(SF).forEach(k => { F2[k.split('|').map(ren).sort().join('|')] = SF[k]; }); wr('academy.sibFrom', F2); }
+          const SE = rd('academy.sibEnds', []); if (SE.some(x => (x.names || []).indexOf(oldN) >= 0)) wr('academy.sibEnds', SE.map(x => Object.assign({}, x, { names: (x.names || []).map(ren), to: ren(x.to || ''), leaver: x.leaver ? ren(x.leaver) : x.leaver }))); } }
       const A1 = window.academy; if (A1 && A1.data) A1.saveEdit(r.editId, now.basic, newH, drop.filter(h => ((this.state.hist || {})[r.editId] || []).some(x => x.hid === h)));
       // 수업 정보는 출석부와 같이 쓰는 기록으로
       let SH = (this.state.shared || []).filter(e => drop.indexOf(e.id) < 0);
