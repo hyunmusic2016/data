@@ -128,6 +128,21 @@
     }
   }
   function rawSet(k, v) { safeSet(localStorage, k, v); }
+  // 여러 기기(컴퓨터·휴대폰)에서 같은 설정을 고칠 때 서로 덮지 않게: 이 기기에서 바뀐 항목만 서버 최신 값에 얹어 저장 (설정마다 차례대로)
+  var MERGE_KEYS = { 'academy.payNotice': 1, 'academy.monthClose': 1, 'academy.sibFrom': 1 }, mergeQ = {};
+  function mergeSet(key, oldStr, newStr, what) {
+    var o, n; try { o = JSON.parse(oldStr || '{}') || {}; n = JSON.parse(newStr || '{}') || {}; } catch (e) { return; }
+    var ch = {}, any = false; Object.keys(Object.assign({}, o, n)).forEach(function (x) { if (JSON.stringify(o[x]) !== JSON.stringify(n[x])) { ch[x] = n[x] === undefined ? null : n[x]; any = true; } });
+    if (!any) return;
+    mergeQ[key] = (mergeQ[key] || Promise.resolve()).then(function () {
+      return sb.from('app_settings').select('value').eq('key', key).maybeSingle().then(function (q) {
+        if (q && q.error) { report(q, what); return; }
+        var cur = q && q.data && q.data.value && typeof q.data.value === 'object' && !Array.isArray(q.data.value) ? q.data.value : {};
+        Object.keys(ch).forEach(function (x) { if (ch[x] === null) delete cur[x]; else cur[x] = ch[x]; });
+        return sb.from('app_settings').upsert({ key: key, value: cur, updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, what); });
+      });
+    }).catch(function (e) { console.warn(what, e); });
+  }
   function ymdToShort(d) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(d || ''); return m ? m[1].slice(2) + '.' + m[2] + '.' + m[3] : ''; }
   function anyToYmd(v) { var m = /^(\d{2,4})[.\-](\d{1,2})[.\-](\d{1,2})$/.exec(String(v || '').trim()); if (!m) return null; var y = m[1].length === 2 ? '20' + m[1] : m[1]; return y + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2); }
   function msOf(t) { var n = Date.parse(t); return isNaN(n) ? 0 : n; }
@@ -269,7 +284,7 @@
         }
         var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); if (r.key === 'sibFrom' && r.value && typeof r.value === 'object') rawSet('academy.sibFrom', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');
-        // 형제 기록 한 번 비우기 (v0.119.5, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
+        // 형제 기록 한 번 비우기 (v0.119.6, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
         if (!q.error && A.staff && A.staff.role === 'owner' && !(q.data || []).some(function (r) { return r.key === 'sibReset1'; })) { var nowIso = new Date().toISOString(); rawSet('academy.sibEnds', '[]'); rawSet('academy.sibFrom', '{}'); sb.from('app_settings').upsert([{ key: 'sibEnds', value: [], updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibFrom', value: {}, updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibReset1', value: true, updated_by: A.staff.id, updated_at: nowIso }]).then(function (r) { report(r, '형제 기록 비우기'); }); };
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
@@ -393,6 +408,7 @@
     var evOld = (this === window.localStorage && A.data && (k === 'academy.lessonChanges' || k === 'academy.statusChanges')) ? this.getItem(k) : null;
     var ledOld = (this === window.localStorage && (k === 'academy.ledger' || k === 'academy.ledgerItems')) ? this.getItem(k) : null;
     var clTrack = this === window.localStorage && CL_KEYS[k] && A.staff, clOld = clTrack ? this.getItem(k) : null;
+    var mgOld = (this === window.localStorage && MERGE_KEYS[k]) ? this.getItem(k) : null;
     if (this === window.localStorage) safeSet(this, k, v); else origSet.call(this, k, v);
     if (this === window.localStorage && /^academy\./.test(k)) A.lastWrite = Date.now();
     if (evOld !== null) { try { evDiff(k, evOld, v); } catch (e) {} }
@@ -423,7 +439,7 @@
       }
       else if (k === 'academy.sibFrom') {
         if (!A.staff || A.staff.role !== 'owner') { toast('형제 합계 시작일은 원장님만 바꿀 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'sibFrom', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '형제 합계 시작일'); });
+        mergeSet('sibFrom', mgOld, v, '형제 합계 시작일');
       }
       else if (k === 'academy.siblings') {
         if (!A.staff || A.staff.role !== 'owner') { toast('형제는 원장님만 바꿀 수 있습니다'); return; }
@@ -439,7 +455,7 @@
       }
       else if (k === 'academy.payNotice') {
         // 수납 안내 발송 기록 (원장님만)
-        if (A.staff && A.staff.role === 'owner') sb.from('app_settings').upsert({ key: 'payNotice', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '수납 안내 발송 기록'); });
+        if (A.staff && A.staff.role === 'owner') mergeSet('payNotice', mgOld, v, '수납 안내 발송 기록');
       }
       else if (k === 'academy.writeOffs') {
         if (!A.staff || A.staff.role !== 'owner') { toast('미납 정리는 원장님만 할 수 있습니다'); return; }
@@ -447,7 +463,7 @@
       }
       else if (k === 'academy.monthClose') {
         if (!A.staff || A.staff.role !== 'owner') { toast('출석부 마감은 원장님만 할 수 있습니다'); return; }
-        sb.from('app_settings').upsert({ key: 'monthClose', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '출석부 마감'); });
+        mergeSet('monthClose', mgOld, v, '출석부 마감');
       }
       else if (k === 'academy.staffOrder') {
         if (!A.staff || A.staff.role !== 'owner') { toast('직원 순서는 원장님만 바꿀 수 있습니다'); return; }

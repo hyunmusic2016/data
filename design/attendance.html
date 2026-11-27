@@ -7,7 +7,7 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script src="logpanel.js?v=3"></script>
-<script src="db.js?v=0.119.5"></script>
+<script src="db.js?v=0.119.6"></script>
 <script src="fx.js?v=5"></script>
 <style>.tav{transition:transform .28s cubic-bezier(.3,1.6,.5,1),box-shadow .28s}.tav:hover{transform:rotate(-10deg) scale(1.1)}.tav svg{transition:transform .28s}.tav:hover svg{transform:scale(1.08)}@keyframes onlPulse{0%{box-shadow:0 0 0 0 rgba(61,190,110,.55)}70%{box-shadow:0 0 0 6px rgba(61,190,110,0)}100%{box-shadow:0 0 0 0 rgba(61,190,110,0)}}.onl-pulse{animation:onlPulse 1.8s ease-out infinite}@media (prefers-reduced-motion:reduce){.onl-pulse{animation:none}.tav,.tav svg{transition:none}}.expitem:hover{background:#F2F5F3!important}.cgrip:hover,.cgrip:active{background:linear-gradient(#00A6AB,#00A6AB) center/2px 100% no-repeat}.arow:hover>span,.arow:hover>button{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.5</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.119.6</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -950,13 +950,33 @@ class Component extends DCLogic {
     this.stampCells();
     const first = !this._pc;
     this._pc = refs;
-    if (first) return;
+    if (first) { this._pcBase = JSON.stringify(this.buildCells()); return; }
     clearTimeout(this._pcT);
     this._pcT = setTimeout(() => {
-      const js = JSON.stringify(this.buildCells());
+      const N = this.buildCells(), js = JSON.stringify(N);
       let cur = '';
       try { cur = localStorage.getItem('academy.attCells') || ''; } catch (e) {}
-      if (js !== cur) { this.logCells(cur, js); try { localStorage.setItem('academy.attCells', js); } catch (e) {} }
+      // 이 창에서 바뀐 칸만(지난번 기준 _pcBase → 지금) 최신 저장 내용에 얹음 — 화면을 다시 그리기 전에 들어온 다른 사람의 출결을 지우지 않게
+      let out = js;
+      if (this._pcBase != null && cur) {
+        try {
+          const B = JSON.parse(this._pcBase || '{}') || {}, C = JSON.parse(cur) || {}, ks = (x, y) => Object.keys(Object.assign({}, x || {}, y || {}));
+          ks(B, N).forEach(ym => ks(B[ym], N[ym]).forEach(sk => ks((B[ym] || {})[sk], (N[ym] || {})[sk]).forEach(rid => {
+            const bo = ((B[ym] || {})[sk] || {})[rid] || {}, no = ((N[ym] || {})[sk] || {})[rid] || {};
+            ks(bo, no).forEach(k => {
+              if (JSON.stringify(bo[k]) === JSON.stringify(no[k])) return;
+              const cy = C[ym] = C[ym] || {}, cs = cy[sk] = cy[sk] || {}, cr = cs[rid] = Object.assign({}, cs[rid] || {});
+              if (no[k] === undefined) delete cr[k]; else cr[k] = no[k];
+              if (!Object.keys(cr).length) delete cs[rid];
+              if (!Object.keys(cs).length) delete cy[sk];
+              if (!Object.keys(cy).length) delete C[ym];
+            });
+          })));
+          out = JSON.stringify(C);
+        } catch (e) { out = js; }
+      }
+      this._pcBase = js;
+      if (out !== cur) { this.logCells(cur, out); try { localStorage.setItem('academy.attCells', out); } catch (e) {} }
     }, 0);
   }
   // 맨 아래 시트 탭은 강사마다 따로 기억한다: 보고 있던 시트·숨긴 시트(이 브라우저 'attendance.sheetByTeacher'), 탭 순서('attendance.tabOrder.강사')
@@ -2163,12 +2183,12 @@ class Component extends DCLogic {
     if (!window._chgTipOn) { window._chgTipOn = 1; const tip = document.createElement('div'); tip.className = 'noexp noprint'; tip.setAttribute('role', 'tooltip'); tip.style.cssText = 'position: fixed; z-index: 99999; display: none; max-width: 420px; padding: 10px 13px; border-radius: 10px; background: #FFFFFF; border: 1px solid #F3C9A6; box-shadow: 0 6px 20px rgba(23,32,28,0.16); color: #17201C; font-size: 15px; font-weight: 600; line-height: 1.55; white-space: pre-line; pointer-events: none; font-family: \'Paperlogy\', \'Paperlogy 4 Regular\', \'Apple SD Gothic Neo\', \'Malgun Gothic\', sans-serif'; document.body.appendChild(tip);
       document.addEventListener('mouseover', e => { const el = e.target && e.target.closest && e.target.closest('[data-chg]'); const v = el && el.getAttribute('data-chg'); if (!v) { tip.style.display = 'none'; return; } tip.textContent = v; tip.style.display = 'block'; const r = el.getBoundingClientRect(), w = tip.offsetWidth, h = tip.offsetHeight; let x = r.left, y = r.bottom + 6; if (x + w > innerWidth - 8) x = innerWidth - 8 - w; if (y + h > innerHeight - 8) y = r.top - 6 - h; tip.style.left = Math.max(8, x) + 'px'; tip.style.top = Math.max(8, y) + 'px'; });
       document.addEventListener('scroll', () => { tip.style.display = 'none'; }, true); }
-    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const A9 = window.academy; if (window === window.top && A9 && A9.attWrite && Date.now() - A9.attWrite < 4000) { clearTimeout(this._stT); this._stT = setTimeout(() => this._st({ key: 'academy.attCells' }), 4000); return; } const c = this.cellsState(); this._snap = null; this.stampCells(c); this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); } };
+    this._st = e => { if (e.key === 'academy.lessonChanges') this.setState({ shared: this.readShared() }); if (e.key === 'academy.statusChanges') this.setState({ statusList: this.readStatus() }); if (e.key === 'academy.attCells' && this.dbMode()) { const A9 = window.academy; if (window === window.top && A9 && A9.attWrite && Date.now() - A9.attWrite < 4000) { clearTimeout(this._stT); this._stT = setTimeout(() => this._st({ key: 'academy.attCells' }), 4000); return; } const c = this.cellsState(); this._snap = null; this.stampCells(c); this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this.setState({ ev: c.ev, evByMonth: c.evByMonth, mkTimes: c.mkTimes, mkLinks: c.mkLinks }); this._pcBase = JSON.stringify(this.buildCells()); } };
     window.addEventListener('storage', this._st);
     // 시트로 보기 창 아래 달 막대(sheetbar.js)가 opener 대신 저장소로 보낸 명령 (맨 위 창만, 숨은 계산 창 제외)
     if (window === window.top) window.addEventListener('storage', e => { if (e.key === 'sheetcmd.attendance' && e.newValue) { try { this.sheetCmd(JSON.parse(e.newValue)); } catch (x) {} } });
     // Supabase에서 새로 불러오면 휴원·퇴원·수업 정보 변경을 다시 읽는다
-    this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) { this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this._snap = null; this.stampCells(c); } this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); };
+    this._dbl = () => { const c = this.dbMode() ? this.cellsState() : {}; if (c.ev) { this._pc = [c.ev, c.evByMonth, c.mkTimes, c.mkLinks]; this._snap = null; this.stampCells(c); } this.setState(Object.assign({ shared: this.readShared(), statusList: this.readStatus() }, c)); if (c.ev) this._pcBase = JSON.stringify(this.buildCells()); };
     document.addEventListener('academy:data', this._dbl);
     this._bp = () => { if (this.state.printBW) document.documentElement.classList.add('bwp'); this.fitPrint(); };
     this._ap = () => { document.documentElement.classList.remove('bwp'); this.unfitPrint(); };
