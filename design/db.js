@@ -250,7 +250,7 @@
           rawSet('academy.ticketPlans', JSON.stringify(tp)); known.tkp = tp;
         }
         var q = qs[0];
-        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
+        if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); if (r.key === 'sibFrom' && r.value && typeof r.value === 'object') rawSet('academy.sibFrom', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');;
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
         if (!qs[2].error) {
@@ -387,6 +387,10 @@
       else if (k === 'academy.sibEnds') {
         if (!A.staff || A.staff.role !== 'owner') return;
         sb.from('app_settings').upsert({ key: 'sibEnds', value: JSON.parse(v || '[]'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '형제 정리'); });
+      }
+      else if (k === 'academy.sibFrom') {
+        if (!A.staff || A.staff.role !== 'owner') { toast('형제 합계 시작일은 원장님만 바꿀 수 있습니다'); return; }
+        sb.from('app_settings').upsert({ key: 'sibFrom', value: JSON.parse(v || '{}'), updated_by: A.staff.id, updated_at: new Date().toISOString() }).then(function (r) { report(r, '형제 합계 시작일'); });
       }
       else if (k === 'academy.siblings') {
         if (!A.staff || A.staff.role !== 'owner') { toast('형제는 원장님만 바꿀 수 있습니다'); return; }
@@ -822,7 +826,7 @@
   // ── 페이지 변경 기록 (출석부 말고 모든 페이지 공통, 014 SQL change_log) ──
   // 내용이 바뀌면(저장소 쓰기를 전후 비교) 알아보기 쉬운 줄로 남김: { id, at, who, page, lines: [글] } → 'academy.changeLog' + 서버 change_log
   // 페이지 맨 아래 '시트로 보기' 왼쪽에 '기록' 버튼을 저절로 붙이고, 누르면 오른쪽에 그 페이지 기록 칸이 열림 (새 페이지도 저절로)
-  var CL_KEYS = { 'academy.payNotice': 1, 'academy.ledger': 1, 'academy.ledgerItems': 1, 'academy.payments': 1, 'academy.writeOffs': 1, 'academy.ticketPlans': 1, 'academy.siblings': 1, 'academy.sibEnds': 1 };
+  var CL_KEYS = { 'academy.payNotice': 1, 'academy.ledger': 1, 'academy.ledgerItems': 1, 'academy.payments': 1, 'academy.writeOffs': 1, 'academy.ticketPlans': 1, 'academy.siblings': 1, 'academy.sibEnds': 1, 'academy.sibFrom': 1 };
   var CL_PAGE_NAME = { students: '수강생대장', notice: '수납 안내', 'notice-list': '수납 안내', money: '수입·지출', settings: '설정' };
   function clPage() { var p = pPage(); return p === 'notice-list' ? 'notice' : p; }
   function clOn() { var p = pPage(); return window === window.top && p !== 'attendance' && p !== 'sheet' && p !== 'money-sheet'; }
@@ -886,6 +890,9 @@
     } else if (k === 'academy.sibEnds') {
       var ea = {}; jp(ov, []).forEach(function (x) { if (x && x.id) ea[x.id] = x; });
       jp(nv, []).forEach(function (x) { if (!x || !x.id || x.pending) return; var o = ea[x.id]; if (!o || o.pending) L.push('형제 정리 · ' + (x.names || []).join(', ') + ' · 남은 ' + (x.left || 0) + '회 → ' + (x.to || '없음')); else if (o.to !== x.to) L.push('형제 정리 바꿈 · 남은 ' + (x.left || 0) + '회 ' + (o.to || '없음') + ' → ' + (x.to || '없음')); });
+    } else if (k === 'academy.sibFrom') {
+      var fa = jp(ov, {}), fb = jp(nv, {});
+      Object.keys(Object.assign({}, fa, fb)).forEach(function (g) { if ((fa[g] || '') !== (fb[g] || '')) L.push('형제 합계 시작일 · ' + g.split('|').join(', ') + ' · ' + (fa[g] || '자동') + ' → ' + (fb[g] || '자동')); });
     } else if (k === 'academy.siblings') {
       var ga = jp(ov, []).map(function (g) { return (g || []).slice().sort().join(', '); }), gb = jp(nv, []).map(function (g) { return (g || []).slice().sort().join(', '); });
       gb.forEach(function (g) { if (ga.indexOf(g) < 0) L.push('형제 묶음 · ' + g); });
