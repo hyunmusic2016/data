@@ -246,7 +246,7 @@ html.bwp section[aria-label="출석부"] [style*="dashed"]{border-color:#000!imp
     <sc-for list="{{sheetTabs}}" as="t" hint-placeholder-count="5">
       <button type="button" class="{{t.cls}}" draggable="true" onDragStart="{{t.dragStart}}" onDragOver="{{t.dragOver}}" onDragLeave="{{t.dragLeave}}" onDrop="{{t.drop}}" onDragEnd="{{t.dragEnd}}" onClick="{{t.pick}}" onContextMenu="{{t.ctx}}" aria-pressed="{{t.on}}" style="{{t.style}}"><span style="{{t.dot}}"></span>{{t.name}}</button>
     </sc-for>
-    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.116.1</span>
+    <span style="margin-left: auto; flex: none; align-self: center; padding: 0 4px 0 16px; font-size: 11px; color: #8A949E; white-space: nowrap">v0.116.2</span>
   </nav>
   <sc-if value="{{th.open}}" hint-placeholder-val="{{ false }}">
     <div class="noprint" onMouseDown="{{th.close}}" style="position: fixed; inset: 0; z-index: 70; background: rgba(23, 32, 28, 0.28)"></div>
@@ -2362,7 +2362,9 @@ class Component extends DCLogic {
     const D = 'display: inline-block; width: 10px; height: 10px; border-radius: 50%; box-sizing: border-box; flex: none; ';
     // 한 줄로 날짜순 (4개씩, 한 줄 8개)
     const dots = [];
-    for (let j = 0; j < cap; j++) { const l = les[start + j]; dots.push(l ? { bw: 'd-on', style: D + 'background: ' + (l.abs ? '#E5484D' : '#00A6AB') } : { bw: '', style: D + 'border: 1.5px solid #C9D0CC' }); }
+    // 이 줄 아이 수업 = 꽉 찬 동그라미, 다른 형제 수업 = 같은 색 고리(속이 빈 굵은 테두리)
+    const me = names.indexOf(name);
+    for (let j = 0; j < cap; j++) { const l = les[start + j], c = l && l.abs ? '#E5484D' : '#00A6AB'; dots.push(!l ? { bw: '', style: D + 'border: 1.5px solid #C9D0CC' } : (me < 0 || l.i === me) ? { bw: 'd-on', style: D + 'background: ' + c } : { bw: '', style: D + 'border: 2.5px solid ' + c + '; background: #FFFFFF' }); }
     if (due) for (let j = total; j < L; j++) dots.push({ bw: '', style: D + 'border: 1.5px dashed #D92D20' });
     const groups = []; for (let j = 0; j < dots.length; j += 4) groups.push({ dots: dots.slice(j, j + 4) });
     const lines = []; for (let j = 0; j < groups.length; j += 2) lines.push({ groups: groups.slice(j, j + 2) });
