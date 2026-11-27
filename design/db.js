@@ -281,7 +281,9 @@
             Object.keys(old).forEach(function (t) { var k = ['attmemo', '-', t, ''].join('|'); if (!(k in srv) && typeof old[t] === 'string' && old[t]) { srv[k] = old[t]; add.push(k); } });
             rawSet('academy.memoUp', '1');
           }
-          logWrite(srv); known.logs = srv;
+          known.logs = Object.assign({}, srv);
+          if (A.unsentCount()) Object.keys(unsent).forEach(function (u) { var m = /^log:(.+)$/.exec(u); if (!m) return; if (mine[m[1]]) srv[m[1]] = mine[m[1]]; else delete srv[m[1]]; });
+          logWrite(srv);
           if (add.length) logPush(add.map(function (k) { return [k, srv[k]]; }));
           if (first) rawSet('academy.logsUp', '1');
         }
@@ -291,7 +293,7 @@
         }
         var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); if (r.key === 'sibFrom' && r.value && typeof r.value === 'object') rawSet('academy.sibFrom', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');
-        // 형제 기록 한 번 비우기 (v0.119.7, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
+        // 형제 기록 한 번 비우기 (v0.119.8, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
         if (!q.error && A.staff && A.staff.role === 'owner' && !(q.data || []).some(function (r) { return r.key === 'sibReset1'; })) { var nowIso = new Date().toISOString(); rawSet('academy.sibEnds', '[]'); rawSet('academy.sibFrom', '{}'); sb.from('app_settings').upsert([{ key: 'sibEnds', value: [], updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibFrom', value: {}, updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibReset1', value: true, updated_by: A.staff.id, updated_at: nowIso }]).then(function (r) { report(r, '형제 기록 비우기'); }); };
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
@@ -353,6 +355,8 @@
     try { syncPays(rd('academy.payments', [])); } catch (e) {}
     try { syncList(rd('academy.statusChanges', []), 'status', saveStatus, 'status_changes'); } catch (e) {}
     try { syncList(rd('academy.lessonChanges', []), 'shared', saveLesson, 'student_terms'); } catch (e) {}
+    try { syncLogs(); } catch (e) {}
+    try { syncTrials(); } catch (e) {}
     clearTimeout(unsentT); unsentT = setTimeout(function () { if (A.unsentCount()) resend(); }, 20000);
   }
   window.addEventListener('online', function () { setTimeout(resend, 1000); });
@@ -361,7 +365,7 @@
     var b = document.getElementById('acSyncBar'), n = A.unsentCount();
     if (!n) { if (b) b.remove(); return; }
     if (!b) { b = el('<div id="acSyncBar" class="noprint noexp" style="position:fixed;left:0;right:0;top:0;z-index:1003;padding:8px 16px;background:#B4332B;color:#fff;font-size:13px;font-weight:600;text-align:center"></div>'); document.body.appendChild(b); }
-    b.textContent = '출결·수납 ' + n + '건이 아직 서버에 저장되지 않았습니다 — 인터넷을 확인해 주세요 (저절로 다시 보냅니다, 창을 닫지 마세요)';
+    b.textContent = '출결·수납·일지 ' + n + '건이 아직 서버에 저장되지 않았습니다 — 인터넷을 확인해 주세요 (저절로 다시 보냅니다, 창을 닫지 마세요)';
   }
   function ledBar(on) {
     var b = document.getElementById('acLedBar');
@@ -573,14 +577,14 @@
     var up = [], now = new Date().toISOString();
     pairs.forEach(function (x) { var p = x[0].split('|');
       if (x[1]) up.push({ kind: p[0], ym: p[1], k1: p[2], k2: p[3], body: x[1], updated_by: A.staff.id, updated_at: now });
-      else sb.from('log_notes').delete().eq('kind', p[0]).eq('ym', p[1]).eq('k1', p[2]).eq('k2', p[3]).then(function (r) { report(r, '일지 저장'); }); });
-    if (up.length) sb.from('log_notes').upsert(up, { onConflict: 'kind,ym,k1,k2' }).then(function (r) { report(r, '일지 저장'); });
+      else sb.from('log_notes').delete().eq('kind', p[0]).eq('ym', p[1]).eq('k1', p[2]).eq('k2', p[3]).then(function (r) { report(r, '일지 저장'); if (r && r.error) unsentAdd('log', x[0], function () { if (known.logs && !(x[0] in known.logs) && x[2] !== undefined) known.logs[x[0]] = x[2]; }); else unsentDel('log', x[0]); }); });
+    if (up.length) sb.from('log_notes').upsert(up, { onConflict: 'kind,ym,k1,k2' }).then(function (r) { report(r, '일지 저장'); up.forEach(function (u) { var k = [u.kind, u.ym, u.k1, u.k2].join('|'); if (r && r.error) unsentAdd('log', k, function () { if (known.logs && known.logs[k] === u.body) delete known.logs[k]; }); else unsentDel('log', k); }); });
   }
   function syncLogs() {
     if (!A.logReady) { if (A.logTried) toast('수업일지·업무일지를 서버에 저장하려면 Supabase에서 011 SQL을 먼저 실행해 주세요'); return; }
     var now = logFlat(), prev = known.logs || {}, ch = [];
-    Object.keys(now).forEach(function (k) { if (prev[k] !== now[k]) ch.push([k, now[k]]); });
-    Object.keys(prev).forEach(function (k) { if (!(k in now)) ch.push([k, '']); });
+    Object.keys(now).forEach(function (k) { if (prev[k] !== now[k]) ch.push([k, now[k], prev[k]]); });
+    Object.keys(prev).forEach(function (k) { if (!(k in now)) ch.push([k, '', prev[k]]); });
     known.logs = now; if (ch.length) logPush(ch);
   }
   function syncTrials() {
@@ -588,8 +592,8 @@
     if (!A.trialReady) { if (A.trialTried && Object.keys(now).length) toast('체험레슨을 저장하려면 Supabase에서 010 SQL을 먼저 실행해 주세요'); return; }
     var up = [];
     Object.keys(now).forEach(function (id) { if (prev[id] !== now[id]) up.push({ id: id, data: JSON.parse(now[id]), updated_by: A.staff.id, updated_at: new Date().toISOString() }); });
-    Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('trials').delete().eq('id', id).then(function (r) { report(r, '체험레슨 삭제'); }); });
-    if (up.length) sb.from('trials').upsert(up).then(function (r) { report(r, '체험레슨 저장'); });
+    Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('trials').delete().eq('id', id).then(function (r) { report(r, '체험레슨 삭제'); if (r && r.error) unsentAdd('trial', 'd' + id, function () { if (known.trial && !(id in known.trial)) known.trial[id] = prev[id]; }); else unsentDel('trial', 'd' + id); }); });
+    if (up.length) sb.from('trials').upsert(up).then(function (r) { report(r, '체험레슨 저장'); up.forEach(function (u) { if (r && r.error) unsentAdd('trial', u.id, function () { if (known.trial) delete known.trial[u.id]; }); else unsentDel('trial', u.id); }); });
     known.trial = now;
   }
   function syncPays(list) {
