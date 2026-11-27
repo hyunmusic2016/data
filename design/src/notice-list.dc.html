@@ -26,6 +26,33 @@ html.bwp .printonly .pcell{border-color:#000!important}
 .shell{height:100vh!important;min-height:0!important}.shellmain{flex:1 1 auto!important;min-height:0!important;overflow:hidden!important;padding-bottom:14px!important}.shell>header,.shell>nav,.shell>div:not(.shellmain){flex:none!important}.shellmain>*:not(.shellsec){flex:none}.shellsec{flex:1 1 auto;min-height:0;display:flex;flex-direction:column}.shellscroll{flex:1 1 auto;min-height:0;overflow:auto!important}
 @media print{.shell{height:auto!important}.shellmain{overflow:visible!important}.shellsec{display:block!important}.shellscroll{overflow:visible!important}}
 .nrow:hover>*{box-shadow:inset 0 1px 0 #AEB7B2,inset 0 -1px 0 #AEB7B2}
+.mobonly{display:none}
+@media (max-width:700px){
+.shellmain{padding:10px 8px 14px!important;gap:10px!important}
+.nbar{padding:12px 12px!important;gap:10px!important}
+.nbar>span:nth-child(3){display:none!important}
+.nbar .nctl{width:100%;justify-content:flex-end}
+.nbar input[type=date]{font-size:16px!important;height:42px!important}
+.nbar button{height:42px!important}
+.ntitle{font-size:21px!important}
+.ntable{min-width:0!important}
+.ntable .nhead{display:flex!important;padding:0 6px}
+.ntable .nhead>*:not(:first-child){display:none!important}
+.ntable .nhead>*:first-child{gap:8px;padding:0 4px}
+.mobonly{display:none}.ntable .nhead .mobonly{display:inline!important}
+.ntable .nrow{grid-template-columns:40px auto 1fr auto auto!important;grid-template-areas:"chk name day date cnt" "chk tk tk t t" "chk memo memo memo memo";padding:6px 6px 8px 0;column-gap:4px}
+.nrow:hover>*{box-shadow:none!important}
+.nrow .c-chk{grid-area:chk;align-self:stretch}
+.nrow .c-chk input{width:20px!important;height:20px!important}
+.nrow .c-name{grid-area:name;align-items:flex-start!important;font-size:16px!important}
+.nrow .c-day{grid-area:day;justify-content:flex-start!important}
+.nrow .c-date{grid-area:date}
+.nrow .c-cnt{grid-area:cnt}
+.nrow .c-tk{grid-area:tk;min-height:0!important;padding-left:2px!important}
+.nrow .c-t{grid-area:t;min-height:0!important;justify-content:flex-end!important}
+.nrow .c-memo{grid-area:memo;min-height:0!important;padding:2px 0!important}
+.nrow .c-memo input{height:38px!important;font-size:16px!important;border-color:#E1E6E3!important;background:#FAFBFA!important;padding:0 10px!important}
+}
 .memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
 </style>
 </helmet>
@@ -36,14 +63,14 @@ html.bwp .printonly .pcell{border-color:#000!important}
   <main class="shellmain" style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 18px 28px 40px; box-sizing: border-box">
 
     <section aria-label="수납 안내" class="shellsec" style="background: #FFFFFF; border: 1px solid #E1E6E3; border-radius: 16px; box-shadow: 0 1px 3px rgba(23, 32, 28, 0.05)">
-      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
+      <div class="nbar" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border-bottom: 1px solid #EBEEEC">
         <span style="display: inline-flex; align-items: center; gap: 14px">
           <span style="width: 32px; height: 32px; flex: none; border-radius: 10px; background: #FEE500; color: #3C1E1E; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(254, 229, 0, 0.45)"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5c-5.25 0-9.5 3.3-9.5 7.38 0 2.62 1.75 4.92 4.4 6.22l-.95 3.48c-.08.3.26.54.52.37l4.15-2.74c.45.05.91.07 1.38.07 5.25 0 9.5-3.3 9.5-7.4S17.25 3.5 12 3.5z"></path></svg></span>
-          <span style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #FFF0A0 62%, #FFF0A0 92%, transparent 92%)">현실용음악학원 수납 안내</span>
+          <span class="ntitle" style="font-size: 28px; font-weight: 800; letter-spacing: -0.03em; line-height: 1; padding: 0 2px; background-image: linear-gradient(transparent 62%, #FFF0A0 62%, #FFF0A0 92%, transparent 92%)">현실용음악학원 수납 안내</span>
         </span>
         <span style="display: inline-flex; align-items: center; height: 30px; padding: 0 12px; border-radius: 999px; background: #E6F6F6; color: #007E82; font-size: 14px; font-weight: 600">{{count}}명</span>
         <span style="flex: 1"></span>
-        <span class="noexp" style="display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px">
+        <span class="noexp nctl" style="display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px">
           <span style="font-size: 13px; font-weight: 600; color: #5E6873">{{selTxt}}</span>
           <label style="display: inline-flex; align-items: center"><input id="nt_date" aria-label="발송 날짜" type="date" defaultValue="{{sendDate}}" onChange="{{setDate}}" style="height: 38px; padding: 0 10px; box-sizing: border-box; border-radius: 10px; border: 1px solid #D5DBD8; background: #FAFBFA; font-family: inherit; font-size: 14px; color: #17201C"></label>
           <button type="button" onClick="{{bulk}}" disabled="{{bulkOff}}" style="{{bulkStyle}}">발송</button>
@@ -51,9 +78,9 @@ html.bwp .printonly .pcell{border-color:#000!important}
       </div>
 
       <div id="nt_scroll" class="shellscroll" style="padding: 0 0 8px">
-        <div role="table" aria-label="수납 안내 목록" style="min-width: 760px">
-          <div role="row" style="{{gridHead}}">
-            <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 16px; height: 16px; accent-color: #00A6AB; cursor: pointer"></span>
+        <div role="table" aria-label="수납 안내 목록" class="ntable" style="min-width: 760px">
+          <div role="row" class="nhead" style="{{gridHead}}">
+            <span role="columnheader" class="noexp" style="{{c.h}}"><input type="checkbox" aria-label="전체 선택" checked="{{allOn}}" onChange="{{toggleAll}}" style="width: 16px; height: 16px; accent-color: #00A6AB; cursor: pointer"><span class="mobonly" style="font-size: 13px; font-weight: 600; color: #5E6873; white-space: nowrap">전체 선택</span></span>
             <span role="columnheader" style="{{c.h}}">요일</span>
             <span role="columnheader" style="{{c.h}}">이름</span>
             <span role="columnheader" style="{{c.h}}">날짜</span>
@@ -65,14 +92,14 @@ html.bwp .printonly .pcell{border-color:#000!important}
           <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
             <sc-if value="{{r.grpHead}}" hint-placeholder-val="{{ false }}"><div style="margin-top: 18px; padding: 6px 12px; background: #EEF1F0; border-top: 1px solid #DDE2DF; border-bottom: 1px solid #DDE2DF; font-size: 12px; font-weight: 600; color: #5E6873">{{r.grpHead}}</div></sc-if>
             <div role="row" class="nrow" style="{{r.rowStyle}}">
-              <span role="cell" class="noexp" onMouseDown="{{r.dragDown}}" onMouseEnter="{{r.dragOver}}" style="{{c.cc}}; cursor: pointer; user-select: none"><input type="checkbox" tabindex="-1" aria-label="{{r.selLabel}}" checked="{{r.on}}" style="width: 16px; height: 16px; accent-color: #00A6AB; pointer-events: none"></span>
-              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.days}}" as="dy" hint-placeholder-count="1"><span style="{{dy.style}}">{{dy.t}}</span></sc-for></span>
-              <span role="cell" style="{{c.cc}}; flex-direction: column; gap: 0; font-weight: 600">{{r.name}}<sc-if value="{{r.stTag}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTag}}</span></sc-if></span>
-              <span role="cell" style="{{c.cc}}"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="1"><button type="button" data-fxk="nd:{{r.name}}" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="눌러서 이 발송 기록 지우기" style="{{sd.style}}">{{sd.t}}</button></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
-              <span role="cell" style="{{c.cc}}"><span style="{{r.cntStyle}}">{{r.cnt}}</span></span>
-              <span role="cell" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
-              <span role="cell" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 3px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
-              <span role="cell" style="{{c.cl}}"><input id="{{r.memoId}}" type="text" defaultValue="{{r.memo}}" onChange="{{r.saveMemo}}" aria-label="{{r.memoLabel}}" style="width: 100%; height: 28px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #17201C" class="memoInp"></span>
+              <span role="cell" class="noexp c-chk" onMouseDown="{{r.dragDown}}" onMouseEnter="{{r.dragOver}}" style="{{c.cc}}; cursor: pointer; user-select: none"><input type="checkbox" tabindex="-1" aria-label="{{r.selLabel}}" checked="{{r.on}}" style="width: 16px; height: 16px; accent-color: #00A6AB; pointer-events: none"></span>
+              <span role="cell" class="c-day" style="{{c.cc}}"><sc-for list="{{r.days}}" as="dy" hint-placeholder-count="1"><span style="{{dy.style}}">{{dy.t}}</span></sc-for></span>
+              <span role="cell" class="c-name" style="{{c.cc}}; flex-direction: column; gap: 0; font-weight: 600">{{r.name}}<sc-if value="{{r.stTag}}" hint-placeholder-val="{{ false }}"><span style="{{r.stStyle}}">{{r.stTag}}</span></sc-if></span>
+              <span role="cell" class="c-date" style="{{c.cc}}"><sc-for list="{{r.sends}}" as="sd" hint-placeholder-count="1"><button type="button" data-fxk="nd:{{r.name}}" onClick="{{sd.del}}" aria-label="{{sd.delLabel}}" title="눌러서 이 발송 기록 지우기" style="{{sd.style}}">{{sd.t}}</button></sc-for><sc-if value="{{r.noSend}}" hint-placeholder-val="{{ false }}"><span style="font-size: 12px; color: #B7C0BC">-</span></sc-if></span>
+              <span role="cell" class="c-cnt" style="{{c.cc}}"><span style="{{r.cntStyle}}">{{r.cnt}}</span></span>
+              <span role="cell" class="c-t" style="{{c.cc}}"><span style="{{r.tStyle}}">{{r.teacher}}</span></span>
+              <span role="cell" class="c-tk" style="{{c.cl}}"><span style="display: flex; flex-direction: column; gap: 2px; align-items: flex-start; padding: 3px 0"><span style="display: flex; align-items: flex-end; gap: 5px"><span style="display: flex; flex-direction: column; gap: 3px"><sc-for list="{{r.tk.dotLines}}" as="dl" hint-placeholder-count="1"><span style="display: flex; align-items: center; gap: 5px"><sc-for list="{{dl.groups}}" as="dg" hint-placeholder-count="2"><span style="display: flex; gap: 2px"><sc-for list="{{dg.dots}}" as="dd" hint-placeholder-count="4"><span style="{{dd.style}}"></span></sc-for></span></sc-for></span></sc-for></span><sc-if value="{{r.tk.queueTxt}}" hint-placeholder-val="{{ false }}"><span style="display: inline-flex; align-items: center; height: 15px; padding: 0 5px; border-radius: 5px; background: #F3E6C4; color: #7A5C12; font-size: 9px; font-weight: 600; white-space: nowrap">{{r.tk.queueTxt}}</span></sc-if></span><span style="font-size: 11px; letter-spacing: -0.02em; white-space: normal; line-height: 1.25; text-align: left"><sc-for list="{{r.tk.subParts}}" as="sp" hint-placeholder-count="1"><span style="{{sp.style}}">{{sp.t}}</span></sc-for></span></span></span>
+              <span role="cell" class="c-memo" style="{{c.cl}}"><input id="{{r.memoId}}" type="text" defaultValue="{{r.memo}}" onChange="{{r.saveMemo}}" aria-label="{{r.memoLabel}}" style="width: 100%; height: 28px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; border: 1px solid transparent; background: transparent; font-family: inherit; font-size: 13px; color: #17201C" class="memoInp"></span>
             </div>
           </sc-for>
           <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
