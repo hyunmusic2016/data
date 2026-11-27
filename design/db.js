@@ -207,6 +207,8 @@
       A.data = { students: list, byId: byId, byName: byName, hist: hist, log: log };
       known.shared = {}; shared.forEach(function (e) { known.shared[e.id] = e; });
       known.status = {}; status.forEach(function (e) { known.status[e.id] = e; });
+      // 아직 서버에 못 보낸 이 화면의 기록은 다시 불러와도 남김 (다음에 다시 보냄)
+      [['shared', 'academy.lessonChanges', shared], ['status', 'academy.statusChanges', status]].forEach(function (z) { var keepL = []; try { keepL = (JSON.parse(localStorage.getItem(z[1]) || '[]') || []).filter(function (e) { return e && unsent[z[0] + ':' + e.id] && !known[z[0]][e.id]; }); } catch (x) {} keepL.forEach(function (e) { z[2].push(e); }); });
       rawSet('academy.lessonChanges', JSON.stringify(shared));
       rawSet('academy.statusChanges', JSON.stringify(status));
       // 학원 공통 설정 (메뉴 탭 등). 표(app_settings)가 아직 없으면 이 브라우저 설정을 그대로 쓴다
@@ -232,12 +234,17 @@
         if (!qs[3].error) {
           A.attReady = true;
           var ac = {}; (qs[3].data || []).forEach(function (r) { if (byId[r.student_id]) (ac[r.ym] = ac[r.ym] || {})['D' + r.student_id] = r.cells; });
-          rawSet('academy.attCells', JSON.stringify(ac)); known.att = attIdx(ac);
+          known.att = attIdx(ac);
+          // 아직 서버에 못 보낸 칸(원생·달)은 이 화면 내용을 그대로 둠 → known은 서버 값이라 다음 저장 때 다시 보냄
+          if (A.unsentCount()) { var oldAc = {}; try { oldAc = JSON.parse(localStorage.getItem('academy.attCells') || '{}') || {}; } catch (x) {} Object.keys(unsent).forEach(function (u) { var m = /^att:(.+)\|(D\d+)$/.exec(u); if (!m) return; var lv = (oldAc[m[1]] || {})[m[2]]; if (lv) (ac[m[1]] = ac[m[1]] || {})[m[2]] = lv; else if (ac[m[1]]) delete ac[m[1]][m[2]]; }); }
+          rawSet('academy.attCells', JSON.stringify(ac));
         }
         if (!qs[4].error && qs[4].data && (!qs[4].data.length || 'local_id' in qs[4].data[0])) {
           A.payReady = true;
           var pl = qs[4].data.map(function (r) { var s = byId[r.student_id]; if (!s) return null; return Object.assign({}, r.extra || {}, { id: r.local_id || ('P' + r.id), name: s.name, date: r.date, count: r.count, dur: r.dur, unit: r.unit, total: r.total, cls: r.cls }, r.kind === 'unpaid' ? { kind: 'unpaid' } : {}); }).filter(Boolean);
-          rawSet('academy.payments', JSON.stringify(pl)); known.pay = idxList(pl);
+          known.pay = idxList(pl);
+          if (A.unsentCount()) { var oldPl = []; try { oldPl = JSON.parse(localStorage.getItem('academy.payments') || '[]') || []; } catch (x) {} Object.keys(unsent).forEach(function (u) { var m = /^pay:(d?)(.+)$/.exec(u); if (!m) return; if (m[1]) pl = pl.filter(function (p) { return !p || p.id !== m[2]; }); else if (!pl.some(function (p) { return p && p.id === m[2]; })) { var lp = oldPl.find(function (p) { return p && p.id === m[2]; }); if (lp) pl.push(lp); } }); }
+          rawSet('academy.payments', JSON.stringify(pl));
         }
         // 체험레슨 (010 SQL): 출석부 칸('X'+id)·수납(kind 'trial')을 trials 표 한 줄에 같이 둠
         A.trialTried = true;
@@ -284,7 +291,7 @@
         }
         var q = qs[0];
         if (!q.error) (q.data || []).forEach(function (r) { if (r.key === 'menu') rawSet('academy.menu', JSON.stringify(r.value)); if (r.key === 'staffOrder') rawSet('academy.staffOrder', JSON.stringify(r.value)); if (r.key === 'monthClose') rawSet('academy.monthClose', JSON.stringify(r.value || {})); if (r.key === 'writeOffs') rawSet('academy.writeOffs', JSON.stringify(r.value || [])); if (r.key === 'payNotice') rawSet('academy.payNotice', JSON.stringify(r.value || {})); if (r.key === 'lessonTypes' && Array.isArray(r.value) && r.value.length) rawSet('academy.lessonTypes', JSON.stringify(r.value)); if (r.key === 'ledger' && r.value) rawSet('academy.ledger', JSON.stringify(r.value)); if (r.key === 'ledgerItems' && Array.isArray(r.value)) rawSet('academy.ledgerItems', JSON.stringify(r.value)); if (r.key === 'holidays' && r.value) rawSet('academy.holidays', JSON.stringify(r.value)); if (r.key === 'siblings' && Array.isArray(r.value)) rawSet('academy.siblings', JSON.stringify(r.value)); if (r.key === 'sibEnds' && Array.isArray(r.value)) rawSet('academy.sibEnds', JSON.stringify(r.value)); if (r.key === 'sibFrom' && r.value && typeof r.value === 'object') rawSet('academy.sibFrom', JSON.stringify(r.value)); }); if (!q.error && !(q.data || []).some(function (r) { return r.key === 'monthClose'; })) rawSet('academy.monthClose', '{}');
-        // 형제 기록 한 번 비우기 (v0.119.6, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
+        // 형제 기록 한 번 비우기 (v0.119.7, 원장님 요청): 형제 정리 기록·합계 시작일만, 형제 묶음·출석·수납은 그대로. app_settings 'sibReset1' 있으면 다시 안 함
         if (!q.error && A.staff && A.staff.role === 'owner' && !(q.data || []).some(function (r) { return r.key === 'sibReset1'; })) { var nowIso = new Date().toISOString(); rawSet('academy.sibEnds', '[]'); rawSet('academy.sibFrom', '{}'); sb.from('app_settings').upsert([{ key: 'sibEnds', value: [], updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibFrom', value: {}, updated_by: A.staff.id, updated_at: nowIso }, { key: 'sibReset1', value: true, updated_by: A.staff.id, updated_at: nowIso }]).then(function (r) { report(r, '형제 기록 비우기'); }); };
         // 직원명부·수강과목 (표가 아직 없으면 건너뜀)
         if (!qs[1].error) { var em = qs[1].data.map(empFromRow); rawSet('academy.employees', JSON.stringify(em)); known.emp = idxList(em); }
@@ -333,6 +340,29 @@
     rawSet('academy.ledgerPending', JSON.stringify(P)); flushLedger();
   }
   var ledBusy = false, ledAgain = false, ledTimer = null;
+  // ---------- 서버 저장 실패 다시 보내기 (출결·수납·휴원·수업 변경) ----------
+  // 실패하면 '보냄' 표시를 되돌려 다음 저장 때 다시 보내고, 20초마다·인터넷 연결 때 다시 보냄. 남아 있는 동안은 저절로 다시 불러오기를 멈춤(이 화면 입력이 서버 옛 내용으로 덮이지 않게) + 빨간 띠
+  var unsent = {}, unsentT = null;
+  function unsentAdd(kind, id, undo) { try { undo(); } catch (e) {} unsent[kind + ':' + id] = 1; syncBar(); clearTimeout(unsentT); unsentT = setTimeout(resend, 20000); }
+  function unsentDel(kind, id) { if (unsent[kind + ':' + id]) { delete unsent[kind + ':' + id]; syncBar(); } }
+  A.unsentCount = function () { return Object.keys(unsent).length; };
+  function resend() {
+    if (!A.unsentCount()) return;
+    var rd = function (k, d) { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } };
+    try { syncAtt(rd('academy.attCells', {})); } catch (e) {}
+    try { syncPays(rd('academy.payments', [])); } catch (e) {}
+    try { syncList(rd('academy.statusChanges', []), 'status', saveStatus, 'status_changes'); } catch (e) {}
+    try { syncList(rd('academy.lessonChanges', []), 'shared', saveLesson, 'student_terms'); } catch (e) {}
+    clearTimeout(unsentT); unsentT = setTimeout(function () { if (A.unsentCount()) resend(); }, 20000);
+  }
+  window.addEventListener('online', function () { setTimeout(resend, 1000); });
+  window.addEventListener('beforeunload', function (e) { if (A.unsentCount()) { e.preventDefault(); e.returnValue = ''; } });
+  function syncBar() {
+    var b = document.getElementById('acSyncBar'), n = A.unsentCount();
+    if (!n) { if (b) b.remove(); return; }
+    if (!b) { b = el('<div id="acSyncBar" class="noprint noexp" style="position:fixed;left:0;right:0;top:0;z-index:1003;padding:8px 16px;background:#B4332B;color:#fff;font-size:13px;font-weight:600;text-align:center"></div>'); document.body.appendChild(b); }
+    b.textContent = '출결·수납 ' + n + '건이 아직 서버에 저장되지 않았습니다 — 인터넷을 확인해 주세요 (저절로 다시 보냅니다, 창을 닫지 마세요)';
+  }
   function ledBar(on) {
     var b = document.getElementById('acLedBar');
     if (!on) { if (b) b.remove(); return; }
@@ -473,7 +503,7 @@
   };
   function syncList(list, kind, saveFn, table) {
     var prev = known[kind], now = {};
-    list.forEach(function (e) { now[e.id] = e; if (!prev[e.id]) saveFn(e); });
+    list.forEach(function (e) { now[e.id] = e; if (!prev[e.id]) { var pr = saveFn(e); if (pr && pr.then) pr.then(function (id) { if (id == null) unsentAdd(kind, e.id, function () { if (known[kind]) delete known[kind][e.id]; }); else unsentDel(kind, e.id); }, function () { unsentAdd(kind, e.id, function () { if (known[kind]) delete known[kind][e.id]; }); }); } });
     Object.keys(prev).forEach(function (id) { if (!now[id]) dbIdOf(id).then(function (n) { if (n) sb.from(table).delete().eq('id', n).then(function (r) { report(r, '삭제'); }); }); });
     known[kind] = now;
   }
@@ -498,7 +528,10 @@
     }
     patches.forEach(function (x) {
       if (A.attPatch === false) return oldWay(x);
+      var ak = x.p_ym + '|D' + x.p_student, sent = now[ak], before = prev[ak];
+      var attFail = function () { unsentAdd('att', ak, function () { if (known.att && known.att[ak] === sent) { if (before === undefined) delete known.att[ak]; else known.att[ak] = before; } }); };
       sb.rpc('att_patch', { p_student: x.p_student, p_ym: x.p_ym, p_set: x.p_set, p_del: x.p_del }).then(function (r) {
+        if (r && r.error && !(r.error.code === 'PGRST202' || /att_patch/.test(r.error.message || ''))) attFail(); else if (r && !r.error) unsentDel('att', ak);
         if (r && r.error && (r.error.code === 'PGRST202' || /att_patch/.test(r.error.message || ''))) { A.attPatch = false; console.warn('012 SQL 없음 → 예전 방식', r.error); toast('Supabase에서 012 SQL을 실행하면 동시 입력이 더 안전해집니다'); return oldWay(x); }
         report(r, '출석부 저장');
       });
@@ -569,8 +602,8 @@
       var js = JSON.stringify(e); now[e.id] = js; if (prev[e.id] === js) return;
       up.push({ local_id: e.id, student_id: sid, date: e.date, kind: e.kind === 'unpaid' ? 'unpaid' : 'normal', count: +e.count || 0, dur: +e.dur || null, unit: +e.unit || null, total: +e.total || 0, cls: e.cls === 'pro' ? 'pro' : 'hobby', extra: e, created_by: A.staff.id, updated_at: new Date().toISOString() });
     });
-    Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('payments').delete().eq('local_id', id).then(function (r) { report(r, '수납 취소'); }); });
-    if (up.length) sb.from('payments').upsert(up, { onConflict: 'local_id' }).then(function (r) { report(r, '수납 저장'); });
+    Object.keys(prev).forEach(function (id) { if (!(id in now)) sb.from('payments').delete().eq('local_id', id).then(function (r) { report(r, '수납 취소'); if (r && r.error) unsentAdd('pay', 'd' + id, function () { if (known.pay && !(id in known.pay)) known.pay[id] = prev[id]; }); else unsentDel('pay', 'd' + id); }); });
+    if (up.length) { var upIds = up.map(function (x) { return x.local_id; }); sb.from('payments').upsert(up, { onConflict: 'local_id' }).then(function (r) { report(r, '수납 저장'); upIds.forEach(function (id) { if (r && r.error) unsentAdd('pay', id, function () { if (known.pay) delete known.pay[id]; }); else unsentDel('pay', id); }); }); }
     known.pay = now;
   }
   function syncClog(list) {
@@ -629,7 +662,8 @@
     var v = {}; ['days', 'times', 'stick', 'teacher', 'part'].forEach(function (k) { if (e[k] !== undefined) v[k] = e[k]; });
     if (e.prev) v._prev = e.prev;
     idMap[e.id] = sb.from('student_terms').insert({ student_id: sid, section: 'lesson', from_date: e.from, value: v, created_by: A.staff.id }).select('id').single()
-      .then(function (r) { report(r, '수업 정보 변경'); return r.data ? r.data.id : null; });
+      .then(function (r) { report(r, '수업 정보 변경'); return r.data ? r.data.id : null; }, function () { return null; });
+    return idMap[e.id];
   }
   function saveStatus(e) {
     var sid = sidOfName(e.name); if (!sid) return;
@@ -640,6 +674,7 @@
       .then(function (r) { report(r, '휴원·퇴원 처리'); return r.data ? r.data.id : null; });
     var p2 = sb.from('students').update({ status: e.kind === 'back' ? 'act' : e.kind }).eq('id', sid).then(function (r) { report(r, '원생 상태'); if (A.data && A.data.byId && A.data.byId[sid]) A.data.byId[sid].status = e.kind === 'back' ? 'act' : e.kind; });
     Promise.all([p1, p2]).then(function () { try { rawSet('academy.cache', JSON.stringify({ staff: A.staff, data: A.data })); } catch (x) {} done(); }, done);
+    return p1;
   }
 
   // ---------- 수강생대장에서 부르는 저장 ----------
@@ -786,6 +821,7 @@
   }
   function refresh() {
     if (CALC_HOST || document.hidden || busyNow()) return;
+    if (A.unsentCount && A.unsentCount()) { resend(); return; }
     loadingNow = true; lastLoad = Date.now();
     Promise.resolve(A.load()).then(function () { loadingNow = false; rerender(); }, function () { loadingNow = false; });
   }
