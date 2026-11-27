@@ -45,26 +45,35 @@ html.bwp .printonly .pcell{border-color:#000!important}
 .ntitle{font-size:19px!important;white-space:nowrap}
 .ntable{min-width:0!important}
 .ntable .nhead{display:none!important}
-.ntable .nrow{grid-template-columns:24px 44px 38px 44px minmax(0,1fr) 50px 38px 24px!important;grid-template-areas:"chk name day t tk memo date cnt";padding:3px 4px 3px 0;column-gap:3px;align-items:center!important}
+.ntable .nrow{grid-template-columns:26px 54px 44px 50px 92px minmax(40px,1fr) 44px 30px!important;grid-template-areas:"chk name day t tk memo date cnt";padding:3px 4px 3px 0;column-gap:4px;align-items:center!important}
 .nrow:hover>*{box-shadow:none!important}
 .nrow>*{min-height:0!important;padding:0!important}
 .nrow .c-chk{grid-area:chk;align-self:stretch}
-.nrow .c-chk input{width:17px!important;height:17px!important}
-.nrow .c-name{grid-area:name;flex-direction:row!important;gap:4px!important;align-items:baseline!important;justify-content:flex-start!important;font-size:13px!important;white-space:nowrap;overflow:hidden}
+.nrow .c-chk input{width:19px!important;height:19px!important}
+.nrow .c-name{grid-area:name;flex-direction:row!important;gap:4px!important;align-items:baseline!important;justify-content:flex-start!important;font-size:15px!important;white-space:nowrap;overflow:hidden}
 .nrow .c-day{grid-area:day;justify-content:center!important;flex-wrap:wrap!important;white-space:nowrap}
-.nrow .c-tk span[style*="flex-direction: column; gap: 3px"]{zoom:.7}
-.nrow .c-day>span{height:16px!important;font-size:10px!important;padding:0 3px!important;margin:0 1px 0 0!important}
+.nrow .c-tk span[style*="flex-direction: column; gap: 3px"]{zoom:.8}
+.nrow .c-day>span{height:19px!important;font-size:11.5px!important;padding:0 4px!important;margin:0 1px 0 0!important}
 .nrow .c-t{grid-area:t;justify-content:center!important;overflow:hidden}
-.nrow .c-t>span{height:16px!important;font-size:10px!important;padding:0 4px!important}
+.nrow .c-t>span{height:19px!important;font-size:11.5px!important;padding:0 5px!important}
 .nrow .c-date{grid-area:date;justify-content:center!important}
-.nrow .c-date button{height:18px!important;font-size:10px!important;padding:0 4px!important}
+.nrow .c-date button{height:20px!important;font-size:12px!important;padding:0 5px!important}
 .nrow .c-cnt{grid-area:cnt;justify-content:flex-end!important}
-.nrow .c-cnt>span{font-size:11px!important}
+.nrow .c-cnt>span{font-size:13px!important}
 .nrow .c-tk{grid-area:tk;align-self:center}
-.nrow .c-tk>span{padding:0!important;font-size:11px}
+.nrow .c-tk>span{padding:0!important;font-size:12.5px}
 .nrow .c-tk{overflow:hidden}
 .nrow .c-memo{grid-area:memo;align-self:center}
-.nrow .c-memo input{height:30px!important;font-size:16px!important;border-color:#E1E6E3!important;background:#FAFBFA!important;padding:0 6px!important}
+.nrow .c-memo input{height:32px!important;font-size:16px!important;border-color:#E1E6E3!important;background:#FAFBFA!important;padding:0 6px!important}
+@media (max-width:420px){
+.ntable .nrow{grid-template-columns:24px 46px 40px 44px 82px minmax(36px,1fr) 40px 26px!important;column-gap:3px!important}
+.nrow .c-name{font-size:14px!important}
+.nrow .c-day>span,.nrow .c-t>span{font-size:10.5px!important;padding:0 3px!important}
+.nrow .c-tk>span{font-size:11.5px!important}
+.nrow .c-tk span[style*="flex-direction: column; gap: 3px"]{zoom:.7!important}
+.nrow .c-date button{font-size:11px!important;padding:0 4px!important}
+.nrow .c-cnt>span{font-size:12px!important}
+}
 }
 .memoInp:hover{border-color:#CDD4D0!important;background:#FFFFFF!important}.memoInp:focus{border-color:#00A6AB!important;background:#FFFFFF!important;outline:none}
 </style>
